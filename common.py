@@ -13,8 +13,8 @@ HORIZON_DEFAULT = 30
 PERIOD_LENGTH_DEFAULT = 5
 MIN_AGE_DEFAULT = 0
 MAX_AGE_DEFAULT = 100
-CURVE_EPSILON_DEFAULT = 0.05
-AREA_EPSILON_DEFAULT = 0.1
+CURVE_EPSILON_DEFAULT = 0.01
+AREA_EPSILON_DEFAULT = 0.01
 SPECIES_GROUPS_QC  = {
     'ERR':'ERR',
     'ERS':'ERS',
@@ -110,6 +110,20 @@ SPECIES_GROUPS_WOODSTOCK_QC  = {
     'OSV':'FTO',
     'ORA':'FTO'
 }
+
+##########################################
+# keys correspond to bin labels
+# values correspond to bin upper bounds (inclusive)
+AGE_CLASS_BINS_DEFAULT = {
+    '10':20,
+    '30':40,
+    '50':60,
+    '70':80,
+    '90':100,
+    '120+':MAX_AGE_DEFAULT
+}
+##########################################
+    
 
 def is_num(s):
     try:

@@ -3,7 +3,7 @@
 from bisect import bisect_left
 from itertools import repeat
 import copy
-
+import math
 
 try:
     from . import common
@@ -59,14 +59,20 @@ class Interpolator(object):
         self.y = map(float, y)
         self.n = len(x)
         intervals = zip(self.x, self.x[1:], self.y, self.y[1:])
-        self.m = [(y2 - y1)/(x2 - x1) for x1, x2, y1, y2 in intervals]
-
+        #print intervals
+        try:
+            self.m = [(y2 - y1)/(x2 - x1) for x1, x2, y1, y2 in intervals]
+        except:
+            print intervals
+            raise
+        
     def points(self):
         return zip(map(int, self.x), self.y)
         
     def __call__(self, x):
-        if not x: return self.y[0]
+        if x == 0: return self.y[0]
         i = bisect_left(self.x, x) - 1
+        #print x, self.m[i]
         return self.y[i] + self.m[i] * (x - self.x[i])          
         # try:
         #     return self.y_list[i] + self.slopes[i] * (x - self.x_list[i])    
@@ -80,7 +86,9 @@ class Interpolator(object):
 
     def lookup(self, y, from_right=False):
         if not from_right:
-            i = bisect_left(self.y, y) - 1
+            i = bisect_left(self.y, y)
+            if i == 0: return self.x[0]
+            i -= 1
             if i == self.n - 1: return self.x[-1]
             try:
                 return self.x[i] + (y - self.y[i])/self.m[i] if self.m[i] else self.x[i]
@@ -126,42 +134,36 @@ class Curve:
         assert not self.is_locked
         points = self.points() if points is None else points
         n = len(points)
-        if n <= 2: return
-        estep = 0.05
+        ysum = sum(self)
+        if n <= 2 or ysum < self.epsilon: return
+        estep = self.epsilon
         error = 0.
         e = 0.
-        ysum = sum(self)
-        _points = copy.copy(points)
-        __points = copy.copy(points)
         sentinel = 0
-        max_iters = 500
-        while error < self.epsilon and sentinel < max_iters and len(_points) > 2:
-            self._simplify(e, _points)
-            if ysum < self.epsilon:
-                self.interp = Interpolator(points)
-                self._y = None
-                if compile_y: self._compile_y()
-                return # force exit for null curves
-            error = abs(sum(self) - ysum) / ysum
-            ___points = copy.copy(__points)
-            __points = copy.copy(_points) 
-            _points = copy.copy(self.points())
+        max_iters = 100
+        while error < self.epsilon and sentinel < max_iters and len(self.points()) > 2:
+            _points = copy.copy(self.points()) # backup
+            self._simplify(e)
+            if sentinel > 0 and len(self.points()) == len(_points): break
+            error = abs(sum(self) - ysum) / ysum            
+            if error >= self.epsilon: break
             e += estep
             sentinel += 1
-        e -= estep * 2. # back up two steps...
-        self.interp = Interpolator(___points)
+        self.interp = Interpolator(_points) # restore from backup
         self._y = None
         if compile_y: self._compile_y()
         if verbose:
             error = abs(sum(self) - ysum) / ysum
-            print 'after final simplify', n, len(self.points()), float(n)/float(len(self.points())), error, ysum #, e, abs(sum(self) - ysum) / ysum
+            print 'after final simplify', n, len(self.points()), float(n)/float(len(self.points())), error, ysum, sentinel #, e, abs(sum(self) - ysum) / ysum
 
         
-    def _simplify(self, e, points, compile_y=False):
+    def _simplify(self, e, compile_y=False):
         """
         NOTE: Implementation was modified so that point list is stored only once (in interp).
         """
+        points = self.points()
         p = copy.copy(points)
+        #print self.label, p
         n = 0
         for i in range(1, len(p) - 1):
             s1, s2 = [(p[i+j][1] - p[i+j-1][1]) / (p[i+j][0] - p[i+j-1][0]) for j in [0, 1]]
@@ -217,18 +219,23 @@ class Curve:
     #         print 'range', self._y
     #     return Curve(points=zip(self.x, y))
 
-    def lookup(self, y, from_right=False):
-        return int(self.interp.lookup(y, from_right))
+    def lookup(self, y, from_right=False, roundx=False):
+        x = self.interp.lookup(y, from_right)
+        if roundx:
+            return int(round(x))
+        else:
+            return int(x)
     
     def range(self, lo=None, hi=None, as_bounds=False, left_range=True):
         """
         left_range True:  ub lookup from left (default)
         left_range False: ub lookup from right (widest possible range)
         """
-        lb = self.interp.lookup(lo) if lo is not None else 0
-        ub = self.interp.lookup(hi, from_right=not left_range) if hi is not None else self.max_x
-        #print 'lb', lb, 'ub', ub
-        points = [(lb, 1), (ub, 1)]
+        lb = int(round(self.interp.lookup(lo))) if lo is not None else 0
+        ub = int(round(self.interp.lookup(hi, from_right=not left_range))) if hi is not None else self.max_x
+        #print self.label, 'lo', lo, 'hi', hi, 'lb', lb, 'ub', ub
+        #print self.points()
+        points = [(lb, 1), (ub, 1)] if ub > lb else [(lb, 1)]
         if lb > 0:
             if lb > 1:
                 points.insert(0, (lb-1, 0))
@@ -240,6 +247,7 @@ class Curve:
         if as_bounds: 
             return lb, ub
         else:
+            #print points
             return Curve(points=points)
         
     def cai(self):
@@ -248,7 +256,10 @@ class Curve:
         return Curve(points=zip(x, (y[1:]-y[:-1])/self.period_length))
             
     def mai(self):
-        p = [(0, 0.)] + [(x, self[x]/(float(x)*self.period_length)) for x in self.x[1:]]
+        try:
+            p = [(0, 0.)] + [(x, self[x]/(float(x)*self.period_length)) for x in xrange(1, self.max_x+1)]
+        except:
+            print self.x #[1:]
         return Curve(points=p)
             
     def ytp(self):

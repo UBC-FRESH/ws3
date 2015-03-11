@@ -23,13 +23,13 @@ class GreedyAreaSelector:
     def __init__(self, parent):
         self.parent = parent
 
-    def operate(self, period, acode, target_area):
+    def operate(self, period, acode, target_area, mask=None, commit_actions=True):
         """
         Greedily operate on oldest operable age classes.
         """
         wm = self.parent
         key = lambda item: max(item[1])
-        odt = sorted(wm.operable_dtypes(acode, period).items(), key=key)
+        odt = sorted(wm.operable_dtypes(acode, period, mask).items(), key=key)
         print ' entering selector.operate()', len(odt), 'operable dtypes'
         while target_area > 0 and odt:
             while target_area > 0 and odt:
@@ -45,9 +45,13 @@ class GreedyAreaSelector:
                 if not oa: continue # nothing to operate
                 area = min(oa, target_area)
                 target_area -= area
-                #print ' selector found area', acode, period, age, area
+                if area < 0:
+                    print 'negative area', area, oa, target_area, acode, period, age
+                    assert False
+                print ' selector found area', [' '.join(dtk)], acode, period, age, area
                 wm.apply_action(dtk, acode, period, age, area)
             odt = sorted(wm.operable_dtypes(acode, period).items(), key=key)
+        wm.commit_actions(period, repair_future_actions=True)
         print ' exiting selector.operate. remaining target_area:', target_area
     
 class Action:
@@ -105,11 +109,12 @@ class DevelopmentType:
 
     def operable_ages(self, acode, period):
         if acode not in self.oper_expr: # action not defined for this development type
-            return []
+            return None
         if acode not in self.operability: # action not compiled yet...
-            self.compile_action(acode)
+            if self.compile_action(acode) == -1: return None # never operable
+        #print ' '.join(self.key), acode, period, self.operability, self.oper_expr
         if period not in self.operability[acode]:
-            return []
+            return None
         else:
             lo, hi = self.operability[acode][period]
             return list(set(range(lo, hi+1)).intersection(self._areas[period].keys()))        
@@ -120,13 +125,19 @@ class DevelopmentType:
         Does not imply that there is any operable area in current inventory.
         """
         if acode not in self.oper_expr: # action not defined for this development type
+            print self.oper_expr
             return False
         if acode not in self.operability: # action not compiled yet...
-            self.compile_action(acode)
+            if self.compile_action(acode) == -1:
+                print 'never operable', acode
+                return False # never operable
         if period not in self.operability[acode]:
+            print acode, period
+            assert False
             return False
         else:
             lo, hi = self.operability[acode][period]
+            #print 'is_operable', acode, period, age, hi, lo
             return age >= lo and age <= hi
         
     def operable_area(self, acode, period, age=None, cleanup=True):
@@ -136,9 +147,7 @@ class DevelopmentType:
         if acode not in self.oper_expr: # action not defined for this development type
             return 0.
         if acode not in self.operability: # action not compiled yet...
-            self.compile_action(acode)
-        #else:
-        #    print 'operable_area', ' '.join(self.key), self.operability[acode]
+            if self.compile_action(acode) == -1: return 0. # never operable
         if age is None: # return total operable area
             return sum(self.operable_area(acode, period, a) for a in self._areas[period].keys())
         if age not in self._areas[period]:
@@ -146,15 +155,23 @@ class DevelopmentType:
             return 0.
         elif abs(self._areas[period][age]) < self.parent.area_epsilon:
             # negligible area
+            #print 'no area', acode, period, age, self._areas[period][age]
+            #print ' '.join(self.key)
+            #print self._areas[period].keys()
             if cleanup: # remove ageclass from dict (frees up memory)
                 del self._areas[period][age]
             return 0.
         elif self.is_operable(acode, period, age):
+            #print 'operable', acode, period, age #, self.operability[acode]
             return self._areas[period][age]
         else:
             return 0.
+        assert False
                 
     def area(self, period, age=None, area=None, delta=True):
+        if area is not None:
+            print area
+            assert area > 0
         if area is None: # return area for period and age
             if age is not None:
                 try:
@@ -169,16 +186,17 @@ class DevelopmentType:
             else:
                 self._areas[period][age] = area
         
-    def resolve_condition(self, ycomp, lo, hi):
-        return [x for x, y in enumerate(self.ycomp(ycomp)) if y >= lo and y <= hi]
+    def resolve_condition(self, yname, lo, hi):
+        return [x for x, y in enumerate(self.ycomp(yname)) if y >= lo and y <= hi]
        
     def reset_areas(self, period=None):
-        if period is None:
-            for p in self.parent.periods:
-                self.reset_areas(p)
-        else:
+        periods = self.parent.periods if period is None else [period]
+        for period in periods:
             self._areas[period] = dd(float)
 
+    def ycomps(self):
+        return self._ycomps.keys()
+            
     def ycomp(self, yname, silent_fail=True):
         if yname in self._ycomps:
             if not self._ycomps[yname]: # complex ycomp not compiled yet
@@ -235,11 +253,14 @@ class DevelopmentType:
     def _resolver_range(self, yname, d):
         args = [self._o(s.lower()) for s in re.split('\s?,\s?', re.search('(?<=\().*(?=\))', d).group(0))] 
         arg_triplets = [args[i:i+3] for i in xrange(0, len(args), 3)]
+        range_curve = self._rc(reduce(lambda x, y: x*y, [t[0].range(t[1], t[2]) for t in arg_triplets]))
+        #print ' '.join(self.key), yname, range_curve.points()
         return args[0].type, self._rc(reduce(lambda x, y: x*y, [t[0].range(t[1], t[2]) for t in arg_triplets]))
 
     def _compile_complex_ycomp(self, yname):
         expression = self._complex_ycomps[yname]
-        keyword = re.search('(?<=_)[A-Z]+(?=\()', expression.group(0))
+        keyword = re.search('(?<=_)[A-Z]+(?=\()', expression).group(0)
+        #print 'compiling complex', yname, keyword
         try:
             ytype, ycomp = self._resolvers[keyword](yname, expression)
             ycomp.label = yname
@@ -253,6 +274,8 @@ class DevelopmentType:
             self.compile_action(acode, verbose)
 
     def compile_action(self, acode, verbose=False):
+        #print 'compiling action'
+        #print ' '.join(self.key), acode
         self.operability[acode] = {}
         for expr in self.oper_expr[acode]:
             self._compile_oper_expr(acode, expr, verbose)
@@ -262,7 +285,13 @@ class DevelopmentType:
                 #print 'compile_action', expr, acode, p, self.operability[acode][p]
                 is_operable = True
         if not is_operable:
+            if verbose: print 'not operable (deleting):', acode
             del self.operability[acode]
+            del self.oper_expr[acode]
+            return -1
+        else:
+            if verbose: print 'operable:', acode #, self.operability[acode]
+        return 0
             
     def _compile_oper_expr(self, acode, expr, verbose=False):
         expr = expr.replace('&', 'and').replace('|', 'or')
@@ -342,8 +371,8 @@ class DevelopmentType:
     
     def grow(self, start_period=1, cascade=True):
         end_period = start_period + 1 if not cascade else self.parent.horizon
-        for p in range(start_period, end_period): #self.parent.periods[start_period:end_period]:
-            self.reset_areas(p+1)
+        for p in range(start_period, end_period):
+            self.reset_areas(p+1), self._areas[p], self._areas[p+1]
             for age, area in self._areas[p].items(): self._areas[p+1][age+1] = area
 
     def initialize_areas(self):
@@ -482,7 +511,7 @@ class Output:
                 return 0. # area will be 0...
         for k in self._dtype_keys:
             dt = self.parent.dtypes[k]
-            if cut_corners and not self._is_invent and not self.parent.applied_actions[period][self._acode][k]:
+            if cut_corners and not self._is_invent and k not in self.parent.applied_actions[period][self._acode]:
                 if verbose: print 'bailing on', period, self._acode, ' '.join(k)
                 continue # area will be 0...
             if isinstance(self._factor[0], float):
@@ -514,10 +543,7 @@ class Output:
                     else:
                         area += dt.area(period, age)
                 else:
-                    assert False # not implemented correctly yet...
-                    aa = self.parent.applied_actions
-                    key = k, self._acode, age
-                    if key in aa: area += aa[key]
+                    assert False # not implemented yet...
                 y = 1. if self._is_area else dt.ycomp(self._ycomp)[age]
                 result += y * area * f
         return result
@@ -568,7 +594,8 @@ class WoodstockModel:
                  period_length=common.PERIOD_LENGTH_DEFAULT,
                  max_age=common.MAX_AGE_DEFAULT,
                  species_groups=common.SPECIES_GROUPS_WOODSTOCK_QC,
-                 area_epsilon=common.AREA_EPSILON_DEFAULT):
+                 area_epsilon=common.AREA_EPSILON_DEFAULT,
+                 curve_epsilon=common.CURVE_EPSILON_DEFAULT):
         self.model_name = model_name
         self.model_path = model_path
         self.horizon = horizon
@@ -578,6 +605,7 @@ class WoodstockModel:
         self.ages = range(max_age+1)
         self._species_groups = species_groups
         self.yields = []
+        self.ynames = set()
         self.actions = {}
         self.transitions = {}
         self.oper_expr = {}
@@ -604,8 +632,25 @@ class WoodstockModel:
                               'unit':c_unit,
                               'ages':c_ages}
         self.area_epsilon = area_epsilon
+        self.curve_epsilon = curve_epsilon
         self.areaselector = GreedyAreaSelector(self)
+        self.inoperable_dtypes = []
 
+    def dt(self, dtype_key):
+        try:
+            return self.dtypes[dtype_key]
+        except:
+            return None
+
+    def age_class_distribution(self, period, mask=None):
+        result = {age:0. for age in self.ages}
+        dtype_keys = self.unmask(mask) if mask else self.dtypes.keys()
+        for dtk in dtype_keys:
+            dt = self.dtypes[dtk]
+            for age in dt._areas[period]:
+                result[age] += dt._areas[period][age]
+        return result
+           
     def operable_dtypes(self, acode, period, mask=None):
         result = {}
         dtype_keys = self.unmask(mask) if mask else self.dtypes.keys()
@@ -648,42 +693,78 @@ class WoodstockModel:
             self.curves[key] = curve
         return self.curves[key]
             
-        
-    def _rdd(self):
-        """
-        Recursive defaultdict (i.e., tree)
-        """
-        return dd(self._rdd)
-        
-    def reset_actions(self, period=None, acode=None):
+    # def _rdd(self):
+    #     """
+    #     Recursive defaultdict (i.e., tree)
+    #     """
+    #     return dd(self._rdd)   
+    
+    def reset_actions(self, period=None, acode=None):       
         if period is None:
-            self.applied_actions = {p:self._rdd() for p in self.periods}
+            self.applied_actions = {p:{acode:{} for acode in self.actions.keys()} for p in self.periods}
         else:
             if acode is None:
                 # NOTE: This DOES NOT deal with consequences in future periods...
-                self.applied_actions[period] = self._rdd()
+                self.applied_actions[period] = {acode:{} for acode in self.actions.keys()}
             else:
                 assert period is not None
-                self.applied_actions[period][acode] = self._rdd()
+                self.applied_actions[period][acode] = {}
 
+    # def reset_actions(self, period=None, acode=None):
+    #     if period is None:
+    #         self.applied_actions = {p:self._rdd() for p in self.periods}
+    #     else:
+    #         if acode is None:
+    #             # NOTE: This DOES NOT deal with consequences in future periods...
+    #             self.applied_actions[period] = self._rdd()
+    #         else:
+    #             assert period is not None
+    #             self.applied_actions[period][acode] = self._rdd()
+
+    def compile_product(self, period, expr, acode=None, dtype_key=None, age=None):
+        aa = self.applied_actions
+        if acode is None:
+            acodes = self.actions.keys()
+        else:
+            acodes = [acode] if not self.actions[acode].components else self.actions[acode].components
+        tokens = expr.split(' ')
+        result = 0.
+        for _acode in acodes:
+            if not aa[period][_acode]: continue # acode not in solution
+            dtype_keys = aa[period][_acode].keys() if dtype_key is None else [dtype_key]
+            for _dtype_key in dtype_keys:
+                ages = aa[period][_acode][_dtype_key].keys() if age is None else [age]
+                for _age in ages:
+                    aaa = aa[period][_acode][_dtype_key][_age]
+                    _tokens = []
+                    for token in tokens:
+                        if token in self.ynames: # found reference to ycomp
+                            if token in aaa[1]: # token is yname in products (replace with value)
+                                _tokens.append(str(aaa[1][token]))
+                            else: # assume null value if ycomp exists but not stored in solution
+                                _tokens.append('0.')
+                        else:
+                            _tokens.append(token)
+                    _expr = ' '.join(_tokens)
+                    print "evaluating expression '%s' for case:" % ' '.join(_tokens), [' '.join(_dtype_key)], _acode, _age
+                    try:
+                        result += eval(_expr) * aaa[0]
+                    except ZeroDivisionError:
+                        pass # let this one go...
+        return result
+        
+                
     def operated_area(self, acode, period, dtype_key=None, age=None):
         aa = self.applied_actions
-        if acode not in aa[period]: return 0.
+        acodes = [acode] if not self.actions[acode].components else self.actions[acode].components
         result = 0.
-        if dtype_key is None: 
-            if age is None:
-                for dtype_key in aa[period][acode]:
-                    for age in aa[period][acode][dtype_key]:
-                        result += aa[period][acode][dtype_key][age]
-            else:
-                for dtype_key in aa[period][acode]:
-                   result += aa[period][acode][dtype_key][age]
-        else:
-            if age is None:
-                for age in aa[period][acode][dtype_key]:
-                    result += aa[period][acode][dtype_key][age]
-            else:
-                result += aa[period][acode][dtype_key][age]
+        for _acode in acodes:
+            if not aa[period][_acode]: continue # acode not in solution
+            dtype_keys = aa[period][_acode].keys() if dtype_key is None else [dtype_key]
+            for _dtype_key in dtype_keys:
+                ages = aa[period][_acode][_dtype_key].keys() if age is None else [age]
+                for _age in ages:
+                    result += aa[period][_acode][_dtype_key][_age][0]
         return result
 
     def repair_actions(self, period, areaselector=None):
@@ -695,13 +776,14 @@ class WoodstockModel:
         aa = copy.copy(self.applied_actions[period])
         self.reset_actions(period)
         for acode in aa:
+            if not aa[acode]: continue # null solution, move along...
             print ' ', acode
             old_area = 0.
             new_area = 0.
             # start by re-applying as much of the old solution as possible
             for dtype_key in aa[acode]:
                 for age in aa[acode][dtype_key]:
-                    aaa = aa[acode][dtype_key][age]
+                    aaa = aa[acode][dtype_key][age][0]
                     old_area += aaa
                     oa = self.dtypes[dtype_key].operable_area(acode, period, age)
                     if not oa: continue
@@ -709,7 +791,6 @@ class WoodstockModel:
                     #print ' applying old area', applied_area
                     new_area += applied_area
                     self.apply_action(dtype_key, acode, period, age, applied_area)
-                    #self.applied_actions[period][acode][dtype_key][age] = applied_area
             # try to make up for missing area...
             target_area = old_area - new_area
             print ' patched %i of %i solution hectares, missing' % (int(new_area), int(old_area)), target_area
@@ -718,7 +799,7 @@ class WoodstockModel:
             areaselector.operate(period, acode, target_area)
                      
         
-    def commit_actions(self, period=1, repair_future_actions=False, verbose=True):
+    def commit_actions(self, period=1, repair_future_actions=False, verbose=False):
         while period < self.horizon:
             if verbose: print 'growing period', period
             self.grow(period, cascade=False)
@@ -728,13 +809,67 @@ class WoodstockModel:
                 self.repair_actions(period)
             else:
                 self.reset_actions(period)
-                            
-    def apply_action(self, dtype_key, acode, period, age, area):
+        
+                                            
+    def apply_action(self, dtype_key,
+                     acode, period, age,
+                     area,
+                     override_operability=False,
+                     fuzzy_age=True,
+                     recourse_enabled=True,
+                     areaselector=None,
+                     verbose=False):
+        #print 'applying action', [' '.join(dtype_key)], acode, period, age, area 
         dt = self.dtypes[dtype_key]
+        ############################################
         # TO DO: better error handling... ##########
-        assert acode in dt.operability
-        assert dt.area(period, age) >= area
-        assert area > 0
+        if acode not in dt.oper_expr:
+            print 'requested action not defined for development type...'
+            print ' ', [' '.join(dtype_key)], acode, period, age, area
+            return
+        if acode not in dt.operability: # action not compiled yet...
+            if dt.compile_action(acode) == -1:
+                print 'requested action is defined, but never not operable...'
+                print ' ', [' '.join(dtype_key)], acode, period, age, area
+                return
+        if not dt.is_operable(acode, period, age) and not override_operability:
+            print 'not operable'
+            print ' '.join(dt.key), acode, period, age
+            print dt.operability[acode][period]
+            assert False # dt.is_operable(acode, period, age)
+        if (acode, age) not in dt.transitions:
+            print 'transitions not defined...'
+            print ' ', [' '.join(dtype_key)], acode, period, age, area
+            print dt.oper_expr
+            print dt.operability
+            print dt.transitions
+            assert False
+            return
+
+        if dt.area(period, age) + self.area_epsilon < area:
+            oage = age
+            #print 'original age', oage
+            found_area = False
+            if dt.area(period, age-1) + self.area_epsilon >= area:
+                age -= 1
+                found_area = True
+            elif dt.area(period, age+1) + self.area_epsilon >= area:
+                age += 1
+                found_area = True
+            if not found_area and recourse_enabled:
+                areaselector = self.areaselector if areaselector is None else areaselector
+                areaselector.operate(period, acode, area)
+            if verbose and not found_area:
+                print 'insufficient area...'
+                print ' ', [' '.join(dtype_key)], acode, period, oage, area, dt.area(period, oage), (area - dt.area(period, oage))
+                print ' ', dt.area(period-1), dt._areas[period-1]
+                print ' ', dt.area(period), dt._areas[period]
+                print ' ', dt.area(period+1), dt._areas[period+1]
+                #assert False
+                #return
+        else: # tweak area if slightly over, so we don't get any accounting drift...
+            area = min(dt.area(period, age), area)
+        #assert area > 0 # stop wasting my time! :)
         ############################################
         if not dt.is_operable(acode, period, age): return
         action = self.actions[acode]
@@ -752,16 +887,16 @@ class WoodstockModel:
                 print 'target', ' '.join(tmask), tprop, tage, tlock, treplace, tappend
                 print 'dtk', ' '.join(dtk)
                 raise
-            ###########################################################################
+        ###########################################################################
+        # HACK ####################################################################
+        # Too lazy to implement.
+        # Not used in BFEC models (TO DO: confirm).
         def resolve_append(dtk, expr):
-            # HACK ####################################################################
-            # Too lazy to implement.
-            # Not used in BFEC models (TO DO: confirm).
             assert False # brick wall (deal with this case later, as needed)
-            ###########################################################################
+        ###########################################################################
         dt.area(period, age, -area)
         for target in dt.transitions[acode, age]:
-            tmask, tprop, tage, tlock, treplace, tappend = target # unpack tuple
+            tmask, tprop, tyield, tage, tlock, treplace, tappend = target # unpack tuple
             dtk = list(dtype_key) # start with source key
             ###########################################################################
             # DO TO: Confirm correct order for evaluating mask, _APPEND and _REPLACE...
@@ -770,19 +905,80 @@ class WoodstockModel:
             if tappend: dtk[tappend[0]] = resolve_append(dtk, tappend[1])
             dtk = tuple(dtk)
             ###########################################################################
+            foo = 0
             if dtk not in self.dtypes: # new development type (clone source type)
+                #_fookey = 'gs0006 forestier 1 sr0079 fc0021 nat n inc zt0001 na m1 au19 b1 na refa na na tf1 zaf6 na'
+                #fookey = 'gs0002 forestier 2 sr0087 fc0042 cp n inc zt0001 na m1 au1 na na orph ev17 na tf1 eco6 na'
+                #fookey = 'gs0019 forestier 2 sr0007 fc0035 cp n inc zt0001 na na au21 na na orph na na tf1 zaf3 na'
+                #fookey = 'gs0002 forestier 2 sr0087 fc0042 cp n inc zt0001 na m1 au1 na na orph na na tf1 eco6 na'
+                fookey = ''
+                if ' '.join(dtk) == fookey:
+                    print 'fookey', tage, action.targetage, age
+                    foo = 1
                 self.create_dtype_fromkey(dtk)
-            if tage is not None: # target age override specifed in transition
+            if tyield is not None: # yield-based age definition
+                if foo: print 'yield-based age definition', tyield, self.dt(dtk).ycomp(tyield[0]).lookup(tyield[1], roundx=True)
+                try:
+                    targetage = self.dt(dtk).ycomp(tyield[0]).lookup(tyield[1], roundx=True)
+                except:
+                    print ' '.join(dtk), tyield[0], self.dt(dtk).ycomps()
+                    assert False
+            elif tage is not None: # target age override specifed in transition
+                if foo: print '_AGE override', tage
                 targetage = tage
             elif action.targetage is None: # use source age
+                if foo: print 'source age', age
                 targetage = age
             else: # default: age reset to 0
+                if foo: print 'default age reset to 0'
                 targetage = 0
-            #print 'new dt', [' '.join(dtk)], period, targetage, area, tprop, area*tprop
+            if foo:
+                print 'creating new dt from', acode, age, [' '.join(dt.key)]
+                print ' new dt', [' '.join(dtk)], period, targetage, area, tprop, area*tprop
             self.dtypes[dtk].area(period, targetage, area*tprop)
-        aa = self.applied_actions[period][acode][dtype_key][age]
-        if not aa: self.applied_actions[period][acode][dtype_key][age] = 0. 
-        self.applied_actions[period][acode][dtype_key][age] += area
+        aa = self.applied_actions[period][acode]
+        if dtype_key not in aa: aa[dtype_key] = {}
+        if age not in aa[dtype_key]: aa[dtype_key][age] = [0., {}] 
+        aa[dtype_key][age][0] += area
+        if action.partial:
+            #print 'action.partial', acode, action.partial
+            _dt = self.dtypes[dtk] # avoid multiple lookups in loop
+        for yname in dt.ycomps():
+            ycomp = dt.ycomp(yname)
+            if ycomp.type in ['t', 'c']: continue # only track age-based ycomps for products
+            try:
+                value = dt.ycomp(yname)[age]
+            except:
+                print  [' '.join(dt.key)], acode, period, age, yname, dt.ycomp(yname)
+                print dt.ycomp(yname).points()
+                assert False
+            if yname in action.partial and yname in _dt.ycomps():
+                value -= _dt.ycomp(yname)[targetage]
+                # try:
+                #     value -= _dt.ycomp(yname)[targetage]
+                # except:
+                #     print yname
+                #     print
+                #     print [' '.join(dt.key)]
+                #     print dt._ycomps.keys()
+                #     print
+                #     print [' '.join(_dt.key)]
+                #     print _dt._ycomps.keys()
+                #     assert False
+            if value > self.curve_epsilon:
+                aa[dtype_key][age][1][yname] = value
+
+            
+            # if yname not in aa[dtype_key][age][1]: aa[dtype_key][age][1][yname] = 0.
+            # if yname not in action.partial:
+            #     aa[dtype_key][age][1][yname] += dt.ycomp(yname)[age]
+            # else:
+            #     # take difference between pre- and post-action states
+            #     print 'partial'
+            #     print ' source', [' '.join(dtype_key)], yname, age
+            #     print ' target', [' '.join(dtype_key)], yname, targetage
+            #     print '  ', dt.ycomp(yname)[age], _dt.ycomp(yname)[targetage]
+            #     aa[dtype_key][age][1][yname] += dt.ycomp(yname)[age] - _dt.ycomp(yname)[targetage]
 
     def create_dtype_fromkey(self, key):
         assert key not in self.dtypes # should not be creating new dtypes from existing key
@@ -798,12 +994,33 @@ class WoodstockModel:
             for mask in self.oper_expr[acode]:
                 if self.match_mask(mask, key):
                     dt.oper_expr[acode].append(self.oper_expr[acode][mask]) 
+            #print 'building transitions for acode', acode, ' '.join(key)
             for mask in self.transitions[acode]:
+                #print ' mask', ' '.join(mask)
+                #foo = False
+                #if acode in ['acp']:
+                    #if mask == tuple('gs0002 forestier 1 sr0087 ? nat o inc ? ? ? ? ? ? ? ? ? ? ? ?'.split(' ')):
+                    #    print acode, ' '.join(mask) # DEBUG
+                    #    foo = True
                 if self.match_mask(mask, key):
+                    #print '  match'
                     for scond in self.transitions[acode][mask]:
+                        #print '   scond', scond, self.resolve_condition(scond, key)
+                        #if foo:
+                        #    print scond
+                        #    print dt.ycomp('yg_s').points()
+                        #    print self.resolve_condition(scond, key)
                         for x in self.resolve_condition(scond, key): 
-                            dt.transitions[acode, x] = self.transitions[acode][mask][scond] 
-       #return dt
+                            #if foo:
+                            #    print ' ', x
+                            dt.transitions[acode, x] = self.transitions[acode][mask][scond]
+        if not dt.transitions:
+            self.inoperable_dtypes.append(key)
+            #print 'no transitions', ' '.join(key)
+            #for acode in self.transitions:
+            #    for mask in self.transitions[acode]:
+            #        for scond in self.transitions[acode][mask]:
+            #            print acode, ' '.join(mask), scond
     
     def _resolve_outputs_buffer(self, s, for_flag=None):
         n = self.nthemes
@@ -913,18 +1130,23 @@ class WoodstockModel:
         return self._themes[theme_index]
         
     @timed    
-    def import_areas_section(self, filename_suffix='are'):
+    def import_areas_section(self, filename_suffix='are', import_empty=False):
         n = self.nthemes
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             for l in f:
                 if re.match('^\s*(;|$)', l): continue # skip comments and blank lines
-                l = l.strip().partition(';')[0] # strip leading whitespace and trailing comments
+                l = l.lower().strip().partition(';')[0] # strip leading whitespace and trailing comments
                 t = re.split('\s+', l)
-                key = tuple(_t.lower() for _t in t[1:n+1])
+                key = tuple(_t for _t in t[1:n+1])
                 age = int(t[n+1])
                 area = float(t[n+2].replace(',', ''))
+                #print l[3:]
+                if area < self.area_epsilon and not import_empty: continue
                 if key not in self.dtypes: self.dtypes[key] = DevelopmentType(key, self)
                 self.dtypes[key].area(0, age, area)
+                #if l[3:].startswith('gs0002 forestier 1 sr0084 fc0022 nat o inc zt0001 na m1 au1 b1 na orph ev17 na tf1 eco6 na'):
+                #    print age, area, self.dt(key)._areas[0][age]
+                #    assert False
                     
     def _expand_action(self, c):
         self._actions = t
@@ -943,11 +1165,17 @@ class WoodstockModel:
             tacs = self._expand_theme(self._themes[ti], tac)
             if key[ti] not in tacs: return False # reject key
         return True # key matches
-               
+        
     def unmask(self, mask):
         """
         Iteratively filter list of development type keys using mask values.
+        Accepts Woodstock-style string masks to facilitate cut-and-paste testing.
         """
+        if isinstance(mask, str): # Woodstock string mask format
+            mask = tuple(re.sub('\s+', ' ', mask).lower().split(' '))
+            assert len(mask) == self.nthemes # must be bad mask if wrong theme count
+        else:
+            assert isinstance(mask, tuple) and len(mask) == self.nthemes
         dtype_keys = copy.copy(self.dtypes.keys()) # filter this
         for ti, tac in enumerate(mask):
             if tac == '?': continue # wildcard matches all
@@ -984,6 +1212,7 @@ class WoodstockModel:
             else: # complex ycomps
                 ycomps = [(y, c[y]) for y in n]
             self.yields.append((m, t, ycomps)) # stash for creating new dtypes at runtime...
+            self.ynames.update(n)
             for k in self.unmask(m):
                 for yname, ycomp in ycomps:
                     self.dtypes[k].add_ycomp(t, yname, ycomp)
@@ -1117,9 +1346,12 @@ class WoodstockModel:
             return range(lo, hi+1)
         elif condition.startswith('@YLD'):
             args = re.split('\s?,\s?', condition[5:-1])
-            ycomp = args[0].lower()
+            yname = args[0].lower()
             lo, hi = [float(y) for y in args[1].split('..')]
-            return self.dtypes[dtype_key].resolve_condition(ycomp, hi, lo)
+            dt = self.dtypes[dtype_key]
+            lo_age, hi_age = dt.ycomp(yname).range(lo, hi, as_bounds=True)
+            return range(lo_age, hi_age+1)
+            #return self.dtypes[dtype_key].resolve_condition(yname, hi, lo)
         
     @timed                        
     def import_transitions_section(self, filename_suffix='trn'):
@@ -1128,6 +1360,8 @@ class WoodstockModel:
             if not acode: return # nothing to flush on first loop
             self.transitions[acode] = {}
             for smask, scond in sources:
+                #if acode in ['acp']:
+                #    print [' '.join(smask)], scond, sources[smask, scond]
                 # store transition data for future dtypes creation 
                 if smask not in self.transitions[acode]:
                     self.transitions[acode][smask] = {}
@@ -1167,6 +1401,14 @@ class WoodstockModel:
             elif l.startswith('*TARGET'):
                 tmask = tuple(t.lower() for t in tokens[1:self.nthemes+1])
                 tprop = float(tokens[self.nthemes+1]) * 0.01
+                tyield = None
+                if len(tokens) > self.nthemes+2 and tokens[self.nthemes+2].lower() in self.ynames:
+                    tyield = (tokens[self.nthemes+2].lower(), float(tokens[self.nthemes+3]))
+                #if len(tokens) > self.nthemes+2:
+                #    print tokens[self.nthemes+2]
+                #    if tokens[self.nthemes+2] in self.ynames:
+                #        print 'tokens[self.nthemes+2]', tokens[self.nthemes+2]
+                #        tyield = (tokens[self.nthemes+2], float(tokens[self.nthemes+3]))
                 try: # _AGE keyword
                     tage = int(tokens[tokens.index('_AGE')+1])
                 except:
@@ -1187,7 +1429,7 @@ class WoodstockModel:
                     tappend = theme_index, args[1]
                 except:
                     tappend = None
-                sources[(smask, scond)].append((tmask, tprop, tage, tlock, treplace, tappend))
+                sources[(smask, scond)].append((tmask, tprop, tyield, tage, tlock, treplace, tappend))
         flush_transitions(acode, sources)
 
     
@@ -1204,12 +1446,45 @@ class WoodstockModel:
         pass
 
     def import_schedule_section(self, filename_suffix='seq'):
-        pass
+        schedule = []
+        n = self.nthemes
+        with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
+            for lnum, l in enumerate(f):
+                if re.match('^\s*(;|$)', l): continue # skip comments and blank lines
+                l = l.lower().strip().partition(';')[0].strip() # strip leading whitespace and trailing comments
+                t = re.split('\s+', l)
+                if len(t) != n + 5: break
+                dtype_key = tuple(t[:n])
+                age = int(t[n])
+                area = float(t[n+1])
+                acode = t[n+2]
+                period = int(t[n+3])
+                condition = t[n+4]
+                schedule.append((dtype_key, age, area, acode, period, condition))
+                if area <= 0: print 'area <= 0', l
+        return schedule
+
+    def apply_schedule(self, schedule):
+        """
+        Assumes schedule in format returned by import_schedule_section().
+        That is: list of (dtype_key, age, area, acode, period, condition) tuples.
+        Also assumes that actions in list are sorted by applied period.
+        """
+        self.reset_actions()
+        self.initialize_areas()
+        _period = 1
+        for dtype_key, age, area, acode, period, condition in schedule:
+            if period > _period:
+                print 'apply_schedule: committing actions for period', _period
+                self.commit_actions(_period)
+            #print 'applying:', [' '.join(dtype_key)], age, area, acode, period, condition
+            self.apply_action(dtype_key, acode, period, age, area, override_operability=True)
+            _period = period
 
     def import_control_section(self, filename_suffix='run'):
         pass
 
-    def grow(self, start_period=0, cascade=True):
+    def grow(self, start_period=1, cascade=True):
         for dt in self.dtypes.values(): dt.grow(start_period, cascade)
 
 if __name__ == '__main__':
