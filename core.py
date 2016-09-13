@@ -85,9 +85,24 @@ class Interpolator(object):
         #     assert False
 
     def lookup(self, y, from_right=False):
+        ##########################################################################
+        # NOTE: This seemed to work fine at first, but breaks badly if y-values
+        #       are not monotonically increasing from left to right...
+        # if not from_right:
+        #     i = bisect_left(self.y, y)
+        #     if i == 0: return self.x[0]
+        #     i -= 1
+        #     if i == self.n - 1: return self.x[-1]
+        #     try:
+        #         return self.x[i] + (y - self.y[i])/self.m[i] if self.m[i] else self.x[i]
+        #     except:
+        #         print i, self.n, self.x, self.y
+        #         raise
+        ##########################################################################
         if not from_right:
-            i = bisect_left(self.y, y)
-            if i == 0: return self.x[0]
+            #_x = self.x[0]
+            for i, x in enumerate(self.x):
+                if self.y[i] > y: break
             i -= 1
             if i == self.n - 1: return self.x[-1]
             try:
@@ -95,6 +110,7 @@ class Interpolator(object):
             except:
                 print i, self.n, self.x, self.y
                 raise
+            return x
         else:
             raise # not implemented yet...
         
