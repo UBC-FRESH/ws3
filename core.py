@@ -12,41 +12,47 @@ except: # "__main__" case
     import common
     import util
 
-class Forest:
-    """
-    Encapsulates the forest system state machine (system state, events, state transitions).
-    """
-    
-    def __init__(self,
-                 startyear,
-                 horizon=common.HORIZON_DEFAULT,
-                 period_length=common.PERIOD_LENGTH_DEFAULT,
-                 description="",
-                 species_groups=common.SPECIES_GROUPS_QC):
-        self.startyear = startyear 
-        self.horizon = horizon
-        self.period_length = period_length
-        self.description = description
-        self._species_groups = species_groups
-        self._strata = {}
-        self._curves = {}
-        self._treatments = {}
-        #self._stands = {} # ?
-        #self._zones = [] # ?
-        #self._stratazones = [] # ?
+
+##################################################
+# not used (delete) [commenting out]
+# class Forest:
+#     """
+#     Encapsulates the forest system state machine (system state, events, state transitions).
+#     """    
+#     def __init__(self,
+#                  startyear,
+#                  horizon=common.HORIZON_DEFAULT,
+#                  period_length=common.PERIOD_LENGTH_DEFAULT,
+#                  description="",
+#                  species_groups=common.SPECIES_GROUPS_QC):
+#         self.startyear = startyear 
+#         self.horizon = horizon
+#         self.period_length = period_length
+#         self.description = description
+#         self._species_groups = species_groups
+#         self._strata = {}
+#         self._curves = {}
+#         self._treatments = {}
+#         #self._stands = {} # ?
+#         #self._zones = [] # ?
+#         #self._stratazones = [] # ?
 
 
-class Treatment:
-    """
-    A state-transition-inducing event.
-    """
-    def __init__(self,
-                 label,
-                 id):
-        self._label = label
-        self._id = id
+##################################################
+# not used (delete) [commenting out]
+# class Treatment:
+#     """
+#     A state-transition-inducing event.
+#     """
+#     def __init__(self,
+#                  label,
+#                  id):
+#         self._label = label
+#         self._id = id
 
-        
+"""
+Used by ``Curve`` class to interpolate between real data points.
+"""
 class Interpolator(object):
     """
     Interpolates x and y values from sparse curve point list.
@@ -129,7 +135,8 @@ class Curve:
                  type=_type_default,
                  is_special=False,
                  period_length=common.PERIOD_LENGTH_DEFAULT,
-                 max_x=common.MAX_AGE_DEFAULT,
+                 xmin=common.MIN_AGE_DEFAULT,
+                 xmin=common.MAX_AGE_DEFAULT,
                  epsilon=common.CURVE_EPSILON_DEFAULT,
                  simplify=True):
         self.label = label
@@ -137,8 +144,9 @@ class Curve:
         self.is_volume = is_volume
         self.type = type
         self.period_length = period_length
-        self.max_x = max_x
-        self.x = xrange(0, max_x+1)
+        self.xmin = xmin
+        self.xmax = xmax
+        self.x = xrange(xmin, max_x+1)
         self.is_special = is_special
         self._y = None
         self.epsilon = epsilon

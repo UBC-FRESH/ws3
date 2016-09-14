@@ -1,3 +1,19 @@
+# -*- coding: utf-8 -*-
+
+"""
+This module contains definitions for global attributes, functions, and classes that might be used anywhere in the package.
+
+Attributes:
+    HORIZON_DEFAULT (int): Default value for ''.
+    PERIOD_LENGTH_DEFAULT (int): Default number of years per period.
+    MIN_AGE_DEFAULT (int): Default value for `core.Curve.xmin`.
+    MAX_AGE_DEFAULT (int): Default value for `core.Curve.xmax`.
+    CURVE_EPSILON_DEFAULT (float): Defalut value for `core.Curve.epsilon`.
+AREA_EPSILON_DEFAULT = 0.01
+    
+"""
+
+
 import time
 import scipy
 import numpy as np
@@ -10,6 +26,7 @@ except:
     import pickle
 import math
 #from math import exp, log
+
 
 def timed(func):
     def wrapper(*args):
@@ -27,113 +44,120 @@ MIN_AGE_DEFAULT = 0
 MAX_AGE_DEFAULT = 100
 CURVE_EPSILON_DEFAULT = 0.01
 AREA_EPSILON_DEFAULT = 0.01
-SPECIES_GROUPS_QC  = {
-    'ERR':'ERR',
-    'ERS':'ERS',
-    'BOP':'BOP',
-    'EPR':'SEP',
-    'CHB':'FTO',
-    'EPN':'SEP',
-    'EPO':'SEP',
-    'BOJ':'BOJ',
-    'PEH':'PEU',
-    'ERA':'ERR',
-    'CAC':'FTO',
-    'ERN':'ERR',
-    'PEG':'PEU',
-    'EPB':'SEP',
-    'CAF':'FTO',
-    'PEB':'PEU',
-    'BOG':'BOP',
-    'SOA':'NCO',
-    'SAL':'NCO',
-    'SAB':'SAB',
-    'PIB':'PIN',
-    'PIG':'SEP',
-    'PRU':'AUR',
-    'PET':'PEU',
-    'CET':'FTO',
-    'PRP':'NCO',
-    'PIR':'PIN',
-    'PIS':'SEP',
-    'PED':'PEU',
-    'FRA':'FTO',
-    'CHE':'FTO',
-    'CHG':'FTO',
-    'FRN':'FTO',
-    'THO':'AUR',
-    'CHR':'FTO',
-    'FRP':'FTO',
-    'TIL':'FTO',
-    'MEL':'AUR',
-    'ORT':'FTO',
-    'ORR':'FTO',
-    'MEH':'AUR',
-    'NOC':'FTO',
-    'HEG':'HEG',
-    'OSV':'FTO',
-    'ORA':'FTO'
-}
 
-SPECIES_GROUPS_WOODSTOCK_QC  = {
-    'ERR':'ERR',
-    'ERS':'ERS',
-    'BOP':'BOP',
-    'EPR':'SEP',
-    'CHB':'FTO',
-    'EPN':'SEP',
-    'EPO':'SEP',
-    'BOJ':'BOJ',
-    'PEH':'PEU',
-    'ERA':'ERR',
-    'CAC':'FTO',
-    'ERN':'ERR',
-    'PEG':'PEU',
-    'EPB':'SEP',
-    'CAF':'FTO',
-    'PEB':'PEU',
-    'BOG':'BOP',
-    'SOA':'NCO',
-    'SAL':'NCO',
-    'SAB':'SAB',
-    'PIB':'PIN',
-    'PIG':'SEP',
-    'PRU':'AUR',
-    'PET':'PEU',
-    'CET':'FTO',
-    'PRP':'NCO',
-    'PIR':'PIN',
-    'PIS':'SEP',
-    'PED':'PEU',
-    'FRA':'FTO',
-    'CHE':'FTO',
-    'CHG':'FTO',
-    'FRN':'FTO',
-    'THO':'AUR',
-    'CHR':'FTO',
-    'FRP':'FTO',
-    'TIL':'FTO',
-    'MEL':'AUR',
-    'ORT':'FTO',
-    'ORR':'FTO',
-    'MEH':'AUR',
-    'NOC':'FTO',
-    'HEG':'HEG',
-    'OSV':'FTO',
-    'ORA':'FTO'
-}
+##################################################
+# not used (delete) [commenting out]
+# SPECIES_GROUPS_QC  = {
+#     'ERR':'ERR',
+#     'ERS':'ERS',
+#     'BOP':'BOP',
+#     'EPR':'SEP',
+#     'CHB':'FTO',
+#     'EPN':'SEP',
+#     'EPO':'SEP',
+#     'BOJ':'BOJ',
+#     'PEH':'PEU',
+#     'ERA':'ERR',
+#     'CAC':'FTO',
+#     'ERN':'ERR',
+#     'PEG':'PEU',
+#     'EPB':'SEP',
+#     'CAF':'FTO',
+#     'PEB':'PEU',
+#     'BOG':'BOP',
+#     'SOA':'NCO',
+#     'SAL':'NCO',
+#     'SAB':'SAB',
+#     'PIB':'PIN',
+#     'PIG':'SEP',
+#     'PRU':'AUR',
+#     'PET':'PEU',
+#     'CET':'FTO',
+#     'PRP':'NCO',
+#     'PIR':'PIN',
+#     'PIS':'SEP',
+#     'PED':'PEU',
+#     'FRA':'FTO',
+#     'CHE':'FTO',
+#     'CHG':'FTO',
+#     'FRN':'FTO',
+#     'THO':'AUR',
+#     'CHR':'FTO',
+#     'FRP':'FTO',
+#     'TIL':'FTO',
+#     'MEL':'AUR',
+#     'ORT':'FTO',
+#     'ORR':'FTO',
+#     'MEH':'AUR',
+#     'NOC':'FTO',
+#     'HEG':'HEG',
+#     'OSV':'FTO',
+#     'ORA':'FTO'
+# }
 
+##################################################
+# not used (delete) [commenting out]
+# SPECIES_GROUPS_WOODSTOCK_QC  = {
+#     'ERR':'ERR',
+#     'ERS':'ERS',
+#     'BOP':'BOP',
+#     'EPR':'SEP',
+#     'CHB':'FTO',
+#     'EPN':'SEP',
+#     'EPO':'SEP',
+#     'BOJ':'BOJ',
+#     'PEH':'PEU',
+#     'ERA':'ERR',
+#     'CAC':'FTO',
+#     'ERN':'ERR',
+#     'PEG':'PEU',
+#     'EPB':'SEP',
+#     'CAF':'FTO',
+#     'PEB':'PEU',
+#     'BOG':'BOP',
+#     'SOA':'NCO',
+#     'SAL':'NCO',
+#     'SAB':'SAB',
+#     'PIB':'PIN',
+#     'PIG':'SEP',
+#     'PRU':'AUR',
+#     'PET':'PEU',
+#     'CET':'FTO',
+#     'PRP':'NCO',
+#     'PIR':'PIN',
+#     'PIS':'SEP',
+#     'PED':'PEU',
+#     'FRA':'FTO',
+#     'CHE':'FTO',
+#     'CHG':'FTO',
+#     'FRN':'FTO',
+#     'THO':'AUR',
+#     'CHR':'FTO',
+#     'FRP':'FTO',
+#     'TIL':'FTO',
+#     'MEL':'AUR',
+#     'ORT':'FTO',
+#     'ORR':'FTO',
+#     'MEH':'AUR',
+#     'NOC':'FTO',
+#     'HEG':'HEG',
+#     'OSV':'FTO',
+#     'ORA':'FTO'
+# }
+
+##################################################
+# not used (delete) [commenting out]
 ##########################################
 # keys correspond to bin labels
 # values correspond to bin upper bounds (inclusive)
-AGE_CLASS_BINS_DEFAULT = {
-    '10':20,
-    '30':40,
-    '50':60,
-    '70':80,
-    '90':100,
-    '120+':MAX_AGE_DEFAULT
-}
+# AGE_CLASS_BINS_DEFAULT = {
+#     '10':20,
+#     '30':40,
+#     '50':60,
+#     '70':80,
+#     '90':100,
+#     '120+':MAX_AGE_DEFAULT
+# }
 ##########################################
     
 
