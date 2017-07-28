@@ -1,3 +1,4 @@
+import sys
 import re
 import copy
 import operator
@@ -610,7 +611,7 @@ class WoodstockModel:
                  horizon=common.HORIZON_DEFAULT,
                  period_length=common.PERIOD_LENGTH_DEFAULT,
                  max_age=common.MAX_AGE_DEFAULT,
-                 species_groups=common.SPECIES_GROUPS_WOODSTOCK_QC,
+                 #species_groups=common.SPECIES_GROUPS_WOODSTOCK_QC, # not used (DELETE) [commenting out]
                  area_epsilon=common.AREA_EPSILON_DEFAULT,
                  curve_epsilon=common.CURVE_EPSILON_DEFAULT):
                  #vp_ratio=_vp_ratio_default,
@@ -624,7 +625,7 @@ class WoodstockModel:
         self.period_length = period_length
         self.max_age = max_age
         self.ages = range(max_age+1)
-        self._species_groups = species_groups
+        #self._species_groups = species_groups # Not used (DELETE) [commenting out]
         self.yields = []
         self.ynames = set()
         self.actions = {}
@@ -798,6 +799,11 @@ class WoodstockModel:
                         result += eval(_expr) * aaa[0]
                     except ZeroDivisionError:
                         pass # let this one go...
+                    except:
+                        print("Unexpected error:", sys.exc_info()[0])
+                        print "evaluating expression '%s' for case:" % ' '.join(_tokens), period, [' '.join(dtk)], _acode, _age
+                        raise
+
             #print _acode, 'keep', keep, 'skip', skip
         return result
         
@@ -1279,7 +1285,7 @@ class WoodstockModel:
                 _c = lambda y: self.register_curve(core.Curve(y,
                                                               points=c[y],
                                                               type='t',
-                                                              max_x=self.horizon))
+                                                              xmax=self.horizon))
                 ycomps = [(y, _c(y)) for y in n]
             else: # complex ycomps
                 ycomps = [(y, c[y]) for y in n]
@@ -1555,6 +1561,7 @@ class WoodstockModel:
         That is: list of (dtype_key, age, area, acode, period, condition) tuples.
         Also assumes that actions in list are sorted by applied period.
         """
+        if max_period is None: max_period = self.horizon
         self.reset_actions()
         self.initialize_areas()
         _period = 1

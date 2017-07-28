@@ -47,103 +47,103 @@ AREA_EPSILON_DEFAULT = 0.01
 
 ##################################################
 # not used (delete) [commenting out]
-# SPECIES_GROUPS_QC  = {
-#     'ERR':'ERR',
-#     'ERS':'ERS',
-#     'BOP':'BOP',
-#     'EPR':'SEP',
-#     'CHB':'FTO',
-#     'EPN':'SEP',
-#     'EPO':'SEP',
-#     'BOJ':'BOJ',
-#     'PEH':'PEU',
-#     'ERA':'ERR',
-#     'CAC':'FTO',
-#     'ERN':'ERR',
-#     'PEG':'PEU',
-#     'EPB':'SEP',
-#     'CAF':'FTO',
-#     'PEB':'PEU',
-#     'BOG':'BOP',
-#     'SOA':'NCO',
-#     'SAL':'NCO',
-#     'SAB':'SAB',
-#     'PIB':'PIN',
-#     'PIG':'SEP',
-#     'PRU':'AUR',
-#     'PET':'PEU',
-#     'CET':'FTO',
-#     'PRP':'NCO',
-#     'PIR':'PIN',
-#     'PIS':'SEP',
-#     'PED':'PEU',
-#     'FRA':'FTO',
-#     'CHE':'FTO',
-#     'CHG':'FTO',
-#     'FRN':'FTO',
-#     'THO':'AUR',
-#     'CHR':'FTO',
-#     'FRP':'FTO',
-#     'TIL':'FTO',
-#     'MEL':'AUR',
-#     'ORT':'FTO',
-#     'ORR':'FTO',
-#     'MEH':'AUR',
-#     'NOC':'FTO',
-#     'HEG':'HEG',
-#     'OSV':'FTO',
-#     'ORA':'FTO'
-# }
+SPECIES_GROUPS_QC  = {
+    'ERR':'ERR',
+    'ERS':'ERS',
+    'BOP':'BOP',
+    'EPR':'SEP',
+    'CHB':'FTO',
+    'EPN':'SEP',
+    'EPO':'SEP',
+    'BOJ':'BOJ',
+    'PEH':'PEU',
+    'ERA':'ERR',
+    'CAC':'FTO',
+    'ERN':'ERR',
+    'PEG':'PEU',
+    'EPB':'SEP',
+    'CAF':'FTO',
+    'PEB':'PEU',
+    'BOG':'BOP',
+    'SOA':'NCO',
+    'SAL':'NCO',
+    'SAB':'SAB',
+    'PIB':'PIN',
+    'PIG':'SEP',
+    'PRU':'AUR',
+    'PET':'PEU',
+    'CET':'FTO',
+    'PRP':'NCO',
+    'PIR':'PIN',
+    'PIS':'SEP',
+    'PED':'PEU',
+    'FRA':'FTO',
+    'CHE':'FTO',
+    'CHG':'FTO',
+    'FRN':'FTO',
+    'THO':'AUR',
+    'CHR':'FTO',
+    'FRP':'FTO',
+    'TIL':'FTO',
+    'MEL':'AUR',
+    'ORT':'FTO',
+    'ORR':'FTO',
+    'MEH':'AUR',
+    'NOC':'FTO',
+    'HEG':'HEG',
+    'OSV':'FTO',
+    'ORA':'FTO'
+}
 
 ##################################################
 # not used (delete) [commenting out]
-# SPECIES_GROUPS_WOODSTOCK_QC  = {
-#     'ERR':'ERR',
-#     'ERS':'ERS',
-#     'BOP':'BOP',
-#     'EPR':'SEP',
-#     'CHB':'FTO',
-#     'EPN':'SEP',
-#     'EPO':'SEP',
-#     'BOJ':'BOJ',
-#     'PEH':'PEU',
-#     'ERA':'ERR',
-#     'CAC':'FTO',
-#     'ERN':'ERR',
-#     'PEG':'PEU',
-#     'EPB':'SEP',
-#     'CAF':'FTO',
-#     'PEB':'PEU',
-#     'BOG':'BOP',
-#     'SOA':'NCO',
-#     'SAL':'NCO',
-#     'SAB':'SAB',
-#     'PIB':'PIN',
-#     'PIG':'SEP',
-#     'PRU':'AUR',
-#     'PET':'PEU',
-#     'CET':'FTO',
-#     'PRP':'NCO',
-#     'PIR':'PIN',
-#     'PIS':'SEP',
-#     'PED':'PEU',
-#     'FRA':'FTO',
-#     'CHE':'FTO',
-#     'CHG':'FTO',
-#     'FRN':'FTO',
-#     'THO':'AUR',
-#     'CHR':'FTO',
-#     'FRP':'FTO',
-#     'TIL':'FTO',
-#     'MEL':'AUR',
-#     'ORT':'FTO',
-#     'ORR':'FTO',
-#     'MEH':'AUR',
-#     'NOC':'FTO',
-#     'HEG':'HEG',
-#     'OSV':'FTO',
-#     'ORA':'FTO'
-# }
+SPECIES_GROUPS_WOODSTOCK_QC  = {
+    'ERR':'ERR',
+    'ERS':'ERS',
+    'BOP':'BOP',
+    'EPR':'SEP',
+    'CHB':'FTO',
+    'EPN':'SEP',
+    'EPO':'SEP',
+    'BOJ':'BOJ',
+    'PEH':'PEU',
+    'ERA':'ERR',
+    'CAC':'FTO',
+    'ERN':'ERR',
+    'PEG':'PEU',
+    'EPB':'SEP',
+    'CAF':'FTO',
+    'PEB':'PEU',
+    'BOG':'BOP',
+    'SOA':'NCO',
+    'SAL':'NCO',
+    'SAB':'SAB',
+    'PIB':'PIN',
+    'PIG':'SEP',
+    'PRU':'AUR',
+    'PET':'PEU',
+    'CET':'FTO',
+    'PRP':'NCO',
+    'PIR':'PIN',
+    'PIS':'SEP',
+    'PED':'PEU',
+    'FRA':'FTO',
+    'CHE':'FTO',
+    'CHG':'FTO',
+    'FRN':'FTO',
+    'THO':'AUR',
+    'CHR':'FTO',
+    'FRP':'FTO',
+    'TIL':'FTO',
+    'MEL':'AUR',
+    'ORT':'FTO',
+    'ORR':'FTO',
+    'MEH':'AUR',
+    'NOC':'FTO',
+    'HEG':'HEG',
+    'OSV':'FTO',
+    'ORA':'FTO'
+}
 
 ##################################################
 # not used (delete) [commenting out]
@@ -372,11 +372,14 @@ def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
     if treatment_type and cover_type:
         formula = sylv_cred_formula(treatment_type, cover_type)
     assert formula
+    # PaCAL overrides the | operator to implement conditional distributions
     P = pacal.NormalDistr(P_mu, P_sigma) | pacal.Gt(P_min)
     tv = pacal.NormalDistr(tv_mu, tv_sigma) | pacal.Gt(tv_min)
     N = pacal.NormalDistr(N_mu, N_sigma) | pacal.Gt(N_min)
     vp = (tv / N) | pacal.Gt(ps_min)
-    vr = vp + (vp.mean() * (1 - psr))
+    #vr = vp + (vp.mean() * (1 - psr))
+    # truncate again in case psr < 1 (shifts distn to the left)
+    vr = (vp + (vp.mean() * (psr - 1.))) | pacal.Gt(ps_min)  
     f = {1:_sylv_cred_f1,
          2:_sylv_cred_f2,
          3:_sylv_cred_f3,
@@ -386,10 +389,10 @@ def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
          7:_sylv_cred_f7}
     #print ' formula', formula
     if E_fromintegral:
-        # estimate expected value E(f(P, vp)) using PaCAL numerical integration functions (sssssslow!) 
+        # estimate expected value E(f(P, vr, vp)) using PaCAL numerical integration functions (sssssslow!) 
         E = f[formula](P, vr, vp, rv=True)
     else:
-        # estimate expected value E(f(P, vp)) using Monte Carlo simulation (until convergence to E_tol)
+        # estimate expected value E(f(P, vr, vp)) using Monte Carlo simulation (until convergence to E_tol)
         E = 0.
         dE = np.inf
         i = 1
@@ -413,7 +416,7 @@ def sylv_cred_formula(treatment_type, cover_type):
     return 0
 
 
-def piece_size_ratio(treatment_type, cover_type, piece_size_ratios=None):
+def piece_size_ratio(treatment_type, cover_type, piece_size_ratios):
     """
     Assume Action.is_harvest in [0, 1, 2, 3]
     Assume cover_type in ['r', 'm', 'f']
@@ -455,15 +458,18 @@ def harv_cost_rv(tv_mu, tv_sigma, N_mu, N_sigma, psr,
                  partialcut_extracare=False,
                  tv_min=50., N_min=200., ps_min=0.05,
                  E_fromintegral=False, e=0.01, n=1000):
+    # PaCAL overrides the | operator to implement conditional distributions
     tv = pacal.NormalDistr(tv_mu, tv_sigma) | pacal.Gt(tv_min)
     N = pacal.NormalDistr(N_mu, N_sigma) | pacal.Gt(N_min)
     vp = (tv / N) | pacal.Gt(ps_min)
-    vr = vp + (vp.mean() * (1 - psr))
+    #vr = vp + (vp.mean() * (1 - psr))
+    # truncate again in case psr < 1 (shifts distn to the left)
+    vr = (vp + (vp.mean() * (psr - 1.))) | pacal.Gt(ps_min)
     if E_fromintegral:
-        # estimate expected value E(f(P, vp)) using PaCAL numerical integration functions (sssssslow!) 
+        # estimate expected value E(f(vr)) using PaCAL numerical integration functions (sssssslow!) 
         E = harv_cost(vr, is_finalcut, is_toleranthw, rv=True)
     else:
-        # estimate expected value E(f(P, vp)) using Monte Carlo simulation (until convergence to E_tol)
+        # estimate expected value E(f(vr)) using Monte Carlo simulation (until convergence to E_tol)
         E = 0.
         dE = np.inf
         i = 1

@@ -136,7 +136,7 @@ class Curve:
                  is_special=False,
                  period_length=common.PERIOD_LENGTH_DEFAULT,
                  xmin=common.MIN_AGE_DEFAULT,
-                 xmin=common.MAX_AGE_DEFAULT,
+                 xmax=common.MAX_AGE_DEFAULT,
                  epsilon=common.CURVE_EPSILON_DEFAULT,
                  simplify=True):
         self.label = label
@@ -146,7 +146,7 @@ class Curve:
         self.period_length = period_length
         self.xmin = xmin
         self.xmax = xmax
-        self.x = xrange(xmin, max_x+1)
+        self.x = xrange(xmin, xmax+1)
         self.is_special = is_special
         self._y = None
         self.epsilon = epsilon
@@ -204,7 +204,7 @@ class Curve:
         x = list(x)
         y = [float(_y) for _y in y]
         # seems ok... (never tripped the assertion so far)
-        # assert x[0] >= 0 and x[-1] <= self.max_x
+        # assert x[0] >= 0 and x[-1] <= self.xmax
         x_min = x[0]
         if x_min > 0:
             if x_min>1:
@@ -212,8 +212,8 @@ class Curve:
                 y.insert(0, 0.)
             x.insert(0, 0)
             y.insert(0, 0.)
-        if x[-1] < self.max_x:
-            x.append(self.max_x)
+        if x[-1] < self.xmax:
+            x.append(self.xmax)
             y.append(y[-1])
         points = zip(x, y)
         self.interp = Interpolator(points)
@@ -256,7 +256,7 @@ class Curve:
         left_range False: ub lookup from right (widest possible range)
         """
         lb = int(round(self.interp.lookup(lo))) if lo is not None else 0
-        ub = int(round(self.interp.lookup(hi, from_right=not left_range))) if hi is not None else self.max_x
+        ub = int(round(self.interp.lookup(hi, from_right=not left_range))) if hi is not None else self.xmax
         #print self.label, 'lo', lo, 'hi', hi, 'lb', lb, 'ub', ub
         #print self.points()
         points = [(lb, 1), (ub, 1)] if ub > lb else [(lb, 1)]
@@ -264,10 +264,10 @@ class Curve:
             if lb > 1:
                 points.insert(0, (lb-1, 0))
             points.insert(0, (0, 0))
-        if ub < self.max_x:
-            if ub < self.max_x - 1:
+        if ub < self.xmax:
+            if ub < self.xmax - 1:
                 points.append((ub+1, 0))      
-            points.append((self.max_x, 0))
+            points.append((self.xmax, 0))
         if as_bounds: 
             return lb, ub
         else:
@@ -281,7 +281,7 @@ class Curve:
             
     def mai(self):
         try:
-            p = [(0, 0.)] + [(x, self[x]/(float(x)*self.period_length)) for x in xrange(1, self.max_x+1)]
+            p = [(0, 0.)] + [(x, self[x]/(float(x)*self.period_length)) for x in xrange(1, self.xmax+1)]
         except:
             print self.x #[1:]
         return Curve(points=p)
