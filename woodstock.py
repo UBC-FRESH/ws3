@@ -1031,6 +1031,7 @@ class WoodstockModel:
                 value = dt.ycomp(yname)[age]
             if value != 0.:
                 aa[dtype_key][age][1][yname] = value
+	return target_dt
 
     def sylv_cred_formula(self, treatment_type, cover_type):
         if treatment_type == 'ec':
