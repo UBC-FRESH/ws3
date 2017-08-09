@@ -34,6 +34,8 @@ class GreedyAreaSelector:
         key = lambda item: max(item[1])
         odt = sorted(wm.operable_dtypes(acode, period, mask).items(), key=key)
         print ' entering selector.operate()', len(odt), 'operable dtypes'
+        for dtk, ages in odt:
+            print dtk, ages[-1], wm.dtypes[dtk].operable_area(acode, period, ages[-1])
         while target_area > 0 and odt:
             while target_area > 0 and odt:
                 popped = odt.pop()
@@ -53,7 +55,7 @@ class GreedyAreaSelector:
                     assert False
                 if verbose:
                     print ' selector found area', [' '.join(dtk)], acode, period, age, area
-                wm.apply_action(dtk, acode, period, age, area)
+                wm.apply_action(dtk, acode, period, age, area, verbose=verbose)
             odt = sorted(wm.operable_dtypes(acode, period).items(), key=key)
         wm.commit_actions(period, repair_future_actions=True)
         if verbose:
@@ -364,9 +366,10 @@ class DevelopmentType:
                 if _alo is not None: alo = min(_alo, alo)
                 if _ahi is not None: ahi = max(_ahi, ahi)
         if plo > phi:
-            print plo, phi
+            #print plo, phi
             assert plo <= phi # should never explicitly declare infeasible period range...
         for p in range(plo, phi+1):
+            #print alo, ahi
             self.operability[acode][p] = (alo, ahi) if alo <= ahi else None 
                 
     def add_ycomp(self, ytype, yname, ycomp, first_match=True):
@@ -690,7 +693,7 @@ class WoodstockModel:
             dt = self.dtypes[dtk]
             operable_ages = dt.operable_ages(acode, period)
             if operable_ages:
-                result[dt.key] = operable_ages
+                result[dt.key] = [oa for oa in operable_ages if dt.area(period, oa)]
         return result
 
     def inventory(self, period, yname=None, age=None, mask=None):
@@ -879,7 +882,7 @@ class WoodstockModel:
                      compile_sylv_cred=True,
                      compile_harv_cost=True):
         assert area > 0 # stop wasting my time! :)
-        if verbose > 1:
+        if verbose:# > 1:
             print 'applying action', [' '.join(dtype_key)], acode, period, age, area
         dt = self.dtypes[dtype_key]
         ############################################
@@ -931,7 +934,6 @@ class WoodstockModel:
                 if missing_area < self.area_epsilon: return
             return missing_area
         action = self.actions[acode]
-
         #if not dt.actions[acode].is_compiled: dt.compile_action(acode)
         def resolve_replace(dtk, expr):
             # HACK ####################################################################
@@ -953,7 +955,11 @@ class WoodstockModel:
         def resolve_append(dtk, expr):
             assert False # brick wall (deal with this case later, as needed)
         ###########################################################################
+
+        #print 'x', dtype_key, period, age, dt.area(period, age)
         dt.area(period, age, -area)
+        #print 'x', dtype_key, period, age, dt.area(period, age)
+        
         target_dt = []
         for target in dt.transitions[acode, age]:
             tmask, tprop, tyield, tage, tlock, treplace, tappend = target # unpack tuple
@@ -967,13 +973,7 @@ class WoodstockModel:
             dtk = tuple(dtk)
             ###########################################################################
             foo = False
-            #if acode in ['aca', 'acp']: foo = True 
-            #print ' target mask', dtk
             if dtk not in self.dtypes: # new development type (clone source type)
-                fookey = 'gs0062 forp 2 sr0053 fc0069 nat n inc zt0001 na na au2 na na env ev15 na tf5 utr9 na'
-                if ' '.join(dtk) == fookey:
-                    print 'fookey', tage, action.targetage, age
-                    foo = 1
                 self.create_dtype_fromkey(dtk)
             if tyield is not None: # yield-based age definition
                 if foo:
@@ -1212,6 +1212,7 @@ class WoodstockModel:
                 l = l.lower().strip().partition(';')[0] # strip leading whitespace and trailing comments
                 t = re.split('\s+', l)
                 key = tuple(_t for _t in t[1:n+1])
+                #print t
                 age = int(t[n+1])
                 area = float(t[n+2].replace(',', ''))
                 #print l[3:]
@@ -1374,7 +1375,7 @@ class WoodstockModel:
             if l.startswith('*action'): 
                 keyword = 'action'
                 acode = tokens[1]
-                targetage = 0 if tokens[2] == 'Y' else None
+                targetage = 0 if tokens[2] == 'y' else None
                 descr = ' '.join(tokens[3:])
                 lockexempt = '_lockexempt' in tokens
                 self.actions[acode] = Action(acode, targetage, descr, lockexempt)
