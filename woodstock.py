@@ -28,14 +28,21 @@ class GreedyAreaSelector:
                 commit_actions=True, verbose=False):
         """
         Greedily operate on oldest operable age classes.
+<<<<<<< HEAD
+        Returns missing area (i.e., difference between target and operated areas).
+=======
         Return missing area.
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         """
         wm = self.parent
         key = lambda item: max(item[1])
         odt = sorted(wm.operable_dtypes(acode, period, mask).items(), key=key)
         print ' entering selector.operate()', len(odt), 'operable dtypes'
+<<<<<<< HEAD
+=======
         for dtk, ages in odt:
             print dtk, ages[-1], wm.dtypes[dtk].operable_area(acode, period, ages[-1])
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         while target_area > 0 and odt:
             while target_area > 0 and odt:
                 popped = odt.pop()
@@ -55,7 +62,11 @@ class GreedyAreaSelector:
                     assert False
                 if verbose:
                     print ' selector found area', [' '.join(dtk)], acode, period, age, area
+<<<<<<< HEAD
+                wm.apply_action(dtk, acode, period, age, area)
+=======
                 wm.apply_action(dtk, acode, period, age, area, verbose=verbose)
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
             odt = sorted(wm.operable_dtypes(acode, period).items(), key=key)
         wm.commit_actions(period, repair_future_actions=True)
         if verbose:
@@ -63,6 +74,13 @@ class GreedyAreaSelector:
         return target_area
     
 class Action:
+<<<<<<< HEAD
+    """
+    Encapsulates data for an action.
+    """
+    
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
     def __init__(self,
                  code,
                  targetage=None,
@@ -86,13 +104,23 @@ class Action:
     
 class DevelopmentType:
     """
+<<<<<<< HEAD
+    Encapsulates Woodstock development type data (curves, age, area), and provides methods to operate on the data.
+=======
     Encapsulates Woodstock development type (curves, age, area).
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
     """
     _bo = {'AND':operator.and_, '&':operator.and_, 'OR':operator.or_, '|':operator.or_}
     
     def __init__(self,
                  key,
                  parent):
+<<<<<<< HEAD
+        """
+        The key is basically the fully expanded mask (expressed as a tuple of values). The parent is a reference to the WoodstockModel object in which self is embedded.
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         self.key = key
         self.parent = parent
         self._rc = parent.register_curve # shorthand
@@ -118,6 +146,12 @@ class DevelopmentType:
         self.operability = {}
 
     def operable_ages(self, acode, period):
+<<<<<<< HEAD
+        """
+        Finds list of ages at which self is operable, given an action code and period index.
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         if acode not in self.oper_expr: # action not defined for this development type
             return None
         if acode not in self.operability: # action not compiled yet...
@@ -152,7 +186,11 @@ class DevelopmentType:
         
     def operable_area(self, acode, period, age=None, cleanup=True):
         """
+<<<<<<< HEAD
+        Returns 0 if inoperable or no current inventory, operable area given action code and period (and optionally age) index otherwise. If cleanup switch activated (default True) and age specified, deletes the ageclass from the inventory dict if operable area is less than self.parent.area_epsilon. 
+=======
         Returns 0. if inoperable or no current inventory. 
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         """
         if acode not in self.oper_expr: # action not defined for this development type
             return 0.
@@ -179,6 +217,12 @@ class DevelopmentType:
         assert False
                 
     def area(self, period, age=None, area=None, delta=True):
+<<<<<<< HEAD
+        """
+        If area not specified, returns area inventory for period (optionally age), else sets area for period and age. If delta switch active (default True), area value is interpreted as an increment on current inventory.
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         #if area is not None:
         #    print area
         #    assert area > 0
@@ -197,17 +241,41 @@ class DevelopmentType:
                 self._areas[period][age] = area
         
     def resolve_condition(self, yname, lo, hi):
+<<<<<<< HEAD
+        """
+        Find lower and upper ages that correspond to lo and hi values of yname (interpreted as first occurence of yield value, reading curve from left and right, respectively).
+        """
         return [x for x, y in enumerate(self.ycomp(yname)) if y >= lo and y <= hi]
        
     def reset_areas(self, period=None):
+        """
+        Reset areas dict.
+        """
+=======
+        return [x for x, y in enumerate(self.ycomp(yname)) if y >= lo and y <= hi]
+       
+    def reset_areas(self, period=None):
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         periods = self.parent.periods if period is None else [period]
         for period in periods:
             self._areas[period] = dd(float)
 
     def ycomps(self):
+<<<<<<< HEAD
+        """
+        Returns list of yield component keys.
+        """
         return self._ycomps.keys()
             
     def ycomp(self, yname, silent_fail=True):
+        """
+        Returns yield component, given key (default returns None on invalid key).
+        """
+=======
+        return self._ycomps.keys()
+            
+    def ycomp(self, yname, silent_fail=True):
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         if yname in self._ycomps:
             if not self._ycomps[yname]: # complex ycomp not compiled yet
                 self._compile_complex_ycomp(yname)
@@ -280,12 +348,27 @@ class DevelopmentType:
                 raise ValueError('Problem compileing complex yield: %s, %s' % (yname, expression))
             
     def compile_actions(self, verbose=False):
+<<<<<<< HEAD
+        """
+        Compile all actions.
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         for acode in self.oper_expr:
             self.compile_action(acode, verbose)
 
     def compile_action(self, acode, verbose=False):
+<<<<<<< HEAD
+        """
+        Compile action, given action code. 
+        This mostly involves resolving operability expression strings into
+        lower and upper operability limits, defined as (alo, ahi) age pair for each period.
+        Deletes action from self if not operable in any period.
+        """
+=======
         #print 'compiling action'
         #print ' '.join(self.key), acode
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         self.operability[acode] = {}
         for expr in self.oper_expr[acode]:
             self._compile_oper_expr(acode, expr, verbose)
@@ -366,6 +449,17 @@ class DevelopmentType:
                 if _alo is not None: alo = min(_alo, alo)
                 if _ahi is not None: ahi = max(_ahi, ahi)
         if plo > phi:
+<<<<<<< HEAD
+            print plo, phi
+            assert plo <= phi # should never explicitly declare infeasible period range...
+        for p in range(plo, phi+1):
+            self.operability[acode][p] = (alo, ahi) if alo <= ahi else None 
+                
+    def add_ycomp(self, ytype, yname, ycomp, first_match=True):
+        """
+        Add yield component.
+        """
+=======
             #print plo, phi
             assert plo <= phi # should never explicitly declare infeasible period range...
         for p in range(plo, phi+1):
@@ -373,6 +467,7 @@ class DevelopmentType:
             self.operability[acode][p] = (alo, ahi) if alo <= ahi else None 
                 
     def add_ycomp(self, ytype, yname, ycomp, first_match=True):
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         if first_match and yname in self._ycomps: return # already exists (reject)
         if ytype == 'c':
             self._complex_ycomps[yname] = ycomp
@@ -381,15 +476,35 @@ class DevelopmentType:
             self._ycomps[yname] = ycomp
     
     def grow(self, start_period=1, cascade=True):
+<<<<<<< HEAD
+        """
+        Grow self (default starting period 1, and cascading to end of planning horizon).
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         end_period = start_period + 1 if not cascade else self.parent.horizon
         for p in range(start_period, end_period):
             self.reset_areas(p+1), self._areas[p], self._areas[p+1]
             for age, area in self._areas[p].items(): self._areas[p+1][age+1] = area
 
     def initialize_areas(self):
+<<<<<<< HEAD
+        """
+        Copy initial inventory to period-1 inventory.
+        """
         self._areas[1] = copy.copy(self._areas[0])
         
 class Output:
+    """
+    Encapsulates data and methods to operate on aggregate outputs from the model.
+    Emulates behaviour of Woodstock outputs.
+    .. warning:: Behaviour of Woodstock outputs is quite complex. This class needs more work before it is used in a production setting (i.e., resolution of some complex output cases is buggy).
+    """
+=======
+        self._areas[1] = copy.copy(self._areas[0])
+        
+class Output:
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
     def __init__(self,
                  parent,
                  code=None,
@@ -599,6 +714,11 @@ class Output:
 class WoodstockModel:
     """
     Interface to import Woodstock models.
+<<<<<<< HEAD
+    Also includes methods to simulate growth, applying actions.
+    Includes methods to query the model post-simulation (i.e., workaround for broken Outputs class).
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
     """
     _ytypes = {'*Y':'a', '*YT':'t', '*YC':'c'}
     tree = (lambda f: f(f))(lambda a: (lambda: dd(a(a))))
@@ -666,18 +786,42 @@ class WoodstockModel:
         #self.total_volume_yname = total_volume_yname
 
     def is_harvest(self, acode):
+<<<<<<< HEAD
+        """
+        Returns True if acode corresponds to a harvesting action.
+        """
+        return self.actions[acode].is_harvest
+        
+    def piece_size(self, dtype_key, age):
+        """
+        Returns piece size, given development type key and age.
+        """
+        return self.dtypes[dtype_key].ycomp(self.piece_size_yname)[age] * self.piece_size_factor
+
+    def dt(self, dtype_key):
+        """
+        Returns development type, given key (returns None on invalid key).
+        """
+=======
         return self.actions[acode].is_harvest
         
     def piece_size(self, dtype_key, age):
         return self.dtypes[dtype_key].ycomp(self.piece_size_yname)[age] * self.piece_size_factor
 
     def dt(self, dtype_key):
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         try:
             return self.dtypes[dtype_key]
         except:
             return None
 
     def age_class_distribution(self, period, mask=None):
+<<<<<<< HEAD
+        """
+        Returns age class distribution (dict of areas, keys on age).
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         result = {age:0. for age in self.ages}
         dtype_keys = self.unmask(mask) if mask else self.dtypes.keys()
         for dtk in dtype_keys:
@@ -687,16 +831,33 @@ class WoodstockModel:
         return result
            
     def operable_dtypes(self, acode, period, mask=None):
+<<<<<<< HEAD
+        """
+        Returns dict (keyed on development type key, values are lists of operable ages).
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         result = {}
         dtype_keys = self.unmask(mask) if mask else self.dtypes.keys()
         for dtk in dtype_keys:
             dt = self.dtypes[dtk]
             operable_ages = dt.operable_ages(acode, period)
             if operable_ages:
+<<<<<<< HEAD
+                result[dt.key] = operable_ages
+        return result
+
+    def inventory(self, period, yname=None, age=None, mask=None):
+        """
+        Flexible method that compiles inventory at given period.
+        Unit of return data defaults to area if yname not given, but takes on unit of yield component otherwise. Can be constrained by age and development type mask.
+        """
+=======
                 result[dt.key] = [oa for oa in operable_ages if dt.area(period, oa)]
         return result
 
     def inventory(self, period, yname=None, age=None, mask=None):
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         result = 0.
         dtype_keys = self.unmask(mask) if mask else self.dtypes.keys()
         for dtk in dtype_keys:
@@ -712,6 +873,12 @@ class WoodstockModel:
         return result
         
     def operable_area(self, acode, period, age=None):
+<<<<<<< HEAD
+        """
+        Returns total operable area, given action code and period (and optionally age).
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         return sum(dt.operable_area(acode, period, age) for dt in self.dtypes.values())
         
     def initialize_areas(self):
@@ -721,6 +888,12 @@ class WoodstockModel:
         for dt in self.dtypes.values(): dt.initialize_areas()
         
     def register_curve(self, curve):
+<<<<<<< HEAD
+        """
+        Add curve to global curve hash map (uses result of Curve.points() to construct hash key). 
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         key = tuple(curve.points())
         if key not in self.curves:
             # new curve (lock and register)
@@ -734,7 +907,14 @@ class WoodstockModel:
     #     """
     #     return dd(self._rdd)   
     
+<<<<<<< HEAD
+    def reset_actions(self, period=None, acode=None):
+        """
+        Resets actions (default resets all periods, all actions, unless period or acode specified).
+        """
+=======
     def reset_actions(self, period=None, acode=None):       
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         if period is None:
             print "resetting actions"
             self.applied_actions = {p:{acode:{} for acode in self.actions.keys()} for p in self.periods}
@@ -764,6 +944,12 @@ class WoodstockModel:
                         dtype_keys=None,
                         age=None,
                         verbose=False):
+<<<<<<< HEAD
+        """
+        Compiles products from applied actions in given period. Parses string expression, which resolves to a single coefficient. Operated area can be filtered on action code, development type key list, and age. Result is product of sum of filtered area and coefficient. 
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         aa = self.applied_actions
         if acode is None:
             acodes = self.actions.keys()
@@ -812,6 +998,12 @@ class WoodstockModel:
         
                 
     def operated_area(self, acode, period, dtype_key=None, age=None):
+<<<<<<< HEAD
+        """
+        Compiles operated area, given action code and period (and optionally list of development type keys or age).
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         aa = self.applied_actions
         acodes = [acode] if not self.actions[acode].components else self.actions[acode].components
         result = 0.
@@ -826,7 +1018,11 @@ class WoodstockModel:
 
     def repair_actions(self, period, areaselector=None):
         """
+<<<<<<< HEAD
+        Attempts to repair the action schedule for given period, using an AreaSelector object (defaults to class-default areaselector, which is a simple greedy oldest-first selector).
+=======
         Attempts to repair the action schedule for given period.
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         """
         if areaselector is None: # use default (greedy) selector
             areaselector = self.areaselector
@@ -857,6 +1053,13 @@ class WoodstockModel:
                      
         
     def commit_actions(self, period=1, repair_future_actions=False, verbose=False):
+<<<<<<< HEAD
+        """
+        Commits applied actions (i.e., apply transitions and grow, default starting at period 1).
+        By default, will attempt to repair broken (infeasible) future actions, attempting to replace infeasiblea operated area using default AreaSelector.  
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         while period < self.horizon:
             if verbose: print 'growing period', period
             self.grow(period, cascade=False)
@@ -878,11 +1081,22 @@ class WoodstockModel:
                      fuzzy_age=True,
                      recourse_enabled=True,
                      areaselector=None,
+<<<<<<< HEAD
+                     verbose=False):
+        """
+        Applies action, given action code, development type, period, age, area.
+        Can optionally override operability limits, optionally use fuzzy age (i.e., attempt to apply action to proximal age class if specified age is not operable), optionally use default AreaSelector to patch missing area (if recourse enabled).
+        Applying an action is a rather complex process, involving testing for operability (JIT-compiling operability expression as required), checking that valid transitions are defined, checking that area is available (possibly using fuzzy age and area selector functions to find missing area), generate list of target development types (from source development type and transition expressions [which may need to be JIT-compiled]), creating new development types (as needed), doing the area accounting correctly (without creating or destroying any area), and compiling the products from the action (which gets a bit complicated in the case of partial cuts...). 
+        """
+        assert area > 0 # stop wasting my time! :)
+        if verbose > 1:
+=======
                      verbose=False,
                      compile_sylv_cred=True,
                      compile_harv_cost=True):
         assert area > 0 # stop wasting my time! :)
         if verbose:# > 1:
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
             print 'applying action', [' '.join(dtype_key)], acode, period, age, area
         dt = self.dtypes[dtype_key]
         ############################################
@@ -934,6 +1148,10 @@ class WoodstockModel:
                 if missing_area < self.area_epsilon: return
             return missing_area
         action = self.actions[acode]
+<<<<<<< HEAD
+
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         #if not dt.actions[acode].is_compiled: dt.compile_action(acode)
         def resolve_replace(dtk, expr):
             # HACK ####################################################################
@@ -955,11 +1173,15 @@ class WoodstockModel:
         def resolve_append(dtk, expr):
             assert False # brick wall (deal with this case later, as needed)
         ###########################################################################
+<<<<<<< HEAD
+        dt.area(period, age, -area)
+=======
 
         #print 'x', dtype_key, period, age, dt.area(period, age)
         dt.area(period, age, -area)
         #print 'x', dtype_key, period, age, dt.area(period, age)
         
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         target_dt = []
         for target in dt.transitions[acode, age]:
             tmask, tprop, tyield, tage, tlock, treplace, tappend = target # unpack tuple
@@ -973,7 +1195,17 @@ class WoodstockModel:
             dtk = tuple(dtk)
             ###########################################################################
             foo = False
+<<<<<<< HEAD
+            #if acode in ['aca', 'acp']: foo = True 
+            #print ' target mask', dtk
             if dtk not in self.dtypes: # new development type (clone source type)
+                fookey = 'gs0062 forp 2 sr0053 fc0069 nat n inc zt0001 na na au2 na na env ev15 na tf5 utr9 na'
+                if ' '.join(dtk) == fookey:
+                    print 'fookey', tage, action.targetage, age
+                    foo = 1
+=======
+            if dtk not in self.dtypes: # new development type (clone source type)
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
                 self.create_dtype_fromkey(dtk)
             if tyield is not None: # yield-based age definition
                 if foo:
@@ -1031,9 +1263,18 @@ class WoodstockModel:
                 value = dt.ycomp(yname)[age]
             if value != 0.:
                 aa[dtype_key][age][1][yname] = value
+<<<<<<< HEAD
+
+    def sylv_cred_formula(self, treatment_type, cover_type):
+        """
+        Select correct sylviculture credit formula, given treatment type and cover type.
+        .. warning:: This only works for Quebec!
+        """
+=======
 	return target_dt
 
     def sylv_cred_formula(self, treatment_type, cover_type):
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         if treatment_type == 'ec':
             return 1 if cover_type.lower() in ['r', 'm'] else 2
         if treatment_type == 'cj':
@@ -1044,6 +1285,13 @@ class WoodstockModel:
 
             
     def create_dtype_fromkey(self, key):
+<<<<<<< HEAD
+        """
+        Creates a new development type, given a key (checks for existing, auto-assigns yield compompontents, auto-assign actions and transitions, checks for operability (filed under inoperable if applicable).
+        """
+        
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         assert key not in self.dtypes # should not be creating new dtypes from existing key
         dt = DevelopmentType(key, self)
         self.dtypes[key] = dt
@@ -1171,12 +1419,24 @@ class WoodstockModel:
         
     @timed
     def import_outputs_section(self, filename_suffix='out'):
+<<<<<<< HEAD
+        """
+        Imports OUTPUTS section from a Woodstock model.
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             s = f.read()
         self._resolve_outputs_buffer(s)
             
     @timed
     def import_landscape_section(self, filename_suffix='lan'):
+<<<<<<< HEAD
+        """
+        Imports LANDSCAPE section from a Woodstock model.
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             data = f.read()
         _data = re.search(r'\*THEME.*', data, re.M|re.S).group(0) # strip leading junk
@@ -1201,10 +1461,22 @@ class WoodstockModel:
         self.nthemes = len(self._themes)
 
     def theme_basecodes(self, theme_index):
+<<<<<<< HEAD
+        """
+        Return list of base codes, given theme index.
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         return self._themes[theme_index]
         
     @timed    
     def import_areas_section(self, filename_suffix='are', import_empty=False):
+<<<<<<< HEAD
+        """
+        Imports AREAS section from a Woodstock model.
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         n = self.nthemes
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             for l in f:
@@ -1212,7 +1484,10 @@ class WoodstockModel:
                 l = l.lower().strip().partition(';')[0] # strip leading whitespace and trailing comments
                 t = re.split('\s+', l)
                 key = tuple(_t for _t in t[1:n+1])
+<<<<<<< HEAD
+=======
                 #print t
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
                 age = int(t[n+1])
                 area = float(t[n+2].replace(',', ''))
                 #print l[3:]
@@ -1265,6 +1540,13 @@ class WoodstockModel:
 
     @timed                            
     def import_constants_section(self, filename_suffix='con'):
+<<<<<<< HEAD
+        """
+        Imports CONSTANTS section from a Woodstock model.
+        """
+
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             for lnum, l in enumerate(f):
                 if re.match('^\s*(;|$)', l): continue # skip comments and blank lines
@@ -1274,6 +1556,12 @@ class WoodstockModel:
 
     @timed        
     def import_yields_section(self, filename_suffix='yld', verbose=False):
+<<<<<<< HEAD
+        """
+        Imports YIELDS section from a Woodstock model.
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         ###################################################
         # local utility functions #########################
         def flush_ycomps(t, m, n, c):
@@ -1359,6 +1647,13 @@ class WoodstockModel:
 
     @timed        
     def import_actions_section(self, filename_suffix='act'):
+<<<<<<< HEAD
+        """
+        Imports ACTIONS section from a Woodstock model.
+        """
+
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         n = self.nthemes
         actions = {}
         #oper = {}
@@ -1375,7 +1670,11 @@ class WoodstockModel:
             if l.startswith('*action'): 
                 keyword = 'action'
                 acode = tokens[1]
+<<<<<<< HEAD
+                targetage = 0 if tokens[2] == 'Y' else None
+=======
                 targetage = 0 if tokens[2] == 'y' else None
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
                 descr = ' '.join(tokens[3:])
                 lockexempt = '_lockexempt' in tokens
                 self.actions[acode] = Action(acode, targetage, descr, lockexempt)
@@ -1416,6 +1715,12 @@ class WoodstockModel:
         assert False # brick wall (not implemented yet)
 
     def resolve_tmask(self, dt, tmask, treplace, tappend):
+<<<<<<< HEAD
+        """
+        Returns new developement type key (tuple of values, one per theme), given developement type and (treplace, tappend) expressions.
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         key = list(dt.key)
         if treplace:
             key[treplace[0]] = resolve_treplace(dt, treplace[1])
@@ -1447,6 +1752,12 @@ class WoodstockModel:
         
     @timed                        
     def import_transitions_section(self, filename_suffix='trn'):
+<<<<<<< HEAD
+        """
+        Imports TRANSITIONS section from a Woodstock model.
+        """
+=======
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         # local utility function ####################################
         def flush_transitions(acode, sources):
             if not acode: return # nothing to flush on first loop
@@ -1526,6 +1837,35 @@ class WoodstockModel:
 
     
     def import_optimize_section(self, filename_suffix='opt'):
+<<<<<<< HEAD
+        """
+        Imports OPTIMIZE section from a Woodstock model.
+        .. warning:: Not implemented yet.
+        """
+        pass
+
+    def import_graphics_section(self, filename_suffix='gra'):
+        """
+        Imports GRAPHICS section from a Woodstock model.
+        .. warning:: Not implemented yet.
+
+        """
+        pass
+
+    def import_lifespan_section(self, filename_suffix='lif'):
+        """
+        Imports LIFESPAN section from a Woodstock model.
+        .. warning:: Not implemented yet.
+
+        """
+        pass
+
+
+    def import_schedule_section(self, filename_suffix='seq', replace_commas=True, filename_prefix=None):
+        """
+        Imports SCHEDULE section from a Woodstock model.
+        """
+=======
         pass
 
     def import_graphics_section(self, filename_suffix='gra'):
@@ -1538,6 +1878,7 @@ class WoodstockModel:
         pass
 
     def import_schedule_section(self, filename_suffix='seq', replace_commas=True, filename_prefix=None):
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         filename_prefix = self.model_name if filename_prefix is None else filename_prefix
         schedule = []
         n = self.nthemes
@@ -1584,9 +1925,22 @@ class WoodstockModel:
             _period = period
 
     def import_control_section(self, filename_suffix='run'):
+<<<<<<< HEAD
+        """
+        Imports CONTROL section from a Woodstock model.
+        .. warning:: Not implemented yet.
+        """
         pass
 
     def grow(self, start_period=1, cascade=True):
+        """
+        Simulates growth (default startint at period 1 and cascading to the end of the planning horizon).
+        """
+=======
+        pass
+
+    def grow(self, start_period=1, cascade=True):
+>>>>>>> 68a12a6673e8e1ad13b9357329e005ad189c6644
         for dt in self.dtypes.values(): dt.grow(start_period, cascade)
 
 if __name__ == '__main__':
