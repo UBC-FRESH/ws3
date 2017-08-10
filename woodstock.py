@@ -399,16 +399,6 @@ class DevelopmentType:
             self.operability[acode][p] = (alo, ahi) if alo <= ahi else None 
                 
     def add_ycomp(self, ytype, yname, ycomp, first_match=True):
-        """
-        Add yield component.
-        """
-            #print plo, phi
-            assert plo <= phi # should never explicitly declare infeasible period range...
-        for p in range(plo, phi+1):
-            #print alo, ahi
-            self.operability[acode][p] = (alo, ahi) if alo <= ahi else None 
-                
-    def add_ycomp(self, ytype, yname, ycomp, first_match=True):
         if first_match and yname in self._ycomps: return # already exists (reject)
         if ytype == 'c':
             self._complex_ycomps[yname] = ycomp
