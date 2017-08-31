@@ -41,7 +41,7 @@ from scipy.stats import norm
 HORIZON_DEFAULT = 30
 PERIOD_LENGTH_DEFAULT = 5
 MIN_AGE_DEFAULT = 0
-MAX_AGE_DEFAULT = 100
+MAX_AGE_DEFAULT = 1000
 CURVE_EPSILON_DEFAULT = 0.01
 AREA_EPSILON_DEFAULT = 0.01
 
@@ -162,6 +162,9 @@ SPECIES_GROUPS_WOODSTOCK_QC  = {
     
 
 def is_num(s):
+    """
+    Returns True if s is a number.
+    """
     try:
         float(s)
         return True
@@ -355,6 +358,10 @@ def _sylv_cred_f7(P,
 
 
 def sylv_cred(P, vr, vp, formula):
+    """
+    Returns sylviculture credit ($ per hectare), given P (volume harvested per hectare), vr (mean piece size of harvested stems), vp (mean piece size of stand before harvesting), and formula index (1 to 7).
+    Assumes that variables (P, vr, vp) are deterministic.
+    """
     f = {1:_sylv_cred_f1,
          2:_sylv_cred_f2,
          3:_sylv_cred_f3,
@@ -369,6 +376,11 @@ def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
                  treatment_type=None, cover_type=None, formula=None,
                  P_min=20., tv_min=50., N_min=200., ps_min=0.05,
                  E_fromintegral=False, e=0.01, n=1000):
+    """
+    Returns sylviculture credit ($ per hectare), given P (volume harvested per hectare), vr (mean piece size of harvested stems), vp (mean piece size of stand before harvesting), and formula index (1 to 7).
+    Assumes that variables (P, vr, vp) are random variates (returns expected value of function, using PaCAL packages to model random variates, assuming normal distribution for all three variables).
+    Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).
+    """
     if treatment_type and cover_type:
         formula = sylv_cred_formula(treatment_type, cover_type)
     assert formula
@@ -407,6 +419,9 @@ def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
 
 
 def sylv_cred_formula(treatment_type, cover_type):
+    """
+    Returns sylviculture credit formula index, given treatment type and cover type.
+    """
     if treatment_type == 'ec':
         return 1 if cover_type.lower() in ['r', 'm'] else 2
     if treatment_type == 'cj':
@@ -418,6 +433,7 @@ def sylv_cred_formula(treatment_type, cover_type):
 
 def piece_size_ratio(treatment_type, cover_type, piece_size_ratios):
     """
+    Returns piece size ratio.
     Assume Action.is_harvest in [0, 1, 2, 3]
     Assume cover_type in ['r', 'm', 'f']
     Return vr/vp ratio, where
@@ -439,6 +455,10 @@ def harv_cost(piece_size,
               partialcut_extracare=False,              
               A=1.97, B=0.405, C=0.169, D=0.164, E=0.202, F=13.6, G=8.83, K=0.,
               rv=False):
+    """
+    Returns harvest cost, given piece size, treatment type (final cut or not), stand type (tolerant hardwood or not), partialcut "extra care" flag, and a series of regression coefficients (A, B, C, D, E, F, G, K, all with defaults [extracted from MERIS technical documentation; also see Sebastien Lacroix, BMMB]). 
+    Assumes that variables are deterministic.
+    """
     _ifc = float(is_finalcut)
     _ith = float(is_toleranthw)
     _pce = float(partialcut_extracare)
@@ -458,6 +478,11 @@ def harv_cost_rv(tv_mu, tv_sigma, N_mu, N_sigma, psr,
                  partialcut_extracare=False,
                  tv_min=50., N_min=200., ps_min=0.05,
                  E_fromintegral=False, e=0.01, n=1000):
+    """
+    Returns harvest cost, given piece size, treatment type (final cut or not), stand type (tolerant hardwood or not), partialcut "extra care" flag, and a series of regression coefficients (A, B, C, D, E, F, G, K, all with defaults [extracted from MERIS technical documentation; also see Sebastien Lacroix, BMMB]). 
+    Assumes that variables are random variates (returns expected value of function, using PaCAL packages to model random variates, assuming normal distribution for all three variables).
+    Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).
+    """
     # PaCAL overrides the | operator to implement conditional distributions
     tv = pacal.NormalDistr(tv_mu, tv_sigma) | pacal.Gt(tv_min)
     N = pacal.NormalDistr(N_mu, N_sigma) | pacal.Gt(N_min)
@@ -505,40 +530,40 @@ def harv_cost_wec(piece_size,
     return sum(harv_cost(x, is_finalcut, is_toleranthw, **kwargs) * sigma * rv.pdf(x) for x in X)
         
 
-class rvquot_gen(scipy.stats.rv_continuous):
-    def __init__(self, 
-                 locn, scalen, 
-                 locd, scaled,
-                 a=0.,
-                 b=1.,
-                 name='rvquot'):
-        super(rvquot_gen, self).__init__(a=a,b=b,name=name)
-        self.pacal_dist = pacal.NormalDistr(locn, scalen) / pacal.NormalDistr(locd, scaled)
-        self.integral = scipy.integrate.quad(self.f, self.a, self.b)[0]
+# class rvquot_gen(scipy.stats.rv_continuous):
+#     def __init__(self, 
+#                  locn, scalen, 
+#                  locd, scaled,
+#                  a=0.,
+#                  b=1.,
+#                  name='rvquot'):
+#         super(rvquot_gen, self).__init__(a=a,b=b,name=name)
+#         self.pacal_dist = pacal.NormalDistr(locn, scalen) / pacal.NormalDistr(locd, scaled)
+#         self.integral = scipy.integrate.quad(self.f, self.a, self.b)[0]
 
-    def f(self, x):
-        return self.pacal_dist.pdf(x)
+#     def f(self, x):
+#         return self.pacal_dist.pdf(x)
         
-    def _pdf(self, x):
-        return self.f(x)/self.integral
+#     def _pdf(self, x):
+#         return self.f(x)/self.integral
 
 
-class rvquot_gen(scipy.stats.rv_continuous):
-    def __init__(self, 
-                 locn, scalen, 
-                 locd, scaled,
-                 a=0.0,
-                 b=1.0,
-                 name='rvquot',
-                 loc=0.):
-        super(rvquot_gen, self).__init__(a=a,b=b,name=name)
-        self.pacal_dist = pacal.NormalDistr(locn, scalen) / pacal.NormalDistr(locd, scaled)
-        self.loc = loc
-        self.integral = scipy.integrate.quad(self.f, self.a, self.b)[0]
+# class rvquot_gen(scipy.stats.rv_continuous):
+#     def __init__(self, 
+#                  locn, scalen, 
+#                  locd, scaled,
+#                  a=0.0,
+#                  b=1.0,
+#                  name='rvquot',
+#                  loc=0.):
+#         super(rvquot_gen, self).__init__(a=a,b=b,name=name)
+#         self.pacal_dist = pacal.NormalDistr(locn, scalen) / pacal.NormalDistr(locd, scaled)
+#         self.loc = loc
+#         self.integral = scipy.integrate.quad(self.f, self.a, self.b)[0]
         
-    def f(self, x):
-        return self.pacal_dist.pdf(x-self.loc)
+#     def f(self, x):
+#         return self.pacal_dist.pdf(x-self.loc)
         
-    def _pdf(self, x):
-        return self.f(x)/self.integral
+#     def _pdf(self, x):
+#         return self.f(x)/self.integral
 
