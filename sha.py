@@ -158,7 +158,7 @@ class ForestRaster:
                         to_dtk = [t if tmask[i] == '?' else tmask[i] for i, t in enumerate(from_dtk)] 
                         if treplace: to_dtk[treplace[0]] = wm.resolve_replace(from_dtk, treplace[1])
                         to_dtk = tuple(to_dtk)
-                        to_age = wm.resolve_targetage(to_dtk, tyield, tage, acode, verbose=False)
+                        to_age = wm.resolve_targetage(to_dtk, tyield, from_age, tage, acode, verbose=False)
                         result = self.transition_cells_random(from_dtk, from_age, to_dtk, to_age, area, acode, verbose=False)
                         if result: print 'failed', from_dtk, from_age, to_dtk, to_age, area, acode 
                         #if show_progress: fp.value += 1

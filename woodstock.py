@@ -183,7 +183,9 @@ class DevelopmentType:
         
     def operable_area(self, acode, period, age=None, cleanup=True):
         """
-        Returns 0 if inoperable or no current inventory, operable area given action code and period (and optionally age) index otherwise. If cleanup switch activated (default True) and age specified, deletes the ageclass from the inventory dict if operable area is less than self.parent.area_epsilon. 
+        Returns 0 if inoperable or no current inventory, operable area given action code and period 
+        (and optionally age) index otherwise. If cleanup switch activated (default True) and age specified, 
+        deletes the ageclass from the inventory dict if operable area is less than self.parent.area_epsilon. 
         """
         if acode not in self.oper_expr: # action not defined for this development type
             return 0.
@@ -211,7 +213,8 @@ class DevelopmentType:
                 
     def area(self, period, age=None, area=None, delta=True):
         """
-        If area not specified, returns area inventory for period (optionally age), else sets area for period and age. If delta switch active (default True), area value is interpreted as an increment on current inventory.
+        If area not specified, returns area inventory for period (optionally age), else sets area for period and age. 
+        If delta switch active (default True), area value is interpreted as an increment on current inventory.
         """
         #if area is not None:
         #    print area
@@ -220,7 +223,8 @@ class DevelopmentType:
             if age is not None:
                 try:
                     return self._areas[period][age]
-                except:
+                except Exception, e:
+                    print e
                     return 0.
             else: # return total area
                 return sum(self._areas[period][a] for a in self._areas[period])
@@ -858,7 +862,9 @@ class WoodstockModel:
                         age=None,
                         verbose=False):
         """
-        Compiles products from applied actions in given period. Parses string expression, which resolves to a single coefficient. Operated area can be filtered on action code, development type key list, and age. Result is product of sum of filtered area and coefficient. 
+        Compiles products from applied actions in given period. Parses string expression, which resolves to a single coefficient. 
+        Operated area can be filtered on action code, development type key list, and age. Result is product of sum of filtered 
+        area and coefficient. 
         """
         aa = self.applied_actions
         if acode is None:
@@ -990,7 +996,7 @@ class WoodstockModel:
     def resolve_append(self, dtk, expr):
         assert False # brick wall (deal with this case later, as needed)
 
-    def resolve_targetage(self, dtk, tyield, tage, acode, verbose=False):
+    def resolve_targetage(self, dtk, tyield, sage, tage, acode, verbose=False):
         action = self.actions[acode]
         if tyield is not None: # yield-based age definition
             if verbose:
@@ -1005,7 +1011,7 @@ class WoodstockModel:
             targetage = tage
         elif action.targetage is None: # use source age
             if verbose: print 'source age', age
-            targetage = age
+            targetage = sage
         else: # default: age reset to 0
             if verbose: print 'default age reset to 0'
             targetage = 0
@@ -1044,6 +1050,7 @@ class WoodstockModel:
         dt = self.dtypes[dtype_key]
         ############################################
         # TO DO: better error handling... ##########
+        #print dt.oper_expr
         if acode not in dt.oper_expr:
             print 'requested action not defined for development type...'
             print ' ', [' '.join(dtype_key)], acode, period, age, area
@@ -1069,6 +1076,7 @@ class WoodstockModel:
             return 1, None, None
         if dt.area(period, age) - area < self.area_epsilon:
             # tweak area if slightly over or under, so we don't get any accounting drift...
+            #print 'foobar', dt.key, period, age, dt.area(period, age), area
             area = dt.area(period, age)
         missing_area = 0.
         if dt.area(period, age) < area:
@@ -1116,7 +1124,7 @@ class WoodstockModel:
             if dtk not in self.dtypes: # new development type (clone source type)
                 self.create_dtype_fromkey(dtk)
             #print dtk, tyield, tage, acode
-            targetage = self.resolve_targetage(dtk, tyield, tage, acode)
+            targetage = self.resolve_targetage(dtk, tyield, age, tage, acode)
             if foo:
                 print 'creating new dt from', acode, age, [' '.join(dt.key)]
                 print ' new dt', [' '.join(dtk)], period, targetage, area, tprop, area*tprop
@@ -1125,7 +1133,8 @@ class WoodstockModel:
 
         aa = self.applied_actions[period][acode]
         if dtype_key not in aa: aa[dtype_key] = {}
-        if age not in aa[dtype_key]: aa[dtype_key][age] = [0., {}] 
+        if age not in aa[dtype_key]: aa[dtype_key][age] = [0., {}]
+        #print 'foo', area
         aa[dtype_key][age][0] += area
         #if action.partial: # debug only
         #    print 'action.partial', acode, ' '.join(dtype_key) # action.partial
@@ -1171,7 +1180,8 @@ class WoodstockModel:
             
     def create_dtype_fromkey(self, key):
         """
-        Creates a new development type, given a key (checks for existing, auto-assigns yield compompontents, auto-assign actions and transitions, checks for operability (filed under inoperable if applicable).
+        Creates a new development type, given a key (checks for existing, auto-assigns yield compompontents, 
+        auto-assign actions and transitions, checks for operability (filed under inoperable if applicable).
         """        
         assert key not in self.dtypes # should not be creating new dtypes from existing key
         dt = DevelopmentType(key, self)
@@ -1188,31 +1198,12 @@ class WoodstockModel:
                     dt.oper_expr[acode].append(self.oper_expr[acode][mask]) 
             #print 'building transitions for acode', acode, ' '.join(key)
             for mask in self.transitions[acode]:
-                #print ' mask', ' '.join(mask)
-                #foo = False
-                #if acode in ['acp']:
-                    #if mask == tuple('gs0002 forestier 1 sr0087 ? nat o inc ? ? ? ? ? ? ? ? ? ? ? ?'.split(' ')):
-                    #    print acode, ' '.join(mask) # DEBUG
-                    #    foo = True
                 if self.match_mask(mask, key):
-                    #print '  match'
                     for scond in self.transitions[acode][mask]:
-                        #print '   scond', scond, self.resolve_condition(scond, key)
-                        #if foo:
-                        #    print scond
-                        #    print dt.ycomp('yg_s').points()
-                        #    print self.resolve_condition(scond, key)
                         for x in self.resolve_condition(scond, key): 
-                            #if foo:
-                            #    print ' ', x
                             dt.transitions[acode, x] = self.transitions[acode][mask][scond]
         if not dt.transitions:
             self.inoperable_dtypes.append(key)
-            #print 'no transitions', ' '.join(key)
-            #for acode in self.transitions:
-            #    for mask in self.transitions[acode]:
-            #        for scond in self.transitions[acode][mask]:
-            #            print acode, ' '.join(mask), scond
     
     def _resolve_outputs_buffer(self, s, for_flag=None):
         n = self.nthemes
@@ -1507,6 +1498,8 @@ class WoodstockModel:
                         #print yname, data[yname]
         flush_ycomps(ytype, mask, ynames, data)
 
+                    
+            
     #@timed        
     def import_actions_section(self, filename_suffix='act'):
         """
@@ -1744,7 +1737,7 @@ class WoodstockModel:
         missing_area = 0.
         for dtype_key, age, area, acode, period, condition in schedule:
             if period > _period:
-                print 'apply_schedule: committing actions for period', _period, '(missing area %0.1f)' % missing_area
+                #print 'apply_schedule: committing actions for period', _period, '(missing area %0.1f)' % missing_area
                 self.commit_actions(_period)
             if period > max_period: return
             #print 'applying:', [' '.join(dtype_key)], age, area, acode, period, condition
