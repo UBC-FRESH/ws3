@@ -174,7 +174,7 @@ class DevelopmentType:
                 return False # never operable
         if period not in self.operability[acode]:
             print acode, period
-            assert False
+            #assert False
             return False
         else:
             lo, hi = self.operability[acode][period]
