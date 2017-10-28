@@ -36,12 +36,12 @@ AREA_EPSILON_DEFAULT = 0.01
     
 """
 
-
 import time
 import scipy
 import numpy as np
 import pacal
-
+import rasterio
+import hashlib
 
 try:
     import cPickle as pickle
@@ -49,6 +49,98 @@ except:
     import pickle
 import math
 #from math import exp, log
+
+def clean_stand_shapefile(shp_path, clean_shp_path, prop_names, clean=True, tolerance=10., preserve_topology=True, logfn='clean_stand_shapefile.log', max_records=None):
+    import logging
+    import sys
+    from shapely.geometry import mapping, shape
+    import fiona
+    from collections import OrderedDict
+    logging.basicConfig(filename=logfn, level=logging.INFO)
+    snk1_path = clean_shp_path 
+    snk2_path = clean_shp_path[:-4]+'_error.shp' 
+    with fiona.open(shp_path, 'r') as src:
+        kwds = src.meta
+        kwds['schema']['properties'] = OrderedDict([(pn, src.schema['properties'][pn]) for pn in prop_names])
+        with fiona.open(snk1_path, 'w', **kwds) as snk1, fiona.open(snk2_path, 'w', **kwds) as snk2:
+            n = len(src) if not max_records else max_records
+            for f in src[:n]:
+                try:
+                    g = shape(f['geometry'])
+                    if not g.is_valid:
+                        _g = g.buffer(0)
+                        assert _g.is_valid
+                        assert _g.geom_type == 'Polygon'
+                        g = _g
+                    g = g.simplify(tolerance=tolerance, preserve_topology=True)
+                    f['geometry'] = mapping(g)
+                    f.update(properties = OrderedDict([(pn, f['properties'][pn]) for pn in prop_names]))
+                    snk1.write(f)
+                except Exception, e: # log exception and write uncleanable feature a separate shapefile
+                    assert False
+                    logging.exception("Error cleaning feature %s:", f['id'])
+                    snk2.write(f)
+    return snk1_path, snk2_path
+
+
+def rasterize_stands(shp_path, theme_cols, age_col, rst_path=None, d=100., dtype=rasterio.uint32, compress='lzw', round_coords=True):
+    import fiona
+    from rasterio.features import rasterize
+    if dtype == rasterio.uint32: 
+        nbytes = 4
+    else:
+        raise TypeError('Data type not implemented: %s' % dtype)
+    src = fiona.open(shp_path, 'r')
+    b = src.bounds #(x_min, y_min, x_max, y_max)
+    w, h = b[2] - b[0], b[3] - b[1]
+    m, n = int((h - (h%d) + d) / d), int((w - (w%d) + d) /  d)
+    W = b[0] - (b[0]%d) if round_coords else b[0]
+    N = b[1] - (b[1]%d) +d*m if round_coords else b[1] + d*m
+    transform = rasterio.transform.from_origin(W, N, d, d)
+    hdt = {}
+    shapes = [[], []]
+    for f in src:
+        dt = tuple(f['properties'][t] for t in theme_cols)
+        shapes[0].append((f['geometry'], hash_dt(dt, dtype, nbytes))) # themes
+        shapes[1].append((f['geometry'], np.uint32(f['properties'][age_col]))) # age
+    rst_path = shp_path[:-4]+'.tiff' if not rst_path else rst_path
+    kwargs = {'out_shape':(m, n), 'transform':transform, 'dtype':dtype, 'fill':0}
+    r = np.stack([rasterize(s, **kwargs) for s in shapes])
+    kwargs = {'driver':'GTiff', 
+              'width':n, 
+              'height':m, 
+              'count':2, 
+              'crs':src.crs,
+              'transform':transform,
+              'dtype':dtype,
+              'nodata':0,
+              'compress':compress}
+    with rasterio.open(rst_path, 'w', **kwargs) as snk:
+        snk.write(r[0], indexes=1)
+        snk.write(r[1], indexes=2)
+        
+
+def hash_dt(dt, dtype=rasterio.uint32, nbytes=4):
+    s = '.'.join(map(str, dt))
+    d = hashlib.md5(s).digest() # first n bytes of md5 digest
+    return np.dtype(dtype).type(int(d[:nbytes].encode('hex'), 16))
+
+
+def warp_raster(src, dst_path, dst_crs={'init':'EPSG:4326'}):
+    from rasterio.warp import calculate_default_transform, reproject
+    from rasterio.enums import Resampling
+    dst_t, dst_w, dst_h = calculate_default_transform(src.crs, dst_crs, src.width, src.height, *src.bounds)
+    profile = src.profile.copy()
+    profile.update({'crs':dst_crs, 'transform':dst_t, 'width':dst_w, 'height':dst_h})
+    with rasterio.open(dst_path, 'w', **profile) as dst:
+        for i in range(1, src.count+1):
+            reproject(source=rasterio.band(src, i),
+                      destination=rasterio.band(dst, i),
+                      src_transform=src.transform,
+                      src_crs=src.crs,
+                      dst_transform=dst_t,
+                      dst_crs=dst_crs,
+                      resampling=Resampling.nearest)
 
 
 def timed(func):
@@ -590,3 +682,99 @@ def harv_cost_wec(piece_size,
 #     def _pdf(self, x):
 #         return self.f(x)/self.integral
 
+
+class Node:
+    def __init__(self, nid, data=None, parent=None):
+        self.nid = nid
+        self._data = data
+        self._parent = parent
+        self._children = []
+
+    def is_root(self):
+        return self._parent is None
+
+    def is_leaf(self):
+        return not self._children
+
+    def add_child(self, child):
+        self._children.append(child)
+
+    def parent(self):
+        return self._parent
+
+    def children(self):
+        return self._children
+    
+    def data(self, key=None):
+        if key:
+            return self._data[key]
+        else:
+            return self._data # if not self.is_root() else None
+
+#from graphviz import Digraph        
+class Tree:   
+    def __init__(self, period=1):
+        self._period = period
+        self._nodes = [Node(0)]
+        self._path = [self._nodes[0]]
+
+    def children(self, nid):
+        return [self._nodes[cid] for cid in self._nodes[nid].children()]
+        
+    def nodes(self):
+        return self._nodes
+
+    def node(self, nid):
+        return self._nodes[nid]
+    
+    def add_node(self, data, parent=None):
+        n = Node(len(self._nodes), data, parent)
+        self._nodes.append(n)
+        return n
+
+    def grow(self, data):
+        parent = self._path[-1]
+        child = self.add_node(data, parent=parent.nid)
+        parent.add_child(child.nid)
+        self._path.append(child)
+        return child
+        
+    def ungrow(self):
+        self._path.pop()
+        
+    def leaves(self):
+        return [n for n in self._nodes if n.is_leaf()]
+    
+    def root(self):
+        return self._nodes[0]
+    
+    #def path(self):
+    #    return self._path
+    
+    #def period(self):
+    #    return len(self._path) - 1
+
+    def path(self, leaf=None):
+        if not leaf: return self._path[1:]
+        path = []
+        n = leaf
+        while not (n.is_root()):
+            path.append(n)
+            parent = self.node(n.parent())
+            n=parent
+        path.reverse()
+        return tuple(path)
+    
+    def paths(self):
+        return [self.path(leaf) for leaf in self.leaves()]
+    
+    #def draw(self):
+    #    graph = Digraph()
+    #    for n in self.nodes():
+    #        print n.data()
+    #        graph.node(str(n.nid), n.data())
+    #    for n in self.nodes():
+    #        for c in self.children(n.nid):
+    #            graph.edge(str(n.nid), str(c.nid))
+    #    graph.graph_attr.update(size='10,10')
+    #    return graph

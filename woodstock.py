@@ -22,11 +22,18 @@
 # SOFTWARE.
 ###################################################################################
 
+"""
+This module implements functions for building and running wood supply simulation
+models, using Woodstock input file format.
+"""
+
+import math
 import sys
 import re
 import copy
 import operator
 import random
+import itertools
 from itertools import chain
 _cfi = chain.from_iterable
 from collections import defaultdict as dd
@@ -34,12 +41,15 @@ from collections import defaultdict as dd
 try:
     from . import common
     from . import core
+    from . import opt
 except: # "__main__" case
     import common
     import core
+    import opt
 from common import timed
     
 #_mad = common.MAX_AGE_DEFAULT
+
 
 class GreedyAreaSelector:
     """
@@ -93,7 +103,6 @@ class Action:
                  targetage=None,
                  descr='',
                  lockexempt=False,
-                 #oper_expr='',
                  components=None,
                  partial=None):
         self.code = code
@@ -102,7 +111,6 @@ class Action:
         self.lockexempt = lockexempt
         self.oper_a = None 
         self.oper_p = None
-        #self.oper_expr = oper_expr
         self.components = components or []
         self.partial = partial or []
         self.is_compiled = False
@@ -160,25 +168,22 @@ class DevelopmentType:
             lo, hi = self.operability[acode][period]
             return list(set(range(lo, hi+1)).intersection(self._areas[period].keys()))        
     
-    def is_operable(self, acode, period, age=None):
+    def is_operable(self, acode, period, age=None, verbose=False):
         """
         Test hypothetical operability.
         Does not imply that there is any operable area in current inventory.
         """
         if acode not in self.oper_expr: # action not defined for this development type
-            print self.oper_expr
+            if verbose: print 'acode operability undefined', acode, self.oper_expr
             return False
         if acode not in self.operability: # action not compiled yet...
             if self.compile_action(acode) == -1:
-                print 'never operable', acode
+                if verbose: print 'never operable', acode
                 return False # never operable
         if period not in self.operability[acode]:
-            print acode, period
-            #assert False
             return False
         else:
             lo, hi = self.operability[acode][period]
-            #print 'is_operable', acode, period, age, hi, lo
             return age >= lo and age <= hi
         
     def operable_area(self, acode, period, age=None, cleanup=True):
@@ -455,7 +460,9 @@ class Output:
     """
     Encapsulates data and methods to operate on aggregate outputs from the model.
     Emulates behaviour of Woodstock outputs.
-    .. warning:: Behaviour of Woodstock outputs is quite complex. This class needs more work before it is used in a production setting (i.e., resolution of some complex output cases is buggy).
+    .. warning:: Behaviour of Woodstock outputs is quite complex. 
+    This class needs more work before it is used in a production setting 
+    (i.e., resolution of some complex output cases is buggy).
     """
     def __init__(self,
                  parent,
@@ -549,7 +556,7 @@ class Output:
             t = t[self.parent.nthemes:] # pop
         #try:
         #print expression
-        self._dtype_keys = self.parent.unmask(mask) if mask else self.parent.dtypes.keys()
+        #self._dtype_keys = self.parent.unmask(mask) if mask else self.parent.dtypes.keys()
         #except:
         #    print expression
         #    assert False
@@ -592,7 +599,7 @@ class Output:
             acodes = [acode for acode in self._invent_acodes if parent.applied_actions[period][acode]]
             if cut_corners and not acodes:
                 return 0. # area will be 0...
-        for k in self._dtype_keys:
+        for k in self.parent.dtypes.keys():
             dt = self.parent.dtypes[k]
             if cut_corners and not self._is_invent and k not in self.parent.applied_actions[period][self._acode]:
                 if verbose: print 'bailing on', period, self._acode, ' '.join(k)
@@ -733,7 +740,191 @@ class WoodstockModel:
         #self.piece_size_yname = piece_size_yname
         #self.piece_size_factor = piece_size_factor
         #self.total_volume_yname = total_volume_yname
+        self._problems = {}
 
+    def compile_schedule(self, problem, formulation=1, skip_null='null'):
+        cmp_sch_dsp = {1:self._cmp_sch_m1, 2:self._cmp_sch_m2}
+        return cmp_sch_dsp[formulation](problem, skip_null)
+
+    def _cmp_sch_m1(self, problem, skip_null):
+        _sch = [[] for t in self.periods]
+        sln = problem.solution()
+        for i, tree in problem.trees.items():
+            for path in tree.paths():
+                x = 'x_%i' % hash((i, tuple(n.data('acode') for n in path)))
+                if not sln[x]: continue
+                for t, n in enumerate(path):
+                    d = n.data()
+                    if skip_null and d['acode'] == skip_null: continue
+                    #print 'sch', i, d['dtk'], d['period'], d['acode'], d['age'], d['area'], '%0.1f' % (d['area'] * sln[x])
+                    etype = '_existing' if self.dt(i[0]).area(0) else '_future'
+                    _sch[t].append((d['dtk'], d['age'], d['area'] * sln[x], d['acode'], d['period'], etype))
+                    #_sch[t].append((d['dtk'], d['age'], d['area'] * 1., d['acode'], d['period'], etype))
+        return list(itertools.chain.from_iterable(_sch))
+                
+    def _cmp_sch_m2(self, problem):
+        pass
+
+    def add_problem(self, name, coeff_funcs, cflw_e, cgen_data=None,
+                    solver=opt.SOLVR_GUROBI, formulation=1):
+        bld_p_dsp = {1:self._bld_p_m1, 2:self._bld_p_m2}
+        #cmp_z_dsp = {1:self._cmp_z_m1, 2:self._cmp_z_m2}
+        cmp_cflw_dsp = {1:self._cmp_cflw_m1, 2:self._cmp_cflw_m2}
+        cmp_cgen_dsp = {1:self._cmp_cgen_m1, 2:self._cmp_cgen_m2}
+        assert formulation == 1 # only support Model I formulations for now
+        p = bld_p_dsp[formulation](name, coeff_funcs, solver) # build problem
+        ##cmp_z_dsp[formulation](p, coeff) # compile objective function
+        cmp_cflw_dsp[formulation](p, cflw_e) # compile flow constraints
+        cmp_cgen_dsp[formulation](p, cgen_data) # compile general constraints
+        return p
+    
+    def _bld_p_m1(self, name, coeff_funcs, solver, z_coeff_key='z'):
+        """
+        Builds optimization problem, using Model I (m1) formulation.
+        Each column (variable) of the matrix represents a "prescription"
+        (i.e., a feasible sequence of actions, one per period, including the null action).
+        Variables x_ij are linear, bounded by 0 and 1, and represent proportion of a zone i
+        on which prescription j is applied.
+        Coverage constraints ensure that each zone i is fully covered by one or more prescriptions.
+        """
+        p = opt.Problem(name, sense=opt.SENSE_MAXIMIZE, solver=solver)
+        p.formulation = 1
+        self._problems[name] = p
+        p.trees, p._vars = self._gen_vars_m1(coeff_funcs)
+        for i, tree in p.trees.items(): 
+            cname = 'cov_%i' % hash(i)
+            coeffs = {'x_%i' % hash((i, tuple(n.data('acode') for n in path))):1. for path in tree.paths()}
+            p.add_constraint(name=cname, coeffs=coeffs, sense=opt.SENSE_EQ, rhs=1.)
+            for path in tree.paths():
+                p._z['x_%i' % hash((i, tuple(n.data('acode') for n in path)))] = path[-1].data(z_coeff_key)
+        return p
+            
+    def _bld_p_m2(self, problem):
+        pass # not implemented
+        
+    def _cmp_cgen_m1(self, problem, cgen_data):
+        mu = {t:{o:{} for o in cgen_data.keys()} for t in self.periods}
+        for i, tree in problem.trees.items():
+            for path in tree.paths():
+                j = tuple(n.data('acode') for n in path)
+                for o in cgen_data.keys():
+                    _mu = path[-1].data(o) 
+                    for t in self.periods:
+                        mu[t][o][i, j] = _mu[t] if t in _mu else 0. 
+        for o, b in cgen_data.items():
+            for t in self.periods:
+                _mu = {'x_%i' % hash((i, j)):mu[t][o][i, j] for i, j in mu[t][o]}
+                problem.add_constraint(name='gen-lb_%i_%s' % (t, o), coeffs=_mu, sense=opt.SENSE_GEQ, rhs=b['lb'][t])
+                problem.add_constraint(name='gen-ub_%i_%s' % (t, o), coeffs=_mu, sense=opt.SENSE_LEQ, rhs=b['ub'][t])
+        
+
+    def _cmp_cgen_m2(self):
+        pass # not implemented
+
+    
+    def _cmp_cflw_m1(self, problem, cflw_e):
+        """
+        Compiles flow constraints (lb and ub, per targeted output, per targeted period).
+        """
+        mu = {t:{o:{} for o in cflw_e.keys()} for t in self.periods}
+        for i, tree in problem.trees.items():
+            for path in tree.paths():
+                j = tuple(n.data('acode') for n in path)
+                for o in cflw_e.keys():
+                    _mu = path[-1].data(o) 
+                    for t in self.periods:
+                        mu[t][o][i, j] = _mu[t] if t in _mu else 0.
+        for t in self.periods[:]:
+            for o, e in cflw_e.items():
+                #print mu.keys()
+                mu_lb = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 - e) * mu[10][o][i, j]) for i, j in mu[t][o]}
+                mu_ub = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 + e) * mu[10][o][i, j]) for i, j in mu[t][o]}
+                problem.add_constraint(name='flw-lb_%03d_%s' % (t, o), coeffs=mu_lb, sense=opt.SENSE_GEQ, rhs=0.)
+                problem.add_constraint(name='flw-ub_%03d_%s' % (t, o), coeffs=mu_ub, sense=opt.SENSE_LEQ, rhs=0.)
+
+    def _cmp_cflw_m2(self):
+        pass # not implemented
+
+    def _bld_tree_m1(self, area, dtk, age, coeff_funcs, tree=None, period=1, acodes=None):
+        #print 'building tree for', dtk, age
+        #area = self.dt(dtk).area(period, age)
+        tree = common.Tree() if not tree else tree
+        acodes = self.actions.keys() if not acodes else acodes
+        for acode in acodes:
+            #print 'trying', period, dtk, age, acode#, exprs
+            if self.dt(dtk).is_operable(acode, period, age):
+                #print 'applying', acode
+                self.reset_actions(period)
+                if period > 1:
+                    self.dt(dtk).grow(period-1, False)
+                else:
+                    self.dt(dtk).initialize_areas()
+                #area = self.dt(dtk).area(period, age)
+                #assert area
+                errorcode, missingarea, tstate = self.apply_action(dtk, acode, period, age, area)
+                if errorcode:
+                    print 'apply_action error', dtk, acode, period, age, area, errorcode, missingarea, tstate
+                    raise
+                _dtk, tprop, _age = tstate[0]
+                #print ' new state', _dtk, tprop, _age
+                assert tprop == 1. # cannot handle this case yet...
+                #products = {'z':,self.compile_product(period, exprs['z'], acode, dtk, age),
+                #            'cflw':{k:self.compile_product(period, exprs['cflw'][k], acode, dtk, age)
+                #                    for k in exprs['cflw']}} 
+                #p = {k:self.compile_product(period, e, acode, dtk, age)
+                #     for k, e in exprs} if self.is_harvest(acode) else 0.
+                products = None
+                tree.grow({'dtk':dtk, 'acode':acode, 'period':period, 'age':age,
+                           'products':products, 'area':area})
+                if period < self.periods[-1]: # dive deeper (dfs)
+                    #print ' pre-grow new area', self.dt(_dtk).area(period, _age)
+                    self.dt(_dtk).grow(period, False)
+                    #print ' post-grow new area', self.dt(_dtk).area(period+1, _age+1)
+                    #print 'diving', _dtk, _age+1, period+1
+                    self._bld_tree_m1(area, _dtk, _age+1, coeff_funcs, tree, period+1, acodes)
+                elif period == self.periods[-1]: # found leaf
+                    #print 'foo'
+                    path = tree.path()
+                    leaf = path[-1]
+                    assert leaf.is_leaf()
+                    #print leaf.nid, leaf.is_leaf()
+                    leaf._data.update({k:coeff_funcs[k](self, path) for k in coeff_funcs})
+                    #print leaf._data
+                tree.ungrow()
+        return tree
+    
+    def _gen_vars_m1(self, coeff_funcs):
+        trees, vars = {}, {}
+        for dt in self.dtypes.values():
+            for age in dt._areas[1].keys():
+                i = (dt.key, age)
+                #print '_gen_vars_m1', dt.key, age
+                t = trees[i] = self._bld_tree_m1(dt.area(1, age), dt.key, age, coeff_funcs)
+                for path in t.paths():
+                    j = tuple(n.data('acode') for n in path)
+                    vname = 'x_%i' % hash((i, j))
+                    vtype = opt.VTYPE_CONTINUOUS
+                    lb, ub = 0., 1.
+                    vars[vname] = opt.Variable(vname, vtype, lb, ub)
+        return trees, vars
+    
+    def _gen_vars_m2(self):
+        pass
+
+    def add_null_action(self, acode='null', minage=None, maxage=None):
+        mask = tuple(['?' for _ in range(self.nthemes)])
+        oe = '_age >= 0 and _age <= %i' % self.max_age
+        target = [(mask, 1.0, None, None, None, None, None)]
+        self.actions[acode] = Action(acode)
+        self.oper_expr[acode] = {mask:oe}
+        self.transitions[acode] = {mask:{'':target}}
+        for dtk in self.dtypes:
+            self.dtypes[dtk].oper_expr[acode] = [oe]
+            for age in range(self.dtypes[dtk]._max_age):
+                self.dtypes[dtk].transitions[acode, age] = target
+        for p in self.applied_actions:
+            self.applied_actions[p][acode] = {}
+    
     def is_harvest(self, acode):
         """
         Returns True if acode corresponds to a harvesting action.
@@ -780,14 +971,20 @@ class WoodstockModel:
                 result[dt.key] = operable_ages
         return result
 
-    def inventory(self, period, yname=None, age=None, mask=None):
+    def inventory(self, period, yname=None, age=None, mask=None, dtype_keys=None):
         """
         Flexible method that compiles inventory at given period.
-        Unit of return data defaults to area if yname not given, but takes on unit of yield component otherwise. Can be constrained by age and development type mask.
+        Unit of return data defaults to area if yname not given, 
+        but takes on unit of yield component otherwise. 
+        Can be constrained by age and development type mask.
         """
         result = 0.
-        dtype_keys = self.unmask(mask) if mask else self.dtypes.keys()
-        for dtk in dtype_keys:
+        assert not (mask and dtype_keys) # too confusing to allow both to be specified...
+        if mask:
+            _dtype_keys = self.unmask(mask)
+        elif dtype_keys:
+            _dtype_keys = dtype_keys
+        for dtk in _dtype_keys:
             dt = self.dtypes[dtk]
             if yname:
                 ycomp = dt.ycomp(yname)
@@ -860,6 +1057,7 @@ class WoodstockModel:
                         acode=None,
                         dtype_keys=None,
                         age=None,
+                        coeff=False,
                         verbose=False):
         """
         Compiles products from applied actions in given period. Parses string expression, which resolves to a single coefficient. 
@@ -881,6 +1079,7 @@ class WoodstockModel:
             #keep = 0
             #skip = 0
             for dtk in _dtype_keys:
+                #print dtk
                 if dtk not in aa[period][_acode].keys():
                     #skip += 1
                     #if verbose: print len(aa[period][_acode].keys()), dtk 
@@ -889,6 +1088,7 @@ class WoodstockModel:
                 ages = aa[period][_acode][dtk].keys() if age is None else [age]
                 for _age in ages:
                     aaa = aa[period][_acode][dtk][_age]
+                    #print aaa
                     _tokens = []
                     for token in tokens:
                         if token in self.ynames: # found reference to ycomp
@@ -899,9 +1099,10 @@ class WoodstockModel:
                         else:
                             _tokens.append(token)
                     _expr = ' '.join(_tokens)
+                    area = aaa[0] if not coeff else 1.
                     #print "evaluating expression '%s' for case:" % ' '.join(_tokens), [' '.join(dtk)], _acode, _age
                     try:
-                        result += eval(_expr) * aaa[0]
+                        result += eval(_expr) * area
                     except ZeroDivisionError:
                         pass # let this one go...
                     except:
@@ -1083,6 +1284,7 @@ class WoodstockModel:
             # insufficient area in dt to operate (infeasible)
             # apply action to operable area, then look for missing area in adjacent ageclasses
             if dt.area(period, age) > 0: # operate available area before applying recourse
+                print 'insufficient area in dt to operate (infeasible)', dtype_key, period, age
                 self.apply_action(dtype_key, acode, period, age, dt.area(period, age),
                                   False, False, False, None, True)
             missing_area = area - dt.area(period, age)
@@ -1105,7 +1307,7 @@ class WoodstockModel:
         action = self.actions[acode]
         #if not dt.actions[acode].is_compiled: dt.compile_action(acode)
         ###########################################################################
-        dt.area(period, age, -area)
+        #dt.area(period, age, -area) # what is the deal with this stray bit of code?
         target_dt = []
         for target in dt.transitions[acode, age]:
             tmask, tprop, tyield, tage, tlock, treplace, tappend = target # unpack tuple
@@ -1140,7 +1342,7 @@ class WoodstockModel:
         #    print 'action.partial', acode, ' '.join(dtype_key) # action.partial
         #    target_dt = [self.dtypes[dtk] for dtk in target_dtk] # avoid multiple lookups in loop
         for yname in dt.ycomps():
-            #print yname
+            #print 'compiling', period, dt.key, age, yname
             ycomp = dt.ycomp(yname)
             if ycomp.type in ['t', 'c']: continue # only track age-based ycomps for products
             if yname in action.partial:
@@ -1719,15 +1921,16 @@ class WoodstockModel:
                 area = float(t[n+1].replace(',', '')) if replace_commas else float(t[n+1])
                 acode = t[n+2]
                 period = int(t[n+3])
-                condition = t[n+4]
-                schedule.append((dtype_key, age, area, acode, period, condition))
+                etype = t[n+4] if len(t) >= n+4 else ''
+                schedule.append((dtype_key, age, area, acode, period, etype))
                 if area <= 0: print 'area <= 0', l
         return schedule
 
-    def apply_schedule(self, schedule, max_period=None, verbose=False, fail_on_missingarea=False, force_integral_area=False):
+    def apply_schedule(self, schedule, max_period=None, verbose=False, fail_on_missingarea=False, force_integral_area=False,
+                       override_operability=False, fuzzy_age=True, recourse_enabled=True, areaselector=None):
         """
         Assumes schedule in format returned by import_schedule_section().
-        That is: list of (dtype_key, age, area, acode, period, condition) tuples.
+        That is: list of (dtype_key, age, area, acode, period, etype) tuples.
         Also assumes that actions in list are sorted by applied period.
         """
         if max_period is None: max_period = self.horizon
@@ -1735,21 +1938,27 @@ class WoodstockModel:
         self.initialize_areas()
         _period = 1
         missing_area = 0.
-        for dtype_key, age, area, acode, period, condition in schedule:
+        for dtype_key, age, area, acode, period, etype in schedule:
             if period > _period:
-                #print 'apply_schedule: committing actions for period', _period, '(missing area %0.1f)' % missing_area
+                if verbose: print 'apply_schedule: committing actions for period', _period, '(missing area %0.1f)' % missing_area
                 self.commit_actions(_period)
             if period > max_period: return
-            #print 'applying:', [' '.join(dtype_key)], age, area, acode, period, condition
+            #print 'applying:', [' '.join(dtype_key)], age, area, acode, period, etype
             if force_integral_area:
-                area = round(area)
+                #area = round(area)
+                area = math.floor(area)
                 if not area: continue
+            assert not area % 1.
+            #print 'operable area slack', dtype_key, acode, period, age, '%0.3f' % (self.dt(dtype_key).operable_area(acode, period, age) - area)
             e, _aa, _ = self.apply_action(dtype_key,
                                           acode,
                                           period,
                                           age,
                                           area,
-                                          override_operability=True,
+                                          override_operability=override_operability,
+                                          fuzzy_age=fuzzy_age,
+                                          recourse_enabled=recourse_enabled,
+                                          areaselector=areaselector,
                                           verbose=verbose)
             assert not e # crash on error (TO DO: better error handling)
             if isinstance(_aa, float): 
@@ -1757,7 +1966,7 @@ class WoodstockModel:
                     raise
                 else:
                     missing_area += _aa
-            #print 'missing area %0.1f' % missing_area, area
+            if verbose: print 'missing area %0.1f (%0.2f)' % (_aa, _aa/area)
             _period = period
         #self.commit_actions(period)
         return missing_area
@@ -1775,5 +1984,6 @@ class WoodstockModel:
         """
         for dt in self.dtypes.values(): dt.grow(start_period, cascade)
 
+        
 if __name__ == '__main__':
     pass
