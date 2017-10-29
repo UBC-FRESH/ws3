@@ -689,6 +689,7 @@ class WoodstockModel:
                  model_path,
                  horizon=common.HORIZON_DEFAULT,
                  period_length=common.PERIOD_LENGTH_DEFAULT,
+                 #aggr_period_length=common.PERIOD_LENGTH_DEFAULT,
                  max_age=common.MAX_AGE_DEFAULT,
                  #species_groups=common.SPECIES_GROUPS_WOODSTOCK_QC, # not used (DELETE) [commenting out]
                  area_epsilon=common.AREA_EPSILON_DEFAULT,
@@ -702,6 +703,9 @@ class WoodstockModel:
         self.horizon = horizon
         self.periods = range(1, horizon+1)
         self.period_length = period_length
+        #self.aggr_period_length = aggr_period_length
+        #self._period_coeff = float(period_length) / float(aggr_period_length)
+        #assert self._period_coeff <= 1.
         self.max_age = max_age
         self.ages = range(max_age+1)
         #self._species_groups = species_groups # Not used (DELETE) [commenting out]
@@ -766,19 +770,19 @@ class WoodstockModel:
         pass
 
     def add_problem(self, name, coeff_funcs, cflw_e, cgen_data=None,
-                    solver=opt.SOLVR_GUROBI, formulation=1):
+                    solver=opt.SOLVR_GUROBI, formulation=1, z_coeff_key='z', acodes=None):
         bld_p_dsp = {1:self._bld_p_m1, 2:self._bld_p_m2}
         #cmp_z_dsp = {1:self._cmp_z_m1, 2:self._cmp_z_m2}
         cmp_cflw_dsp = {1:self._cmp_cflw_m1, 2:self._cmp_cflw_m2}
         cmp_cgen_dsp = {1:self._cmp_cgen_m1, 2:self._cmp_cgen_m2}
         assert formulation == 1 # only support Model I formulations for now
-        p = bld_p_dsp[formulation](name, coeff_funcs, solver) # build problem
+        p = bld_p_dsp[formulation](name, coeff_funcs, solver, z_coeff_key, acodes) # build problem
         ##cmp_z_dsp[formulation](p, coeff) # compile objective function
         cmp_cflw_dsp[formulation](p, cflw_e) # compile flow constraints
         cmp_cgen_dsp[formulation](p, cgen_data) # compile general constraints
         return p
     
-    def _bld_p_m1(self, name, coeff_funcs, solver, z_coeff_key='z'):
+    def _bld_p_m1(self, name, coeff_funcs, solver, z_coeff_key='z', acodes=None):
         """
         Builds optimization problem, using Model I (m1) formulation.
         Each column (variable) of the matrix represents a "prescription"
@@ -790,7 +794,7 @@ class WoodstockModel:
         p = opt.Problem(name, sense=opt.SENSE_MAXIMIZE, solver=solver)
         p.formulation = 1
         self._problems[name] = p
-        p.trees, p._vars = self._gen_vars_m1(coeff_funcs)
+        p.trees, p._vars = self._gen_vars_m1(coeff_funcs, acodes=acodes)
         for i, tree in p.trees.items(): 
             cname = 'cov_%i' % hash(i)
             coeffs = {'x_%i' % hash((i, tuple(n.data('acode') for n in path))):1. for path in tree.paths()}
@@ -837,15 +841,17 @@ class WoodstockModel:
         for t in self.periods[:]:
             for o, e in cflw_e.items():
                 #print mu.keys()
-                mu_lb = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 - e) * mu[10][o][i, j]) for i, j in mu[t][o]}
-                mu_ub = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 + e) * mu[10][o][i, j]) for i, j in mu[t][o]}
+                #assert False
+                mu_lb = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 - e) * mu[1][o][i, j]) for i, j in mu[t][o]}
+                mu_ub = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 + e) * mu[1][o][i, j]) for i, j in mu[t][o]}
                 problem.add_constraint(name='flw-lb_%03d_%s' % (t, o), coeffs=mu_lb, sense=opt.SENSE_GEQ, rhs=0.)
                 problem.add_constraint(name='flw-ub_%03d_%s' % (t, o), coeffs=mu_ub, sense=opt.SENSE_LEQ, rhs=0.)
 
     def _cmp_cflw_m2(self):
         pass # not implemented
 
-    def _bld_tree_m1(self, area, dtk, age, coeff_funcs, tree=None, period=1, acodes=None):
+    def _bld_tree_m1(self, area, dtk, age, coeff_funcs, tree=None, period=1, acodes=None, compile_c_ycomps=True):
+        #print acodes
         #print 'building tree for', dtk, age
         #area = self.dt(dtk).area(period, age)
         tree = common.Tree() if not tree else tree
@@ -861,13 +867,14 @@ class WoodstockModel:
                     self.dt(dtk).initialize_areas()
                 #area = self.dt(dtk).area(period, age)
                 #assert area
-                errorcode, missingarea, tstate = self.apply_action(dtk, acode, period, age, area)
+                errorcode, missingarea, tstate = self.apply_action(dtk, acode, period, age, area,
+                                                                   compile_c_ycomps=compile_c_ycomps)
                 if errorcode:
                     print 'apply_action error', dtk, acode, period, age, area, errorcode, missingarea, tstate
                     raise
                 _dtk, tprop, _age = tstate[0]
                 #print ' new state', _dtk, tprop, _age
-                assert tprop == 1. # cannot handle this case yet...
+                assert tprop == 1. # cannot handle 'split' case yet...
                 #products = {'z':,self.compile_product(period, exprs['z'], acode, dtk, age),
                 #            'cflw':{k:self.compile_product(period, exprs['cflw'][k], acode, dtk, age)
                 #                    for k in exprs['cflw']}} 
@@ -889,17 +896,18 @@ class WoodstockModel:
                     assert leaf.is_leaf()
                     #print leaf.nid, leaf.is_leaf()
                     leaf._data.update({k:coeff_funcs[k](self, path) for k in coeff_funcs})
+                    #print coeff_funcs['z'](self, path)
                     #print leaf._data
                 tree.ungrow()
         return tree
     
-    def _gen_vars_m1(self, coeff_funcs):
+    def _gen_vars_m1(self, coeff_funcs, acodes=None):
         trees, vars = {}, {}
         for dt in self.dtypes.values():
             for age in dt._areas[1].keys():
                 i = (dt.key, age)
                 #print '_gen_vars_m1', dt.key, age
-                t = trees[i] = self._bld_tree_m1(dt.area(1, age), dt.key, age, coeff_funcs)
+                t = trees[i] = self._bld_tree_m1(dt.area(1, age), dt.key, age, coeff_funcs, acodes=acodes)
                 for path in t.paths():
                     j = tuple(n.data('acode') for n in path)
                     vname = 'x_%i' % hash((i, j))
@@ -1100,7 +1108,7 @@ class WoodstockModel:
                             _tokens.append(token)
                     _expr = ' '.join(_tokens)
                     area = aaa[0] if not coeff else 1.
-                    #print "evaluating expression '%s' for case:" % ' '.join(_tokens), [' '.join(dtk)], _acode, _age
+                    #print "evaluating expression '%s' for case:" % ' '.join(_tokens), [' '.join(dtk)], _acode, _age, 'expr: "%s"' % expr, tokens
                     try:
                         result += eval(_expr) * area
                     except ZeroDivisionError:
@@ -1228,6 +1236,8 @@ class WoodstockModel:
                      fuzzy_age=True,
                      recourse_enabled=True,
                      areaselector=None,
+                     compile_t_ycomps=False,
+                     compile_c_ycomps=False,
                      verbose=False):
         """
         Applies action, given action code, development type, period, age, area.
@@ -1344,7 +1354,10 @@ class WoodstockModel:
         for yname in dt.ycomps():
             #print 'compiling', period, dt.key, age, yname
             ycomp = dt.ycomp(yname)
-            if ycomp.type in ['t', 'c']: continue # only track age-based ycomps for products
+            #print 'ycomp.type: "%s"' % ycomp.type
+            if ycomp.type == 't' and not compile_t_ycomps: continue # skip time-indexed ycomps
+            if ycomp.type == 'c' and not compile_c_ycomps: continue # skip complex ycomps
+            #print 'foo', ycomp[age]
             if yname in action.partial:
                 value = 0.
                 for dtk, tprop, targetage in target_dt:
@@ -1365,7 +1378,9 @@ class WoodstockModel:
                                 print ' ', ''.join(dtk), targetage
                                 print
             else: # not partial
+                #print 'bar'
                 value = dt.ycomp(yname)[age]
+            #print 'value', value
             if value != 0.:
                 aa[dtype_key][age][1][yname] = value
         return 0, missing_area, target_dt
@@ -1926,8 +1941,11 @@ class WoodstockModel:
                 if area <= 0: print 'area <= 0', l
         return schedule
 
-    def apply_schedule(self, schedule, max_period=None, verbose=False, fail_on_missingarea=False, force_integral_area=False,
-                       override_operability=False, fuzzy_age=True, recourse_enabled=True, areaselector=None):
+    def apply_schedule(self, schedule, max_period=None, verbose=False,
+                       fail_on_missingarea=False, force_integral_area=False,
+                       override_operability=False, fuzzy_age=True,
+                       recourse_enabled=True, areaselector=None,
+                       compile_t_ycomps=False, compile_c_ycomps=False):
         """
         Assumes schedule in format returned by import_schedule_section().
         That is: list of (dtype_key, age, area, acode, period, etype) tuples.
@@ -1948,7 +1966,8 @@ class WoodstockModel:
                 #area = round(area)
                 area = math.floor(area)
                 if not area: continue
-            assert not area % 1.
+                #print area, area % 1. 
+                assert not area % 1.
             #print 'operable area slack', dtype_key, acode, period, age, '%0.3f' % (self.dt(dtype_key).operable_area(acode, period, age) - area)
             e, _aa, _ = self.apply_action(dtype_key,
                                           acode,
@@ -1959,6 +1978,8 @@ class WoodstockModel:
                                           fuzzy_age=fuzzy_age,
                                           recourse_enabled=recourse_enabled,
                                           areaselector=areaselector,
+                                          compile_t_ycomps=compile_t_ycomps,
+                                          compile_c_ycomps=compile_c_ycomps,
                                           verbose=verbose)
             assert not e # crash on error (TO DO: better error handling)
             if isinstance(_aa, float): 
