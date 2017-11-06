@@ -363,7 +363,7 @@ class DevelopmentType:
         else:
             if verbose: print 'operable:', acode #, self.operability[acode]
         return 0
-            
+
     def _compile_oper_expr(self, acode, expr, verbose=False):
         expr = expr.replace('&', 'and').replace('|', 'or')
         oper = None
@@ -420,18 +420,90 @@ class DevelopmentType:
                 else:
                     raise ValueError('Bad relational operator.')
                 #print ' ', o, (alo, _alo), (ahi, _ahi)
-            if oper == 'and':
-                if _alo is not None: alo = max(_alo, alo)
-                if _ahi is not None: ahi = min(_ahi, ahi)
-            else: # or
-                if _alo is not None: alo = min(_alo, alo)
-                if _ahi is not None: ahi = max(_ahi, ahi)
-        if plo > phi:
+        if oper == 'and' or not oper:
+            if _alo is not None: alo = max(_alo, alo)
+            if _ahi is not None: ahi = min(_ahi, ahi)
+        else: # or
+            if _alo is not None: alo = min(_alo, alo)
+            if _ahi is not None: ahi = max(_ahi, ahi)
+        if plo >= phi:
             print plo, phi
             assert plo <= phi # should never explicitly declare infeasible period range...
         for p in range(plo, phi+1):
+            assert alo <= ahi
+            #print self.key, acode, p, alo, ahi
             self.operability[acode][p] = (alo, ahi) if alo <= ahi else None
             #print acode, p, (alo, ahi), expr
+
+    
+    # def _compile_oper_expr(self, acode, expr, verbose=False):
+    #     expr = expr.replace('&', 'and').replace('|', 'or')
+    #     oper = None
+    #     plo, phi = 1, self.parent.horizon # count periods from 1, as in Woodstock...
+    #     alo, ahi = 0, self._max_age 
+    #     if 'and' in expr:
+    #         oper = 'and'
+    #     elif 'or' in expr:
+    #         oper = 'or'
+    #         alo, ahi = self._max_age+1, -1
+    #     cond_comps = expr.split(' %s ' % oper)
+    #     lhs, rel_operators, rhs = zip(*[cc.split(' ') for cc in cond_comps])
+    #     rhs = map(float, rhs)
+    #     _plo, _phi, _alo, _ahi = None, None, None, None
+    #     for i, o in enumerate(lhs):
+    #         if o == '_cp':
+    #             #print 'rhs', rhs
+    #             period = int(rhs[i])
+    #             assert period <= self.parent.horizon # sanity check
+    #             #################################################################
+    #             # Nonsense to relate time-based and age-based conditions with OR?
+    #             # Recondider if this actually ever comes up...
+    #             assert oper != 'or'  
+    #             #################################################################
+    #             if rel_operators[i] == '=':
+    #                 _plo, _phi = period, period
+    #             elif rel_operators[i] == '>=':
+    #                 _plo = period
+    #             elif rel_opertors[i] == '<=':
+    #                 _phi = period
+    #             else:
+    #                 raise ValueError('Bad relational operator.')
+    #             plo, phi = max(_plo, plo), min(_phi, phi)
+    #         elif o == '_age':
+    #             age = int(rhs[i])
+    #             if rel_operators[i] == '=':
+    #                 _alo, _ahi = age, age
+    #             elif rel_operators[i] == '>=':
+    #                 _alo = age
+    #             elif rel_operators[i] == '<=':
+    #                 _ahi = age
+    #             else:
+    #                 raise ValueError('Bad relational operator.')                    
+    #         else: # must be yname
+    #             ycomp = self.ycomp(o)
+    #             if rel_operators[i] == '=':
+    #                 _alo = _ahi = ycomp.lookup(rhs[i])
+    #             elif rel_operators[i] == '>=':
+    #                 #print ' ge', o, ycomp[45], ycomp.lookup(0)  
+    #                 _alo = ycomp.lookup(rhs[i])
+    #             elif rel_operators[i] == '<=':
+    #                 #print ' le', o 
+    #                 _ahi = ycomp.lookup(rhs[i])
+    #             else:
+    #                 raise ValueError('Bad relational operator.')
+    #             #print ' ', o, (alo, _alo), (ahi, _ahi)
+    #         if oper == 'and':
+    #             if _alo is not None: alo = max(_alo, alo)
+    #             if _ahi is not None: ahi = min(_ahi, ahi)
+    #         else: # or
+    #             if _alo is not None: alo = min(_alo, alo)
+    #             if _ahi is not None: ahi = max(_ahi, ahi)
+    #     if plo > phi:
+    #         print plo, phi
+    #         assert plo <= phi # should never explicitly declare infeasible period range...
+    #     for p in range(plo, phi+1):
+    #         self.operability[acode][p] = (alo, ahi) if alo <= ahi else None
+    #         #print acode, p, (alo, ahi), expr
                 
     def add_ycomp(self, ytype, yname, ycomp, first_match=True):
         if first_match and yname in self._ycomps: return # already exists (reject)
@@ -992,16 +1064,17 @@ class WoodstockModel:
             _dtype_keys = self.unmask(mask)
         elif dtype_keys:
             _dtype_keys = dtype_keys
+        else:
+            _dtype_keys = self.dtypes.keys()
         for dtk in _dtype_keys:
             dt = self.dtypes[dtk]
-            if yname:
-                ycomp = dt.ycomp(yname)
-                if age:
-                    result += dt.area(period, age) * ycomp[age]
-                else:
-                    result += sum(dt.area(period, a) * ycomp[a] for a in dt._areas[period])
+            ycomp = dt.ycomp(yname) if yname else {a:1. for a in dt._areas[period]}
+            if age:
+                result += dt.area(period, age) * ycomp[age]
             else:
-                result += dt.area(period, age)
+                result += sum(dt.area(period, a) * ycomp[a] for a in dt._areas[period])
+                if age:
+                    result += dt.area(period, age)
         return result
         
     def operable_area(self, acode, period, age=None):
@@ -1075,7 +1148,9 @@ class WoodstockModel:
         aa = self.applied_actions
         if acode is None:
             acodes = self.actions.keys()
-        else:
+        #elif type(acode) == list: # assume list of acode strings
+        #    pass
+        else:# elif type(acode) == str: 
             acodes = [acode] if not self.actions[acode].components else self.actions[acode].components
         tokens = expr.split(' ')
         result = 0.
@@ -1317,7 +1392,7 @@ class WoodstockModel:
         action = self.actions[acode]
         #if not dt.actions[acode].is_compiled: dt.compile_action(acode)
         ###########################################################################
-        #dt.area(period, age, -area) # what is the deal with this stray bit of code?
+        dt.area(period, age, -area)
         target_dt = []
         for target in dt.transitions[acode, age]:
             tmask, tprop, tyield, tage, tlock, treplace, tappend = target # unpack tuple
@@ -1333,16 +1408,14 @@ class WoodstockModel:
             foo = False
             #if acode in ['aca', 'acp']: foo = True 
             #print ' target mask', dtk
-            if dtk not in self.dtypes: # new development type (clone source type)
-                self.create_dtype_fromkey(dtk)
+            _dt = self.create_dtype_fromkey(dtk) if dtk not in self.dtypes else self.dtypes[dtk]
             #print dtk, tyield, tage, acode
             targetage = self.resolve_targetage(dtk, tyield, age, tage, acode)
             if foo:
                 print 'creating new dt from', acode, age, [' '.join(dt.key)]
                 print ' new dt', [' '.join(dtk)], period, targetage, area, tprop, area*tprop
-            self.dtypes[dtk].area(period, targetage, area*tprop)
+            _dt.area(period, targetage, area*tprop)
             target_dt.append([dtk, tprop, targetage])
-
         aa = self.applied_actions[period][acode]
         if dtype_key not in aa: aa[dtype_key] = {}
         if age not in aa[dtype_key]: aa[dtype_key][age] = [0., {}]
@@ -1421,6 +1494,7 @@ class WoodstockModel:
                             dt.transitions[acode, x] = self.transitions[acode][mask][scond]
         if not dt.transitions:
             self.inoperable_dtypes.append(key)
+        return dt
     
     def _resolve_outputs_buffer(self, s, for_flag=None):
         n = self.nthemes

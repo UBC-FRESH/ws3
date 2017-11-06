@@ -83,7 +83,8 @@ def clean_stand_shapefile(shp_path, clean_shp_path, prop_names, clean=True, tole
     return snk1_path, snk2_path
 
 
-def rasterize_stands(shp_path, theme_cols, age_col, rst_path=None, d=100., dtype=rasterio.uint32, compress='lzw', round_coords=True):
+def rasterize_stands(shp_path, theme_cols, age_col, age_divisor=1, rst_path=None, d=100.,
+                     dtype=rasterio.uint32, compress='lzw', round_coords=True):
     import fiona
     from rasterio.features import rasterize
     if dtype == rasterio.uint32: 
@@ -102,7 +103,7 @@ def rasterize_stands(shp_path, theme_cols, age_col, rst_path=None, d=100., dtype
     for f in src:
         dt = tuple(f['properties'][t] for t in theme_cols)
         shapes[0].append((f['geometry'], hash_dt(dt, dtype, nbytes))) # themes
-        shapes[1].append((f['geometry'], np.uint32(f['properties'][age_col]))) # age
+        shapes[1].append((f['geometry'], np.uint32(round(f['properties'][age_col]/float(age_divisor))))) # age
     rst_path = shp_path[:-4]+'.tiff' if not rst_path else rst_path
     kwargs = {'out_shape':(m, n), 'transform':transform, 'dtype':dtype, 'fill':0}
     r = np.stack([rasterize(s, **kwargs) for s in shapes])

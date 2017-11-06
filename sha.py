@@ -36,6 +36,7 @@ class ForestRaster:
                  acodes,
                  horizon,
                  base_year,
+                 period_length=1,
                  tiff_compress='lzw',
                  tiff_dtype=rasterio.uint8):
         self._hdt_map = hdt_map
@@ -43,6 +44,7 @@ class ForestRaster:
         self._acodes = acodes
         self._horizon = horizon
         self._base_year = base_year
+        self._period_length = period_length
         self._i2a = {i: a for i, a in enumerate(acodes)}
         self._a2i = {a: i for i, a in enumerate(acodes)}
         self._p = 1 # initialize current period
@@ -53,10 +55,10 @@ class ForestRaster:
         profile = self._src.profile
         profile.update(dtype=tiff_dtype, compress=tiff_compress, count=1, nodata=0)
         snk_path = os.path.split(src_path)[0]
-        self._snk = {p:{acode:rasterio.open(snk_path + '/%s_%i.tiff' % (acode, base_year + p - 1), 'w', **profile)
-                        for acode in acodes}
-                      for p in range(1, horizon + 1)}
-        self._snkd = {acode: self._read_snk(acode) for acode in acodes}
+        self._snk = {(p, dy):{acode:rasterio.open(snk_path+'/%s_%i.tiff' % (acode, base_year+(p-1)*period_length + dy), 'w', **profile)
+                      for acode in acodes}
+                      for dy in range(period_length) for p in range(1, (horizon+1))}
+        self._snkd = {(acode, dy):self._read_snk(acode, dy) for dy in range(period_length) for acode in acodes}
         self._is_valid = True
         
     def commit(self):
@@ -76,15 +78,16 @@ class ForestRaster:
         self.commit()
         return True
         
-    def _read_snk(self, acode, verbose=False):
+    def _read_snk(self, acode, dy, verbose=False):
         if verbose: print 'ForestRaster._read_snk()', self._p, acode
-        return self._snk[self._p][acode].read(1)
+        return self._snk[(self._p, dy)][acode].read(1)
 
     def _write_snk(self):
-        for acode in self._acodes:
-            self._snk[self._p][acode].write(self._snkd[acode], indexes=1)
+        for dy in range(self._period_length):
+            for acode in self._acodes:
+                self._snk[(self._p, dy)][acode].write(self._snkd[(acode, dy)], indexes=1)
  
-    def allocate_schedule(self, wm, verbose=False):
+    def allocate_schedule(self, wm, da=-1, fudge=1., verbose=False):
         if not self._is_valid: raise RuntimeError('ForestRaster.commit() has already been called (i.e., this instance is toast).')
         for p in range(1, self._horizon+1):
             if verbose: print 'processing schedule for period %i' % p
@@ -101,29 +104,39 @@ class ForestRaster:
                         to_age = wm.resolve_targetage(to_dtk, tyield, from_age, tage, acode, verbose=False)
                         tk = tuple(to_dtk)+(to_age,)
                         th = self._hdt_func(tk)
-                        result = self.transition_cells_random(from_dtk, from_age, to_dtk, to_age, area, acode, verbose=False)
-                        if result: print 'failed', from_dtk, from_age, to_dtk, to_age, area, acode 
+                        for dy in range(self._period_length):
+                            #if self._period_length > 1: print '  processing sub-period %i of %i' % (dy+1, self._period_length)
+                            #print acode, area, from_age, area/self._period_length
+                            result = self.transition_cells_random(from_dtk, from_age, to_dtk, to_age,
+                                                                  area/self._period_length, acode, dy, da=da, fudge=fudge, verbose=False)
+                            if result: print 'failed', from_dtk, from_age, to_dtk, to_age, area, acode 
             self._write_snk()
             if p < self._horizon: self.grow()
 
-    def transition_cells_random(self, from_dtk, from_age, to_dtk, to_age, tarea, acode, verbose=False):
+    def transition_cells_random(self, from_dtk, from_age, to_dtk, to_age, tarea, acode, dy, da=1, fudge=1., verbose=False):
         fk, tk = tuple(from_dtk), tuple(to_dtk)
         fh, th = self._hdt_func(fk), self._hdt_func(tk)
-        x = np.where((self._x[0] == fh) & (self._x[1] == from_age))
+        amin, amax = from_age-1, from_age
+        #x = np.where((self._x[0] == fh) & (self._x[1] == from_age+da))
+        x = np.where((self._x[0] == fh) & (self._x[1]+da >= amin) & (self._x[1]+da <= amax))
         xn = len(x[0])
         xa = float(xn * self._pixel_area)
-        c = tarea / xa
+        #print fk, tk, fh, th, xn, xa, tarea, from_age
+        #print len(np.where(self._x[0] == fh)[0]), len(np.where(self._x[1] == from_age)[0])
+        c = tarea / xa if xa else np.inf
         if c > 1. and verbose: print 'missing area', from_dtk, tarea - xa
+        #c *= fudge
         c = min(c, 1.)
         n = int(xa * c / self._pixel_area)
+        if not n: return # found nothing to transition
         r = np.random.choice(xn, n, replace=False)
         ix = x[0][r],x[1][r]
         self._x[0][ix] = th
         self._x[1][ix] = to_age
-        self._snkd[acode][ix] = 1 #self._a2i[acode]
+        self._snkd[(acode, dy)][ix] = 1 #self._a2i[acode]
         return 0 # all is well
           
     def grow(self):
         self._p += 1
         self._x[1] += 1 # age
-        self._snkd = {acode: self._read_snk(acode) for acode in self._acodes}
+        self._snkd = {(acode, dy):self._read_snk(acode, dy) for dy in range(self._period_length) for acode in self._acodes}
