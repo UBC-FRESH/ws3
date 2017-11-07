@@ -66,6 +66,10 @@ class ForestRaster:
             for acode in self._snk[p]:
                 self._snk[p][acode].close()
         self._is_valid = False
+
+    def cleaup(self):
+        self.commit()
+        self._src.close()
         
     def __enter__(self):
         # The value returned by this method is
@@ -75,7 +79,7 @@ class ForestRaster:
     def __exit__(self, exc_type, exc_value, exc_traceback):
         # returns either True or False
         # Don't raise any exceptions in this method
-        self.commit()
+        self.cleanup()
         return True
         
     def _read_snk(self, acode, dy, verbose=False):
@@ -107,9 +111,15 @@ class ForestRaster:
                         for dy in range(self._period_length):
                             #if self._period_length > 1: print '  processing sub-period %i of %i' % (dy+1, self._period_length)
                             #print acode, area, from_age, area/self._period_length
-                            result = self.transition_cells_random(from_dtk, from_age, to_dtk, to_age,
-                                                                  area/self._period_length, acode, dy, da=da, fudge=fudge, verbose=False)
-                            if result: print 'failed', from_dtk, from_age, to_dtk, to_age, area, acode 
+                            from_ages = [from_age, from_age-1, from_age+1]
+                            target_area = area / self._period_length
+                            while from_ages and target_area:
+                                from_age = from_ages.pop()
+                                target_area = self.transition_cells_random(from_dtk, from_age, to_dtk, to_age,
+                                                                           target_area, acode, dy,
+                                                                           da=da, fudge=fudge, verbose=False)
+                            if target_area:
+                                print 'failed', (from_dtk, from_age, to_dtk, to_age, acode), '(missing %4.1f of %4.1f)' % (target_area, area / self._period_length), 'in p%i dy%' % (p, dy) 
             self._write_snk()
             if p < self._horizon: self.grow()
 
@@ -118,9 +128,10 @@ class ForestRaster:
         fh, th = self._hdt_func(fk), self._hdt_func(tk)
         amin, amax = from_age-1, from_age
         #x = np.where((self._x[0] == fh) & (self._x[1] == from_age+da))
-        x = np.where((self._x[0] == fh) & (self._x[1]+da >= amin) & (self._x[1]+da <= amax))
+        x = np.where((self._x[0] == fh) & (self._x[1]+da == from_age))
         xn = len(x[0])
         xa = float(xn * self._pixel_area)
+        missing_area = max(0., tarea - xa)
         #print fk, tk, fh, th, xn, xa, tarea, from_age
         #print len(np.where(self._x[0] == fh)[0]), len(np.where(self._x[1] == from_age)[0])
         c = tarea / xa if xa else np.inf
@@ -134,7 +145,7 @@ class ForestRaster:
         self._x[0][ix] = th
         self._x[1][ix] = to_age
         self._snkd[(acode, dy)][ix] = 1 #self._a2i[acode]
-        return 0 # all is well
+        return missing_area
           
     def grow(self):
         self._p += 1
