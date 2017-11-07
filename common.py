@@ -103,7 +103,7 @@ def rasterize_stands(shp_path, theme_cols, age_col, age_divisor=1, rst_path=None
     for f in src:
         dt = tuple(f['properties'][t] for t in theme_cols)
         shapes[0].append((f['geometry'], hash_dt(dt, dtype, nbytes))) # themes
-        shapes[1].append((f['geometry'], np.uint32(ceil(f['properties'][age_col]/float(age_divisor))))) # age
+        shapes[1].append((f['geometry'], np.uint32(math.ceil(f['properties'][age_col]/float(age_divisor))))) # age
     rst_path = shp_path[:-4]+'.tiff' if not rst_path else rst_path
     kwargs = {'out_shape':(m, n), 'transform':transform, 'dtype':dtype, 'fill':0}
     r = np.stack([rasterize(s, **kwargs) for s in shapes])

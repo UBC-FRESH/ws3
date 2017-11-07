@@ -67,7 +67,7 @@ class ForestRaster:
                 self._snk[p][acode].close()
         self._is_valid = False
 
-    def cleaup(self):
+    def cleanup(self):
         self.commit()
         self._src.close()
         
@@ -91,7 +91,7 @@ class ForestRaster:
             for acode in self._acodes:
                 self._snk[(self._p, dy)][acode].write(self._snkd[(acode, dy)], indexes=1)
  
-    def allocate_schedule(self, wm, da=-1, fudge=1., verbose=False):
+    def allocate_schedule(self, wm, da=0, fudge=1., verbose=False):
         if not self._is_valid: raise RuntimeError('ForestRaster.commit() has already been called (i.e., this instance is toast).')
         for p in range(1, self._horizon+1):
             if verbose: print 'processing schedule for period %i' % p
@@ -111,7 +111,8 @@ class ForestRaster:
                         for dy in range(self._period_length):
                             #if self._period_length > 1: print '  processing sub-period %i of %i' % (dy+1, self._period_length)
                             #print acode, area, from_age, area/self._period_length
-                            from_ages = [from_age, from_age-1, from_age+1]
+                            #from_ages = [from_age, from_age-1, from_age+1]
+                            from_ages = [from_age]
                             target_area = area / self._period_length
                             while from_ages and target_area:
                                 from_age = from_ages.pop()
@@ -119,14 +120,14 @@ class ForestRaster:
                                                                            target_area, acode, dy,
                                                                            da=da, fudge=fudge, verbose=False)
                             if target_area:
-                                print 'failed', (from_dtk, from_age, to_dtk, to_age, acode), '(missing %4.1f of %4.1f)' % (target_area, area / self._period_length), 'in p%i dy%' % (p, dy) 
+                                print 'failed', (from_dtk, from_age, to_dtk, to_age, acode), '(missing %4.1f of %4.1f)' % (target_area, area / self._period_length), 'in p%i dy%i' % (p, dy) 
             self._write_snk()
             if p < self._horizon: self.grow()
 
-    def transition_cells_random(self, from_dtk, from_age, to_dtk, to_age, tarea, acode, dy, da=1, fudge=1., verbose=False):
+    def transition_cells_random(self, from_dtk, from_age, to_dtk, to_age, tarea, acode, dy, da=0, fudge=1., verbose=False):
         fk, tk = tuple(from_dtk), tuple(to_dtk)
         fh, th = self._hdt_func(fk), self._hdt_func(tk)
-        amin, amax = from_age-1, from_age
+        #amin, amax = from_age-1, from_age
         #x = np.where((self._x[0] == fh) & (self._x[1] == from_age+da))
         x = np.where((self._x[0] == fh) & (self._x[1]+da == from_age))
         xn = len(x[0])

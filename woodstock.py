@@ -1069,12 +1069,10 @@ class WoodstockModel:
         for dtk in _dtype_keys:
             dt = self.dtypes[dtk]
             ycomp = dt.ycomp(yname) if yname else {a:1. for a in dt._areas[period]}
-            if age:
-                result += dt.area(period, age) * ycomp[age]
+            if age is not None:
+                result += dt.area(period, age) * ycomp[age] if age in dt._areas[period] else 0. 
             else:
                 result += sum(dt.area(period, a) * ycomp[a] for a in dt._areas[period])
-                if age:
-                    result += dt.area(period, age)
         return result
         
     def operable_area(self, acode, period, age=None):
