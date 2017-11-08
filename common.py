@@ -101,8 +101,10 @@ def rasterize_stands(shp_path, theme_cols, age_col, age_divisor=1, rst_path=None
     hdt = {}
     shapes = [[], []]
     for f in src:
-        dt = tuple(f['properties'][t] for t in theme_cols)
-        shapes[0].append((f['geometry'], hash_dt(dt, dtype, nbytes))) # themes
+        dt = tuple(str(f['properties'][t]) for t in theme_cols)
+        h = hash_dt(dt, dtype, nbytes)
+        hdt[h] = dt
+        shapes[0].append((f['geometry'], h)) # themes
         shapes[1].append((f['geometry'], np.uint32(math.ceil(f['properties'][age_col]/float(age_divisor))))) # age
     rst_path = shp_path[:-4]+'.tiff' if not rst_path else rst_path
     kwargs = {'out_shape':(m, n), 'transform':transform, 'dtype':dtype, 'fill':0}
@@ -119,6 +121,7 @@ def rasterize_stands(shp_path, theme_cols, age_col, age_divisor=1, rst_path=None
     with rasterio.open(rst_path, 'w', **kwargs) as snk:
         snk.write(r[0], indexes=1)
         snk.write(r[1], indexes=2)
+    return hdt
         
 
 def hash_dt(dt, dtype=rasterio.uint32, nbytes=4):
@@ -155,7 +158,7 @@ def timed(func):
 from scipy.stats import norm
 
 HORIZON_DEFAULT = 30
-PERIOD_LENGTH_DEFAULT = 5
+PERIOD_LENGTH_DEFAULT = 10
 MIN_AGE_DEFAULT = 0
 MAX_AGE_DEFAULT = 1000
 CURVE_EPSILON_DEFAULT = 0.01

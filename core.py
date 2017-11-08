@@ -152,7 +152,7 @@ class Curve:
     _type_default = 'a'
     
     def __init__(self,
-                label=None,
+                 label=None,
                  id=None,
                  is_volume=False,
                  points=None,

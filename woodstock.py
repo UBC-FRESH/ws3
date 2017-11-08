@@ -104,7 +104,8 @@ class Action:
                  descr='',
                  lockexempt=False,
                  components=None,
-                 partial=None):
+                 partial=None,
+                 is_harvest=0):
         self.code = code
         self.targetage = targetage
         self.descr = descr
@@ -114,7 +115,7 @@ class Action:
         self.components = components or []
         self.partial = partial or []
         self.is_compiled = False
-        self.is_harvest = 0
+        self.is_harvest = is_harvest
         self.treatment_type = None
     
 class DevelopmentType:
@@ -297,9 +298,10 @@ class DevelopmentType:
         return args[0].type if not args[0].is_special else args[1].type, self._rc(args[0] / args[1])
         
     def _resolver_sum(self, yname, d):
-        #print yname, d
+        #print 'resolving SUM', yname, d
         args = [self._o(s.lower()) for s in re.split('\s?,\s?', re.search('(?<=\().*(?=\))', d).group(0))] 
         ytype_set = set(a.type for a in args if isinstance(a, core.Curve))
+        #print [a.label, a.type for a in args if isinstance(a, core.Curve)]
         return ytype_set.pop() if len(ytype_set) == 1 else 'c', self._rc(reduce(lambda x, y: x+y, [a for a in args]))
         
     def _resolver_cai(self, yname, d):
@@ -324,12 +326,13 @@ class DevelopmentType:
     def _compile_complex_ycomp(self, yname):
         expression = self._complex_ycomps[yname]
         keyword = re.search('(?<=_)[A-Z]+(?=\()', expression).group(0)
-        #print 'compiling complex', yname, keyword
+        #print 'compiling complex', yname, keyword, expression
         try:
             ytype, ycomp = self._resolvers[keyword](yname, expression)
             ycomp.label = yname
             ycomp.type = ytype
-            self._ycomps[yname] = ycomp 
+            self._ycomps[yname] = ycomp
+            #assert False
         except KeyError:
                 raise ValueError('Problem compileing complex yield: %s, %s' % (yname, expression))
             
@@ -1066,13 +1069,14 @@ class WoodstockModel:
             _dtype_keys = dtype_keys
         else:
             _dtype_keys = self.dtypes.keys()
+        #print len(_dtype_keys)
         for dtk in _dtype_keys:
             dt = self.dtypes[dtk]
             ycomp = dt.ycomp(yname) if yname else {a:1. for a in dt._areas[period]}
             if age is not None:
                 result += dt.area(period, age) * ycomp[age] if age in dt._areas[period] else 0. 
             else:
-                result += sum(dt.area(period, a) * ycomp[a] for a in dt._areas[period])
+                result += sum(dt.area(period, a) * ycomp[a] for a in dt._areas[period]) if ycomp else 0.
         return result
         
     def operable_area(self, acode, period, age=None):
@@ -1586,7 +1590,17 @@ class WoodstockModel:
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             s = f.read()
         self._resolve_outputs_buffer(s)
-            
+
+    def add_theme(self, name, basecodes=[], aggs={}):
+        self._themes.append({})
+        if basecodes: self._theme_basecodes.append([])
+        for c in basecodes:
+            #print name, c, type(c)
+            self._themes[-1][c] = c
+            self._theme_basecodes[-1].append(c)
+        for c in aggs:            
+            self._themes[-1][c] = aggs[c]
+        
     #@timed
     def import_landscape_section(self, filename_suffix='lan'):
         """
@@ -1682,7 +1696,7 @@ class WoodstockModel:
         dtype_keys = copy.copy(self.dtypes.keys()) # filter this
         for ti, tac in enumerate(mask):
             if tac == '?': continue # wildcard matches all
-            tacs = self._expand_theme(self._themes[ti], tac)
+            tacs = self._expand_theme(self._themes[ti], tac) if tac in self._themes[ti] else []
             dtype_keys = [dtk for dtk in dtype_keys if dtk[ti] in tacs] # exclude bad matches
         return dtype_keys
 
