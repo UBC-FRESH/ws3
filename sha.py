@@ -55,6 +55,7 @@ class ForestRaster:
         profile = self._src.profile
         profile.update(dtype=tiff_dtype, compress=tiff_compress, count=1, nodata=0)
         snk_path = os.path.split(src_path)[0]
+        print snk_path
         self._snk = {(p, dy):{acode:rasterio.open(snk_path+'/%s_%i.tiff' % (acode, base_year+(p-1)*period_length + dy), 'w', **profile)
                       for acode in acodes}
                       for dy in range(period_length) for p in range(1, (horizon+1))}
@@ -89,7 +90,9 @@ class ForestRaster:
     def _write_snk(self):
         for dy in range(self._period_length):
             for acode in self._acodes:
-                self._snk[(self._p, dy)][acode].write(self._snkd[(acode, dy)], indexes=1)
+                snk = self._snk[(self._p, dy)][acode]
+                snk.write(self._snkd[(acode, dy)], indexes=1)
+                snk.close()
  
     def allocate_schedule(self, wm, da=0, fudge=1., verbose=False):
         if not self._is_valid: raise RuntimeError('ForestRaster.commit() has already been called (i.e., this instance is toast).')
@@ -120,7 +123,8 @@ class ForestRaster:
                                                                            target_area, acode, dy,
                                                                            da=da, fudge=fudge, verbose=False)
                             if target_area:
-                                print 'failed', (from_dtk, from_age, to_dtk, to_age, acode), '(missing %4.1f of %4.1f)' % (target_area, area / self._period_length), 'in p%i dy%i' % (p, dy) 
+                                print 'failed', (from_dtk, from_age, to_dtk, to_age, acode),
+                                print '(missing %4.1f of %4.1f)' % (target_area, area / self._period_length), 'in p%i dy%i' % (p, dy) 
             self._write_snk()
             if p < self._horizon: self.grow()
 

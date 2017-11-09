@@ -42,6 +42,7 @@ import numpy as np
 import pacal
 import rasterio
 import hashlib
+import re
 
 try:
     import cPickle as pickle
@@ -50,7 +51,9 @@ except:
 import math
 #from math import exp, log
 
-def clean_stand_shapefile(shp_path, clean_shp_path, prop_names, clean=True, tolerance=10., preserve_topology=True, logfn='clean_stand_shapefile.log', max_records=None):
+def clean_stand_shapefile(shp_path, clean_shp_path, prop_names, clean=True, tolerance=10.,
+                          preserve_topology=True, logfn='clean_stand_shapefile.log', max_records=None,
+                          theme0=None, prop_types=None):
     import logging
     import sys
     from shapely.geometry import mapping, shape
@@ -61,7 +64,10 @@ def clean_stand_shapefile(shp_path, clean_shp_path, prop_names, clean=True, tole
     snk2_path = clean_shp_path[:-4]+'_error.shp' 
     with fiona.open(shp_path, 'r') as src:
         kwds = src.meta
-        kwds['schema']['properties'] = OrderedDict([(pn, src.schema['properties'][pn]) for pn in prop_names])
+        if not prop_types:
+            prop_types = [(u'theme0', 'str:10')] if theme0 else []
+            prop_types = prop_types + [(pn.lower(), src.schema['properties'][pn]) for pn in prop_names]
+        kwds['schema']['properties'] = OrderedDict(prop_types)
         with fiona.open(snk1_path, 'w', **kwds) as snk1, fiona.open(snk2_path, 'w', **kwds) as snk2:
             n = len(src) if not max_records else max_records
             for f in src[:n]:
@@ -74,7 +80,12 @@ def clean_stand_shapefile(shp_path, clean_shp_path, prop_names, clean=True, tole
                         g = _g
                     g = g.simplify(tolerance=tolerance, preserve_topology=True)
                     f['geometry'] = mapping(g)
-                    f.update(properties = OrderedDict([(pn, f['properties'][pn]) for pn in prop_names]))
+                    prop_data = [(u'theme0', theme0)] if theme0 else []
+                    if prop_types:
+                        prop_data = prop_data + [(prop_types[i+len(prop_data)][0], f['properties'][pn]) for i, pn in enumerate(prop_names)]   
+                    else:
+                        prop_data = prop_data + [(pn.lower(), f['properties'][pn]) for pn in prop_names]
+                    f.update(properties = OrderedDict(prop_data))
                     snk1.write(f)
                 except Exception, e: # log exception and write uncleanable feature a separate shapefile
                     assert False
@@ -84,28 +95,29 @@ def clean_stand_shapefile(shp_path, clean_shp_path, prop_names, clean=True, tole
 
 
 def rasterize_stands(shp_path, theme_cols, age_col, age_divisor=1, rst_path=None, d=100.,
-                     dtype=rasterio.uint32, compress='lzw', round_coords=True):
+                     dtype=rasterio.uint32, compress='lzw', round_coords=True,
+                     value_func=lambda x: re.sub(r'(-| )+', '_', str(x).lower())):
     import fiona
     from rasterio.features import rasterize
     if dtype == rasterio.uint32: 
         nbytes = 4
     else:
         raise TypeError('Data type not implemented: %s' % dtype)
-    src = fiona.open(shp_path, 'r')
-    b = src.bounds #(x_min, y_min, x_max, y_max)
-    w, h = b[2] - b[0], b[3] - b[1]
-    m, n = int((h - (h%d) + d) / d), int((w - (w%d) + d) /  d)
-    W = b[0] - (b[0]%d) if round_coords else b[0]
-    N = b[1] - (b[1]%d) +d*m if round_coords else b[1] + d*m
-    transform = rasterio.transform.from_origin(W, N, d, d)
-    hdt = {}
-    shapes = [[], []]
-    for f in src:
-        dt = tuple(str(f['properties'][t]) for t in theme_cols)
-        h = hash_dt(dt, dtype, nbytes)
-        hdt[h] = dt
-        shapes[0].append((f['geometry'], h)) # themes
-        shapes[1].append((f['geometry'], np.uint32(math.ceil(f['properties'][age_col]/float(age_divisor))))) # age
+    with fiona.open(shp_path, 'r') as src:
+        b = src.bounds #(x_min, y_min, x_max, y_max)
+        w, h = b[2] - b[0], b[3] - b[1]
+        m, n = int((h - (h%d) + d) / d), int((w - (w%d) + d) /  d)
+        W = b[0] - (b[0]%d) if round_coords else b[0]
+        N = b[1] - (b[1]%d) +d*m if round_coords else b[1] + d*m
+        transform = rasterio.transform.from_origin(W, N, d, d)
+        hdt = {}
+        shapes = [[], []]
+        for f in src:
+            dt = tuple(value_func(f['properties'][t]) for t in theme_cols)
+            h = hash_dt(dt, dtype, nbytes)
+            hdt[h] = dt
+            shapes[0].append((f['geometry'], h)) # themes
+            shapes[1].append((f['geometry'], np.uint32(math.ceil(f['properties'][age_col]/float(age_divisor))))) # age
     rst_path = shp_path[:-4]+'.tiff' if not rst_path else rst_path
     kwargs = {'out_shape':(m, n), 'transform':transform, 'dtype':dtype, 'fill':0}
     r = np.stack([rasterize(s, **kwargs) for s in shapes])

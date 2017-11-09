@@ -996,7 +996,8 @@ class WoodstockModel:
 
     def add_null_action(self, acode='null', minage=None, maxage=None):
         mask = tuple(['?' for _ in range(self.nthemes)])
-        oe = '_age >= 0 and _age <= %i' % self.max_age
+        #oe = '_age >= 0 and _age <= %i' % self.max_age
+        oe = '_age >= 0 and _age <= 99'
         target = [(mask, 1.0, None, None, None, None, None)]
         self.actions[acode] = Action(acode)
         self.oper_expr[acode] = {mask:oe}
