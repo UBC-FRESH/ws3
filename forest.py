@@ -24,7 +24,7 @@
 
 """
 This module implements functions for building and running wood supply simulation
-models, using Woodstock input file format.
+models, using Forest input file format.
 """
 
 import math
@@ -120,7 +120,7 @@ class Action:
     
 class DevelopmentType:
     """
-    Encapsulates Woodstock development type data (curves, age, area), and provides methods to operate on the data.
+    Encapsulates Forest development type data (curves, age, area), and provides methods to operate on the data.
     """
     _bo = {'AND':operator.and_, '&':operator.and_, 'OR':operator.or_, '|':operator.or_}
     
@@ -128,7 +128,7 @@ class DevelopmentType:
                  key,
                  parent):
         """
-        The key is basically the fully expanded mask (expressed as a tuple of values). The parent is a reference to the WoodstockModel object in which self is embedded.
+        The key is basically the fully expanded mask (expressed as a tuple of values). The parent is a reference to the ForestModel object in which self is embedded.
         """
         self.key = key
         self.parent = parent
@@ -370,7 +370,7 @@ class DevelopmentType:
     def _compile_oper_expr(self, acode, expr, verbose=False):
         expr = expr.replace('&', 'and').replace('|', 'or')
         oper = None
-        plo, phi = 1, self.parent.horizon # count periods from 1, as in Woodstock...
+        plo, phi = 1, self.parent.horizon # count periods from 1, as in Forest...
         alo, ahi = 0, self._max_age 
         if 'and' in expr:
             oper = 'and'
@@ -442,7 +442,7 @@ class DevelopmentType:
     # def _compile_oper_expr(self, acode, expr, verbose=False):
     #     expr = expr.replace('&', 'and').replace('|', 'or')
     #     oper = None
-    #     plo, phi = 1, self.parent.horizon # count periods from 1, as in Woodstock...
+    #     plo, phi = 1, self.parent.horizon # count periods from 1, as in Forest...
     #     alo, ahi = 0, self._max_age 
     #     if 'and' in expr:
     #         oper = 'and'
@@ -534,8 +534,8 @@ class DevelopmentType:
 class Output:
     """
     Encapsulates data and methods to operate on aggregate outputs from the model.
-    Emulates behaviour of Woodstock outputs.
-    .. warning:: Behaviour of Woodstock outputs is quite complex. 
+    Emulates behaviour of Forest outputs.
+    .. warning:: Behaviour of Forest outputs is quite complex. 
     This class needs more work before it is used in a production setting 
     (i.e., resolution of some complex output cases is buggy).
     """
@@ -745,9 +745,9 @@ class Output:
         else:
             return self() - other()
 
-class WoodstockModel:
+class ForestModel:
     """
-    Interface to import Woodstock models.
+    Interface to import Forest models.
     Also includes methods to simulate growth, applying actions.
     Includes methods to query the model post-simulation (i.e., workaround for broken Outputs class).
     """
@@ -766,7 +766,7 @@ class WoodstockModel:
                  period_length=common.PERIOD_LENGTH_DEFAULT,
                  #aggr_period_length=common.PERIOD_LENGTH_DEFAULT,
                  max_age=common.MAX_AGE_DEFAULT,
-                 #species_groups=common.SPECIES_GROUPS_WOODSTOCK_QC, # not used (DELETE) [commenting out]
+                 #species_groups=common.SPECIES_GROUPS_FOREST_QC, # not used (DELETE) [commenting out]
                  area_epsilon=common.AREA_EPSILON_DEFAULT,
                  curve_epsilon=common.CURVE_EPSILON_DEFAULT):
                  #vp_ratio=_vp_ratio_default,
@@ -1586,7 +1586,7 @@ class WoodstockModel:
     #@timed
     def import_outputs_section(self, filename_suffix='out'):
         """
-        Imports OUTPUTS section from a Woodstock model.
+        Imports OUTPUTS section from a Forest model.
         """
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             s = f.read()
@@ -1605,7 +1605,7 @@ class WoodstockModel:
     #@timed
     def import_landscape_section(self, filename_suffix='lan'):
         """
-        Imports LANDSCAPE section from a Woodstock model.
+        Imports LANDSCAPE section from a Forest model.
         """
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             data = f.read()
@@ -1639,7 +1639,7 @@ class WoodstockModel:
     #@timed    
     def import_areas_section(self, model_path=None, model_name=None, filename_suffix='are', import_empty=False):
         """
-        Imports AREAS section from a Woodstock model.
+        Imports AREAS section from a Forest model.
         """
         n = self.nthemes
         model_path = self.model_path if not model_path else model_path
@@ -1687,9 +1687,9 @@ class WoodstockModel:
     def unmask(self, mask):
         """
         Iteratively filter list of development type keys using mask values.
-        Accepts Woodstock-style string masks to facilitate cut-and-paste testing.
+        Accepts Forest-style string masks to facilitate cut-and-paste testing.
         """
-        if isinstance(mask, str): # Woodstock string mask format
+        if isinstance(mask, str): # Forest string mask format
             mask = tuple(re.sub('\s+', ' ', mask).lower().split(' '))
             assert len(mask) == self.nthemes # must be bad mask if wrong theme count
         else:
@@ -1704,7 +1704,7 @@ class WoodstockModel:
     #@timed                            
     def import_constants_section(self, filename_suffix='con'):
         """
-        Imports CONSTANTS section from a Woodstock model.
+        Imports CONSTANTS section from a Forest model.
         """
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             for lnum, l in enumerate(f):
@@ -1716,7 +1716,7 @@ class WoodstockModel:
     #@timed        
     def import_yields_section(self, filename_suffix='yld', verbose=False):
         """
-        Imports YIELDS section from a Woodstock model.
+        Imports YIELDS section from a Forest model.
         """
         ###################################################
         # local utility functions #########################
@@ -1807,7 +1807,7 @@ class WoodstockModel:
     #@timed        
     def import_actions_section(self, filename_suffix='act'):
         """
-        Imports ACTIONS section from a Woodstock model.
+        Imports ACTIONS section from a Forest model.
         """
         n = self.nthemes
         actions = {}
@@ -1860,7 +1860,7 @@ class WoodstockModel:
             i = int(re.search('(?<=_TH)\w+', treplace).group(0))
             return eval(re.sub('_TH%i'%i, str(dt.key[i-1]), treplace))
         else:
-            assert False # many other possible arguments (see Woodstock documentation)
+            assert False # many other possible arguments (see Forest documentation)
 
     def resolve_tappend(self, dt, tappend):
         assert False # brick wall (not implemented yet)
@@ -1901,7 +1901,7 @@ class WoodstockModel:
     #@timed                        
     def import_transitions_section(self, filename_suffix='trn'):
         """
-        Imports TRANSITIONS section from a Woodstock model.
+        Imports TRANSITIONS section from a Forest model.
         """
         # local utility function ####################################
         def flush_transitions(acode, sources):
@@ -1983,14 +1983,14 @@ class WoodstockModel:
     
     def import_optimize_section(self, filename_suffix='opt'):
         """
-        Imports OPTIMIZE section from a Woodstock model.
+        Imports OPTIMIZE section from a Forest model.
         .. warning:: Not implemented yet.
         """
         pass
 
     def import_graphics_section(self, filename_suffix='gra'):
         """
-        Imports GRAPHICS section from a Woodstock model.
+        Imports GRAPHICS section from a Forest model.
         .. warning:: Not implemented yet.
 
         """
@@ -1998,7 +1998,7 @@ class WoodstockModel:
 
     def import_lifespan_section(self, filename_suffix='lif'):
         """
-        Imports LIFESPAN section from a Woodstock model.
+        Imports LIFESPAN section from a Forest model.
         .. warning:: Not implemented yet.
 
         """
@@ -2007,7 +2007,7 @@ class WoodstockModel:
 
     def import_schedule_section(self, filename_suffix='seq', replace_commas=True, filename_prefix=None):
         """
-        Imports SCHEDULE section from a Woodstock model.
+        Imports SCHEDULE section from a Forest model.
         """
         filename_prefix = self.model_name if filename_prefix is None else filename_prefix
         schedule = []
@@ -2081,7 +2081,7 @@ class WoodstockModel:
 
     def import_control_section(self, filename_suffix='run'):
         """
-        Imports CONTROL section from a Woodstock model.
+        Imports CONTROL section from a Forest model.
         .. warning:: Not implemented yet.
         """
         pass

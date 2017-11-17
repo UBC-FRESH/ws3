@@ -50,27 +50,52 @@ except:
     import pickle
 import math
 #from math import exp, log
+import fiona
+from fiona.transform import transform_geom
+from fiona.crs import from_epsg
 
-def clean_stand_shapefile(shp_path, clean_shp_path, prop_names, clean=True, tolerance=10.,
-                          preserve_topology=True, logfn='clean_stand_shapefile.log', max_records=None,
-                          theme0=None, prop_types=None):
+
+def reproject(f, srs_crs, dst_crs):
+    f['geometry'] = transform_geom(srs_crs, dst_crs, f['geometry'],
+                          antimeridian_cutting=True,
+                          precision=-1)
+    return f
+
+def clean_vector_data(src_path, dst_path, dst_name, prop_names, clean=True, tolerance=10.,
+                      preserve_topology=True, logfn='clean_stand_shapefile.log', max_records=None,
+                      theme0=None, prop_types=None, driver='ESRI Shapefile', dst_epsg=None):
     import logging
     import sys
     from shapely.geometry import mapping, shape
     import fiona
     from collections import OrderedDict
     logging.basicConfig(filename=logfn, level=logging.INFO)
-    snk1_path = clean_shp_path 
-    snk2_path = clean_shp_path[:-4]+'_error.shp' 
-    with fiona.open(shp_path, 'r') as src:
-        kwds = src.meta
+    snk1_path = '%s/%s.shp' % (dst_path, dst_name) 
+    #snk2_path = dst_path[:-4]+'_error.shp' 
+    snk2_path = '%s/%s_error.shp' % (dst_path, dst_name) 
+    with fiona.open(src_path, 'r') as src:
+        kwds1 = src.meta.copy()
+        kwds2 = src.meta.copy()
+        kwds1.update(driver=driver)
+        kwds2.update(driver=driver)
+        if dst_epsg:
+            dst_crs = from_epsg(dst_epsg)
+            kwds1.update(crs=dst_crs, crs_wkt=None)
         if not prop_types:
             prop_types = [(u'theme0', 'str:10')] if theme0 else []
             prop_types = prop_types + [(pn.lower(), src.schema['properties'][pn]) for pn in prop_names]
-        kwds['schema']['properties'] = OrderedDict(prop_types)
-        with fiona.open(snk1_path, 'w', **kwds) as snk1, fiona.open(snk2_path, 'w', **kwds) as snk2:
+        kwds1['schema']['properties'] = OrderedDict(prop_types)
+        kwds2['schema']['properties'] = OrderedDict(prop_types)
+        with fiona.open(snk1_path, 'w', **kwds1) as snk1, fiona.open(snk2_path, 'w', **kwds2) as snk2:
             n = len(src) if not max_records else max_records
             for f in src[:n]:
+                prop_data = [(u'theme0', theme0)] if theme0 else []
+                if prop_types:
+                    prop_data = prop_data + [(prop_types[i+len(prop_data)][0], f['properties'][pn])
+                                             for i, pn in enumerate(prop_names)]   
+                else:
+                    prop_data = prop_data + [(pn.lower(), f['properties'][pn]) for pn in prop_names]
+                f.update(properties = OrderedDict(prop_data))
                 try:
                     g = shape(f['geometry'])
                     if not g.is_valid:
@@ -80,25 +105,36 @@ def clean_stand_shapefile(shp_path, clean_shp_path, prop_names, clean=True, tole
                         g = _g
                     g = g.simplify(tolerance=tolerance, preserve_topology=True)
                     f['geometry'] = mapping(g)
-                    prop_data = [(u'theme0', theme0)] if theme0 else []
-                    if prop_types:
-                        prop_data = prop_data + [(prop_types[i+len(prop_data)][0], f['properties'][pn]) for i, pn in enumerate(prop_names)]   
-                    else:
-                        prop_data = prop_data + [(pn.lower(), f['properties'][pn]) for pn in prop_names]
-                    f.update(properties = OrderedDict(prop_data))
+                    if dst_epsg: f = reproject(f, src.crs, dst_crs)
                     snk1.write(f)
                 except Exception, e: # log exception and write uncleanable feature a separate shapefile
-                    assert False
                     logging.exception("Error cleaning feature %s:", f['id'])
                     snk2.write(f)
     return snk1_path, snk2_path
 
 
-def rasterize_stands(shp_path, theme_cols, age_col, age_divisor=1, rst_path=None, d=100.,
+def reproject_vector_data(src_path, snk_path, snk_epsg, driver='ESRI Shapefile'):
+    import fiona
+    from fiona.crs import from_epsg
+    from pyproj import Proj, transform
+    with fiona.open(src_path, 'r') as src:
+        snk_crs = from_epsg(snk_epsg)
+        src_proj, snk_proj = Proj(src.crs), Proj(snk_crs)
+        kwds = src.meta.copy()
+        kwds.update(crs=snk_crs, crs_wkt=None)
+        kwds.update(driver=driver)
+        with fiona.open(snk_path, 'w', **kwds) as snk:
+            #print snk.meta
+            for f in src: snk.write(reproject(f, src.crs, snk_crs))
+
+                          
+def rasterize_stands(shp_path, tif_path, theme_cols, age_col, age_divisor=1, d=100.,
                      dtype=rasterio.uint32, compress='lzw', round_coords=True,
-                     value_func=lambda x: re.sub(r'(-| )+', '_', str(x).lower())):
+                     value_func=lambda x: re.sub(r'(-| )+', '_', str(x).lower()),
+                     verbose=False): 
     import fiona
     from rasterio.features import rasterize
+    if verbose: print 'rasterizing', shp_path
     if dtype == rasterio.uint32: 
         nbytes = 4
     else:
@@ -118,7 +154,7 @@ def rasterize_stands(shp_path, theme_cols, age_col, age_divisor=1, rst_path=None
             hdt[h] = dt
             shapes[0].append((f['geometry'], h)) # themes
             shapes[1].append((f['geometry'], np.uint32(math.ceil(f['properties'][age_col]/float(age_divisor))))) # age
-    rst_path = shp_path[:-4]+'.tiff' if not rst_path else rst_path
+    #rst_path = shp_path[:-4]+'.tif' if not rst_path else rst_path
     kwargs = {'out_shape':(m, n), 'transform':transform, 'dtype':dtype, 'fill':0}
     r = np.stack([rasterize(s, **kwargs) for s in shapes])
     kwargs = {'driver':'GTiff', 
@@ -130,7 +166,7 @@ def rasterize_stands(shp_path, theme_cols, age_col, age_divisor=1, rst_path=None
               'dtype':dtype,
               'nodata':0,
               'compress':compress}
-    with rasterio.open(rst_path, 'w', **kwargs) as snk:
+    with rasterio.open(tif_path, 'w', **kwargs) as snk:
         snk.write(r[0], indexes=1)
         snk.write(r[1], indexes=2)
     return hdt
