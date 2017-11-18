@@ -913,12 +913,10 @@ class ForestModel:
                     _mu = path[-1].data(o) 
                     for t in self.periods:
                         mu[t][o][i, j] = _mu[t] if t in _mu else 0.
-        for t in self.periods[:]:
+        for t in self.periods:
             for o, e in cflw_e.items():
-                #print mu.keys()
-                #assert False
-                mu_lb = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 - e) * mu[1][o][i, j]) for i, j in mu[t][o]}
-                mu_ub = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 + e) * mu[1][o][i, j]) for i, j in mu[t][o]}
+                mu_lb = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 - e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
+                mu_ub = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 + e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
                 problem.add_constraint(name='flw-lb_%03d_%s' % (t, o), coeffs=mu_lb, sense=opt.SENSE_GEQ, rhs=0.)
                 problem.add_constraint(name='flw-ub_%03d_%s' % (t, o), coeffs=mu_ub, sense=opt.SENSE_LEQ, rhs=0.)
 
