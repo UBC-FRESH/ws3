@@ -30,49 +30,12 @@ import copy
 import math
 
 try:
-    from . import common
-    from . import util
+    from ws3 import common
+    #from . import util
 except: # "__main__" case
-    import common
-    import util
+    from ws3 import common
+    #from . import util
 
-
-##################################################
-# not used (delete) [commenting out]
-# class Forest:
-#     """
-#     Encapsulates the forest system state machine (system state, events, state transitions).
-#     """    
-#     def __init__(self,
-#                  startyear,
-#                  horizon=common.HORIZON_DEFAULT,
-#                  period_length=common.PERIOD_LENGTH_DEFAULT,
-#                  description="",
-#                  species_groups=common.SPECIES_GROUPS_QC):
-#         self.startyear = startyear 
-#         self.horizon = horizon
-#         self.period_length = period_length
-#         self.description = description
-#         self._species_groups = species_groups
-#         self._strata = {}
-#         self._curves = {}
-#         self._treatments = {}
-#         #self._stands = {} # ?
-#         #self._zones = [] # ?
-#         #self._stratazones = [] # ?
-
-
-##################################################
-# not used (delete) [commenting out]
-# class Treatment:
-#     """
-#     A state-transition-inducing event.
-#     """
-#     def __init__(self,
-#                  label,
-#                  id):
-#         self._label = label
-#         self._id = id
 
 """
 Used by ``Curve`` class to interpolate between real data points.
@@ -84,20 +47,20 @@ class Interpolator(object):
     def __init__(self, points):
         #if any([_y - _x <= 0 for _x, _y in zip(x, x[1:])]):
         #    raise ValueError("x_list must be in strictly ascending order!")
-        x, y = zip(*points)
-        self.x = map(float, x)
-        self.y = map(float, y)
+        x, y = list(zip(*points))
+        self.x = list(map(float, x))
+        self.y = list(map(float, y))
         self.n = len(x)
-        intervals = zip(self.x, self.x[1:], self.y, self.y[1:])
+        intervals = list(zip(self.x, self.x[1:], self.y, self.y[1:]))
         #print intervals
         try:
             self.m = [(y2 - y1)/(x2 - x1) for x1, x2, y1, y2 in intervals]
         except:
-            print intervals
+            print(intervals)
             raise
         
     def points(self):
-        return zip(map(int, self.x), self.y)
+        return list(zip(list(map(int, self.x)), self.y))
         
     def __call__(self, x):
         if x == 0: return self.y[0]
@@ -138,7 +101,7 @@ class Interpolator(object):
             try:
                 return self.x[i] + (y - self.y[i])/self.m[i] if self.m[i] else self.x[i]
             except:
-                print i, self.n, self.x, self.y
+                print(i, self.n, self.x, self.y)
                 raise
             return x
         else:
@@ -170,7 +133,7 @@ class Curve:
         self.period_length = period_length
         self.xmin = xmin
         self.xmax = xmax
-        self.x = xrange(xmin, xmax+1)
+        self.x = range(xmin, xmax+1)
         self.is_special = is_special
         self._y = None
         self.epsilon = epsilon
@@ -202,7 +165,7 @@ class Curve:
         if compile_y: self._compile_y()
         if verbose:
             error = abs(sum(self) - ysum) / ysum
-            print 'after final simplify', n, len(self.points()), float(n)/float(len(self.points())), error, ysum, sentinel #, e, abs(sum(self) - ysum) / ysum
+            print('after final simplify', n, len(self.points()), float(n)/float(len(self.points())), error, ysum, sentinel) #, e, abs(sum(self) - ysum) / ysum
 
         
     def _simplify(self, e, compile_y=False):
@@ -224,7 +187,7 @@ class Curve:
             
     def add_points(self, points, simplify=True, compile_y=False):
         assert not self.is_locked
-        x, y = zip(*points) # assume sorted ascending x
+        x, y = list(zip(*points)) # assume sorted ascending x
         x = list(x)
         y = [float(_y) for _y in y]
         # seems ok... (never tripped the assertion so far)
@@ -239,7 +202,7 @@ class Curve:
         if x[-1] < self.xmax:
             x.append(self.xmax)
             y.append(y[-1])
-        points = zip(x, y)
+        points = list(zip(x, y))
         self.interp = Interpolator(points)
         if simplify:
             self.simplify(points, compile_y)
@@ -301,13 +264,13 @@ class Curve:
     def cai(self):
         x = self.x
         y = self.interp(x)
-        return Curve(points=zip(x, (y[1:]-y[:-1])/self.period_length))
+        return Curve(points=list(zip(x, (y[1:]-y[:-1])/self.period_length)))
             
     def mai(self):
         try:
-            p = [(0, 0.)] + [(x, self[x]/(float(x)*self.period_length)) for x in xrange(1, self.xmax+1)]
+            p = [(0, 0.)] + [(x, self[x]/(float(x)*self.period_length)) for x in range(1, self.xmax+1)]
         except:
-            print self.x #[1:]
+            print(self.x) #[1:]
         return Curve(points=p)
             
     def ytp(self):
@@ -333,27 +296,27 @@ class Curve:
 
     def __and__(self, other):
         y = [self[x] and other[x] for x in self.x] 
-        return Curve(points=zip(self.x, y))  
+        return Curve(points=list(zip(self.x, y)))  
     
     def __or__(self, other):
         y = [self[x] or other[x] for x in self.x] 
-        return Curve(points=zip(self.x, y))  
+        return Curve(points=list(zip(self.x, y)))  
     
     def __mul__(self, other):
         y = [_y*other for _y in self.y()] if isinstance(other, float) else [a*b for a,b in zip(self.y(), other.y())]
-        return Curve(points=zip(self.x, y))  
+        return Curve(points=list(zip(self.x, y)))  
     
     def __div__(self, other):
         y = [a/b for a, b in zip(self.y(), [1. if not y else y for y in other.y()])]
-        return Curve(points=zip(self.x, y))
+        return Curve(points=list(zip(self.x, y)))
         
     def __add__(self, other):
         y = [_y+other for _y in self.y()] if isinstance(other, float) else [a+b for a,b in zip(self.y(), other.y())]
-        return Curve(points=zip(self.x, y))  
+        return Curve(points=list(zip(self.x, y)))  
 
     def __sub__(self, other):
         y = [_y-other for _y in self.y()] if isinstance(other, float) else [a-b for a,b in zip(self.y(), other.y())]
-        return Curve(points=zip(self.x, y))
+        return Curve(points=list(zip(self.x, y)))
     
     __rmul__ = __mul__
     __radd__ = __add__
@@ -369,52 +332,52 @@ if __name__ in '__main__':
     #c2 = Curve('bar', points=[(22, 22.), (33, 33.)])
     #c3 = Curve('qux', points=[(22, 222.), (33, 333.)])
 
-    print 'c1'
-    for x in range(10): print x, c1[x]
-    print 'c2'
-    for x in range(10): print x, c2[x]
-    print 'c3'
-    for x in range(10): print x, c3[x]
+    print('c1')
+    for x in range(10): print(x, c1[x])
+    print('c2')
+    for x in range(10): print(x, c2[x])
+    print('c3')
+    for x in range(10): print(x, c3[x])
 
         
-    print
-    print
-    print 'test __mul__'
-    print
+    print()
+    print()
+    print('test __mul__')
+    print()
     c4 = c1 * c2
-    for x in range(10): print x, c4[x]
-    print
+    for x in range(10): print(x, c4[x])
+    print()
     c4 = c1 * 2.
-    for x in range(10): print x, c4[x]
-    print
+    for x in range(10): print(x, c4[x])
+    print()
     #c4 = 3. * c1
     #for x in range(10): print x, c4.y[x]
-    print
-    print
-    print 'test __div__'
-    print
+    print()
+    print()
+    print('test __div__')
+    print()
     c4 = c1 / c2
-    for x in range(10): print x, c1[x], c2[x], c4[x]
+    for x in range(10): print(x, c1[x], c2[x], c4[x])
           
-    print
-    print
-    print 'test __add__'
+    print()
+    print()
+    print('test __add__')
     c4 = c1 + c2
-    for x in range(10): print x, c4[x]
-    print
+    for x in range(10): print(x, c4[x])
+    print()
     c4 = c1 + 2.
-    for x in range(10): print x, c4[x]
-    print
+    for x in range(10): print(x, c4[x])
+    print()
     c4 = c1 + c2 + c3
-    for x in range(10): print x, c4[x]
+    for x in range(10): print(x, c4[x])
         
-    print
-    print 'test __sub__'
+    print()
+    print('test __sub__')
     c4 = c1 - c2
-    for x in range(10): print x, c4[x]
-    print
+    for x in range(10): print(x, c4[x])
+    print()
     c4 = c1 - 2.
-    for x in range(10): print x, c4[x]
+    for x in range(10): print(x, c4[x])
 
     #assert False
 

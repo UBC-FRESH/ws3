@@ -1,0 +1,159 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>core module &#8212; ws3 0.1a1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1a1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-core">
+<span id="core-module"></span><h1>core module<a class="headerlink" href="#module-core" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="core.Curve">
+<em class="property">class </em><code class="descclassname">core.</code><code class="descname">Curve</code><span class="sig-paren">(</span><em>label=None</em>, <em>id=None</em>, <em>is_volume=False</em>, <em>points=None</em>, <em>type='a'</em>, <em>is_special=False</em>, <em>period_length=10</em>, <em>xmin=0</em>, <em>xmax=1000</em>, <em>epsilon=0.01</em>, <em>simplify=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core.html#Curve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.Curve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Describes change in state over time (between treatments)</p>
+<dl class="method">
+<dt id="core.Curve.add_points">
+<code class="descname">add_points</code><span class="sig-paren">(</span><em>points</em>, <em>simplify=True</em>, <em>compile_y=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core.html#Curve.add_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.Curve.add_points" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.Curve.cai">
+<code class="descname">cai</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/core.html#Curve.cai"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.Curve.cai" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.Curve.lookup">
+<code class="descname">lookup</code><span class="sig-paren">(</span><em>y</em>, <em>from_right=False</em>, <em>roundx=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core.html#Curve.lookup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.Curve.lookup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.Curve.mai">
+<code class="descname">mai</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/core.html#Curve.mai"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.Curve.mai" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.Curve.points">
+<code class="descname">points</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/core.html#Curve.points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.Curve.points" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.Curve.range">
+<code class="descname">range</code><span class="sig-paren">(</span><em>lo=None</em>, <em>hi=None</em>, <em>as_bounds=False</em>, <em>left_range=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core.html#Curve.range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.Curve.range" title="Permalink to this definition">¶</a></dt>
+<dd><p>left_range True:  ub lookup from left (default)
+left_range False: ub lookup from right (widest possible range)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.Curve.simplify">
+<code class="descname">simplify</code><span class="sig-paren">(</span><em>points=None</em>, <em>autotune=True</em>, <em>compile_y=False</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core.html#Curve.simplify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.Curve.simplify" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.Curve.y">
+<code class="descname">y</code><span class="sig-paren">(</span><em>compile_y=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core.html#Curve.y"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.Curve.y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.Curve.ytp">
+<code class="descname">ytp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/core.html#Curve.ytp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.Curve.ytp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.Interpolator">
+<em class="property">class </em><code class="descclassname">core.</code><code class="descname">Interpolator</code><span class="sig-paren">(</span><em>points</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core.html#Interpolator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.Interpolator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Interpolates x and y values from sparse curve point list.</p>
+<dl class="method">
+<dt id="core.Interpolator.lookup">
+<code class="descname">lookup</code><span class="sig-paren">(</span><em>y</em>, <em>from_right=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core.html#Interpolator.lookup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.Interpolator.lookup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.Interpolator.points">
+<code class="descname">points</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/core.html#Interpolator.points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.Interpolator.points" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Gregory Paradis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/core.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,524 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>forest module &#8212; ws3 0.1a1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1a1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="opt module" href="opt.html" />
+    <link rel="prev" title="core module" href="core.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-forest">
+<span id="forest-module"></span><h1>forest module<a class="headerlink" href="#module-forest" title="Permalink to this headline">¶</a></h1>
+<p>This module implements functions for building and running wood supply simulation
+models.</p>
+<p>The <code class="docutils literal"><span class="pre">ForestModel</span></code> and <code class="docutils literal"><span class="pre">DevelopmentType</span></code> classes constitute the core functional units of this module, and of the <code class="docutils literal"><span class="pre">ws3</span></code> package in general.</p>
+<dl class="class">
+<dt id="forest.Action">
+<em class="property">class </em><code class="descclassname">forest.</code><code class="descname">Action</code><span class="sig-paren">(</span><em>code</em>, <em>targetage=None</em>, <em>descr=''</em>, <em>lockexempt=False</em>, <em>components=None</em>, <em>partial=None</em>, <em>is_harvest=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#Action"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.Action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Encapsulates data for an action.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="forest.DevelopmentType">
+<em class="property">class </em><code class="descclassname">forest.</code><code class="descname">DevelopmentType</code><span class="sig-paren">(</span><em>key</em>, <em>parent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#DevelopmentType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.DevelopmentType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Encapsulates Forest development type data (curves, age, area), and provides methods to operate on the data.</p>
+<dl class="method">
+<dt id="forest.DevelopmentType.add_ycomp">
+<code class="descname">add_ycomp</code><span class="sig-paren">(</span><em>ytype</em>, <em>yname</em>, <em>ycomp</em>, <em>first_match=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#DevelopmentType.add_ycomp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.DevelopmentType.add_ycomp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="forest.DevelopmentType.area">
+<code class="descname">area</code><span class="sig-paren">(</span><em>period</em>, <em>age=None</em>, <em>area=None</em>, <em>delta=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#DevelopmentType.area"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.DevelopmentType.area" title="Permalink to this definition">¶</a></dt>
+<dd><p>If area not specified, returns area inventory for period (optionally age), else sets area for period and age. 
+If delta switch active (default True), area value is interpreted as an increment on current inventory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.DevelopmentType.compile_action">
+<code class="descname">compile_action</code><span class="sig-paren">(</span><em>acode</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#DevelopmentType.compile_action"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.DevelopmentType.compile_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compile action, given action code. 
+This mostly involves resolving operability expression strings into
+lower and upper operability limits, defined as (alo, ahi) age pair for each period.
+Deletes action from self if not operable in any period.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.DevelopmentType.compile_actions">
+<code class="descname">compile_actions</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#DevelopmentType.compile_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.DevelopmentType.compile_actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compile all actions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.DevelopmentType.grow">
+<code class="descname">grow</code><span class="sig-paren">(</span><em>start_period=1</em>, <em>cascade=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#DevelopmentType.grow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.DevelopmentType.grow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grow self (default starting period 1, and cascading to end of planning horizon).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.DevelopmentType.initialize_areas">
+<code class="descname">initialize_areas</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#DevelopmentType.initialize_areas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.DevelopmentType.initialize_areas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy initial inventory to period-1 inventory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.DevelopmentType.is_operable">
+<code class="descname">is_operable</code><span class="sig-paren">(</span><em>acode</em>, <em>period</em>, <em>age=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#DevelopmentType.is_operable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.DevelopmentType.is_operable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test hypothetical operability.
+Does not imply that there is any operable area in current inventory.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.DevelopmentType.operable_ages">
+<code class="descname">operable_ages</code><span class="sig-paren">(</span><em>acode</em>, <em>period</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#DevelopmentType.operable_ages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.DevelopmentType.operable_ages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds list of ages at which self is operable, given an action code and period index.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.DevelopmentType.operable_area">
+<code class="descname">operable_area</code><span class="sig-paren">(</span><em>acode</em>, <em>period</em>, <em>age=None</em>, <em>cleanup=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#DevelopmentType.operable_area"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.DevelopmentType.operable_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns 0 if inoperable or no current inventory, operable area given action code and period 
+(and optionally age) index otherwise. If cleanup switch activated (default True) and age specified, 
+deletes the ageclass from the inventory dict if operable area is less than self.parent.area_epsilon.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.DevelopmentType.reset_areas">
+<code class="descname">reset_areas</code><span class="sig-paren">(</span><em>period=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#DevelopmentType.reset_areas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.DevelopmentType.reset_areas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset areas dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.DevelopmentType.resolve_condition">
+<code class="descname">resolve_condition</code><span class="sig-paren">(</span><em>yname</em>, <em>lo</em>, <em>hi</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#DevelopmentType.resolve_condition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.DevelopmentType.resolve_condition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find lower and upper ages that correspond to lo and hi values of yname (interpreted as first occurence of yield value, reading curve from left and right, respectively).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.DevelopmentType.ycomp">
+<code class="descname">ycomp</code><span class="sig-paren">(</span><em>yname</em>, <em>silent_fail=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#DevelopmentType.ycomp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.DevelopmentType.ycomp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="forest.DevelopmentType.ycomps">
+<code class="descname">ycomps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#DevelopmentType.ycomps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.DevelopmentType.ycomps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns list of yield component keys.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="forest.ForestModel">
+<em class="property">class </em><code class="descclassname">forest.</code><code class="descname">ForestModel</code><span class="sig-paren">(</span><em>model_name</em>, <em>model_path</em>, <em>horizon=30</em>, <em>period_length=10</em>, <em>max_age=1000</em>, <em>area_epsilon=0.01</em>, <em>curve_epsilon=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>This is the core class of the ws3 package.
+Includes methods import data from various sources, simulate growth and apply actions.
+The model can be used in either a (prescriptive) simulation-based approach or a (descriptive) optimization-based approach.</p>
+<p>This class encapsulates all the information used to simulate scenarios from a given dataset (i.e., stratified intial inventory, growth and yield functions, action eligibility, transition matrix, action schedule, etc.), as well as a large collection of functions to import and export data, generate activity schedules, and simulate application of these schedules  (i.e., run scenarios).</p>
+<p>At the heart of the <code class="docutils literal"><span class="pre">ForestModel</span></code> class is a list of <code class="docutils literal"><span class="pre">DevelopentType</span></code> instances. Each <code class="docutils literal"><span class="pre">DevelopmentType</span></code> instance encapsulates information about one development type (i.e., a forest stratum, which is an aggregate of smaller <em>stands</em> that make up the raw forest inventory input data). The <code class="docutils literal"><span class="pre">DevelopmentType</span></code> class also stores a list of operable <em>actions</em>, maps <em>state variable transitions</em> to these actions, stores growth and yield functions, and knows how to <em>grow itself</em> when time is incremented during a simulation.</p>
+<p>A typical use case starts with creating an instance of the <code class="docutils literal"><span class="pre">ForestModel</span></code> class. Then, we need to load data into this instance, define one or more scenarios (using a mix of heuristic and optimization approaches), run the scenarios, and export output data to a format suitable for analysis (or link to the next model in a larger modelling pipeline).</p>
+<dl class="method">
+<dt id="forest.ForestModel.add_null_action">
+<code class="descname">add_null_action</code><span class="sig-paren">(</span><em>acode='null'</em>, <em>minage=None</em>, <em>maxage=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.add_null_action"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.add_null_action" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.add_problem">
+<code class="descname">add_problem</code><span class="sig-paren">(</span><em>name</em>, <em>coeff_funcs</em>, <em>cflw_e</em>, <em>cgen_data=None</em>, <em>solver='gurobi'</em>, <em>formulation=1</em>, <em>z_coeff_key='z'</em>, <em>acodes=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.add_problem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.add_problem" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.add_theme">
+<code class="descname">add_theme</code><span class="sig-paren">(</span><em>name</em>, <em>basecodes=[]</em>, <em>aggs={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.add_theme"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.add_theme" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.age_class_distribution">
+<code class="descname">age_class_distribution</code><span class="sig-paren">(</span><em>period</em>, <em>mask=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.age_class_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.age_class_distribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns age class distribution (dict of areas, keys on age).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.apply_action">
+<code class="descname">apply_action</code><span class="sig-paren">(</span><em>dtype_key</em>, <em>acode</em>, <em>period</em>, <em>age</em>, <em>area</em>, <em>override_operability=False</em>, <em>fuzzy_age=True</em>, <em>recourse_enabled=True</em>, <em>areaselector=None</em>, <em>compile_t_ycomps=False</em>, <em>compile_c_ycomps=False</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.apply_action"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.apply_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies action, given action code, development type, period, age, area.
+Can optionally override operability limits, optionally use fuzzy age (i.e., attempt to apply action 
+to proximal age class if specified age is not operable), optionally use default AreaSelector to patch
+missing area (if recourse enabled). Applying an action is a rather complex process, involving testing 
+for operability (JIT-compiling operability expression as required), checking that valid transitions 
+are defined, checking that area is available (possibly using fuzzy age and area selector functions to
+find missing area), generate list of target development types (from source development type and 
+transition expressions [which may need to be JIT-compiled]), creating new development types (as needed), 
+doing the area accounting correctly (without creating or destroying any area), and compiling the products
+from the action (which gets a bit complicated in the case of partial cuts…).</p>
+<p>Returns (errorcode, missing_area, target_dt) triplet, where errorcode is an error code, missing_area is 
+the missing area, and target_dt is a list of (dtk, tprop, targetage) triplets (one triplet per target 
+development type).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.apply_schedule">
+<code class="descname">apply_schedule</code><span class="sig-paren">(</span><em>schedule</em>, <em>max_period=None</em>, <em>verbose=False</em>, <em>fail_on_missingarea=False</em>, <em>force_integral_area=False</em>, <em>override_operability=False</em>, <em>fuzzy_age=True</em>, <em>recourse_enabled=True</em>, <em>areaselector=None</em>, <em>compile_t_ycomps=False</em>, <em>compile_c_ycomps=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.apply_schedule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.apply_schedule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assumes schedule in format returned by import_schedule_section().
+That is: list of (dtype_key, age, area, acode, period, etype) tuples.
+Also assumes that actions in list are sorted by applied period.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.commit_actions">
+<code class="descname">commit_actions</code><span class="sig-paren">(</span><em>period=1</em>, <em>repair_future_actions=False</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.commit_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.commit_actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Commits applied actions (i.e., apply transitions and grow, default starting at period 1).
+By default, will attempt to repair broken (infeasible) future actions, attempting to replace infeasiblea operated area using default AreaSelector.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.compile_product">
+<code class="descname">compile_product</code><span class="sig-paren">(</span><em>period</em>, <em>expr</em>, <em>acode=None</em>, <em>dtype_keys=None</em>, <em>age=None</em>, <em>coeff=False</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.compile_product"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.compile_product" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compiles products from applied actions in given period. Parses string expression, which resolves to a single coefficient. 
+Operated area can be filtered on action code, development type key list, and age. Result is product of sum of filtered 
+area and coefficient.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.compile_schedule">
+<code class="descname">compile_schedule</code><span class="sig-paren">(</span><em>problem</em>, <em>formulation=1</em>, <em>skip_null='null'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.compile_schedule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.compile_schedule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compiles a <code class="docutils literal"><span class="pre">ws3</span></code>-compatible schedule data object from a solved <code class="docutils literal"><span class="pre">ws3.opt.Problem</span></code> instance. This is just a dispatcher function—the actual compilation is done by a formulation-specific function (assumes <em>Model I</em> formulation if not specified).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.create_dtype_fromkey">
+<code class="descname">create_dtype_fromkey</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.create_dtype_fromkey"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.create_dtype_fromkey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new development type, given a key (checks for existing, auto-assigns yield compompontents, 
+auto-assign actions and transitions, checks for operability (filed under inoperable if applicable).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.dt">
+<code class="descname">dt</code><span class="sig-paren">(</span><em>dtype_key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.dt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.dt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns development type, given key (returns None on invalid key).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.grow">
+<code class="descname">grow</code><span class="sig-paren">(</span><em>start_period=1</em>, <em>cascade=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.grow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.grow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulates growth (default startint at period 1 and cascading to the end of the planning horizon).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.import_actions_section">
+<code class="descname">import_actions_section</code><span class="sig-paren">(</span><em>filename_suffix='act'</em>, <em>mask_func=None</em>, <em>nthemes=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.import_actions_section"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.import_actions_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Imports ACTIONS section from a Forest model.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.import_areas_section">
+<code class="descname">import_areas_section</code><span class="sig-paren">(</span><em>model_path=None</em>, <em>model_name=None</em>, <em>filename_suffix='are'</em>, <em>import_empty=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.import_areas_section"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.import_areas_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Imports AREAS section from a Forest model.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.import_constants_section">
+<code class="descname">import_constants_section</code><span class="sig-paren">(</span><em>filename_suffix='con'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.import_constants_section"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.import_constants_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Imports CONSTANTS section from a Forest model.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.import_control_section">
+<code class="descname">import_control_section</code><span class="sig-paren">(</span><em>filename_suffix='run'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.import_control_section"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.import_control_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Imports CONTROL section from a Forest model.
+.. warning:: Not implemented yet.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.import_graphics_section">
+<code class="descname">import_graphics_section</code><span class="sig-paren">(</span><em>filename_suffix='gra'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.import_graphics_section"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.import_graphics_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Imports GRAPHICS section from a Forest model.
+.. warning:: Not implemented yet.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.import_landscape_section">
+<code class="descname">import_landscape_section</code><span class="sig-paren">(</span><em>filename_suffix='lan'</em>, <em>ti_offset=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.import_landscape_section"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.import_landscape_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Imports LANDSCAPE section from a Forest model.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.import_lifespan_section">
+<code class="descname">import_lifespan_section</code><span class="sig-paren">(</span><em>filename_suffix='lif'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.import_lifespan_section"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.import_lifespan_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Imports LIFESPAN section from a Forest model.
+.. warning:: Not implemented yet.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.import_optimize_section">
+<code class="descname">import_optimize_section</code><span class="sig-paren">(</span><em>filename_suffix='opt'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.import_optimize_section"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.import_optimize_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Imports OPTIMIZE section from a Forest model.
+.. warning:: Not implemented yet.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.import_outputs_section">
+<code class="descname">import_outputs_section</code><span class="sig-paren">(</span><em>filename_suffix='out'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.import_outputs_section"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.import_outputs_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Imports OUTPUTS section from a Forest model.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.import_schedule_section">
+<code class="descname">import_schedule_section</code><span class="sig-paren">(</span><em>filename_suffix='seq'</em>, <em>replace_commas=True</em>, <em>filename_prefix=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.import_schedule_section"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.import_schedule_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Imports SCHEDULE section from a Forest model.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.import_transitions_section">
+<code class="descname">import_transitions_section</code><span class="sig-paren">(</span><em>filename_suffix='trn'</em>, <em>mask_func=None</em>, <em>nthemes=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.import_transitions_section"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.import_transitions_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Imports TRANSITIONS section from a Forest model.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.import_yields_section">
+<code class="descname">import_yields_section</code><span class="sig-paren">(</span><em>filename_suffix='yld'</em>, <em>mask_func=None</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.import_yields_section"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.import_yields_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Imports YIELDS section from a Forest model.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.initialize_areas">
+<code class="descname">initialize_areas</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.initialize_areas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.initialize_areas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copies areas from period 0 to period 1.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.inventory">
+<code class="descname">inventory</code><span class="sig-paren">(</span><em>period</em>, <em>yname=None</em>, <em>age=None</em>, <em>mask=None</em>, <em>dtype_keys=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.inventory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.inventory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flexible method that compiles inventory at given period.
+Unit of return data defaults to area if yname not given, 
+but takes on unit of yield component otherwise. 
+Can be constrained by age and development type mask.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.is_harvest">
+<code class="descname">is_harvest</code><span class="sig-paren">(</span><em>acode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.is_harvest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.is_harvest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if acode corresponds to a harvesting action.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.match_mask">
+<code class="descname">match_mask</code><span class="sig-paren">(</span><em>mask</em>, <em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.match_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.match_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if key matches mask.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.operable_area">
+<code class="descname">operable_area</code><span class="sig-paren">(</span><em>acode</em>, <em>period</em>, <em>age=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.operable_area"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.operable_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns total operable area, given action code and period (and optionally age).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.operable_dtypes">
+<code class="descname">operable_dtypes</code><span class="sig-paren">(</span><em>acode</em>, <em>period</em>, <em>mask=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.operable_dtypes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.operable_dtypes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns dict (keyed on development type key, values are lists of operable ages).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.operated_area">
+<code class="descname">operated_area</code><span class="sig-paren">(</span><em>acode</em>, <em>period</em>, <em>dtype_key=None</em>, <em>age=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.operated_area"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.operated_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compiles operated area, given action code and period (and optionally list of development type keys or age).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.piece_size">
+<code class="descname">piece_size</code><span class="sig-paren">(</span><em>dtype_key</em>, <em>age</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.piece_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.piece_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns piece size, given development type key and age.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.register_curve">
+<code class="descname">register_curve</code><span class="sig-paren">(</span><em>curve</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.register_curve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.register_curve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add curve to global curve hash map (uses result of Curve.points() to construct hash key).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.repair_actions">
+<code class="descname">repair_actions</code><span class="sig-paren">(</span><em>period</em>, <em>areaselector=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.repair_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.repair_actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempts to repair the action schedule for given period, using an AreaSelector object (defaults to class-default areaselector, which is a simple greedy oldest-first selector).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.reset_actions">
+<code class="descname">reset_actions</code><span class="sig-paren">(</span><em>period=None</em>, <em>acode=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.reset_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.reset_actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets actions (default resets all periods, all actions, unless period or acode specified).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.resolve_append">
+<code class="descname">resolve_append</code><span class="sig-paren">(</span><em>dtk</em>, <em>expr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.resolve_append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.resolve_append" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.resolve_condition">
+<code class="descname">resolve_condition</code><span class="sig-paren">(</span><em>condition</em>, <em>dtype_key=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.resolve_condition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.resolve_condition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate &#64;AGE or &#64;YLD condition.
+Returns list of ages.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.resolve_replace">
+<code class="descname">resolve_replace</code><span class="sig-paren">(</span><em>dtk</em>, <em>expr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.resolve_replace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.resolve_replace" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.resolve_tappend">
+<code class="descname">resolve_tappend</code><span class="sig-paren">(</span><em>dt</em>, <em>tappend</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.resolve_tappend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.resolve_tappend" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.resolve_targetage">
+<code class="descname">resolve_targetage</code><span class="sig-paren">(</span><em>dtk</em>, <em>tyield</em>, <em>sage</em>, <em>tage</em>, <em>acode</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.resolve_targetage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.resolve_targetage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.resolve_tmask">
+<code class="descname">resolve_tmask</code><span class="sig-paren">(</span><em>dt</em>, <em>tmask</em>, <em>treplace</em>, <em>tappend</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.resolve_tmask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.resolve_tmask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns new developement type key (tuple of values, one per theme), given developement type and (treplace, tappend) expressions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.resolve_treplace">
+<code class="descname">resolve_treplace</code><span class="sig-paren">(</span><em>dt</em>, <em>treplace</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.resolve_treplace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.resolve_treplace" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.sylv_cred_formula">
+<code class="descname">sylv_cred_formula</code><span class="sig-paren">(</span><em>treatment_type</em>, <em>cover_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.sylv_cred_formula"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.sylv_cred_formula" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.theme_basecodes">
+<code class="descname">theme_basecodes</code><span class="sig-paren">(</span><em>theme_index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.theme_basecodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.theme_basecodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return list of base codes, given theme index.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.tree">
+<code class="descname">tree</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#forest.ForestModel.tree" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="forest.ForestModel.unmask">
+<code class="descname">unmask</code><span class="sig-paren">(</span><em>mask</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#ForestModel.unmask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.ForestModel.unmask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iteratively filter list of development type keys using mask values.
+Accepts Forest-style string masks to facilitate cut-and-paste testing.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="forest.GreedyAreaSelector">
+<em class="property">class </em><code class="descclassname">forest.</code><code class="descname">GreedyAreaSelector</code><span class="sig-paren">(</span><em>parent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#GreedyAreaSelector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.GreedyAreaSelector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Default AreaSelector implementation. Selects areas for treatment from oldest age classes.</p>
+<dl class="method">
+<dt id="forest.GreedyAreaSelector.operate">
+<code class="descname">operate</code><span class="sig-paren">(</span><em>period</em>, <em>acode</em>, <em>target_area</em>, <em>mask=None</em>, <em>commit_actions=True</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#GreedyAreaSelector.operate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.GreedyAreaSelector.operate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Greedily operate on oldest operable age classes.
+Returns missing area (i.e., difference between target and operated areas).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="forest.Output">
+<em class="property">class </em><code class="descclassname">forest.</code><code class="descname">Output</code><span class="sig-paren">(</span><em>parent</em>, <em>code=None</em>, <em>expression=None</em>, <em>factor=(1.0</em>, <em>1)</em>, <em>description=''</em>, <em>theme_index=-1</em>, <em>is_basic=False</em>, <em>is_level=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest.html#Output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forest.Output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Encapsulates data and methods to operate on aggregate outputs from the model.
+Emulates behaviour of Forest outputs.
+.. warning:: Behaviour of Forest outputs is quite complex. 
+This class needs more work before it is used in a production setting 
+(i.e., resolution of some complex output cases is buggy).</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html"><code class="docutils literal"><span class="pre">ws3</span></code> Package Modules</a><ul>
+      <li>Previous: <a href="core.html" title="previous chapter">core module</a></li>
+      <li>Next: <a href="opt.html" title="next chapter">opt module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Gregory Paradis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/forest.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,242 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>opt &#8212; ws3 0.1a1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1a1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for opt</h1><div class="highlight"><pre>
+<span></span><span class="c1">###################################################################################</span>
+<span class="c1"># MIT License</span>
+
+<span class="c1"># Copyright (c) 2015-2017 Gregory Paradis</span>
+
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+
+<span class="c1"># The above copyright notice and this permission notice shall be included in all</span>
+<span class="c1"># copies or substantial portions of the Software.</span>
+
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.</span>
+<span class="c1">###################################################################################</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module implements functions for formulating and solving optimization problems.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">gurobipy</span> <span class="k">as</span> <span class="nn">grb</span>
+
+<span class="n">SENSE_MINIMIZE</span> <span class="o">=</span> <span class="o">+</span><span class="mi">1</span> <span class="c1"># same as GRB.MINIMIZE</span>
+<span class="n">SENSE_MAXIMIZE</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="c1"># same as GRB.MAXIMIZE</span>
+<span class="n">SENSE_EQ</span> <span class="o">=</span> <span class="s1">&#39;=&#39;</span> <span class="c1"># same as GRB.EQUAL</span>
+<span class="n">SENSE_GEQ</span> <span class="o">=</span> <span class="s1">&#39;&gt;&#39;</span> <span class="c1"># same as GRB.GREATER_EQUAL</span>
+<span class="n">SENSE_LEQ</span> <span class="o">=</span> <span class="s1">&#39;&lt;&#39;</span> <span class="c1"># same as GRB.LESS_EQUAL</span>
+<span class="n">VTYPE_INTEGER</span> <span class="o">=</span> <span class="s1">&#39;I&#39;</span> <span class="c1"># same as GRB.INTEGER</span>
+<span class="n">VTYPE_BINARY</span> <span class="o">=</span> <span class="s1">&#39;B&#39;</span> <span class="c1"># same as GRB.BINARY</span>
+<span class="n">VTYPE_CONTINUOUS</span> <span class="o">=</span> <span class="s1">&#39;C&#39;</span> <span class="c1"># same as GRB.CONTINUOUS</span>
+<span class="n">VBNDS_INF</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+<span class="n">SOLVR_GUROBI</span> <span class="o">=</span> <span class="s1">&#39;gurobi&#39;</span>
+
+<span class="n">GUROBI_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">SENSE_MINIMIZE</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">MINIMIZE</span><span class="p">,</span>
+    <span class="n">SENSE_MAXIMIZE</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">MAXIMIZE</span><span class="p">,</span>
+    <span class="n">VTYPE_INTEGER</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">INTEGER</span><span class="p">,</span>
+    <span class="n">VTYPE_BINARY</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">BINARY</span><span class="p">,</span>
+    <span class="n">VTYPE_CONTINUOUS</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">CONTINUOUS</span><span class="p">,</span>
+    <span class="n">SENSE_EQ</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">,</span>
+    <span class="n">SENSE_GEQ</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">GREATER_EQUAL</span><span class="p">,</span>
+    <span class="n">SENSE_LEQ</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">LESS_EQUAL</span><span class="p">}</span>
+
+<div class="viewcode-block" id="Variable"><a class="viewcode-back" href="../opt.html#opt.Variable">[docs]</a><span class="k">class</span> <span class="nc">Variable</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">vtype</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">VBNDS_INF</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vtype</span> <span class="o">=</span> <span class="n">vtype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lb</span> <span class="o">=</span> <span class="n">lb</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ub</span> <span class="o">=</span> <span class="n">ub</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">val</span></div>
+
+<div class="viewcode-block" id="Constraint"><a class="viewcode-back" href="../opt.html#opt.Constraint">[docs]</a><span class="k">class</span> <span class="nc">Constraint</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">,</span> <span class="n">sense</span><span class="p">,</span> <span class="n">rhs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coeffs</span> <span class="o">=</span> <span class="n">coeffs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sense</span> <span class="o">=</span> <span class="n">sense</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rhs</span> <span class="o">=</span> <span class="n">rhs</span></div>
+                
+<div class="viewcode-block" id="Problem"><a class="viewcode-back" href="../opt.html#opt.Problem">[docs]</a><span class="k">class</span> <span class="nc">Problem</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">sense</span><span class="o">=</span><span class="n">SENSE_MAXIMIZE</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">SOLVR_GUROBI</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_z</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1">#self._solution = None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sense</span> <span class="o">=</span> <span class="n">sense</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solver</span> <span class="o">=</span> <span class="n">solver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">SOLVR_GUROBI</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_solve_gurobi</span><span class="p">}</span>
+
+<div class="viewcode-block" id="Problem.add_var"><a class="viewcode-back" href="../opt.html#opt.Problem.add_var">[docs]</a>    <span class="k">def</span> <span class="nf">add_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">vtype</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="n">VBNDS_INF</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">vtype</span><span class="p">,</span> <span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solution</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># modifying problem kills solution</span></div>
+
+<div class="viewcode-block" id="Problem.var_names"><a class="viewcode-back" href="../opt.html#opt.Problem.var_names">[docs]</a>    <span class="k">def</span> <span class="nf">var_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="Problem.constraint_names"><a class="viewcode-back" href="../opt.html#opt.Problem.constraint_names">[docs]</a>    <span class="k">def</span> <span class="nf">constraint_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="Problem.name"><a class="viewcode-back" href="../opt.html#opt.Problem.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span></div>
+        
+<div class="viewcode-block" id="Problem.var"><a class="viewcode-back" href="../opt.html#opt.Problem.var">[docs]</a>    <span class="k">def</span> <span class="nf">var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="p">[</span><span class="n">name</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Problem.sense"><a class="viewcode-back" href="../opt.html#opt.Problem.sense">[docs]</a>    <span class="k">def</span> <span class="nf">sense</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">val</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sense</span> <span class="o">=</span> <span class="n">val</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_solution</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># modifying problem kills solution</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sense</span></div>
+
+<div class="viewcode-block" id="Problem.solved"><a class="viewcode-back" href="../opt.html#opt.Problem.solved">[docs]</a>    <span class="k">def</span> <span class="nf">solved</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solution</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+        
+<div class="viewcode-block" id="Problem.z"><a class="viewcode-back" href="../opt.html#opt.Problem.z">[docs]</a>    <span class="k">def</span> <span class="nf">z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">coeffs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">coeffs</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_z</span> <span class="o">=</span> <span class="n">coeffs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_solution</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># modifying problem kills solution</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">solved</span><span class="p">()</span>
+            <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_z</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solution</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span></div>
+        
+<div class="viewcode-block" id="Problem.add_constraint"><a class="viewcode-back" href="../opt.html#opt.Problem.add_constraint">[docs]</a>    <span class="k">def</span> <span class="nf">add_constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">,</span> <span class="n">sense</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">coeffs</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">Constraint</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">,</span> <span class="n">sense</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solution</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># modifying problem kills solution</span></div>
+
+<div class="viewcode-block" id="Problem.solver"><a class="viewcode-back" href="../opt.html#opt.Problem.solver">[docs]</a>    <span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">val</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_solver</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solver</span></div>
+
+<div class="viewcode-block" id="Problem.solution"><a class="viewcode-back" href="../opt.html#opt.Problem.solution">[docs]</a>    <span class="k">def</span> <span class="nf">solution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">#return self._solution</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">val</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="Problem.solve"><a class="viewcode-back" href="../opt.html#opt.Problem.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="kc">False</span> <span class="c1"># not implemented yet, but later check that all systems are GO before launching...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_map</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_solver</span><span class="p">]</span><span class="o">.</span><span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">))()</span></div>
+
+    <span class="k">def</span> <span class="nf">_solve_gurobi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_m</span> <span class="o">=</span> <span class="n">m</span> <span class="o">=</span> <span class="n">grb</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="nb">vars</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">:</span><span class="n">m</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">vtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="o">.</span><span class="n">values</span><span class="p">())}</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">grb</span><span class="o">.</span><span class="n">LinExpr</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">:</span>
+            <span class="n">z</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">*</span> <span class="nb">vars</span><span class="p">[</span><span class="n">v</span><span class="p">]</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">setObjective</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="n">z</span><span class="p">,</span> <span class="n">sense</span><span class="o">=</span><span class="n">GUROBI_MAP</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_sense</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>            
+            <span class="n">lhs</span> <span class="o">=</span> <span class="n">grb</span><span class="o">.</span><span class="n">LinExpr</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">constraint</span><span class="o">.</span><span class="n">coeffs</span><span class="p">:</span>
+                <span class="n">lhs</span> <span class="o">+=</span> <span class="n">constraint</span><span class="o">.</span><span class="n">coeffs</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">*</span> <span class="nb">vars</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+            <span class="n">m</span><span class="o">.</span><span class="n">addConstr</span><span class="p">(</span><span class="n">lhs</span><span class="o">=</span><span class="n">lhs</span><span class="p">,</span>
+                        <span class="n">sense</span><span class="o">=</span><span class="n">GUROBI_MAP</span><span class="p">[</span><span class="n">constraint</span><span class="o">.</span><span class="n">sense</span><span class="p">],</span>
+                        <span class="n">rhs</span><span class="o">=</span><span class="n">constraint</span><span class="o">.</span><span class="n">rhs</span><span class="p">,</span>
+                        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="n">_v</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">getVarByName</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">_solver_var</span> <span class="o">=</span> <span class="n">_v</span> <span class="c1"># might want to poke around this later...</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">_v</span><span class="o">.</span><span class="n">X</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Gregory Paradis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

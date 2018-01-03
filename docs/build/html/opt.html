@@ -1,0 +1,167 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>opt module &#8212; ws3 0.1a1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1a1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-opt">
+<span id="opt-module"></span><h1>opt module<a class="headerlink" href="#module-opt" title="Permalink to this headline">¶</a></h1>
+<p>This module implements functions for formulating and solving optimization problems.</p>
+<dl class="class">
+<dt id="opt.Constraint">
+<em class="property">class </em><code class="descclassname">opt.</code><code class="descname">Constraint</code><span class="sig-paren">(</span><em>name</em>, <em>coeffs</em>, <em>sense</em>, <em>rhs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Constraint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="opt.Problem">
+<em class="property">class </em><code class="descclassname">opt.</code><code class="descname">Problem</code><span class="sig-paren">(</span><em>name</em>, <em>sense=-1</em>, <em>solver='gurobi'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="opt.Problem.add_constraint">
+<code class="descname">add_constraint</code><span class="sig-paren">(</span><em>name</em>, <em>coeffs</em>, <em>sense</em>, <em>rhs</em>, <em>validate=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.add_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.add_constraint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="opt.Problem.add_var">
+<code class="descname">add_var</code><span class="sig-paren">(</span><em>name</em>, <em>vtype</em>, <em>lb=0.0</em>, <em>ub=inf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.add_var"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.add_var" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="opt.Problem.constraint_names">
+<code class="descname">constraint_names</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.constraint_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.constraint_names" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="opt.Problem.name">
+<code class="descname">name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="opt.Problem.sense">
+<code class="descname">sense</code><span class="sig-paren">(</span><em>val=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.sense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.sense" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="opt.Problem.solution">
+<code class="descname">solution</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.solution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.solution" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="opt.Problem.solve">
+<code class="descname">solve</code><span class="sig-paren">(</span><em>validate=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.solve" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="opt.Problem.solved">
+<code class="descname">solved</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.solved"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.solved" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="opt.Problem.solver">
+<code class="descname">solver</code><span class="sig-paren">(</span><em>val</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.solver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.solver" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="opt.Problem.var">
+<code class="descname">var</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.var"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.var" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="opt.Problem.var_names">
+<code class="descname">var_names</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.var_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.var_names" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="opt.Problem.z">
+<code class="descname">z</code><span class="sig-paren">(</span><em>coeffs</em>, <em>validate=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.z"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.z" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="opt.Variable">
+<em class="property">class </em><code class="descclassname">opt.</code><code class="descname">Variable</code><span class="sig-paren">(</span><em>name</em>, <em>vtype</em>, <em>lb=0.0</em>, <em>ub=inf</em>, <em>val=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Variable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Gregory Paradis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/opt.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

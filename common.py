@@ -43,9 +43,10 @@ import pacal
 import rasterio
 import hashlib
 import re
+import binascii
 
 try:
-    import cPickle as pickle
+    import pickle as pickle
 except:
     import pickle
 import math
@@ -54,6 +55,12 @@ import fiona
 from fiona.transform import transform_geom
 from fiona.crs import from_epsg
 
+def is_num(s):
+    try:
+        float(s)
+        return True
+    except:
+        return False
 
 def reproject(f, srs_crs, dst_crs):
     f['geometry'] = transform_geom(srs_crs, dst_crs, f['geometry'],
@@ -82,14 +89,14 @@ def clean_vector_data(src_path, dst_path, dst_name, prop_names, clean=True, tole
             dst_crs = from_epsg(dst_epsg)
             kwds1.update(crs=dst_crs, crs_wkt=None)
         if not prop_types:
-            prop_types = [(u'theme0', 'str:10')] if theme0 else []
+            prop_types = [('theme0', 'str:10')] if theme0 else []
             prop_types = prop_types + [(pn.lower(), src.schema['properties'][pn]) for pn in prop_names]
         kwds1['schema']['properties'] = OrderedDict(prop_types)
         kwds2['schema']['properties'] = OrderedDict(prop_types)
         with fiona.open(snk1_path, 'w', **kwds1) as snk1, fiona.open(snk2_path, 'w', **kwds2) as snk2:
             n = len(src) if not max_records else max_records
             for f in src[:n]:
-                prop_data = [(u'theme0', theme0)] if theme0 else []
+                prop_data = [('theme0', theme0)] if theme0 else []
                 if prop_types:
                     prop_data = prop_data + [(prop_types[i+len(prop_data)][0], f['properties'][pn])
                                              for i, pn in enumerate(prop_names)]   
@@ -107,7 +114,7 @@ def clean_vector_data(src_path, dst_path, dst_name, prop_names, clean=True, tole
                     f['geometry'] = mapping(g)
                     if dst_epsg: f = reproject(f, src.crs, dst_crs)
                     snk1.write(f)
-                except Exception, e: # log exception and write uncleanable feature a separate shapefile
+                except Exception as e: # log exception and write uncleanable feature a separate shapefile
                     logging.exception("Error cleaning feature %s:", f['id'])
                     snk2.write(f)
     return snk1_path, snk2_path
@@ -128,13 +135,13 @@ def reproject_vector_data(src_path, snk_path, snk_epsg, driver='ESRI Shapefile')
             for f in src: snk.write(reproject(f, src.crs, snk_crs))
 
                           
-def rasterize_stands(shp_path, tif_path, theme_cols, age_col, age_divisor=1, d=100.,
+def rasterize_stands(shp_path, tif_path, theme_cols, age_col, age_divisor=1., d=100.,
                      dtype=rasterio.uint32, compress='lzw', round_coords=True,
                      value_func=lambda x: re.sub(r'(-| )+', '_', str(x).lower()),
                      verbose=False): 
     import fiona
     from rasterio.features import rasterize
-    if verbose: print 'rasterizing', shp_path
+    if verbose: print('rasterizing', shp_path)
     if dtype == rasterio.uint32: 
         nbytes = 4
     else:
@@ -152,8 +159,17 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, age_divisor=1, d=1
             dt = tuple(value_func(f['properties'][t]) for t in theme_cols)
             h = hash_dt(dt, dtype, nbytes)
             hdt[h] = dt
-            shapes[0].append((f['geometry'], h)) # themes
-            shapes[1].append((f['geometry'], np.uint32(math.ceil(f['properties'][age_col]/float(age_divisor))))) # age
+            age = np.uint32(math.ceil(f['properties'][age_col]/float(age_divisor)))
+            try:
+                assert age > 0
+            except:
+                if f['properties'][age_col] == 0:
+                    age = np.uint32(1)
+                else:
+                    print('bad age', age, f['properties'][age_col], age_divisor)
+                    raise
+            shapes[0].append((f['geometry'], h))   # themes
+            shapes[1].append((f['geometry'], age)) # age
     #rst_path = shp_path[:-4]+'.tif' if not rst_path else rst_path
     kwargs = {'out_shape':(m, n), 'transform':transform, 'dtype':dtype, 'fill':0}
     r = np.stack([rasterize(s, **kwargs) for s in shapes])
@@ -173,9 +189,9 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, age_divisor=1, d=1
         
 
 def hash_dt(dt, dtype=rasterio.uint32, nbytes=4):
-    s = '.'.join(map(str, dt))
+    s = '.'.join(map(str, dt)).encode('utf-8')
     d = hashlib.md5(s).digest() # first n bytes of md5 digest
-    return np.dtype(dtype).type(int(d[:nbytes].encode('hex'), 16))
+    return np.dtype(dtype).type(int(binascii.hexlify(d[:4]), 16))
 
 
 def warp_raster(src, dst_path, dst_crs={'init':'EPSG:4326'}):
@@ -200,7 +216,7 @@ def timed(func):
         t = time.time()
         result = func(*args)
         t = time.time() - t
-        print '%s took %.3f seconds.' % (func.func_name, t)
+        print('%s took %.3f seconds.' % (func.__name__, t))
         return result
     return wrapper
 from scipy.stats import norm
@@ -576,7 +592,7 @@ def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
         dE = np.inf
         i = 1
         while dE > e:
-            args = zip(P.rand(n), vr.rand(n), vp.rand(n))
+            args = list(zip(P.rand(n), vr.rand(n), vp.rand(n)))
             while len(args) > 0: # process random args in in n-length chunks
                 _E = E
                 E = ((i - 1) * E + f[formula](*args.pop())) / i

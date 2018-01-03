@@ -1,0 +1,165 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Overview &#8212; ws3 0.1a1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1a1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ws3 Package Modules" href="modules.html" />
+    <link rel="prev" title="ws3 Package Documentation" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<p>This chapter describes the <code class="docutils literal"><span class="pre">ws3</span></code> Python software package. <code class="docutils literal"><span class="pre">ws3</span></code> (short for <em>Wood Supply Simulation System</em>) is an open-source software package that is designed to model <em>wood supply planning problems</em> (WSPP), in the context of sustainable forest management.</p>
+<div class="section" id="background">
+<h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+<p>The WSPP basically consists of determining the location, nature, and timing of forest managment activities (i.e., <em>actions</em>) for a given forest, typically over multiple planning periods (often spanning a planning horizon of 100 years or more). This is a very complex problem, so in practice the WSPP process is typically supported by complex software models that simulate an alternating sequence of <em>actions</em> and <em>growth</em> for each time step, starting from an initial forest inventory.</p>
+<p>Wood supply models require complex input datasets. WSM input data can be divided into <em>static</em> and <em>dynamic</em> components.</p>
+<p>Static WSM input data types include initial forest inventory, growth and yield curves, action definitions, transition definitions, and a schedule of prescribed activities to simulate.
+Dynamic WSM input data may include a combination of heuristic and optimization-based processes to automatically derive a dynamic activity schedule (which gets layered on top of the static activity schedule).</p>
+<p>The forest inventory data is typically aggregated into a manageable number of <em>strata</em> (i.e., <em>development types</em>), which simplifies the modelling.  Each development type is linked to <em>growth and yield</em> functions describing the change in key attributes attributes (e.g., species-wise standing timber volume, number of merchantable stems per unit area, wildlife habitat suitability index value, etc.) expressed as a function of statum age. Each development type may also be associated with one or more <em>actions</em>, which can yield <em>output products</em> (e.g., species-wise assortments of raw timber products, cost, treated area, etc.). Applying an action to a development type induces a <em>state transition</em> (i.e., applying an action may modify one or more stratification variables, effectively transitioning the treated area to a different development type).</p>
+<p>Given a set of static inputs, a given WSM can be used to simulate a number of <em>scenarios</em>. Generally, scenarios differ only in terms of the dynamic activity schedule that is simulated. Comparing output from several scenarios is the basic mechanism by which forest managers derive insight from wood supply models.</p>
+<p>There are two basic approached that can be used (independently, or in combination) to generate the dynamic activity schedules for each scenario.</p>
+<p>The simplest approach, which we call the <em>heuristic</em> activity scheduling method, involves defining period-wise targets for a single key output (e.g., total harvest volume) along with a set of rules that determines the order in which actions are applied to eligible development types. At each time step, the model iteratively applies actions according to the rules until the output target value is met, or it runs out of eligible area. At this point, the model simulates one time-step worth of growth, and the process repeats until the end of the planning horizon.</p>
+<p>A slightly more complex approach, which we call the <em>optimization</em> activity scheduling method, involves defining an optimization problem (i.e., an objective function and constraints), and solving this problem to optimality (using one of several available third-party mathematical solver software packages).</p>
+<p>Although the optimization approach is more powerful than the heuristic approach for modelling harvesting and other anthopic activites, an optimization approach is not appropriate for modelling strongly-stochastic disturbance processes (e.g., wildfire, insect invasions, blowdown). Thus, a hybrid heuristic-optimization approach may be best when modelling a combination of anthopic and natural disturbance processes.</p>
+</div>
+<div class="section" id="package-design-and-implementation">
+<h2>Package Design and Implementation<a class="headerlink" href="#package-design-and-implementation" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal"><span class="pre">ws3</span></code> package is implemented using the Python programming language. <code class="docutils literal"><span class="pre">ws3</span></code> is basically an aspatial wood supply model, which applies actions to development types, simulates growth, and tracks inventory area at each time step. Aspatial models output aspatial activity schedules—each line of the output schedule specifies the stratification variable values (which constitute a unique key into the list of development types), the time step, the action code, and the area treated.</p>
+<p>Because the model is aspatial, the area treated on a given line of the output schedule may not be spatially contiguous (i.e., the area may be geographically dispersed throughout the landscape). Furthermore, in the common case where only a subset of development type area is treated in a given time step, the aspatial model provides not information regarding which subset of available area is treated (and, conversely, not treated). Some applications (e.g., linking to spatially-explicit or highly–spatially-referenced models) require a spatially-explicit activity schedule. <code class="docutils literal"><span class="pre">ws3</span></code> includes a <em>spatial disturbance allocator</em> sub-module, which contains functions that can map aspatial multi-period action schedules onto a rasterized spatial representation of the forest.</p>
+<p><code class="docutils literal"><span class="pre">ws3</span></code> uses a scripted Python interface to control the model, which provides maximum flexibility and makes it very easy to automate modelling workflows. This ensures reproducible methodologies, and makes it relatively easy to link <code class="docutils literal"><span class="pre">ws3</span></code> models to other software packages to form complex modelling pipelines. The scripted interface also makes it relatively easy to implement custom data-importing functions, which makes it easier to import existing data from a variety of ad-hoc sources without the need to recompile the data into a standard <code class="docutils literal"><span class="pre">ws3</span></code>-specific format (i.e., importing functions can be implemented such that the conversion process is fully automated and applied to raw input data <em>on the fly</em>). Similarly, users can easily implment custom functions to re-format <code class="docutils literal"><span class="pre">ws3</span></code> output data <em>on the fly</em> (either for static serialization to disk, or to be piped live into another process).</p>
+<p>Although we recommend using Jupyter Notebooks as an interactive interface to <code class="docutils literal"><span class="pre">ws3</span></code> (the package was specifically designed with an interactive notebook interface in mind), <code class="docutils literal"><span class="pre">ws3</span></code> functions can also be imported and run in fully scripted workflow (e.g., non-interactive batch processes can be run in a massively-parallelled workflow on high-performance–computing resources, if available). The ability to mix interactive and massively-paralleled non-interactive workflows is a unique feature of <code class="docutils literal"><span class="pre">ws3</span></code>.</p>
+<p><code class="docutils literal"><span class="pre">ws3</span></code> is a complex and flexible collection of functional software units. The following sections describe some of the main classes and functions in the package, and describe some common use cases, and link to sample notebooks that implement these use cases.</p>
+</div>
+<div class="section" id="overview-of-main-classes-and-functions">
+<h2>Overview of Main Classes and Functions<a class="headerlink" href="#overview-of-main-classes-and-functions" title="Permalink to this headline">¶</a></h2>
+<p>This section describes some of the main classes and functions that make up.</p>
+<p>The <code class="docutils literal"><span class="pre">ForestModel</span></code> class is the core class in the package. This class encapsulates all the information used to simulate scenarios from a given dataset (i.e., stratified intial inventory, growth and yield functions, action eligibility, transition matrix, action schedule, etc.), as well as a large collection of functions to import and export data, generate activity schedules, and simulate application of these schedules  (i.e., run scenarios).</p>
+<p>At the heart of the <code class="docutils literal"><span class="pre">ForestModel</span></code> class is a list of <code class="docutils literal"><span class="pre">DevelopentType</span></code> instances. Each <code class="docutils literal"><span class="pre">DevelopmentType</span></code> instance encapsulates information about one development type (i.e., a forest stratum, which is an aggregate of smaller <em>stands</em> that make up the raw forest inventory input data). The <code class="docutils literal"><span class="pre">DevelopmentType</span></code> class also stores a list of operable <em>actions</em>, maps <em>state variable transitions</em> to these actions, stores growth and yield functions, and knows how to <em>grow itself</em> when time is incremented during a simulation.</p>
+</div>
+<div class="section" id="common-use-case-and-sample-notebooks">
+<h2>Common Use Case and Sample Notebooks<a class="headerlink" href="#common-use-case-and-sample-notebooks" title="Permalink to this headline">¶</a></h2>
+<p>In this section, we assume an interactive Jupyter Notebook environment is used to interface with <code class="docutils literal"><span class="pre">ws3</span></code>.</p>
+<p>A typical use case starts with creating an instance of the <code class="docutils literal"><span class="pre">ForestModel</span></code> class. Then, we need to load data into this instance, define one or more scenarios (using a mix of heuristic and optimization approaches), run the scenarios, and export output data to a format suitable for analysis (or link to the next model in a larger modelling pipeline).</p>
+<p>The first step in typical workflow is to run a mix of standard <code class="docutils literal"><span class="pre">ws3</span></code> and custom data-importing functions.  These functions import data from various sources, <em>on-the-fly</em> reformat this data to be compatible with <code class="docutils literal"><span class="pre">ws3</span></code>, and load the reformated data into the <code class="docutils literal"><span class="pre">ForestModel</span></code> instance using standard methods. For example, <code class="docutils literal"><span class="pre">ws3</span></code> includes functions to import legacy Woodstock <a class="footnote-reference" href="#id4" id="id1">[1]</a> model data (including LANDSCAPE, CONSTANTS, AREAS, YIELDS, LIFESPAN, ACTIONS, TRANSITIONS, and SCHEDULE section data), as well as functions to import and rasterize vector stand inventory data.</p>
+<p>For example, one might define the following custom Python function in a Jupyter Notebook, to import data formatted for Woodstock.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">instantiate_forestmodel</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model_path</span><span class="p">,</span> <span class="n">horizon</span><span class="p">,</span>
+                            <span class="n">period_length</span><span class="p">,</span> <span class="n">max_age</span><span class="p">,</span> <span class="n">add_null_action</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="n">fm</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
+                     <span class="n">model_path</span><span class="o">=</span><span class="n">model_path</span><span class="p">,</span>
+                     <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span>
+                     <span class="n">period_length</span><span class="o">=</span><span class="n">period_length</span><span class="p">,</span>
+                     <span class="n">max_age</span><span class="o">=</span><span class="n">max_age</span><span class="p">)</span>
+    <span class="n">fm</span><span class="o">.</span><span class="n">import_landscape_section</span><span class="p">()</span>
+    <span class="n">fm</span><span class="o">.</span><span class="n">import_areas_section</span><span class="p">()</span>
+    <span class="n">fm</span><span class="o">.</span><span class="n">import_yields_section</span><span class="p">()</span>
+    <span class="n">fm</span><span class="o">.</span><span class="n">import_actions_section</span><span class="p">()</span>
+    <span class="n">fm</span><span class="o">.</span><span class="n">add_null_action</span><span class="p">()</span>
+    <span class="n">fm</span><span class="o">.</span><span class="n">import_transitions_section</span><span class="p">()</span>
+    <span class="n">fm</span><span class="o">.</span><span class="n">reset_actions</span><span class="p">()</span>
+    <span class="n">fm</span><span class="o">.</span><span class="n">initialize_areas</span><span class="p">()</span>
+    <span class="n">fm</span><span class="o">.</span><span class="n">grow</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">fm</span>
+</pre></div>
+</div>
+<p>The next step in a typical workflow is to define one or more scenarios. Assuming that we are using an optimization approach to harvest scheduling, we need to define an objective function (e.g., maximize total harvest volume) and constraints (e.g., species-wise volume and area even-flow constraints, ending standing inventory constraints, periodic minimum late-seral-stage area constraints) <a class="footnote-reference" href="#id5" id="id2">[2]</a>, build the optimization model matrix, solve the model to optimality <a class="footnote-reference" href="#id6" id="id3">[3]</a>.</p>
+<table class="docutils footnote" frame="void" id="id4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Woodstock software is part of <a class="reference external" href="http://www.remsoft.com/forestry.php">Remsoft Solution Suite</a>.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id5" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td><code class="docutils literal"><span class="pre">ws3</span></code> currently implements functions to formulate and solve <em>Model I</em> wood supply optimization problems—however, the package was deliberately designed to make it easy to transparently switch between <em>Model I</em>,  <em>Model II</em> and <em>Model III</em> formulations without affecting the rest of the modelling workflow. <code class="docutils literal"><span class="pre">ws3</span></code> currently has placeholder function stubs for <em>Model II</em> and <em>Model III</em> formulations, which will be implemented in later versions as the need arises. For more information on wood supply model formulations, see Chapter 16 of the <a class="reference external" href="http://www.springer.com/gp/book/9780387718149">Handbook of Operations Research in Natural Resources</a>.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id6" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[3]</a></td><td><code class="docutils literal"><span class="pre">ws3</span></code> currently uses the <a class="reference external" href="http://www.gurobi.com/">Gurobi</a> solver to solve the linear programming (LP) problems to optimality. We chose Gurobi because it is one of the top two solvers currently available (along with the <a class="reference external" href="https://www.ibm.com/analytics/data-science/prescriptive-analytics/cplex-optimizer">CPLEX</a> solver), has a simple and flexible policy for requesting unlimited licences for free use in research projects, has elegant Python bindings, and we like the technical documentation. However, we deliberately used a modular design, which allows us to transparently switch to a different solver in <code class="docutils literal"><span class="pre">ws3</span></code> without affecting the rest of the workflow—this design will make it easy to implement an interface to addional solvers in future releases.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">ws3 Package Documentation</a></li>
+      <li>Next: <a href="modules.html" title="next chapter"><code class="docutils literal"><span class="pre">ws3</span></code> Package Modules</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Gregory Paradis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/intro.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

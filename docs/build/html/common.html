@@ -1,0 +1,291 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>common module &#8212; ws3 0.1a1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1a1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-common">
+<span id="common-module"></span><h1>common module<a class="headerlink" href="#module-common" title="Permalink to this headline">¶</a></h1>
+<p>This module contains definitions for global attributes, functions, and classes that might be used anywhere in the package.</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd>HORIZON_DEFAULT (int): Default value for ‘’.
+PERIOD_LENGTH_DEFAULT (int): Default number of years per period.
+MIN_AGE_DEFAULT (int): Default value for <cite>core.Curve.xmin</cite>.
+MAX_AGE_DEFAULT (int): Default value for <cite>core.Curve.xmax</cite>.
+CURVE_EPSILON_DEFAULT (float): Defalut value for <cite>core.Curve.epsilon</cite>.</dd>
+</dl>
+<p>AREA_EPSILON_DEFAULT = 0.01</p>
+<dl class="class">
+<dt id="common.Node">
+<em class="property">class </em><code class="descclassname">common.</code><code class="descname">Node</code><span class="sig-paren">(</span><em>nid</em>, <em>data=None</em>, <em>parent=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="common.Node.add_child">
+<code class="descname">add_child</code><span class="sig-paren">(</span><em>child</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Node.add_child"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Node.add_child" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="common.Node.children">
+<code class="descname">children</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Node.children"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Node.children" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="common.Node.data">
+<code class="descname">data</code><span class="sig-paren">(</span><em>key=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Node.data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Node.data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="common.Node.is_leaf">
+<code class="descname">is_leaf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Node.is_leaf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Node.is_leaf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="common.Node.is_root">
+<code class="descname">is_root</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Node.is_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Node.is_root" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="common.Node.parent">
+<code class="descname">parent</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Node.parent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Node.parent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="common.Tree">
+<em class="property">class </em><code class="descclassname">common.</code><code class="descname">Tree</code><span class="sig-paren">(</span><em>period=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Tree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="common.Tree.add_node">
+<code class="descname">add_node</code><span class="sig-paren">(</span><em>data</em>, <em>parent=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Tree.add_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Tree.add_node" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="common.Tree.children">
+<code class="descname">children</code><span class="sig-paren">(</span><em>nid</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Tree.children"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Tree.children" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="common.Tree.grow">
+<code class="descname">grow</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Tree.grow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Tree.grow" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="common.Tree.leaves">
+<code class="descname">leaves</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Tree.leaves"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Tree.leaves" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="common.Tree.node">
+<code class="descname">node</code><span class="sig-paren">(</span><em>nid</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Tree.node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Tree.node" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="common.Tree.nodes">
+<code class="descname">nodes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Tree.nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Tree.nodes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="common.Tree.path">
+<code class="descname">path</code><span class="sig-paren">(</span><em>leaf=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Tree.path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Tree.path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="common.Tree.paths">
+<code class="descname">paths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Tree.paths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Tree.paths" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="common.Tree.root">
+<code class="descname">root</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Tree.root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Tree.root" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="common.Tree.ungrow">
+<code class="descname">ungrow</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#Tree.ungrow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.Tree.ungrow" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="common.clean_vector_data">
+<code class="descclassname">common.</code><code class="descname">clean_vector_data</code><span class="sig-paren">(</span><em>src_path</em>, <em>dst_path</em>, <em>dst_name</em>, <em>prop_names</em>, <em>clean=True</em>, <em>tolerance=10.0</em>, <em>preserve_topology=True</em>, <em>logfn='clean_stand_shapefile.log'</em>, <em>max_records=None</em>, <em>theme0=None</em>, <em>prop_types=None</em>, <em>driver='ESRI Shapefile'</em>, <em>dst_epsg=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#clean_vector_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.clean_vector_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="common.harv_cost">
+<code class="descclassname">common.</code><code class="descname">harv_cost</code><span class="sig-paren">(</span><em>piece_size</em>, <em>is_finalcut</em>, <em>is_toleranthw</em>, <em>partialcut_extracare=False</em>, <em>A=1.97</em>, <em>B=0.405</em>, <em>C=0.169</em>, <em>D=0.164</em>, <em>E=0.202</em>, <em>F=13.6</em>, <em>G=8.83</em>, <em>K=0.0</em>, <em>rv=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#harv_cost"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.harv_cost" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns harvest cost, given piece size, treatment type (final cut or not), stand type (tolerant hardwood or not), partialcut “extra care” flag, and a series of regression coefficients (A, B, C, D, E, F, G, K, all with defaults [extracted from MERIS technical documentation; also see Sebastien Lacroix, BMMB]). 
+Assumes that variables are deterministic.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="common.harv_cost_rv">
+<code class="descclassname">common.</code><code class="descname">harv_cost_rv</code><span class="sig-paren">(</span><em>tv_mu</em>, <em>tv_sigma</em>, <em>N_mu</em>, <em>N_sigma</em>, <em>psr</em>, <em>is_finalcut</em>, <em>is_toleranthw</em>, <em>partialcut_extracare=False</em>, <em>tv_min=50.0</em>, <em>N_min=200.0</em>, <em>ps_min=0.05</em>, <em>E_fromintegral=False</em>, <em>e=0.01</em>, <em>n=1000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#harv_cost_rv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.harv_cost_rv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns harvest cost, given piece size, treatment type (final cut or not), stand type (tolerant hardwood or not), partialcut “extra care” flag, and a series of regression coefficients (A, B, C, D, E, F, G, K, all with defaults [extracted from MERIS technical documentation; also see Sebastien Lacroix, BMMB]). 
+Assumes that variables are random variates (returns expected value of function, using PaCAL packages to model random variates, assuming normal distribution for all three variables).
+Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="common.harv_cost_wec">
+<code class="descclassname">common.</code><code class="descname">harv_cost_wec</code><span class="sig-paren">(</span><em>piece_size</em>, <em>is_finalcut</em>, <em>is_toleranthw</em>, <em>sigma</em>, <em>nsigmas=3</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#harv_cost_wec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.harv_cost_wec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate harvest cost with error correction.
+:float piece_size: mean piece size
+:bool is_finalcut: True if harvest treatment is final cut, False otherwise
+:bool is_toleranthw: True if tolerant hardwood cover type, False otherwise
+:float sigma: standard deviation of piece size estimator
+:int nsigmas: number of standard deviations to model on either side of the mean (default 3)
+:float binw: width of bins for weighted numerical integration, in multiples of sigma (default 1.0)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="common.hash_dt">
+<code class="descclassname">common.</code><code class="descname">hash_dt</code><span class="sig-paren">(</span><em>dt</em>, <em>dtype='uint32'</em>, <em>nbytes=4</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#hash_dt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.hash_dt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="common.is_num">
+<code class="descclassname">common.</code><code class="descname">is_num</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#is_num"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.is_num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if s is a number.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="common.piece_size_ratio">
+<code class="descclassname">common.</code><code class="descname">piece_size_ratio</code><span class="sig-paren">(</span><em>treatment_type</em>, <em>cover_type</em>, <em>piece_size_ratios</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#piece_size_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.piece_size_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns piece size ratio.
+Assume Action.is_harvest in [0, 1, 2, 3]
+Assume cover_type in [‘r’, ‘m’, ‘f’]
+Return vr/vp ratio, where</p>
+<blockquote>
+<div>vr is mean piece size of harvested stems, and
+vp is mean piece size of stand before harvesting.</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="common.rasterize_stands">
+<code class="descclassname">common.</code><code class="descname">rasterize_stands</code><span class="sig-paren">(</span><em>shp_path</em>, <em>tif_path</em>, <em>theme_cols</em>, <em>age_col</em>, <em>age_divisor=1.0</em>, <em>d=100.0</em>, <em>dtype='uint32'</em>, <em>compress='lzw'</em>, <em>round_coords=True</em>, <em>value_func=&lt;function &lt;lambda&gt;&gt;</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#rasterize_stands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.rasterize_stands" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="common.reproject">
+<code class="descclassname">common.</code><code class="descname">reproject</code><span class="sig-paren">(</span><em>f</em>, <em>srs_crs</em>, <em>dst_crs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#reproject"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.reproject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="common.reproject_vector_data">
+<code class="descclassname">common.</code><code class="descname">reproject_vector_data</code><span class="sig-paren">(</span><em>src_path</em>, <em>snk_path</em>, <em>snk_epsg</em>, <em>driver='ESRI Shapefile'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#reproject_vector_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.reproject_vector_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="common.sylv_cred">
+<code class="descclassname">common.</code><code class="descname">sylv_cred</code><span class="sig-paren">(</span><em>P</em>, <em>vr</em>, <em>vp</em>, <em>formula</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#sylv_cred"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.sylv_cred" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns sylviculture credit ($ per hectare), given P (volume harvested per hectare), vr (mean piece size of harvested stems), vp (mean piece size of stand before harvesting), and formula index (1 to 7).
+Assumes that variables (P, vr, vp) are deterministic.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="common.sylv_cred_formula">
+<code class="descclassname">common.</code><code class="descname">sylv_cred_formula</code><span class="sig-paren">(</span><em>treatment_type</em>, <em>cover_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#sylv_cred_formula"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.sylv_cred_formula" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns sylviculture credit formula index, given treatment type and cover type.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="common.sylv_cred_rv">
+<code class="descclassname">common.</code><code class="descname">sylv_cred_rv</code><span class="sig-paren">(</span><em>P_mu</em>, <em>P_sigma</em>, <em>tv_mu</em>, <em>tv_sigma</em>, <em>N_mu</em>, <em>N_sigma</em>, <em>psr</em>, <em>treatment_type=None</em>, <em>cover_type=None</em>, <em>formula=None</em>, <em>P_min=20.0</em>, <em>tv_min=50.0</em>, <em>N_min=200.0</em>, <em>ps_min=0.05</em>, <em>E_fromintegral=False</em>, <em>e=0.01</em>, <em>n=1000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#sylv_cred_rv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.sylv_cred_rv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns sylviculture credit ($ per hectare), given P (volume harvested per hectare), vr (mean piece size of harvested stems), vp (mean piece size of stand before harvesting), and formula index (1 to 7).
+Assumes that variables (P, vr, vp) are random variates (returns expected value of function, using PaCAL packages to model random variates, assuming normal distribution for all three variables).
+Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="common.timed">
+<code class="descclassname">common.</code><code class="descname">timed</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#timed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.timed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="common.warp_raster">
+<code class="descclassname">common.</code><code class="descname">warp_raster</code><span class="sig-paren">(</span><em>src</em>, <em>dst_path</em>, <em>dst_crs={'init': 'EPSG:4326'}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/common.html#warp_raster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#common.warp_raster" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Gregory Paradis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/common.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

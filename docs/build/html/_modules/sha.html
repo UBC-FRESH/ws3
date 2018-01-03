@@ -1,0 +1,254 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>sha &#8212; ws3 0.1a1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1a1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for sha</h1><div class="highlight"><pre>
+<span></span><span class="c1">###################################################################################</span>
+<span class="c1"># MIT License</span>
+
+<span class="c1"># Copyright (c) 2015-2017 Gregory Paradis</span>
+
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+
+<span class="c1"># The above copyright notice and this permission notice shall be included in all</span>
+<span class="c1"># copies or substantial portions of the Software.</span>
+
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.</span>
+<span class="c1">###################################################################################</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="c1">#import fiona</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">rasterio</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">profilehooks</span> <span class="k">import</span> <span class="n">profile</span>
+
+
+<div class="viewcode-block" id="ForestRaster"><a class="viewcode-back" href="../sha.html#sha.ForestRaster">[docs]</a><span class="k">class</span> <span class="nc">ForestRaster</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">hdt_map</span><span class="p">,</span>
+                 <span class="n">hdt_func</span><span class="p">,</span>
+                 <span class="n">src_path</span><span class="p">,</span>
+                 <span class="n">snk_path</span><span class="p">,</span>
+                 <span class="n">acodes</span><span class="p">,</span>
+                 <span class="n">horizon</span><span class="p">,</span>
+                 <span class="n">base_year</span><span class="p">,</span>
+                 <span class="n">period_length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">tif_compress</span><span class="o">=</span><span class="s1">&#39;lzw&#39;</span><span class="p">,</span>
+                 <span class="n">tif_dtype</span><span class="o">=</span><span class="n">rasterio</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span>
+                 <span class="n">piggyback_acodes</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hdt_map</span> <span class="o">=</span> <span class="n">hdt_map</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hdt_func</span> <span class="o">=</span> <span class="n">hdt_func</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_acodes</span> <span class="o">=</span> <span class="n">acodes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_horizon</span> <span class="o">=</span> <span class="n">horizon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_year</span> <span class="o">=</span> <span class="n">base_year</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_period_length</span> <span class="o">=</span> <span class="n">period_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_i2a</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">a</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">acodes</span><span class="p">)}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_a2i</span> <span class="o">=</span> <span class="p">{</span><span class="n">a</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">acodes</span><span class="p">)}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_p</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># initialize current period</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_src</span> <span class="o">=</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">a</span> <span class="c1"># pixel width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_area</span> <span class="o">=</span> <span class="nb">pow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.0001</span> <span class="c1"># m to hectares</span>
+        <span class="n">profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src</span><span class="o">.</span><span class="n">profile</span>
+        <span class="n">profile</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">tif_dtype</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="n">tif_compress</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_piggyback_acodes</span> <span class="o">=</span> <span class="n">piggyback_acodes</span>
+        <span class="k">for</span> <span class="n">acode1</span> <span class="ow">in</span> <span class="n">piggyback_acodes</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">acode2</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">piggyback_acodes</span><span class="p">[</span><span class="n">acode1</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_acodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">acode2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_snk</span> <span class="o">=</span> <span class="p">{(</span><span class="n">p</span><span class="p">,</span> <span class="n">dy</span><span class="p">):{</span><span class="n">acode</span><span class="p">:</span><span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">snk_path</span><span class="o">+</span><span class="s1">&#39;/</span><span class="si">%s</span><span class="s1">_</span><span class="si">%i</span><span class="s1">.tif&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">acode</span><span class="p">,</span> <span class="n">base_year</span><span class="o">+</span><span class="p">(</span><span class="n">p</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">period_length</span> <span class="o">+</span> <span class="n">dy</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">profile</span><span class="p">)</span>
+                      <span class="k">for</span> <span class="n">acode</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acodes</span><span class="p">}</span>
+                      <span class="k">for</span> <span class="n">dy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">period_length</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">horizon</span><span class="o">+</span><span class="mi">1</span><span class="p">))}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_snkd</span> <span class="o">=</span> <span class="p">{(</span><span class="n">acode</span><span class="p">,</span> <span class="n">dy</span><span class="p">):</span><span class="bp">self</span><span class="o">.</span><span class="n">_read_snk</span><span class="p">(</span><span class="n">acode</span><span class="p">,</span> <span class="n">dy</span><span class="p">)</span> <span class="k">for</span> <span class="n">dy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">period_length</span><span class="p">)</span> <span class="k">for</span> <span class="n">acode</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acodes</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_valid</span> <span class="o">=</span> <span class="kc">True</span>
+        
+<div class="viewcode-block" id="ForestRaster.commit"><a class="viewcode-back" href="../sha.html#sha.ForestRaster.commit">[docs]</a>    <span class="k">def</span> <span class="nf">commit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_snk</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">acode</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_snk</span><span class="p">[</span><span class="n">p</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_snk</span><span class="p">[</span><span class="n">p</span><span class="p">][</span><span class="n">acode</span><span class="p">]</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_valid</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="ForestRaster.cleanup"><a class="viewcode-back" href="../sha.html#sha.ForestRaster.cleanup">[docs]</a>    <span class="k">def</span> <span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_src</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+        
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># The value returned by this method is</span>
+        <span class="c1"># assigned to the variable after ``as``</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">exc_traceback</span><span class="p">):</span>
+        <span class="c1"># returns either True or False</span>
+        <span class="c1"># Don&#39;t raise any exceptions in this method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">True</span>
+        
+    <span class="k">def</span> <span class="nf">_read_snk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">acode</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ForestRaster._read_snk()&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_p</span><span class="p">,</span> <span class="n">acode</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_snk</span><span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">_p</span><span class="p">,</span> <span class="n">dy</span><span class="p">)][</span><span class="n">acode</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_write_snk</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">dy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_period_length</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">acode</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acodes</span><span class="p">:</span>
+                <span class="n">snk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_snk</span><span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">_p</span><span class="p">,</span> <span class="n">dy</span><span class="p">)][</span><span class="n">acode</span><span class="p">]</span>
+                <span class="n">snk</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_snkd</span><span class="p">[(</span><span class="n">acode</span><span class="p">,</span> <span class="n">dy</span><span class="p">)],</span> <span class="n">indexes</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">snk</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1">#@profile(immediate=True)</span>
+<div class="viewcode-block" id="ForestRaster.allocate_schedule"><a class="viewcode-back" href="../sha.html#sha.ForestRaster.allocate_schedule">[docs]</a>    <span class="k">def</span> <span class="nf">allocate_schedule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forestmodel</span><span class="p">,</span> <span class="n">da</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fudge</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_valid</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;ForestRaster.commit() has already been called (i.e., this instance is toast).&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mask</span><span class="p">:</span> <span class="n">dtype_keys</span> <span class="o">=</span> <span class="n">forestmodel</span><span class="o">.</span><span class="n">unmask</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_horizon</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;processing schedule for period </span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">p</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">acode</span> <span class="ow">in</span> <span class="n">forestmodel</span><span class="o">.</span><span class="n">applied_actions</span><span class="p">[</span><span class="n">p</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">dtk</span> <span class="ow">in</span> <span class="n">forestmodel</span><span class="o">.</span><span class="n">applied_actions</span><span class="p">[</span><span class="n">p</span><span class="p">][</span><span class="n">acode</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">mask</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">dtk</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dtype_keys</span><span class="p">:</span> <span class="k">continue</span>
+                    <span class="k">for</span> <span class="n">from_age</span> <span class="ow">in</span> <span class="n">forestmodel</span><span class="o">.</span><span class="n">applied_actions</span><span class="p">[</span><span class="n">p</span><span class="p">][</span><span class="n">acode</span><span class="p">][</span><span class="n">dtk</span><span class="p">]:</span>
+                        <span class="n">area</span> <span class="o">=</span> <span class="n">forestmodel</span><span class="o">.</span><span class="n">applied_actions</span><span class="p">[</span><span class="n">p</span><span class="p">][</span><span class="n">acode</span><span class="p">][</span><span class="n">dtk</span><span class="p">][</span><span class="n">from_age</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">area</span><span class="p">:</span> <span class="k">continue</span>
+                        <span class="n">from_dtk</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dtk</span><span class="p">)</span>
+                        <span class="n">tmask</span><span class="p">,</span> <span class="n">tprop</span><span class="p">,</span> <span class="n">tyield</span><span class="p">,</span> <span class="n">tage</span><span class="p">,</span> <span class="n">tlock</span><span class="p">,</span> <span class="n">treplace</span><span class="p">,</span> <span class="n">tappend</span> <span class="o">=</span> <span class="n">forestmodel</span><span class="o">.</span><span class="n">dtypes</span><span class="p">[</span><span class="n">dtk</span><span class="p">]</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">acode</span><span class="p">,</span> <span class="n">from_age</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">to_dtk</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">if</span> <span class="n">tmask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;?&#39;</span> <span class="k">else</span> <span class="n">tmask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">from_dtk</span><span class="p">)]</span> 
+                        <span class="k">if</span> <span class="n">treplace</span><span class="p">:</span> <span class="n">to_dtk</span><span class="p">[</span><span class="n">treplace</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">forestmodel</span><span class="o">.</span><span class="n">resolve_replace</span><span class="p">(</span><span class="n">from_dtk</span><span class="p">,</span> <span class="n">treplace</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                        <span class="n">to_dtk</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">to_dtk</span><span class="p">)</span>
+                        <span class="n">to_age</span> <span class="o">=</span> <span class="n">forestmodel</span><span class="o">.</span><span class="n">resolve_targetage</span><span class="p">(</span><span class="n">to_dtk</span><span class="p">,</span> <span class="n">tyield</span><span class="p">,</span> <span class="n">from_age</span><span class="p">,</span> <span class="n">tage</span><span class="p">,</span> <span class="n">acode</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                        <span class="n">tk</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">to_dtk</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="n">to_age</span><span class="p">,)</span>
+                        <span class="n">th</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hdt_func</span><span class="p">(</span><span class="n">tk</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">dy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_period_length</span><span class="p">):</span>
+                            <span class="n">from_ages</span> <span class="o">=</span> <span class="p">[</span><span class="n">from_age</span><span class="p">]</span>
+                            <span class="n">target_area</span> <span class="o">=</span> <span class="n">area</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_period_length</span>
+                            <span class="k">while</span> <span class="n">from_ages</span> <span class="ow">and</span> <span class="n">target_area</span><span class="p">:</span>
+                                <span class="n">from_age</span> <span class="o">=</span> <span class="n">from_ages</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                                <span class="n">target_area</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_cells_random</span><span class="p">(</span><span class="n">from_dtk</span><span class="p">,</span> <span class="n">from_age</span><span class="p">,</span> <span class="n">to_dtk</span><span class="p">,</span> <span class="n">to_age</span><span class="p">,</span>
+                                                                           <span class="n">target_area</span><span class="p">,</span> <span class="n">acode</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span>
+                                                                           <span class="n">da</span><span class="o">=</span><span class="n">da</span><span class="p">,</span> <span class="n">fudge</span><span class="o">=</span><span class="n">fudge</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">target_area</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;failed&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">from_dtk</span><span class="p">,</span> <span class="n">from_age</span><span class="p">,</span> <span class="n">to_dtk</span><span class="p">,</span> <span class="n">to_age</span><span class="p">,</span> <span class="n">acode</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;(missing </span><span class="si">%4.1f</span><span class="s1"> of </span><span class="si">%4.1f</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">target_area</span><span class="p">,</span> <span class="n">area</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_period_length</span><span class="p">),</span> <span class="s1">&#39;in p</span><span class="si">%i</span><span class="s1"> dy</span><span class="si">%i</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">dy</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">acode</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_piggyback_acodes</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">_acode</span><span class="p">,</span> <span class="n">_p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_piggyback_acodes</span><span class="p">[</span><span class="n">acode</span><span class="p">]:</span>
+                        <span class="k">for</span> <span class="n">dy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_period_length</span><span class="p">):</span>
+                            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_snkd</span><span class="p">[(</span><span class="n">acode</span><span class="p">,</span> <span class="n">dy</span><span class="p">)]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+                            <span class="n">xn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                            <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">xn</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">_p</span> <span class="o">*</span> <span class="n">xn</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                            <span class="n">ix</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">r</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">r</span><span class="p">]</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_snkd</span><span class="p">[(</span><span class="n">_acode</span><span class="p">,</span> <span class="n">dy</span><span class="p">)][</span><span class="n">ix</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                            <span class="c1">#print acode, _acode, _p, p, dy, len(x), int(_p * len(x))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_write_snk</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">p</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_horizon</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">grow</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ForestRaster.transition_cells_random"><a class="viewcode-back" href="../sha.html#sha.ForestRaster.transition_cells_random">[docs]</a>    <span class="k">def</span> <span class="nf">transition_cells_random</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_dtk</span><span class="p">,</span> <span class="n">from_age</span><span class="p">,</span> <span class="n">to_dtk</span><span class="p">,</span> <span class="n">to_age</span><span class="p">,</span> <span class="n">tarea</span><span class="p">,</span> <span class="n">acode</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">da</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fudge</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">fk</span><span class="p">,</span> <span class="n">tk</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">from_dtk</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">to_dtk</span><span class="p">)</span>
+        <span class="n">fh</span><span class="p">,</span> <span class="n">th</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hdt_func</span><span class="p">(</span><span class="n">fk</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hdt_func</span><span class="p">(</span><span class="n">tk</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">fh</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">da</span> <span class="o">==</span> <span class="n">from_age</span><span class="p">))</span>
+        <span class="n">xn</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">xa</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">xn</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_area</span><span class="p">)</span>
+        <span class="n">missing_area</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">tarea</span> <span class="o">-</span> <span class="n">xa</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">tarea</span> <span class="o">/</span> <span class="n">xa</span> <span class="k">if</span> <span class="n">xa</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="mf">1.</span> <span class="ow">and</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;missing area&#39;</span><span class="p">,</span> <span class="n">from_dtk</span><span class="p">,</span> <span class="n">tarea</span> <span class="o">-</span> <span class="n">xa</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">xa</span> <span class="o">*</span> <span class="n">c</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_area</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">n</span><span class="p">:</span> <span class="k">return</span> <span class="c1"># found nothing to transition</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">xn</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">ix</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">r</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">r</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">ix</span><span class="p">]</span> <span class="o">=</span> <span class="n">th</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">ix</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_age</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_snkd</span><span class="p">[(</span><span class="n">acode</span><span class="p">,</span> <span class="n">dy</span><span class="p">)][</span><span class="n">ix</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1">#self._a2i[acode]</span>
+        <span class="k">return</span> <span class="n">missing_area</span></div>
+          
+<div class="viewcode-block" id="ForestRaster.grow"><a class="viewcode-back" href="../sha.html#sha.ForestRaster.grow">[docs]</a>    <span class="k">def</span> <span class="nf">grow</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_p</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span> <span class="c1"># age</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_snkd</span> <span class="o">=</span> <span class="p">{(</span><span class="n">acode</span><span class="p">,</span> <span class="n">dy</span><span class="p">):</span><span class="bp">self</span><span class="o">.</span><span class="n">_read_snk</span><span class="p">(</span><span class="n">acode</span><span class="p">,</span> <span class="n">dy</span><span class="p">)</span> <span class="k">for</span> <span class="n">dy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_period_length</span><span class="p">)</span> <span class="k">for</span> <span class="n">acode</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acodes</span><span class="p">}</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Gregory Paradis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

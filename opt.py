@@ -80,10 +80,10 @@ class Problem:
         self._solution = None # modifying problem kills solution
 
     def var_names(self):
-        return self._vars.keys()
+        return list(self._vars.keys())
 
     def constraint_names(self):
-        return self._constraints.keys()
+        return list(self._constraints.keys())
 
     def name(self):
         return self._name
@@ -110,7 +110,7 @@ class Problem:
             self._solution = None # modifying problem kills solution
         else:
             assert self.solved()
-            return sum([self._z[v] * self._solution[v] for v in self._vars.keys()])
+            return sum([self._z[v] * self._solution[v] for v in list(self._vars.keys())])
         
     def add_constraint(self, name, coeffs, sense, rhs, validate=False):
         if validate:
@@ -136,13 +136,13 @@ class Problem:
 
     def _solve_gurobi(self):
         self._m = m = grb.Model(self._name)
-        vars = {v.name:m.addVar(name=v.name, vtype=v.vtype) for v in self._vars.values()}
+        vars = {v.name:m.addVar(name=v.name, vtype=v.vtype) for v in list(self._vars.values())}
         m.update()
         z = grb.LinExpr()
         for v in vars:
             z += self._z[v] * vars[v]
         m.setObjective(expr=z, sense=GUROBI_MAP[self._sense])
-        for name, constraint in self._constraints.items():            
+        for name, constraint in list(self._constraints.items()):            
             lhs = grb.LinExpr()
             for x in constraint.coeffs:
                 lhs += constraint.coeffs[x] * vars[x]
@@ -151,7 +151,7 @@ class Problem:
                         rhs=constraint.rhs,
                         name=name)
         m.optimize()
-        for k, v in self._vars.items():
+        for k, v in list(self._vars.items()):
             _v = m.getVarByName(k)
             v._solver_var = _v # might want to poke around this later...
             v.val = _v.X

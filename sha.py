@@ -90,7 +90,7 @@ class ForestRaster:
         return True
         
     def _read_snk(self, acode, dy, verbose=False):
-        if verbose: print 'ForestRaster._read_snk()', self._p, acode
+        if verbose: print('ForestRaster._read_snk()', self._p, acode)
         return self._snk[(self._p, dy)][acode].read(1)
 
     def _write_snk(self):
@@ -105,7 +105,7 @@ class ForestRaster:
         if not self._is_valid: raise RuntimeError('ForestRaster.commit() has already been called (i.e., this instance is toast).')
         if mask: dtype_keys = forestmodel.unmask(mask)
         for p in range(1, self._horizon+1):
-            if verbose: print 'processing schedule for period %i' % p
+            if verbose: print('processing schedule for period %i' % p)
             for acode in forestmodel.applied_actions[p]:
                 for dtk in forestmodel.applied_actions[p][acode]:
                     if mask:
@@ -130,8 +130,8 @@ class ForestRaster:
                                                                            target_area, acode, dy,
                                                                            da=da, fudge=fudge, verbose=False)
                             if target_area:
-                                print 'failed', (from_dtk, from_age, to_dtk, to_age, acode),
-                                print '(missing %4.1f of %4.1f)' % (target_area, area / self._period_length), 'in p%i dy%i' % (p, dy)
+                                print('failed', (from_dtk, from_age, to_dtk, to_age, acode), end=' ')
+                                print('(missing %4.1f of %4.1f)' % (target_area, area / self._period_length), 'in p%i dy%i' % (p, dy))
                 if acode in self._piggyback_acodes:
                     for _acode, _p in self._piggyback_acodes[acode]:
                         for dy in range(self._period_length):
@@ -152,7 +152,7 @@ class ForestRaster:
         xa = float(xn * self._pixel_area)
         missing_area = max(0., tarea - xa)
         c = tarea / xa if xa else np.inf
-        if c > 1. and verbose: print 'missing area', from_dtk, tarea - xa
+        if c > 1. and verbose: print('missing area', from_dtk, tarea - xa)
         c = min(c, 1.)
         n = int(xa * c / self._pixel_area)
         if not n: return # found nothing to transition
