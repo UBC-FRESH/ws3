@@ -24,6 +24,12 @@
 
 """
 This module implements functions for formulating and solving optimization problems.
+The notation is very generic (i.e., refers to variables, constraints, problems, solutions, etc.).
+All the wood-supply-problem--specific references are implemented in the ``forest`` module.
+
+The ``Problem`` class is the main functional unit here. It encapsulates optimization problem data (i.e., variables, constraints, objective function, and optimal solution), as well as methods to operate on this data (i.e., methods to build and solve the problem, and report on the optimal solution).
+
+Note that we implemented a modular design that decouples the implementation from the choice of solver. Currently, only bindings to the Gurobi solver are implemented, although bindings to other solvers can easilty be added (we will add more binding in later releases, as the need arises). 
 """
 
 import gurobipy as grb
@@ -50,6 +56,9 @@ GUROBI_MAP = {
     SENSE_LEQ:grb.GRB.LESS_EQUAL}
 
 class Variable:
+    """
+    Encapsulates data describing a variable in an optimization problem. This includes a variable name (should be unique within a problem, although the user is responsible for enforcing this condition), a variable type (should be one of ``VTYPE_CONTINUOUS``, ``VTYPE_INTEGER``, or ``VTYPE_BINARY``), variable value bound (lower bound defaults to zero, upper bound defaults to positive infinity), and variable value (defaults to ``None``).
+    """
     def __init__(self, name, vtype, lb=0., ub=VBNDS_INF, val=None):
         self.name = name
         self.vtype = vtype
@@ -58,6 +67,9 @@ class Variable:
         self.val = val
 
 class Constraint:
+    """
+    Encapsulates data describing a constraint in an optimization problem. This includes a constraint name (should be unique within a problem, although the user is responsible for enforcing this condition), a vector of coefficient values (length of vector should match the number of variables in the problem, although the user is responsible for enforcing this condition), a sense (should be one of ``SENSE_EQ``, ``SENSE_GEQ``, or ``SENSE_LEQ``), and a right-hand-side value.
+    """
     def __init__(self, name, coeffs, sense, rhs):
         self.name = name
         self.coeffs = coeffs
@@ -65,6 +77,9 @@ class Constraint:
         self.rhs = rhs
                 
 class Problem:
+    """
+    This is the main class of the ``opt`` module---it encapsulates optimization problem data (i.e., variables, constraints, objective function, optimal solution, and choice of solver), as well as methods to operate on this data (i.e., methods to build and solve the problem, and report on the optimal solution).
+    """
     def __init__(self, name, sense=SENSE_MAXIMIZE, solver=SOLVR_GUROBI):
         self._name = name
         self._vars = {}
@@ -76,22 +91,42 @@ class Problem:
         self._dispatch_map = {SOLVR_GUROBI:self._solve_gurobi}
 
     def add_var(self, name, vtype, lb=0., ub=VBNDS_INF):
+        """
+        Adds a variable to the problem. The variable name should be unique within the problem (user is responsible for enforcing this condition). Variable type should be one of ``VTYPE_CONTINUOUS``, ``VTYPE_INTEGER``, or ``VTYPE_BINARY``. Variable value bounds default to zero for the lower bound and positive infinity for the upper bound.
+
+        Note that calling this method resets the value of the optimal solution to ``None``. 
+        """
         self._vars[name] = Variable(name, vtype, lb, ub)
         self._solution = None # modifying problem kills solution
 
     def var_names(self):
+        """
+        Return a list of variable names.
+        """
         return list(self._vars.keys())
 
     def constraint_names(self):
+        """
+        Returns a list of constraint names.
+        """
         return list(self._constraints.keys())
 
     def name(self):
+        """
+        Returns problem name.
+        """
         return self._name
         
     def var(self, name):
+        """
+        Returns a ``Variable`` instance, given a variable name.
+        """
         return self._vars[name]
 
     def sense(self, val=None):
+        """
+        Returns (or sets) objective function sense. Value should be one of ``SENSE_MINIMIZE`` or ``SENSE_MAXIMIZE``.
+        """
         if val:
             self._sense = val
             self._solution = None # modifying problem kills solution
@@ -99,9 +134,15 @@ class Problem:
             return self._sense
 
     def solved(self):
+        """
+        Returns ``True`` if the problem has been solved, ``False`` otherwise.
+        """
         return self._solution is not None
         
-    def z(self, coeffs, validate=False):
+    def z(self, coeffs=None, validate=False):
+        """
+        Returns the objective function value if ``coeffs`` is not provided (triggers an exception if problem has not been solved yet), or updates the objective function coefficient vector (resets the value of the optimal solution to ``None``).
+        """
         if coeffs:
             if validate:
                 for v in coeffs:
@@ -113,6 +154,11 @@ class Problem:
             return sum([self._z[v] * self._solution[v] for v in list(self._vars.keys())])
         
     def add_constraint(self, name, coeffs, sense, rhs, validate=False):
+        """
+        Adds a constraint to the problem. The constraint name should be unique within the problem (user is responsible for enforcing this condition). Constraint coeffients should be provided as a ``dict``, keyed on variable names---length of constraint coefficient ``dict`` should match number of variables in the problem (user is responsible for enforcing this condition). Constraint sense should be one of ``SENSE_EQ``, ``SENSE_GEQ``, or ``SENSE_LEQ``. 
+
+        Note that calling this method resets the value of the optimal solution to ``None``. 
+        """
         if validate:
             for v in coeffs:
                 assert v in self._vars
@@ -120,16 +166,25 @@ class Problem:
         self._solution = None # modifying problem kills solution
 
     def solver(self, val):
+        """
+        Sets the solver (defaults to ```SOLVER_GUROBI``` in the class constructor). Note that only Gurobi solver bindings are implemented at this time.
+        """
         if val:
             self._solver = val
         else:
             return self._solver
 
     def solution(self):
+        """
+        Returns a ``dict`` of variable values, keyed on variable names.
+        """
         #return self._solution
         return {x:self._vars[x].val for x in self._vars}
 
     def solve(self, validate=False):
+        """
+        Solves the optimization problem. Dispatches to a solver-specific method (only Gurobi bindings are implemented at this time).
+        """
         if validate:
             assert False # not implemented yet, but later check that all systems are GO before launching...
         self._dispatch_map[self._solver].__get__(self, type(self))()

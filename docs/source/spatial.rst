@@ -1,7 +1,7 @@
-sha module
+``spatial`` module
 ==========
 
-.. automodule:: sha
+.. automodule:: spatial
     :members:
     :undoc-members:
     :show-inheritance:

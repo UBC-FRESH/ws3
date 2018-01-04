@@ -9,4 +9,4 @@
    core
    forest
    opt
-   sha
+   spatial

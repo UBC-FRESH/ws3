@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>opt module &#8212; ws3 0.1a1 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -24,17 +24,29 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="sha module" href="sha.html" />
-    <link rel="prev" title="forest module" href="forest.html" />
-   
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
+    <link rel="next" title="spatial module" href="spatial.html" />
+    <link rel="prev" title="forest module" href="forest.html" /> 
   </head>
   <body>
-  
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="spatial.html" title="spatial module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="forest.html" title="forest module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ws3 0.1a1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" accesskey="U"><code class="docutils literal"><span class="pre">ws3</span></code> Package Modules</a> &#187;</li> 
+      </ul>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -43,76 +55,96 @@
             
   <div class="section" id="module-opt">
 <span id="opt-module"></span><h1>opt module<a class="headerlink" href="#module-opt" title="Permalink to this headline">¶</a></h1>
-<p>This module implements functions for formulating and solving optimization problems.</p>
+<p>This module implements functions for formulating and solving optimization problems.
+The notation is very generic (i.e., refers to variables, constraints, problems, solutions, etc.).
+All the wood-supply-problem–specific references are implemented in the <code class="docutils literal"><span class="pre">forest</span></code> module.</p>
+<p>The <code class="docutils literal"><span class="pre">Problem</span></code> class is the main functional unit here. It encapsulates optimization problem data (i.e., variables, constraints, objective function, and optimal solution), as well as methods to operate on this data (i.e., methods to build and solve the problem, and report on the optimal solution).</p>
+<p>Note that we implemented a modular design that decouples the implementation from the choice of solver. Currently, only bindings to the Gurobi solver are implemented, although bindings to other solvers can easilty be added (we will add more binding in later releases, as the need arises).</p>
 <dl class="class">
 <dt id="opt.Constraint">
 <em class="property">class </em><code class="descclassname">opt.</code><code class="descname">Constraint</code><span class="sig-paren">(</span><em>name</em>, <em>coeffs</em>, <em>sense</em>, <em>rhs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Constraint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Encapsulates data describing a constraint in an optimization problem. This includes a constraint name (should be unique within a problem, although the user is responsible for enforcing this condition), a vector of coefficient values (length of vector should match the number of variables in the problem, although the user is responsible for enforcing this condition), a sense (should be one of <code class="docutils literal"><span class="pre">SENSE_EQ</span></code>, <code class="docutils literal"><span class="pre">SENSE_GEQ</span></code>, or <code class="docutils literal"><span class="pre">SENSE_LEQ</span></code>), and a right-hand-side value.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="opt.Problem">
 <em class="property">class </em><code class="descclassname">opt.</code><code class="descname">Problem</code><span class="sig-paren">(</span><em>name</em>, <em>sense=-1</em>, <em>solver='gurobi'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>This is the main class of the <code class="docutils literal"><span class="pre">opt</span></code> module—it encapsulates optimization problem data (i.e., variables, constraints, objective function, optimal solution, and choice of solver), as well as methods to operate on this data (i.e., methods to build and solve the problem, and report on the optimal solution).</p>
 <dl class="method">
 <dt id="opt.Problem.add_constraint">
 <code class="descname">add_constraint</code><span class="sig-paren">(</span><em>name</em>, <em>coeffs</em>, <em>sense</em>, <em>rhs</em>, <em>validate=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.add_constraint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.add_constraint" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Adds a constraint to the problem. The constraint name should be unique within the problem (user is responsible for enforcing this condition). Constraint coeffients should be provided as a <code class="docutils literal"><span class="pre">dict</span></code>, keyed on variable names—length of constraint coefficient <code class="docutils literal"><span class="pre">dict</span></code> should match number of variables in the problem (user is responsible for enforcing this condition). Constraint sense should be one of <code class="docutils literal"><span class="pre">SENSE_EQ</span></code>, <code class="docutils literal"><span class="pre">SENSE_GEQ</span></code>, or <code class="docutils literal"><span class="pre">SENSE_LEQ</span></code>.</p>
+<p>Note that calling this method resets the value of the optimal solution to <code class="docutils literal"><span class="pre">None</span></code>.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="opt.Problem.add_var">
 <code class="descname">add_var</code><span class="sig-paren">(</span><em>name</em>, <em>vtype</em>, <em>lb=0.0</em>, <em>ub=inf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.add_var"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.add_var" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Adds a variable to the problem. The variable name should be unique within the problem (user is responsible for enforcing this condition). Variable type should be one of <code class="docutils literal"><span class="pre">VTYPE_CONTINUOUS</span></code>, <code class="docutils literal"><span class="pre">VTYPE_INTEGER</span></code>, or <code class="docutils literal"><span class="pre">VTYPE_BINARY</span></code>. Variable value bounds default to zero for the lower bound and positive infinity for the upper bound.</p>
+<p>Note that calling this method resets the value of the optimal solution to <code class="docutils literal"><span class="pre">None</span></code>.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="opt.Problem.constraint_names">
 <code class="descname">constraint_names</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.constraint_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.constraint_names" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns a list of constraint names.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="opt.Problem.name">
 <code class="descname">name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns problem name.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="opt.Problem.sense">
 <code class="descname">sense</code><span class="sig-paren">(</span><em>val=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.sense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.sense" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns (or sets) objective function sense. Value should be one of <code class="docutils literal"><span class="pre">SENSE_MINIMIZE</span></code> or <code class="docutils literal"><span class="pre">SENSE_MAXIMIZE</span></code>.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="opt.Problem.solution">
 <code class="descname">solution</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.solution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.solution" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns a <code class="docutils literal"><span class="pre">dict</span></code> of variable values, keyed on variable names.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="opt.Problem.solve">
 <code class="descname">solve</code><span class="sig-paren">(</span><em>validate=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.solve" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Solves the optimization problem. Dispatches to a solver-specific method (only Gurobi bindings are implemented at this time).</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="opt.Problem.solved">
 <code class="descname">solved</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.solved"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.solved" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if the problem has been solved, <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="opt.Problem.solver">
 <code class="descname">solver</code><span class="sig-paren">(</span><em>val</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.solver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.solver" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Sets the solver (defaults to <code class="docutils literal"><span class="pre">`SOLVER_GUROBI`</span></code> in the class constructor). Note that only Gurobi solver bindings are implemented at this time.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="opt.Problem.var">
 <code class="descname">var</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.var"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.var" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns a <code class="docutils literal"><span class="pre">Variable</span></code> instance, given a variable name.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="opt.Problem.var_names">
 <code class="descname">var_names</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.var_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.var_names" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return a list of variable names.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="opt.Problem.z">
-<code class="descname">z</code><span class="sig-paren">(</span><em>coeffs</em>, <em>validate=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.z"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.z" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">z</code><span class="sig-paren">(</span><em>coeffs=None</em>, <em>validate=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Problem.z"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Problem.z" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the objective function value if <code class="docutils literal"><span class="pre">coeffs</span></code> is not provided (triggers an exception if problem has not been solved yet), or updates the objective function coefficient vector (resets the value of the optimal solution to <code class="docutils literal"><span class="pre">None</span></code>).</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -120,6 +152,7 @@
 <dt id="opt.Variable">
 <em class="property">class </em><code class="descclassname">opt.</code><code class="descname">Variable</code><span class="sig-paren">(</span><em>name</em>, <em>vtype</em>, <em>lb=0.0</em>, <em>ub=inf</em>, <em>val=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/opt.html#Variable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#opt.Variable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Encapsulates data describing a variable in an optimization problem. This includes a variable name (should be unique within a problem, although the user is responsible for enforcing this condition), a variable type (should be one of <code class="docutils literal"><span class="pre">VTYPE_CONTINUOUS</span></code>, <code class="docutils literal"><span class="pre">VTYPE_INTEGER</span></code>, or <code class="docutils literal"><span class="pre">VTYPE_BINARY</span></code>), variable value bound (lower bound defaults to zero, upper bound defaults to positive infinity), and variable value (defaults to <code class="docutils literal"><span class="pre">None</span></code>).</p>
 </dd></dl>
 
 </div>
@@ -129,17 +162,13 @@
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-  <li><a href="modules.html"><code class="docutils literal"><span class="pre">ws3</span></code> Package Modules</a><ul>
-      <li>Previous: <a href="forest.html" title="previous chapter">forest module</a></li>
-      <li>Next: <a href="sha.html" title="next chapter">sha module</a></li>
-  </ul></li>
-  </ul></li>
-</ul>
-</div>
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="forest.html"
+                        title="previous chapter">forest module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="spatial.html"
+                        title="next chapter"><code class="docutils literal"><span class="pre">spatial</span></code> module</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -154,20 +183,28 @@
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
-      &copy;2018, Gregory Paradis.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
-      
-      |
-      <a href="_sources/opt.rst.txt"
-          rel="nofollow">Page source</a>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="spatial.html" title="spatial module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="forest.html" title="forest module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ws3 0.1a1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" ><code class="docutils literal"><span class="pre">ws3</span></code> Package Modules</a> &#187;</li> 
+      </ul>
     </div>
-
-    
-
-    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Gregory Paradis.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.5.
+    </div>
   </body>
 </html>
