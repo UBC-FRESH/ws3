@@ -19,9 +19,9 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../..'))
-import ws3
 sys.path.insert(0, os.path.abspath('../..'))
+import ws3
+sys.path.insert(0, os.path.abspath('../../ws3'))
 
 # -- General configuration ------------------------------------------------
 
