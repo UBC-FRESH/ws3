@@ -80,7 +80,6 @@
 <span class="sd">Note that we implemented a modular design that decouples the implementation from the choice of solver. Currently, only bindings to the Gurobi solver are implemented, although bindings to other solvers can easilty be added (we will add more binding in later releases, as the need arises). </span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">gurobipy</span> <span class="k">as</span> <span class="nn">grb</span>
 
 <span class="n">SENSE_MINIMIZE</span> <span class="o">=</span> <span class="o">+</span><span class="mi">1</span> <span class="c1"># same as GRB.MINIMIZE</span>
 <span class="n">SENSE_MAXIMIZE</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="c1"># same as GRB.MAXIMIZE</span>
@@ -93,15 +92,6 @@
 <span class="n">VBNDS_INF</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
 <span class="n">SOLVR_GUROBI</span> <span class="o">=</span> <span class="s1">&#39;gurobi&#39;</span>
 
-<span class="n">GUROBI_MAP</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">SENSE_MINIMIZE</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">MINIMIZE</span><span class="p">,</span>
-    <span class="n">SENSE_MAXIMIZE</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">MAXIMIZE</span><span class="p">,</span>
-    <span class="n">VTYPE_INTEGER</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">INTEGER</span><span class="p">,</span>
-    <span class="n">VTYPE_BINARY</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">BINARY</span><span class="p">,</span>
-    <span class="n">VTYPE_CONTINUOUS</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">CONTINUOUS</span><span class="p">,</span>
-    <span class="n">SENSE_EQ</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">,</span>
-    <span class="n">SENSE_GEQ</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">GREATER_EQUAL</span><span class="p">,</span>
-    <span class="n">SENSE_LEQ</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">LESS_EQUAL</span><span class="p">}</span>
 
 <div class="viewcode-block" id="Variable"><a class="viewcode-back" href="../opt.html#opt.Variable">[docs]</a><span class="k">class</span> <span class="nc">Variable</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -238,6 +228,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_map</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_solver</span><span class="p">]</span><span class="o">.</span><span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">))()</span></div>
 
     <span class="k">def</span> <span class="nf">_solve_gurobi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">gurobipy</span> <span class="k">as</span> <span class="nn">grb</span>
+        <span class="n">GUROBI_MAP</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">SENSE_MINIMIZE</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">MINIMIZE</span><span class="p">,</span>
+            <span class="n">SENSE_MAXIMIZE</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">MAXIMIZE</span><span class="p">,</span>
+            <span class="n">VTYPE_INTEGER</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">INTEGER</span><span class="p">,</span>
+            <span class="n">VTYPE_BINARY</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">BINARY</span><span class="p">,</span>
+            <span class="n">VTYPE_CONTINUOUS</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">CONTINUOUS</span><span class="p">,</span>
+            <span class="n">SENSE_EQ</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">EQUAL</span><span class="p">,</span>
+            <span class="n">SENSE_GEQ</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">GREATER_EQUAL</span><span class="p">,</span>
+            <span class="n">SENSE_LEQ</span><span class="p">:</span><span class="n">grb</span><span class="o">.</span><span class="n">GRB</span><span class="o">.</span><span class="n">LESS_EQUAL</span><span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_m</span> <span class="o">=</span> <span class="n">m</span> <span class="o">=</span> <span class="n">grb</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
         <span class="nb">vars</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">:</span><span class="n">m</span><span class="o">.</span><span class="n">addVar</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">vtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="o">.</span><span class="n">values</span><span class="p">())}</span>
         <span class="n">m</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>

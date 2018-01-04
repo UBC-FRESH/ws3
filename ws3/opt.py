@@ -32,7 +32,6 @@ The ``Problem`` class is the main functional unit here. It encapsulates optimiza
 Note that we implemented a modular design that decouples the implementation from the choice of solver. Currently, only bindings to the Gurobi solver are implemented, although bindings to other solvers can easilty be added (we will add more binding in later releases, as the need arises). 
 """
 
-import gurobipy as grb
 
 SENSE_MINIMIZE = +1 # same as GRB.MINIMIZE
 SENSE_MAXIMIZE = -1 # same as GRB.MAXIMIZE
@@ -45,15 +44,6 @@ VTYPE_CONTINUOUS = 'C' # same as GRB.CONTINUOUS
 VBNDS_INF = float('inf')
 SOLVR_GUROBI = 'gurobi'
 
-GUROBI_MAP = {
-    SENSE_MINIMIZE:grb.GRB.MINIMIZE,
-    SENSE_MAXIMIZE:grb.GRB.MAXIMIZE,
-    VTYPE_INTEGER:grb.GRB.INTEGER,
-    VTYPE_BINARY:grb.GRB.BINARY,
-    VTYPE_CONTINUOUS:grb.GRB.CONTINUOUS,
-    SENSE_EQ:grb.GRB.EQUAL,
-    SENSE_GEQ:grb.GRB.GREATER_EQUAL,
-    SENSE_LEQ:grb.GRB.LESS_EQUAL}
 
 class Variable:
     """
@@ -190,6 +180,16 @@ class Problem:
         self._dispatch_map[self._solver].__get__(self, type(self))()
 
     def _solve_gurobi(self):
+        import gurobipy as grb
+        GUROBI_MAP = {
+            SENSE_MINIMIZE:grb.GRB.MINIMIZE,
+            SENSE_MAXIMIZE:grb.GRB.MAXIMIZE,
+            VTYPE_INTEGER:grb.GRB.INTEGER,
+            VTYPE_BINARY:grb.GRB.BINARY,
+            VTYPE_CONTINUOUS:grb.GRB.CONTINUOUS,
+            SENSE_EQ:grb.GRB.EQUAL,
+            SENSE_GEQ:grb.GRB.GREATER_EQUAL,
+            SENSE_LEQ:grb.GRB.LESS_EQUAL}
         self._m = m = grb.Model(self._name)
         vars = {v.name:m.addVar(name=v.name, vtype=v.vtype) for v in list(self._vars.values())}
         m.update()

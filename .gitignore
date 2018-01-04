@@ -1,3 +1,6 @@
 .ipynb_checkpoints/
 *.pyc
 ws3.egg-info/
+docs/build/*
+build/
+dist/
