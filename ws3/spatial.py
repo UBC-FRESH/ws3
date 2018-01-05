@@ -52,21 +52,49 @@ class ForestRaster:
                  piggyback_acodes=None):
         """
 
-        :param hdt_map: A dictionary mapping hash values to development types. The rasterized forest inventory is stored in a 2-layer GeoTIFF file. Pixel values for the first layer represent the *theme* values (i.e., the stratification variables used to stratify the forest inventory into development types). The value of the ``hdt_map`` parameter is used to *expand* hash value back into a tuple of theme values. 
+        :param hdt_map: A dictionary mapping hash values to development types.
+          The rasterized forest inventory is stored in a 2-layer GeoTIFF 
+          file. Pixel values for the first layer represent the *theme* values
+          (i.e., the stratification variables used to stratify the forest 
+          inventory into development types). The value of the ``hdt_map`` 
+          parameter is used to *expand* hash value back into a tuple of theme
+          values. 
         :type hdt_map: dict
-        :param hdt_func: A function that accepts a tuple of theme values, and returns a hash value. Must be the same function used to encode the rasterized forest inventory (see documentation of the ``hdt_map`` parameter, above).
-        :param src_path: Filesystem path pointing to the input GeoTIFF file (i.e., the rasterized forest inventory). Note that this file will be used as a model for the output GeoTIFF files (i.e., pixel matrix height and width, coordinate reference system, compression parameters, etc.). 
-        :param snk_path: Filesystem path pointing to a directory where the output GeoTIFF files. The output GeoTIFF files are automatically created inside the class constructor method (one GeoTIFF file for each combination of disturbance type and year. If the disturbance schedule is from a ``ForestModel`` instance that uses multi-year periods, then the ``ForestRaster`` class automatically disaggregates the periodic solution into annual time steps.
+        :param hdt_func: A function that accepts a tuple of theme values, and 
+          returns a hash value. Must be the same function used to encode the 
+          rasterized forest inventory (see documentation of the ``hdt_map`` 
+          parameter, above).
+        :param src_path: Filesystem path pointing to the input GeoTIFF file 
+          (i.e., the rasterized forest inventory). Note that this file will be
+          used as a model for the output GeoTIFF files (i.e., pixel matrix 
+          height and width, coordinate reference system, compression 
+          parameters, etc.). 
+        :param snk_path: Filesystem path pointing to a directory where the 
+          output GeoTIFF files. The output GeoTIFF files are automatically 
+          created inside the class constructor method (one GeoTIFF file for 
+          each combination of disturbance type and year. If the disturbance 
+          schedule is from a ``ForestModel`` instance that uses multi-year 
+          periods, then the ``ForestRaster`` class automatically disaggregates
+          the periodic solution into annual time steps.
         :param acodes: List of disturbance codes.
-        :param horizon: Length of planning horizon (expressed as a number of periods).
+        :param horizon: Length of planning horizon (expressed as a number of 
+          periods).
         :param base_year: Base year for numbering of annual time steps.
-        :param period_length: Length of planning period in the ``ForestModel`` instance used to generate the disturbance schedule.
-        :param tiff_compress: GeoTIFF compression mode (uses LZW lossless compression by default).
-        :param tif_dtype: Data type for output GeoTIFF files (defaults to ``rasterio.uint8``, i.e., an 8-byte unsigned integer).
-        :param piggyback_acodes: A dictionary of list of tuples, describing piggyback disturbance parameters. By *piggyback* disturbance, we mean a disturbance that was not explicitly scheduled by the ``ForestModel`` instance, but rather is modelled as a (randomly-selected) subset of one of the explicitly modelled disturbances. 
+        :param period_length: Length of planning period in the ``ForestModel`` 
+          instance used to generate the disturbance schedule.
+        :param tiff_compress: GeoTIFF compression mode (uses LZW lossless 
+          compression by default).
+        :param tif_dtype: Data type for output GeoTIFF files (defaults to 
+          ``rasterio.uint8``, i.e., an 8-byte unsigned integer).
+        :param piggyback_acodes: A dictionary of list of tuples, describing 
+          piggyback disturbance parameters. By *piggyback* disturbance, we mean
+          a disturbance that was not explicitly scheduled by the ``ForestModel`` 
+          instance, but rather is modelled as a (randomly-selected) subset of 
+          one of the explicitly modelled disturbances. 
 
-For example, if we want to model that 85% of pixels disturbed using the *clearcut* disturbance are disturbed by a piggybacked *slashburn* disturbance, we would pass 
-
+        For example, if we want to model that 85% of pixels disturbed using the 
+        *clearcut* disturbance are disturbed by a piggybacked *slashburn* 
+        disturbance, we would pass 
         ``piggyback_acodes={'clearcut':[('slashburn', 0.85)]}``. 
         """
         self._hdt_map = hdt_map
@@ -96,6 +124,8 @@ For example, if we want to model that 85% of pixels disturbed using the *clearcu
         self._is_valid = True
         
     def commit(self):
+        """Closes all open handles for output GeoTIFF files, which commits changes stored in data buffer memory.
+        """
         for p in self._snk:
             for acode in self._snk[p]:
                 self._snk[p][acode].close()
@@ -129,6 +159,12 @@ For example, if we want to model that 85% of pixels disturbed using the *clearcu
 
     #@profile(immediate=True)
     def allocate_schedule(self, forestmodel, da=0, fudge=1., mask=None, verbose=False):
+        """
+        Allocate aspatial disturbance schedule to raster space.
+
+        :param foo: A parameter description.
+        :returns: Does not return anything.
+        """
         if not self._is_valid: raise RuntimeError('ForestRaster.commit() has already been called (i.e., this instance is toast).')
         if mask: dtype_keys = forestmodel.unmask(mask)
         for p in range(1, self._horizon+1):
