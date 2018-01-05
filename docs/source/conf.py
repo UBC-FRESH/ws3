@@ -23,6 +23,18 @@ sys.path.insert(0, os.path.abspath('../..'))
 import ws3
 sys.path.insert(0, os.path.abspath('../../ws3'))
 
+# -- Mock module installation ---------------------------------------------
+import sys
+from unittest.mock import MagicMock
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+            return MagicMock()
+
+MOCK_MODULES = ['scipy', 'numpy', 'pandas', 'pacal']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+
 # -- General configuration ------------------------------------------------
 
 autoclass_content = 'both'
