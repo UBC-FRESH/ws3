@@ -1,6 +1,10 @@
+__pycache__
 .ipynb_checkpoints/
 *.pyc
 ws3.egg-info/
-docs/build/*
 build/
 dist/
+docs/build/
+docs/build/doctrees
+docs/build/html
+docs/build/latex
