@@ -138,7 +138,10 @@ def reproject_vector_data(src_path, snk_path, snk_epsg, driver='ESRI Shapefile')
 def rasterize_stands(shp_path, tif_path, theme_cols, age_col, age_divisor=1., d=100.,
                      dtype=rasterio.uint32, compress='lzw', round_coords=True,
                      value_func=lambda x: re.sub(r'(-| )+', '_', str(x).lower()),
-                     verbose=False): 
+                     verbose=False):
+    """
+    Rasterize vector stand data.
+    """
     import fiona
     from rasterio.features import rasterize
     if verbose: print('rasterizing', shp_path)
@@ -146,15 +149,17 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, age_divisor=1., d=
         nbytes = 4
     else:
         raise TypeError('Data type not implemented: %s' % dtype)
+    hdt = {}
+    shapes = [[], []]
+    crs = None
     with fiona.open(shp_path, 'r') as src:
+        crs = src.crs
         b = src.bounds #(x_min, y_min, x_max, y_max)
         w, h = b[2] - b[0], b[3] - b[1]
         m, n = int((h - (h%d) + d) / d), int((w - (w%d) + d) /  d)
         W = b[0] - (b[0]%d) if round_coords else b[0]
         N = b[1] - (b[1]%d) +d*m if round_coords else b[1] + d*m
         transform = rasterio.transform.from_origin(W, N, d, d)
-        hdt = {}
-        shapes = [[], []]
         for f in src:
             dt = tuple(value_func(f['properties'][t]) for t in theme_cols)
             h = hash_dt(dt, dtype, nbytes)
@@ -177,11 +182,14 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, age_divisor=1., d=
               'width':n, 
               'height':m, 
               'count':2, 
-              'crs':src.crs,
+              'crs':crs,
               'transform':transform,
               'dtype':dtype,
               'nodata':0,
               'compress':compress}
+    #print(shp_path)
+    #print(src.crs)
+    #print(kwargs)
     with rasterio.open(tif_path, 'w', **kwargs) as snk:
         snk.write(r[0], indexes=1)
         snk.write(r[1], indexes=2)

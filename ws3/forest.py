@@ -830,6 +830,12 @@ class ForestModel:
         #self.total_volume_yname = total_volume_yname
         self._problems = {}
 
+    def compile_actions(self, mask=None, verbose=False):
+        dtype_keys = self.unmask(mask) if mask else list(self.dtypes.keys())
+        for dtk in dtype_keys:
+            dt = self.dtypes[dtk]
+            dt.compile_actions(verbose=verbose)            
+        
     def compile_schedule(self, problem, formulation=1, skip_null='null'):
         """
         Compiles a ``ws3``-compatible schedule data object from a solved ``ws3.opt.Problem`` instance. This is just a dispatcher function---the actual compilation is done by a formulation-specific function (assumes *Model I* formulation if not specified).
@@ -1700,9 +1706,9 @@ class ForestModel:
     def unmask(self, mask):
         """
         Iteratively filter list of development type keys using mask values.
-        Accepts Forest-style string masks to facilitate cut-and-paste testing.
+        Accepts Woodstock-style string masks to facilitate cut-and-paste testing.
         """
-        if isinstance(mask, str): # Forest string mask format
+        if isinstance(mask, str): # Woodstock-style string mask format
             mask = tuple(re.sub('\s+', ' ', mask).lower().split(' '))
             assert len(mask) == self.nthemes # must be bad mask if wrong theme count
         else:

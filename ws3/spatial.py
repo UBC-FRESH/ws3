@@ -43,50 +43,49 @@ class ForestRaster:
                  hdt_func,
                  src_path,
                  snk_path,
-                 acodes,
-                 horizon,
+                 acode_map,
+                 forestmodel,
                  base_year,
+                 horizon=None,
                  period_length=1,
                  tif_compress='lzw',
                  tif_dtype=rasterio.uint8,
                  piggyback_acodes=None):
         """
 
-        :param hdt_map: A dictionary mapping hash values to development types.
+        :param dict hdt_map: A dictionary mapping hash values to development types.
           The rasterized forest inventory is stored in a 2-layer GeoTIFF 
           file. Pixel values for the first layer represent the *theme* values
           (i.e., the stratification variables used to stratify the forest 
           inventory into development types). The value of the ``hdt_map`` 
           parameter is used to *expand* hash value back into a tuple of theme
           values. 
-        :type hdt_map: dict
-        :param hdt_func: A function that accepts a tuple of theme values, and 
+        :param function hdt_func: A function that accepts a tuple of theme values, and 
           returns a hash value. Must be the same function used to encode the 
           rasterized forest inventory (see documentation of the ``hdt_map`` 
           parameter, above).
-        :param src_path: Filesystem path pointing to the input GeoTIFF file 
+        :param str src_path: Filesystem path pointing to the input GeoTIFF file 
           (i.e., the rasterized forest inventory). Note that this file will be
           used as a model for the output GeoTIFF files (i.e., pixel matrix 
           height and width, coordinate reference system, compression 
-          parameters, etc.). 
-        :param snk_path: Filesystem path pointing to a directory where the 
+          parameters, etc.).
+        :param str snk_path: Filesystem path pointing to a directory where the 
           output GeoTIFF files. The output GeoTIFF files are automatically 
           created inside the class constructor method (one GeoTIFF file for 
-          each combination of disturbance type and year. If the disturbance 
-          schedule is from a ``ForestModel`` instance that uses multi-year 
-          periods, then the ``ForestRaster`` class automatically disaggregates
-          the periodic solution into annual time steps.
-        :param acodes: List of disturbance codes.
-        :param horizon: Length of planning horizon (expressed as a number of 
-          periods).
-        :param base_year: Base year for numbering of annual time steps.
-        :param period_length: Length of planning period in the ``ForestModel`` 
-          instance used to generate the disturbance schedule.
-        :param tiff_compress: GeoTIFF compression mode (uses LZW lossless 
+          each combination of disturbance type and year. 
+        :param dict acode_map: Dict keyed on disturbance codes, returning string prefix 
+          to use for GeoTIFF output filenames.
+        :param int forestmodel: An instance of the 
+          :py:class:`~.forest.ForestModel` class. 
+        :param int or None horizon: Length of planning horizon (expressed as a number of 
+          periods). If ``None``, defaults to ``forestmodel.horizon``.
+        :param int base_year: Base year for numbering of annual time steps (affects 
+          GeoTIFF output filenames).
+        :param str tiff_compress: GeoTIFF output file compression mode (uses LZW lossless 
           compression by default).
-        :param tif_dtype: Data type for output GeoTIFF files (defaults to 
+        :param rasterio.dtype tif_dtype: Data type for output GeoTIFF files (defaults to 
           ``rasterio.uint8``, i.e., an 8-byte unsigned integer).
-        :param piggyback_acodes: A dictionary of list of tuples, describing 
+        :param dict(str, list) piggyback_acodes: A dictionary of list of tuples, describing 
           piggyback disturbance parameters. By *piggyback* disturbance, we mean
           a disturbance that was not explicitly scheduled by the ``ForestModel`` 
           instance, but rather is modelled as a (randomly-selected) subset of 
@@ -94,17 +93,20 @@ class ForestRaster:
 
         For example, if we want to model that 85% of pixels disturbed using the 
         *clearcut* disturbance are disturbed by a piggybacked *slashburn* 
-        disturbance, we would pass 
-        ``piggyback_acodes={'clearcut':[('slashburn', 0.85)]}``. 
+        disturbance, we would pass a value of  
+        ``{'clearcut':[('slashburn', 0.85)]}`` for the ``piggyback_acodes``
+        parameter. 
         """
         self._hdt_map = hdt_map
         self._hdt_func = hdt_func
-        self._acodes = acodes
+        self._acodes = list(acode_map.keys())
+        self._acode_map = acode_map
+        self._forestmodel = forestmodel
         self._horizon = horizon
         self._base_year = base_year
         self._period_length = period_length
-        self._i2a = {i: a for i, a in enumerate(acodes)}
-        self._a2i = {a: i for i, a in enumerate(acodes)}
+        self._i2a = {i: a for i, a in enumerate(self._acodes)}
+        self._a2i = {a: i for i, a in enumerate(self._acodes)}
         self._p = 1 # initialize current period
         self._src = rasterio.open(src_path, 'r')
         self._x = self._src.read()
@@ -113,18 +115,22 @@ class ForestRaster:
         profile = self._src.profile
         profile.update(dtype=tif_dtype, compress=tif_compress, count=1, nodata=0)
         self._piggyback_acodes = piggyback_acodes
-        for acode1 in piggyback_acodes:
-            for acode2, _ in piggyback_acodes[acode1]:
-                self._acodes.append(acode2)
-        self._snk = {(p, dy):{acode:rasterio.open(snk_path+'/%s_%i.tif' % (acode, base_year+(p-1)*period_length + dy),
-                                                  'w', **profile)
+        #for acode1 in piggyback_acodes:
+        #    for acode2, _ in piggyback_acodes[acode1]:
+        #        self._acodes.append(acode2)
+        self._snk = {(p, dy):{acode:rasterio.open(snk_path+'/%s_%i.tif' % (acode_map[acode], base_year+(p-1)*period_length + dy), 'w', **profile)
                       for acode in self._acodes}
                       for dy in range(period_length) for p in range(1, (horizon+1))}
         self._snkd = {(acode, dy):self._read_snk(acode, dy) for dy in range(period_length) for acode in self._acodes}
         self._is_valid = True
         
     def commit(self):
-        """Closes all open handles for output GeoTIFF files, which commits changes stored in data buffer memory.
+        """
+        Closes all open handles for output GeoTIFF files, which commits changes
+        stored in data buffer memory. The :py:class:`.ForestRaster` instance is 
+        essentially expired after this method has been called, and further
+        calls to :py:meth:`.allocate_schedule` will trigger a 
+        :py:exc:`~exceptions.RuntimeError` exception.
         """
         for p in self._snk:
             for acode in self._snk[p]:
@@ -132,8 +138,128 @@ class ForestRaster:
         self._is_valid = False
 
     def cleanup(self):
+        """
+        Calls :py:meth:`~.commit`, and also closes the open file handle for the forest inventory input 
+        GeoTIFF file. The :py:class:`.ForestRaster` instance is 
+        essentially expired after this method has been called, and further
+        calls to :py:meth:`.allocate_schedule` will trigger a 
+        :py:exc:`~exceptions.RuntimeError` exception.
+        """
         self.commit()
         self._src.close()
+
+    #@profile(immediate=True)
+    def allocate_schedule(self, mask=None, verbose=False, commit=True, da=0, fudge=1.):
+        """
+        Allocates the current disturbance schedule from the
+        :py:class:~`.forest.ForestModel` instance passed via the ``forestmodel``
+        parameter. This is the core method of the :py:class:`~.ForestRaster` class.
+        This method should only be called once. Calls the :py:meth:`~.commit` 
+        method by default, which closes the open file handles for the output
+        GeoTIFF files (else the files are locked until the instance is destroyed).
+
+        The :py:class:`~.ForestRaster` class defines both ``__enter__`` and 
+        ``__exit__`` methods, so instance scope and lifetime can easily be
+        managed using a ``with`` block. This will automatically closes all open
+        file handles, thereby avoid hard-to-debug problems downstream 
+        (highly recommended). For example
+
+        .. code-block :: python
+
+          with ForestRaster(**kwargs) as fr:
+              fr.allocate_schedule()
+        
+        This method allocates the aspatial disturbance schedule (simulated in 
+        the :py:class:`~.forest.ForestModel` instance passed to the
+        :py:class:`~.ForestRaster` instance constructor) to a spatial raster
+        grid. The raster grid specifications are copied from the input 
+        GeoTIFF file (containing initial forest inventory data), such that
+        the output GeoTIFF files can be exactly overlaid onto the 
+        raster inventory layers. The :py:class:`~.forest.ForestModel`
+        simulates disturbances using time steps of user-defined length.
+        This method disaggregates the disturbance schedule down to annual
+        time steps (assuming uniform distribution of disturbed area within
+        each planning period).
+        
+        .. note:: The algorithm uses the development-type-wise operability rules 
+          from the :py:class:`~.forest.ForestModel` instance to allocate the
+          aspatial schedule to the raster pixels. Thus, the output should be
+          feasible with respect to the original model.
+
+        .. note:: Currently this method randomly selects a subset of operable pixels 
+          for disturbance at each annual time step. This is not likely to produce a
+          realistic landscape-level spatial disturbance pattern. Realistically, 
+          each disturbance type is likely to have a distinct patch size 
+          distribution (e.g., clearcut harvest disturbances might have a uniform
+          patch size distribution, whereas wildfire disturbances might follow a 
+          Weibull distribution, etc.). We may revisit this in a later release,
+          possibly adding extra parameters to allow disturbance-type-wise 
+          parametrization of pixel aggregation methodology.
+
+        *Piggyback* disturbances (if specified in the ``piggyback_acodes``
+        parameter in the constructor) are simulated at the end of the process.
+
+        :param tuple(str) mask: Tuple of strings, used to filter development 
+          types. Typically, this will be used to filter multi-management-unit
+          models (e.g., if input raster inventory and output disturbance 
+          raster files need to be generated on a per-management-unit basis).
+        :param bool verbose: Prints extra info to the console if ``True`` 
+          (default ``False``).
+        :param bool commit: Automatically calls :py:meth:`~.commit` if ``True``
+          (default ``True``).
+        :param int da: *[FOR DEBUG USE ONLY. DO NOT MODIFY.]*
+        :param float fudge: *[FOR DEBUG USE ONLY. DO NOT MODIFY.]* 
+        """
+        if not self._is_valid: raise RuntimeError('commit() already called (i.e., instance is toast).')
+        if mask: dtype_keys = self._forestmodel.unmask(mask)
+        for p in range(1, self._horizon+1):
+            if verbose: print('processing schedule for period %i' % p)
+            for acode in self._forestmodel.applied_actions[p]:
+                for dtk in self._forestmodel.applied_actions[p][acode]:
+                    if mask:
+                        if dtk not in dtype_keys: continue
+                    for from_age in self._forestmodel.applied_actions[p][acode][dtk]:
+                        area = self._forestmodel.applied_actions[p][acode][dtk][from_age][0]
+                        if not area: continue
+                        from_dtk = list(dtk) 
+                        trn = self._forestmodel.dtypes[dtk].transitions[acode, from_age][0]
+                        tmask, tprop, tyield, tage, tlock, treplace, tappend = trn
+                        to_dtk = [t if tmask[i] == '?' else tmask[i]
+                                  for i, t in enumerate(from_dtk)] 
+                        if treplace: to_dtk[treplace[0]] = self._forestmodel.resolve_replace(from_dtk,
+                                                                                       treplace[1])
+                        to_dtk = tuple(to_dtk)
+                        to_age = self._forestmodel.resolve_targetage(to_dtk, tyield, from_age,
+                                                               tage, acode, verbose=False)
+                        tk = tuple(to_dtk)+(to_age,)
+                        th = self._hdt_func(tk)
+                        for dy in range(self._period_length):
+                            from_ages = [from_age]
+                            target_area = area / self._period_length
+                            while from_ages and target_area:
+                                from_age = from_ages.pop()
+                                target_area = self._transition_cells_random(from_dtk, from_age,
+                                                                            to_dtk, to_age,
+                                                                            target_area, acode,
+                                                                            dy, da=da, fudge=fudge,
+                                                                            verbose=False)
+                            if target_area:
+                                print('failed', (from_dtk, from_age, to_dtk, to_age, acode),
+                                      end=' ')
+                                print('(missing %4.1f of %4.1f)' % (target_area, area /
+                                                                    self._period_length),
+                                      'in p%i dy%i' % (p, dy))
+                if acode in self._piggyback_acodes:
+                    for _acode, _p in self._piggyback_acodes[acode]:
+                        for dy in range(self._period_length):
+                            x = np.where(self._snkd[(acode, dy)] == 1)
+                            xn = len(x[0])
+                            r = np.random.choice(xn, int(_p * xn), replace=False)
+                            ix = x[0][r], x[1][r]
+                            self._snkd[(_acode, dy)][ix] = 1
+            self._write_snk()
+            if p < self._horizon: self.grow()
+
         
     def __enter__(self):
         # The value returned by this method is
@@ -153,61 +279,12 @@ class ForestRaster:
     def _write_snk(self):
         for dy in range(self._period_length):
             for acode in self._acodes:
+                #print('writing snk', dy, acode)
                 snk = self._snk[(self._p, dy)][acode]
                 snk.write(self._snkd[(acode, dy)], indexes=1)
                 snk.close()
 
-    #@profile(immediate=True)
-    def allocate_schedule(self, forestmodel, da=0, fudge=1., mask=None, verbose=False):
-        """
-        Allocate aspatial disturbance schedule to raster space.
-
-        :param foo: A parameter description.
-        :returns: Does not return anything.
-        """
-        if not self._is_valid: raise RuntimeError('ForestRaster.commit() has already been called (i.e., this instance is toast).')
-        if mask: dtype_keys = forestmodel.unmask(mask)
-        for p in range(1, self._horizon+1):
-            if verbose: print('processing schedule for period %i' % p)
-            for acode in forestmodel.applied_actions[p]:
-                for dtk in forestmodel.applied_actions[p][acode]:
-                    if mask:
-                        if dtk not in dtype_keys: continue
-                    for from_age in forestmodel.applied_actions[p][acode][dtk]:
-                        area = forestmodel.applied_actions[p][acode][dtk][from_age][0]
-                        if not area: continue
-                        from_dtk = list(dtk)
-                        tmask, tprop, tyield, tage, tlock, treplace, tappend = forestmodel.dtypes[dtk].transitions[acode, from_age][0]
-                        to_dtk = [t if tmask[i] == '?' else tmask[i] for i, t in enumerate(from_dtk)] 
-                        if treplace: to_dtk[treplace[0]] = forestmodel.resolve_replace(from_dtk, treplace[1])
-                        to_dtk = tuple(to_dtk)
-                        to_age = forestmodel.resolve_targetage(to_dtk, tyield, from_age, tage, acode, verbose=False)
-                        tk = tuple(to_dtk)+(to_age,)
-                        th = self._hdt_func(tk)
-                        for dy in range(self._period_length):
-                            from_ages = [from_age]
-                            target_area = area / self._period_length
-                            while from_ages and target_area:
-                                from_age = from_ages.pop()
-                                target_area = self.transition_cells_random(from_dtk, from_age, to_dtk, to_age,
-                                                                           target_area, acode, dy,
-                                                                           da=da, fudge=fudge, verbose=False)
-                            if target_area:
-                                print('failed', (from_dtk, from_age, to_dtk, to_age, acode), end=' ')
-                                print('(missing %4.1f of %4.1f)' % (target_area, area / self._period_length), 'in p%i dy%i' % (p, dy))
-                if acode in self._piggyback_acodes:
-                    for _acode, _p in self._piggyback_acodes[acode]:
-                        for dy in range(self._period_length):
-                            x = np.where(self._snkd[(acode, dy)] == 1)
-                            xn = len(x[0])
-                            r = np.random.choice(xn, int(_p * xn), replace=False)
-                            ix = x[0][r], x[1][r]
-                            self._snkd[(_acode, dy)][ix] = 1
-                            #print acode, _acode, _p, p, dy, len(x), int(_p * len(x))
-            self._write_snk()
-            if p < self._horizon: self.grow()
-
-    def transition_cells_random(self, from_dtk, from_age, to_dtk, to_age, tarea, acode, dy, da=0, fudge=1., verbose=False):
+    def _transition_cells_random(self, from_dtk, from_age, to_dtk, to_age, tarea, acode, dy, da=0, fudge=1., verbose=False):
         fk, tk = tuple(from_dtk), tuple(to_dtk)
         fh, th = self._hdt_func(fk), self._hdt_func(tk)
         x = np.where((self._x[0] == fh) & (self._x[1]+da == from_age))

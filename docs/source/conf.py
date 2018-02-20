@@ -23,6 +23,9 @@ sys.path.insert(0, os.path.abspath('../..'))
 import ws3
 sys.path.insert(0, os.path.abspath('../../ws3'))
 
+# -- Misc Stuff -----------------------------------------------------------
+intersphinx_mapping = {'http://docs.python.org/3': None}
+
 # -- Mock module installation ---------------------------------------------
 import sys
 from unittest.mock import MagicMock
@@ -99,6 +102,10 @@ todo_include_todos = True
 
 
 # -- Options for HTML output ----------------------------------------------
+html_theme = "sphinx_rtd_theme"
+import sphinx_rtd_theme
+html_theme = "sphinx_rtd_theme"
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
