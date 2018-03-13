@@ -68,7 +68,7 @@ def reproject(f, srs_crs, dst_crs):
                           precision=-1)
     return f
 
-def clean_vector_data(src_path, dst_path, dst_name, prop_names, clean=True, tolerance=10.,
+def clean_vector_data(src_path, dst_path, dst_name, prop_names, clean=True, tolerance=0.,
                       preserve_topology=True, logfn='clean_stand_shapefile.log', max_records=None,
                       theme0=None, prop_types=None, driver='ESRI Shapefile', dst_epsg=None):
     import logging
@@ -110,7 +110,12 @@ def clean_vector_data(src_path, dst_path, dst_name, prop_names, clean=True, tole
                         assert _g.is_valid
                         assert _g.geom_type == 'Polygon'
                         g = _g
-                    g = g.simplify(tolerance=tolerance, preserve_topology=True)
+                    #g = g.simplify(tolerance=tolerance, preserve_topology=True)
+                    #if not g.is_valid:
+                    #    _g = g.buffer(0)
+                    #    assert _g.is_valid
+                    #    assert _g.geom_type == 'Polygon'
+                    #    g = _g
                     f['geometry'] = mapping(g)
                     if dst_epsg: f = reproject(f, src.crs, dst_crs)
                     snk1.write(f)
@@ -135,7 +140,7 @@ def reproject_vector_data(src_path, snk_path, snk_epsg, driver='ESRI Shapefile')
             for f in src: snk.write(reproject(f, src.crs, snk_crs))
 
                           
-def rasterize_stands(shp_path, tif_path, theme_cols, age_col, age_divisor=1., d=100.,
+def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_divisor=1., d=100.,
                      dtype=rasterio.uint32, compress='lzw', round_coords=True,
                      value_func=lambda x: re.sub(r'(-| )+', '_', str(x).lower()),
                      verbose=False):
@@ -150,7 +155,7 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, age_divisor=1., d=
     else:
         raise TypeError('Data type not implemented: %s' % dtype)
     hdt = {}
-    shapes = [[], []]
+    shapes = [[], [], []]
     crs = None
     with fiona.open(shp_path, 'r') as src:
         crs = src.crs
@@ -160,28 +165,31 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, age_divisor=1., d=
         W = b[0] - (b[0]%d) if round_coords else b[0]
         N = b[1] - (b[1]%d) +d*m if round_coords else b[1] + d*m
         transform = rasterio.transform.from_origin(W, N, d, d)
-        for f in src:
-            dt = tuple(value_func(f['properties'][t]) for t in theme_cols)
+        for i, f in enumerate(src):
+            fp = f['properties']
+            dt = tuple(value_func(fp[t]) for t in theme_cols)
             h = hash_dt(dt, dtype, nbytes)
             hdt[h] = dt
-            age = np.uint32(math.ceil(f['properties'][age_col]/float(age_divisor)))
+            age = np.uint32(math.ceil(fp[age_col]/float(age_divisor)))
             try:
                 assert age > 0
             except:
-                if f['properties'][age_col] == 0:
+                if fp[age_col] == 0:
                     age = np.uint32(1)
                 else:
-                    print('bad age', age, f['properties'][age_col], age_divisor)
+                    print('bad age', age, fp[age_col], age_divisor)
                     raise
+            blk = i if not blk_col else fp[blk_col]
             shapes[0].append((f['geometry'], h))   # themes
             shapes[1].append((f['geometry'], age)) # age
+            shapes[2].append((f['geometry'], blk)) # block identifier
     #rst_path = shp_path[:-4]+'.tif' if not rst_path else rst_path
     kwargs = {'out_shape':(m, n), 'transform':transform, 'dtype':dtype, 'fill':0}
     r = np.stack([rasterize(s, **kwargs) for s in shapes])
     kwargs = {'driver':'GTiff', 
               'width':n, 
               'height':m, 
-              'count':2, 
+              'count':3, 
               'crs':crs,
               'transform':transform,
               'dtype':dtype,
@@ -193,6 +201,7 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, age_divisor=1., d=
     with rasterio.open(tif_path, 'w', **kwargs) as snk:
         snk.write(r[0], indexes=1)
         snk.write(r[1], indexes=2)
+        snk.write(r[2], indexes=3)
     return hdt
         
 

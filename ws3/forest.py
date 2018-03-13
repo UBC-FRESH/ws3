@@ -806,6 +806,7 @@ class ForestModel:
         self.outputs = {}        
         self.reset_actions()
         self.curves = {}
+        self.problems = {}
         c_zero = self.register_curve(core.Curve('zero',
                                                 is_special=True,
                                                 type=''))
@@ -873,6 +874,7 @@ class ForestModel:
         ##cmp_z_dsp[formulation](p, coeff) # compile objective function
         cmp_cflw_dsp[formulation](p, cflw_e) # compile flow constraints
         cmp_cgen_dsp[formulation](p, cgen_data) # compile general constraints
+        self.problems[name] = p
         return p
     
     def _bld_p_m1(self, name, coeff_funcs, solver, z_coeff_key='z', acodes=None):

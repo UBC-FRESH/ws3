@@ -110,6 +110,8 @@ class ForestRaster:
         self._p = 1 # initialize current period
         self._src = rasterio.open(src_path, 'r')
         self._x = self._src.read()
+        #self._blkix = {b:np.where(self._x[2]==b) for b in np.unique(self._x[2])}
+        #self._blkid = np.unique(self._x[2])
         self._d = self._src.transform.a # pixel width
         self._pixel_area = pow(self._d, 2) * 0.0001 # m to hectares
         profile = self._src.profile
@@ -118,7 +120,8 @@ class ForestRaster:
         #for acode1 in piggyback_acodes:
         #    for acode2, _ in piggyback_acodes[acode1]:
         #        self._acodes.append(acode2)
-        self._snk = {(p, dy):{acode:rasterio.open(snk_path+'/%s_%i.tif' % (acode_map[acode], base_year+(p-1)*period_length + dy), 'w', **profile)
+        self._snk = {(p, dy):{acode:rasterio.open(snk_path+'/%s_%i.tif' % (acode_map[acode], base_year+(p-1)*period_length + dy),
+                                                  'w', **profile)
                       for acode in self._acodes}
                       for dy in range(period_length) for p in range(1, (horizon+1))}
         self._snkd = {(acode, dy):self._read_snk(acode, dy) for dy in range(period_length) for acode in self._acodes}
@@ -149,7 +152,8 @@ class ForestRaster:
         self._src.close()
 
     #@profile(immediate=True)
-    def allocate_schedule(self, mask=None, verbose=False, commit=True, da=0, fudge=1.):
+    def allocate_schedule(self, mask=None, verbose=False, commit=True,
+                          da=0, ovrflwthr=0, fudge=1.):
         """
         Allocates the current disturbance schedule from the
         :py:class:~`.forest.ForestModel` instance passed via the ``forestmodel``
@@ -213,6 +217,7 @@ class ForestRaster:
         if not self._is_valid: raise RuntimeError('commit() already called (i.e., instance is toast).')
         if mask: dtype_keys = self._forestmodel.unmask(mask)
         for p in range(1, self._horizon+1):
+            #assert p < 2
             if verbose: print('processing schedule for period %i' % p)
             for acode in self._forestmodel.applied_actions[p]:
                 for dtk in self._forestmodel.applied_actions[p][acode]:
@@ -232,17 +237,24 @@ class ForestRaster:
                         to_age = self._forestmodel.resolve_targetage(to_dtk, tyield, from_age,
                                                                tage, acode, verbose=False)
                         tk = tuple(to_dtk)+(to_age,)
-                        th = self._hdt_func(tk)
+                        #th = self._hdt_func(tk)
                         for dy in range(self._period_length):
                             from_ages = [from_age]
                             target_area = area / self._period_length
                             while from_ages and target_area:
                                 from_age = from_ages.pop()
-                                target_area = self._transition_cells_random(from_dtk, from_age,
-                                                                            to_dtk, to_age,
-                                                                            target_area, acode,
-                                                                            dy, da=da, fudge=fudge,
-                                                                            verbose=False)
+                                target_area = self._transition_cells(from_dtk, from_age,
+                                                                     to_dtk, to_age,
+                                                                     target_area, acode, dy,
+                                                                     mode='randblk', da=da, fudge=fudge,
+                                                                     ovrflwthr=ovrflwthr,
+                                                                     verbose=False)
+                            # old code ################################################
+                            #    target_area = self._transition_cells_random(from_dtk, from_age,
+                            #                                                to_dtk, to_age,
+                            #                                                target_area, acode,
+                            #                                                dy, da=da, fudge=fudge,
+                            #                                                verbose=False)
                             if target_area:
                                 print('failed', (from_dtk, from_age, to_dtk, to_age, acode),
                                       end=' ')
@@ -284,6 +296,57 @@ class ForestRaster:
                 snk.write(self._snkd[(acode, dy)], indexes=1)
                 snk.close()
 
+    def _transition_cells(self, from_dtk, from_age, to_dtk, to_age, tarea, acode, dy,
+                          mode='rand', da=0, fudge=1., ovrflwthr=0, allow_split=True, verbose=False):
+        """
+        Modes:
+          'rand': randomly select individual pixels
+          'randblk': randomly select blocks (pixel aggregates)
+        randblk mode allocates entire blocks, using the block layer (3) from the raster inventory.
+        """
+        assert mode in ('rand', 'randblk')
+        fk, tk = tuple(from_dtk), tuple(to_dtk)
+        fh, th = self._hdt_func(fk), self._hdt_func(tk)
+        x = np.where((self._x[0] == fh) & (self._x[1]+da == from_age))
+        xn = len(x[0])
+        xa = float(xn * self._pixel_area)
+        c = tarea / xa if xa else np.inf
+        if c > 1. and verbose: print('missing area', from_dtk, tarea - xa)
+        c = min(c, 1.)
+        n = int(xa * c / self._pixel_area)
+        if not n: return # found nothing to transition
+        if mode == 'rand':
+            r = np.random.choice(xn, n, replace=False)
+            ix = x[0][r], x[1][r]
+            self._x[0][ix] = th
+            self._x[1][ix] = to_age
+            self._snkd[(acode, dy)][ix] = 1 #self._a2i[acode]
+            missing_area = max(0., tarea - xa)
+        elif mode == 'randblk':
+            _n = 0
+            #print('transitioning cells:', from_dtk, from_age, to_dtk, to_age, tarea, acode, dy)
+            blkid = np.unique(self._x[2][x])
+            np.random.shuffle(blkid)
+            blkid = list(blkid)
+            while _n < n and blkid:
+                b = blkid.pop()
+                ix = np.where(self._x[2] == b)
+                if _n+ix[0].shape[0] > n+ovrflwthr:
+                    if blkid: # look for smaller block
+                        continue 
+                    elif allow_split:
+                        #print('split', n - _n, ix[0].shape[0]) 
+                        ix = ix[0][:n-_n], ix[1][:n-_n]
+                _n += ix[0].shape[0]
+                self._x[0][ix] = th
+                self._x[1][ix] = to_age
+                self._snkd[(acode, dy)][ix] = 1
+                #print('allocated', _n, 'of', n)
+                #return 0
+            missing_area = max(0., (n - _n) * self._pixel_area)
+        return missing_area
+        
+                
     def _transition_cells_random(self, from_dtk, from_age, to_dtk, to_age, tarea, acode, dy, da=0, fudge=1., verbose=False):
         fk, tk = tuple(from_dtk), tuple(to_dtk)
         fh, th = self._hdt_func(fk), self._hdt_func(tk)
