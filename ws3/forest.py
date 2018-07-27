@@ -108,7 +108,8 @@ class Action:
                  lockexempt=False,
                  components=None,
                  partial=None,
-                 is_harvest=0):
+                 is_harvest=0,
+                 is_sticky=0):
         self.code = code
         self.targetage = targetage
         self.descr = descr
@@ -119,6 +120,7 @@ class Action:
         self.partial = partial or []
         self.is_compiled = False
         self.is_harvest = is_harvest
+        self.is_sticky = is_sticky
         self.treatment_type = None
     
 class DevelopmentType:
@@ -131,7 +133,8 @@ class DevelopmentType:
                  key,
                  parent):
         """
-        The key is basically the fully expanded mask (expressed as a tuple of values). The parent is a reference to the ForestModel object in which self is embedded.
+        The key is basically the fully expanded mask (expressed as a tuple of values). 
+        The parent is a reference to the ForestModel object in which self is embedded.
         """
         self.key = key
         self.parent = parent
@@ -188,8 +191,11 @@ class DevelopmentType:
             return False
         else:
             lo, hi = self.operability[acode][period]
-            return age >= lo and age <= hi
-        
+            if age is not None:
+                return age >= lo and age <= hi
+            else:
+                return lo, hi
+            
     def operable_area(self, acode, period, age=None, cleanup=True):
         """
         Returns 0 if inoperable or no current inventory, operable area given action code and period 
@@ -337,7 +343,7 @@ class DevelopmentType:
             self._ycomps[yname] = ycomp
             #assert False
         except KeyError:
-                raise ValueError('Problem compileing complex yield: %s, %s' % (yname, expression))
+                raise ValueError('Problem compiling complex yield: %s, %s' % (yname, expression))
             
     def compile_actions(self, verbose=False):
         """
@@ -432,84 +438,15 @@ class DevelopmentType:
         else: # or
             if _alo is not None: alo = min(_alo, alo)
             if _ahi is not None: ahi = max(_ahi, ahi)
-        if plo >= phi:
-            print(plo, phi)
-            assert plo <= phi # should never explicitly declare infeasible period range...
+        #if plo >= phi:
+        #    print(plo, phi)
+        assert plo <= phi # should never explicitly declare infeasible period range...
         for p in range(plo, phi+1):
             assert alo <= ahi
             #print self.key, acode, p, alo, ahi
             self.operability[acode][p] = (alo, ahi) if alo <= ahi else None
             #print acode, p, (alo, ahi), expr
-
-    
-    # def _compile_oper_expr(self, acode, expr, verbose=False):
-    #     expr = expr.replace('&', 'and').replace('|', 'or')
-    #     oper = None
-    #     plo, phi = 1, self.parent.horizon # count periods from 1, as in Forest...
-    #     alo, ahi = 0, self._max_age 
-    #     if 'and' in expr:
-    #         oper = 'and'
-    #     elif 'or' in expr:
-    #         oper = 'or'
-    #         alo, ahi = self._max_age+1, -1
-    #     cond_comps = expr.split(' %s ' % oper)
-    #     lhs, rel_operators, rhs = zip(*[cc.split(' ') for cc in cond_comps])
-    #     rhs = map(float, rhs)
-    #     _plo, _phi, _alo, _ahi = None, None, None, None
-    #     for i, o in enumerate(lhs):
-    #         if o == '_cp':
-    #             #print 'rhs', rhs
-    #             period = int(rhs[i])
-    #             assert period <= self.parent.horizon # sanity check
-    #             #################################################################
-    #             # Nonsense to relate time-based and age-based conditions with OR?
-    #             # Recondider if this actually ever comes up...
-    #             assert oper != 'or'  
-    #             #################################################################
-    #             if rel_operators[i] == '=':
-    #                 _plo, _phi = period, period
-    #             elif rel_operators[i] == '>=':
-    #                 _plo = period
-    #             elif rel_opertors[i] == '<=':
-    #                 _phi = period
-    #             else:
-    #                 raise ValueError('Bad relational operator.')
-    #             plo, phi = max(_plo, plo), min(_phi, phi)
-    #         elif o == '_age':
-    #             age = int(rhs[i])
-    #             if rel_operators[i] == '=':
-    #                 _alo, _ahi = age, age
-    #             elif rel_operators[i] == '>=':
-    #                 _alo = age
-    #             elif rel_operators[i] == '<=':
-    #                 _ahi = age
-    #             else:
-    #                 raise ValueError('Bad relational operator.')                    
-    #         else: # must be yname
-    #             ycomp = self.ycomp(o)
-    #             if rel_operators[i] == '=':
-    #                 _alo = _ahi = ycomp.lookup(rhs[i])
-    #             elif rel_operators[i] == '>=':
-    #                 #print ' ge', o, ycomp[45], ycomp.lookup(0)  
-    #                 _alo = ycomp.lookup(rhs[i])
-    #             elif rel_operators[i] == '<=':
-    #                 #print ' le', o 
-    #                 _ahi = ycomp.lookup(rhs[i])
-    #             else:
-    #                 raise ValueError('Bad relational operator.')
-    #             #print ' ', o, (alo, _alo), (ahi, _ahi)
-    #         if oper == 'and':
-    #             if _alo is not None: alo = max(_alo, alo)
-    #             if _ahi is not None: ahi = min(_ahi, ahi)
-    #         else: # or
-    #             if _alo is not None: alo = min(_alo, alo)
-    #             if _ahi is not None: ahi = max(_ahi, ahi)
-    #     if plo > phi:
-    #         print plo, phi
-    #         assert plo <= phi # should never explicitly declare infeasible period range...
-    #     for p in range(plo, phi+1):
-    #         self.operability[acode][p] = (alo, ahi) if alo <= ahi else None
-    #         #print acode, p, (alo, ahi), expr
+            
                 
     def add_ycomp(self, ytype, yname, ycomp, first_match=True):
         if first_match and yname in self._ycomps: return # already exists (reject)
@@ -784,8 +721,7 @@ class ForestModel:
                  #total_volume_yname=_total_volume_yname_default):
         self.model_name = model_name
         self.model_path = model_path
-        self.horizon = horizon
-        self.periods = list(range(1, horizon+1))
+        self.set_horizon(horizon)
         self.period_length = period_length
         #self.aggr_period_length = aggr_period_length
         #self._period_coeff = float(period_length) / float(aggr_period_length)
@@ -803,7 +739,8 @@ class ForestModel:
         self.dtypes = {}
         self.constants = {}
         self.output_groups = {}
-        self.outputs = {}        
+        self.outputs = {}
+        self.applied_actions = {p:{acode:{} for acode in list(self.actions.keys())} for p in self.periods}
         self.reset_actions()
         self.curves = {}
         self.problems = {}
@@ -831,15 +768,21 @@ class ForestModel:
         #self.total_volume_yname = total_volume_yname
         self._problems = {}
 
+    def set_horizon(self, horizon):
+        self.horizon = horizon
+        self.periods = list(range(1, horizon+1))
+            
     def compile_actions(self, mask=None, verbose=False):
         dtype_keys = self.unmask(mask) if mask else list(self.dtypes.keys())
         for dtk in dtype_keys:
             dt = self.dtypes[dtk]
             dt.compile_actions(verbose=verbose)            
         
-    def compile_schedule(self, problem, formulation=1, skip_null='null'):
+    def _compile_schedule_from_problem(self, problem, formulation=1, skip_null='null'):
         """
-        Compiles a ``ws3``-compatible schedule data object from a solved ``ws3.opt.Problem`` instance. This is just a dispatcher function---the actual compilation is done by a formulation-specific function (assumes *Model I* formulation if not specified).
+        Compiles a ``ws3``-compatible schedule data object from a solved ``ws3.opt.Problem`` instance. 
+        This is just a dispatcher function---the actual compilation is done by a formulation-specific function 
+        (assumes *Model I* formulation if not specified).
         """
         cmp_sch_dsp = {1:self._cmp_sch_m1, 2:self._cmp_sch_m2}
         return cmp_sch_dsp[formulation](problem, skip_null)
@@ -864,20 +807,20 @@ class ForestModel:
         pass
 
     def add_problem(self, name, coeff_funcs, cflw_e, cgen_data=None,
-                    solver=opt.SOLVR_GUROBI, formulation=1, z_coeff_key='z', acodes=None):
+                    solver=opt.SOLVR_GUROBI, formulation=1, z_coeff_key='z', acodes=None, sense=opt.SENSE_MAXIMIZE):
         bld_p_dsp = {1:self._bld_p_m1, 2:self._bld_p_m2}
         #cmp_z_dsp = {1:self._cmp_z_m1, 2:self._cmp_z_m2}
         cmp_cflw_dsp = {1:self._cmp_cflw_m1, 2:self._cmp_cflw_m2}
         cmp_cgen_dsp = {1:self._cmp_cgen_m1, 2:self._cmp_cgen_m2}
         assert formulation == 1 # only support Model I formulations for now
-        p = bld_p_dsp[formulation](name, coeff_funcs, solver, z_coeff_key, acodes) # build problem
+        p = bld_p_dsp[formulation](name, coeff_funcs, solver, z_coeff_key, acodes, sense) # build problem
         ##cmp_z_dsp[formulation](p, coeff) # compile objective function
         cmp_cflw_dsp[formulation](p, cflw_e) # compile flow constraints
         cmp_cgen_dsp[formulation](p, cgen_data) # compile general constraints
         self.problems[name] = p
         return p
     
-    def _bld_p_m1(self, name, coeff_funcs, solver, z_coeff_key='z', acodes=None):
+    def _bld_p_m1(self, name, coeff_funcs, solver, z_coeff_key='z', acodes=None, sense=opt.SENSE_MAXIMIZE):
         """
         Builds optimization problem, using Model I (m1) formulation.
         Each column (variable) of the matrix represents a "prescription"
@@ -886,16 +829,21 @@ class ForestModel:
         on which prescription j is applied.
         Coverage constraints ensure that each zone i is fully covered by one or more prescriptions.
         """
-        p = opt.Problem(name, sense=opt.SENSE_MAXIMIZE, solver=solver)
+        p = opt.Problem(name, sense=sense, solver=solver)
         p.formulation = 1
         self._problems[name] = p
         p.trees, p._vars = self._gen_vars_m1(coeff_funcs, acodes=acodes)
-        for i, tree in list(p.trees.items()): 
+        for i, tree in list(p.trees.items()):
+            #print('processing tree', i)
             cname = 'cov_%i' % hash(i)
             coeffs = {'x_%i' % hash((i, tuple(n.data('acode') for n in path))):1. for path in tree.paths()}
             p.add_constraint(name=cname, coeffs=coeffs, sense=opt.SENSE_EQ, rhs=1.)
             for path in tree.paths():
-                p._z['x_%i' % hash((i, tuple(n.data('acode') for n in path)))] = path[-1].data(z_coeff_key)
+                try:
+                    p._z['x_%i' % hash((i, tuple(n.data('acode') for n in path)))] = path[-1].data(z_coeff_key)
+                except:
+                    print('error processing tree', i)
+                    assert False
         return p
             
     def _bld_p_m2(self, problem):
@@ -998,6 +946,7 @@ class ForestModel:
         trees, vars = {}, {}
         for dt in list(self.dtypes.values()):
             for age in list(dt._areas[1].keys()):
+                if not dt.area(1, age): continue
                 i = (dt.key, age)
                 #print '_gen_vars_m1', dt.key, age
                 t = trees[i] = self._bld_tree_m1(dt.area(1, age), dt.key, age, coeff_funcs, acodes=acodes)
@@ -1101,11 +1050,12 @@ class ForestModel:
                 result += sum(dt.area(period, a) * ycomp[a] for a in dt._areas[period]) if ycomp else 0.
         return result
         
-    def operable_area(self, acode, period, age=None):
+    def operable_area(self, acode, period, age=None, mask=None):
         """
         Returns total operable area, given action code and period (and optionally age).
         """
-        return sum(dt.operable_area(acode, period, age) for dt in list(self.dtypes.values()))
+        dtype_keys = list(self.dtypes.keys()) if not mask else self.unmask(mask)
+        return sum(self.dtypes[dtk].operable_area(acode, period, age) for dtk in dtype_keys)
         
     def initialize_areas(self):
         """
@@ -1130,20 +1080,34 @@ class ForestModel:
     #     """
     #     return dd(self._rdd)   
     
-    def reset_actions(self, period=None, acode=None):
+    def reset_actions(self, period=None, acode=None, override_sticky=False):
         """
-        Resets actions (default resets all periods, all actions, unless period or acode specified).
+        Resets actions.
+        By default resets, all actions in all periods (except for sticky actions, unless overridden),
+        unless period or acode specified. 
         """
-        if period is None:
-            print("resetting actions")
-            self.applied_actions = {p:{acode:{} for acode in list(self.actions.keys())} for p in self.periods}
-        else:
-            if acode is None:
-                # NOTE: This DOES NOT deal with consequences in future periods...
-                self.applied_actions[period] = {acode:{} for acode in list(self.actions.keys())}
-            else:
-                assert period is not None
-                self.applied_actions[period][acode] = {}
+        periods = [period] if period else self.periods
+        acodes = [acode] if acode else list(self.actions.keys())
+        for p in periods:
+            if p not in self.applied_actions: self.applied_actions[p] = {}
+            for a in acodes:
+                if a in self.actions and self.actions[a].is_sticky and not override_sticky: continue
+                self.applied_actions[p][a] = {} 
+
+    # def reset_actions(self, period=None, acode=None):
+    #     """
+    #     Resets actions (default resets all periods, all actions, unless period or acode specified).
+    #     """
+    #     if period is None:
+    #         print("resetting actions")
+    #         self.applied_actions = {p:{acode:{} for acode in list(self.actions.keys())} for p in self.periods}
+    #     else:
+    #         if acode is None:
+    #             # NOTE: This DOES NOT deal with consequences in future periods...
+    #             self.applied_actions[period] = {acode:{} for acode in list(self.actions.keys())}
+    #         else:
+    #             assert period is not None
+    #             self.applied_actions[period][acode] = {}
 
     # def reset_actions(self, period=None, acode=None):
     #     if period is None:
@@ -1207,7 +1171,6 @@ class ForestModel:
                             _tokens.append(token)
                     _expr = ' '.join(_tokens)
                     area = aaa[0] if not coeff else 1.
-                    #print "evaluating expression '%s' for case:" % ' '.join(_tokens), [' '.join(dtk)], _acode, _age, 'expr: "%s"' % expr, tokens
                     try:
                         result += eval(_expr) * area
                     except ZeroDivisionError:
@@ -1238,7 +1201,8 @@ class ForestModel:
 
     def repair_actions(self, period, areaselector=None):
         """
-        Attempts to repair the action schedule for given period, using an AreaSelector object (defaults to class-default areaselector, which is a simple greedy oldest-first selector).
+        Attempts to repair the action schedule for given period, using an AreaSelector object 
+        (defaults to class-default areaselector, which is a simple greedy oldest-first selector).
         """
         if areaselector is None: # use default (greedy) selector
             areaselector = self.areaselector
@@ -1340,19 +1304,28 @@ class ForestModel:
                      verbose=False):
         """
         Applies action, given action code, development type, period, age, area.
-        Can optionally override operability limits, optionally use fuzzy age (i.e., attempt to apply action 
-        to proximal age class if specified age is not operable), optionally use default AreaSelector to patch
-        missing area (if recourse enabled). Applying an action is a rather complex process, involving testing 
-        for operability (JIT-compiling operability expression as required), checking that valid transitions 
-        are defined, checking that area is available (possibly using fuzzy age and area selector functions to
-        find missing area), generate list of target development types (from source development type and 
-        transition expressions [which may need to be JIT-compiled]), creating new development types (as needed), 
-        doing the area accounting correctly (without creating or destroying any area), and compiling the products
-        from the action (which gets a bit complicated in the case of partial cuts...).
+        Can optionally override operability limits, optionally use fuzzy age (i.e., attempt 
+        to apply action to proximal age class if specified age is not operable), optionally use 
+        default AreaSelector to patch missing area (if recourse enabled). Applying an action is 
+        a rather complex process, involving testing for operability (JIT-compiling operability 
+        expression as required), checking that valid transitions are defined, checking that area
+        is available (possibly using fuzzy age and area selector functions to find missing area),
+        generate list of target development types (from source development type and  transition
+        expressions [which may need to be JIT-compiled]), creating new development types 
+        (as needed), doing the area accounting correctly (without creating or destroying any area)
+        and compiling the products from the action (which gets a bit complicated in the case of 
+        partial cuts...).
  
-        Returns (errorcode, missing_area, target_dt) triplet, where errorcode is an error code, missing_area is 
-        the missing area, and target_dt is a list of (dtk, tprop, targetage) triplets (one triplet per target 
-        development type).
+        Returns (errorcode, missing_area, target_dt) triplet, where errorcode is an error code, 
+        missing_area is the missing area, and target_dt is a list of (dtk, tprop, targetage) 
+        triplets (one triplet per target development type).
+
+        Error codes:
+        1: invalid area argument
+        2: requested action not defined for development type
+        3: requested action defined, but never operable
+        4: action not operable
+        5: transitions not defined for action
         """
         if area <= 0.: return 1, None, None 
         if verbose > 1:
@@ -1364,18 +1337,18 @@ class ForestModel:
         if acode not in dt.oper_expr:
             print('requested action not defined for development type...')
             print(' ', [' '.join(dtype_key)], acode, period, age, area)
-            return 1, None, None
+            return 2, None, None
         if acode not in dt.operability: # action not compiled yet...
             if dt.compile_action(acode) == -1:
                 print('requested action is defined, but never not operable...')
                 print(' ', [' '.join(dtype_key)], acode, period, age, area)
-                return 1, None, None
+                return 3, None, None
         if not dt.is_operable(acode, period, age) and not override_operability:
             print('not operable')
             print(' '.join(dt.key), acode, period, age)
             print(dt.operability[acode][period])
             #assert False # dt.is_operable(acode, period, age)
-            return 1, None, None
+            return 4, None, None
         if (acode, age) not in dt.transitions: # sanity check...
             print('transitions not defined...')
             print(' ', [' '.join(dtype_key)], acode, period, age, area)
@@ -1383,7 +1356,7 @@ class ForestModel:
             print(dt.operability)
             #print dt.transitions
             #assert False 
-            return 1, None, None
+            return 5, None, None
         if dt.area(period, age) - area < self.area_epsilon:
             # tweak area if slightly over or under, so we don't get any accounting drift...
             #print 'foobar', dt.key, period, age, dt.area(period, age), area
@@ -1443,7 +1416,6 @@ class ForestModel:
         aa = self.applied_actions[period][acode]
         if dtype_key not in aa: aa[dtype_key] = {}
         if age not in aa[dtype_key]: aa[dtype_key][age] = [0., {}]
-        #print 'foo', area
         aa[dtype_key][age][0] += area
         #if action.partial: # debug only
         #    print 'action.partial', acode, ' '.join(dtype_key) # action.partial
@@ -2064,30 +2036,53 @@ class ForestModel:
                 if area <= 0: print('area <= 0', l)
         return schedule
 
+    
+    def compile_schedule(self, problem=None):
+        if problem is not None:
+            return self._compile_schedule_from_problem(problem)
+        else: # use data in self.applied_actions
+            return self._compile_schedule_from_actions()
+
+        
+    def _compile_schedule_from_actions(self):
+        result = []
+        for period in self.periods:
+            aa = self.applied_actions[period]
+            for acode in aa.keys():
+                for dtk in aa[acode].keys():
+                    etype = '_existing' if self.dt(dtk).area(0) else '_future'
+                    for age in aa[acode][dtk].keys():
+                        area = aa[acode][dtk][age][0]
+                        result.append((dtk, age, area, acode, period, etype))
+        return result
+           
+    
     def apply_schedule(self, schedule, max_period=None, verbose=False,
                        fail_on_missingarea=False, force_integral_area=False,
                        override_operability=False, fuzzy_age=True,
                        recourse_enabled=True, areaselector=None,
-                       compile_t_ycomps=False, compile_c_ycomps=False):
+                       compile_t_ycomps=False, compile_c_ycomps=False,
+                       rounding_bias=0.15, scale_area=None):
         """
         Assumes schedule in format returned by import_schedule_section().
         That is: list of (dtype_key, age, area, acode, period, etype) tuples.
         Also assumes that actions in list are sorted by applied period.
         """
         if max_period is None: max_period = self.horizon
-        self.reset_actions()
-        self.initialize_areas()
+        #self.reset_actions()
+        #self.initialize_areas()
         _period = 1
         missing_area = 0.
         for dtype_key, age, area, acode, period, etype in schedule:
+            if scale_area: area = area * scale_area
             if period > _period:
                 if verbose: print('apply_schedule: committing actions for period', _period, '(missing area %0.1f)' % missing_area)
                 self.commit_actions(_period)
             if period > max_period: return
             #print 'applying:', [' '.join(dtype_key)], age, area, acode, period, etype
             if force_integral_area:
-                #area = round(area)
-                area = math.floor(area)
+                area = round(area+rounding_bias)
+                #area = math.floor(area)
                 if not area: continue
                 #print area, area % 1. 
                 assert not area % 1.
@@ -2104,7 +2099,12 @@ class ForestModel:
                                           compile_t_ycomps=compile_t_ycomps,
                                           compile_c_ycomps=compile_c_ycomps,
                                           verbose=verbose)
-            assert not e # crash on error (TO DO: better error handling)
+            crash_on_apply_action_error = False # hack... put in method signature later
+            if crash_on_apply_action_error:
+                assert not e # crash on error (TO DO: better error handling)
+            else:
+                if e:
+                    print('apply action error', e, dtype_key, acode, period, age, area) 
             if isinstance(_aa, float): 
                 if fail_on_missingarea and missing_area:
                     raise

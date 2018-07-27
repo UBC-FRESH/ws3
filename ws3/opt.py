@@ -177,9 +177,9 @@ class Problem:
         """
         if validate:
             assert False # not implemented yet, but later check that all systems are GO before launching...
-        self._dispatch_map[self._solver].__get__(self, type(self))()
+        return self._dispatch_map[self._solver].__get__(self, type(self))()
 
-    def _solve_gurobi(self):
+    def _solve_gurobi(self, allow_feasrelax=True):
         import gurobipy as grb
         GUROBI_MAP = {
             SENSE_MINIMIZE:grb.GRB.MINIMIZE,
@@ -190,6 +190,7 @@ class Problem:
             SENSE_EQ:grb.GRB.EQUAL,
             SENSE_GEQ:grb.GRB.GREATER_EQUAL,
             SENSE_LEQ:grb.GRB.LESS_EQUAL}
+        GUROBI_IU = grb.GRB.status.INF_OR_UNBD, grb.GRB.status.INFEASIBLE, grb.GRB.status.UNBOUNDED
         self._m = m = grb.Model(self._name)
         vars = {v.name:m.addVar(name=v.name, vtype=v.vtype) for v in list(self._vars.values())}
         m.update()
@@ -206,7 +207,14 @@ class Problem:
                         rhs=constraint.rhs,
                         name=name)
         m.optimize()
-        for k, v in list(self._vars.items()):
-            _v = m.getVarByName(k)
-            v._solver_var = _v # might want to poke around this later...
-            v.val = _v.X
+        print('foo')
+        if allow_feasrelax and m.status in GUROBI_IU: # infeasible or unbounded model
+            print('ws3.opt._solve_gurobi: Model infeasible, enabling feasRelaxS mode.')
+            m.feasRelaxS(1, False, False, True)
+            m.optimize()
+        if m.status == grb.GRB.OPTIMAL:
+            for k, v in list(self._vars.items()):
+                _v = m.getVarByName(k)
+                v._solver_var = _v # might want to poke around this later...
+                v.val = _v.X
+        return m

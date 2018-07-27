@@ -142,7 +142,7 @@ def reproject_vector_data(src_path, snk_path, snk_epsg, driver='ESRI Shapefile')
                           
 def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_divisor=1., d=100.,
                      dtype=rasterio.uint32, compress='lzw', round_coords=True,
-                     value_func=lambda x: re.sub(r'(-| )+', '_', str(x).lower()),
+                     value_func=lambda x: re.sub(r'(-| )+', '_', str(x).lower()), cap_age=None,
                      verbose=False):
     """
     Rasterize vector stand data.
@@ -171,6 +171,7 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_di
             h = hash_dt(dt, dtype, nbytes)
             hdt[h] = dt
             age = np.uint32(math.ceil(fp[age_col]/float(age_divisor)))
+            if cap_age and age > cap_age: age = cap_age
             try:
                 assert age > 0
             except:
@@ -550,7 +551,7 @@ def _sylv_cred_f7(P,
                   Kplus=0.):
     exp = pacal.exp if rv else math.exp
     log = pacal.log if rv else math.exp
-    sc = (exp(C3b*log(vr)+2.2)-exp(C7d*log(vp)+C8d)+C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus
+    sc = (exp(C3b*log(vr)+C4b)-exp(C7d*log(vp)+C8d)+C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus
     if rv:
         return sc.mean() # expected value, given random variates
     else:
