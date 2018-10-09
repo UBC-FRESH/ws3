@@ -54,10 +54,11 @@ class ForestRaster:
                  forestmodel,
                  base_year,
                  horizon=None,
-                 period_length=1,
+                 period_length=10,
                  tif_compress='lzw',
                  tif_dtype=rasterio.uint8,
-                 piggyback_acodes=None):
+                 piggyback_acodes=None,
+                 time_step=1):
         """
 
         :param dict hdt_map: A dictionary mapping hash values to development types.
@@ -112,6 +113,7 @@ class ForestRaster:
         self._horizon = horizon
         self._base_year = base_year
         self._period_length = period_length
+        self._time_step = time_step
         self._i2a = {i: a for i, a in enumerate(self._acodes)}
         self._a2i = {a: i for i, a in enumerate(self._acodes)}
         self._p = 1 # initialize current period
@@ -131,8 +133,8 @@ class ForestRaster:
         self._snk = {(p, dy):{acode:rasterio.open(snk_path+'/%s_%i.tif' % (acode_map[acode], base_year+(p-1)*period_length + dy),
                                                   'w', **profile)
                       for acode in self._acodes}
-                      for dy in range(period_length) for p in range(1, (horizon+1))}
-        self._snkd = {(acode, dy):self._read_snk(acode, dy) for dy in range(period_length) for acode in self._acodes}
+                      for dy in range(0, period_length, self._time_step) for p in range(1, (horizon+1))}
+        self._snkd = {(acode, dy):self._read_snk(acode, dy) for dy in range(0, period_length, self._time_step) for acode in self._acodes}
         self._is_valid = True
         
     def commit(self):
@@ -249,7 +251,7 @@ class ForestRaster:
                         #if acode in ['fire']:
                         #    print(from_dtk, from_age, to_dtk, to_age, acode, area)
                         _target_area = area
-                        DY = list(range(self._period_length))
+                        DY = list(range(0, self._period_length, self._time_step))
                         random.shuffle(DY)
                         for dy in DY:
                             #if not dy: _target_area = area
@@ -278,14 +280,13 @@ class ForestRaster:
                             #                                                dy, da=da, fudge=fudge,
                             #                                                verbose=False)
                             if target_area:
-                                print('failed', (from_dtk, from_age, to_dtk, to_age, acode),
-                                      end=' ')
+                                print('failed', (from_dtk, from_age, to_dtk, to_age, acode), end=' ')
                                 print('(missing %4.1f of %4.1f)' % (target_area, area /
                                                                     self._period_length),
                                       'in p%i dy%i' % (p, dy))
                 if acode in self._piggyback_acodes:
                     for _acode, _p in self._piggyback_acodes[acode]:
-                        for dy in range(self._period_length):
+                        for dy in range(0, self._period_length, self._time_step):
                             x = np.where(self._snkd[(acode, dy)] == 1)
                             xn = len(x[0])
                             if not xn: continue # bug fix (is this OK?)
@@ -301,24 +302,28 @@ class ForestRaster:
         # assigned to the variable after ``as``
         return self
 
+    
     def __exit__(self, exc_type, exc_value, exc_traceback):
         # returns either True or False
         # Don't raise any exceptions in this method
         self.cleanup()
         return True
-        
+
+    
     def _read_snk(self, acode, dy, verbose=False):
         if verbose: print('ForestRaster._read_snk()', self._p, acode)
         return self._snk[(self._p, dy)][acode].read(1)
 
+    
     def _write_snk(self):
-        for dy in range(self._period_length):
+        for dy in range(0, self._period_length, self._time_step):
             for acode in self._acodes:
                 #print('writing snk', dy, acode)
                 snk = self._snk[(self._p, dy)][acode]
                 snk.write(self._snkd[(acode, dy)], indexes=1)
                 snk.close()
 
+                
     def _transition_cells(self, from_dtk, from_age, to_dtk, to_age, tarea, acode, dy,
                           mode='randblk', da=0, fudge=1., ovrflwthr=0, allow_split=True,
                           verbose=False, nthresh=0):
@@ -336,10 +341,7 @@ class ForestRaster:
             x = self._ix_forested[0][_ix], self._ix_forested[1][_ix]
         else:
             x = np.where((self._x[0] == fh) & (self._x[1]+da == from_age))
-        #print(x)
-        #assert False
         xn = len(x[0])
-        #print(from_dtk, from_age, to_dtk, to_age, tarea, acode, dy, xn)
         xa = float(xn * self._pixel_area)
         c = tarea / xa if xa else np.inf
         if c > 1. and verbose > 1: print('missing area:', acode, dy, tarea - xa, from_dtk)
@@ -355,7 +357,6 @@ class ForestRaster:
 
     
     def _transition_cells_randpxl(self, x, xn, n, th, to_age, acode, dy, tarea, xa):
-        #print('randpxl', n, th, to_age, acode, dy, tarea, xa)
         r = np.random.choice(xn, n, replace=False)
         ix = x[0][r], x[1][r]
         self._x[0][ix] = th
@@ -365,10 +366,8 @@ class ForestRaster:
 
         
     def _transition_cells_randblk(self, x, n, th, to_age, acode, dy, ovrflwthr=0, allow_split=True):
-        #print('randblk', n, th, to_age, acode, dy)
         if 0:
             _n = 0
-            #print('transitioning cells:', from_dtk, from_age, to_dtk, to_age, tarea, acode, dy)
             blkid = np.unique(self._x[2][x])
             np.random.shuffle(blkid)
             blkid = list(blkid)
@@ -381,7 +380,6 @@ class ForestRaster:
                     if blkid: # look for smaller block
                         continue 
                     elif allow_split:
-                        #print('split', n - _n, ix[0].shape[0]) 
                         ix = ix[0][:n-_n], ix[1][:n-_n]
                 _n += ix[0].shape[0]
                 print(ix)
@@ -410,51 +408,10 @@ class ForestRaster:
                 self._snkd[(acode, dy)][ix] = 1
             missing_area = max(0., (n - _n) * self._pixel_area)
 
-    # def _transition_cells_randblk(self, x, n, th, to_age, acode, dy, ovrflwthr=0, allow_split=True):
-    #     #print('randblk', n, th, to_age, acode, dy)
-    #     _n = 0
-    #     #print('transitioning cells:', from_dtk, from_age, to_dtk, to_age, tarea, acode, dy)
-    #     blkid = np.unique(self._x[2][x])
-    #     np.random.shuffle(blkid)
-    #     blkid = list(blkid)
-    #     while _n < n and blkid:
-    #         b = blkid.pop()
-    #         ix = np.where(self._x[2] == b)
-    #         if _n+ix[0].shape[0] > n+ovrflwthr:
-    #             if blkid: # look for smaller block
-    #                 continue 
-    #             elif allow_split:
-    #                 #print('split', n - _n, ix[0].shape[0]) 
-    #                 ix = ix[0][:n-_n], ix[1][:n-_n]
-    #         _n += ix[0].shape[0]
-    #         self._x[0][ix] = th
-    #         self._x[1][ix] = to_age
-    #         self._snkd[(acode, dy)][ix] = 1
-    #         #print('allocated', _n, 'of', n)
-    #         #return 0
-    #     missing_area = max(0., (n - _n) * self._pixel_area)
-
-        
-    # def _transition_cells_random(self, from_dtk, from_age, to_dtk, to_age, tarea, acode, dy, da=0, fudge=1., verbose=False):
-    #     fk, tk = tuple(from_dtk), tuple(to_dtk)
-    #     fh, th = self._hdt_func(fk), self._hdt_func(tk)
-    #     x = np.where((self._x[0] == fh) & (self._x[1]+da == from_age))
-    #     xn = len(x[0])
-    #     xa = float(xn * self._pixel_area)
-    #     missing_area = max(0., tarea - xa)
-    #     c = tarea / xa if xa else np.inf
-    #     if c > 1. and verbose: print('missing area', from_dtk, tarea - xa)
-    #     c = min(c, 1.)
-    #     n = int(xa * c / self._pixel_area)
-    #     if not n: return # found nothing to transition
-    #     r = np.random.choice(xn, n, replace=False)
-    #     ix = x[0][r], x[1][r]
-    #     self._x[0][ix] = th
-    #     self._x[1][ix] = to_age
-    #     self._snkd[(acode, dy)][ix] = 1 #self._a2i[acode]
-    #     return missing_area
-          
+            
     def grow(self):
         self._p += 1
         self._x[1] += 1 # age
-        self._snkd = {(acode, dy):self._read_snk(acode, dy) for dy in range(self._period_length) for acode in self._acodes}
+        self._snkd = {(acode, dy):self._read_snk(acode, dy)
+                      for dy in range(0, self._period_length, self._time_step)
+                      for acode in self._acodes}

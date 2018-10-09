@@ -912,7 +912,7 @@ class ForestModel:
                                                                    compile_c_ycomps=compile_c_ycomps)
                 if errorcode:
                     print('apply_action error', dtk, acode, period, age, area, errorcode, missingarea, tstate)
-                    raise
+                    #raise
                 _dtk, tprop, _age = tstate[0]
                 #print ' new state', _dtk, tprop, _age
                 assert tprop == 1. # cannot handle 'split' case yet...
