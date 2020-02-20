@@ -225,7 +225,13 @@ class DevelopmentType:
         else:
             return 0.
         assert False
-                
+
+
+    #def reset_areas(self, period):
+    #    for age in self._areas[period].keys():
+    #        self._areas[period][age] = 0.
+            
+        
     def area(self, period, age=None, area=None, delta=True):
         """
         If area not specified, returns area inventory for period (optionally age), else sets area for period and age. 
@@ -465,6 +471,10 @@ class DevelopmentType:
             self.reset_areas(p+1) #, self._areas[p], self._areas[p+1] # WTF?
             for age, area in list(self._areas[p].items()): self._areas[p+1][age+1] = area
 
+    def overwrite_initial_areas(self, period):
+        self._areas[0] = copy.copy(self._areas[period])
+        self.initialize_areas()
+            
     def initialize_areas(self):
         """
         Copy initial inventory to period-1 inventory.
@@ -708,6 +718,7 @@ class ForestModel:
     def __init__(self,
                  model_name,
                  model_path,
+                 base_year,
                  horizon=common.HORIZON_DEFAULT,
                  period_length=common.PERIOD_LENGTH_DEFAULT,
                  #aggr_period_length=common.PERIOD_LENGTH_DEFAULT,
@@ -721,6 +732,7 @@ class ForestModel:
                  #total_volume_yname=_total_volume_yname_default):
         self.model_name = model_name
         self.model_path = model_path
+        self.base_year = base_year
         self.set_horizon(horizon)
         self.period_length = period_length
         #self.aggr_period_length = aggr_period_length
@@ -807,20 +819,21 @@ class ForestModel:
         pass
 
     def add_problem(self, name, coeff_funcs, cflw_e, cgen_data=None,
-                    solver=opt.SOLVR_GUROBI, formulation=1, z_coeff_key='z', acodes=None, sense=opt.SENSE_MAXIMIZE):
+                    solver=opt.SOLVR_GUROBI, formulation=1, z_coeff_key='z', acodes=None,
+                    sense=opt.SENSE_MAXIMIZE, mask=None):
         bld_p_dsp = {1:self._bld_p_m1, 2:self._bld_p_m2}
         #cmp_z_dsp = {1:self._cmp_z_m1, 2:self._cmp_z_m2}
         cmp_cflw_dsp = {1:self._cmp_cflw_m1, 2:self._cmp_cflw_m2}
         cmp_cgen_dsp = {1:self._cmp_cgen_m1, 2:self._cmp_cgen_m2}
         assert formulation == 1 # only support Model I formulations for now
-        p = bld_p_dsp[formulation](name, coeff_funcs, solver, z_coeff_key, acodes, sense) # build problem
+        p = bld_p_dsp[formulation](name, coeff_funcs, solver, z_coeff_key, acodes, sense, mask) # build problem
         ##cmp_z_dsp[formulation](p, coeff) # compile objective function
         cmp_cflw_dsp[formulation](p, cflw_e) # compile flow constraints
         cmp_cgen_dsp[formulation](p, cgen_data) # compile general constraints
         self.problems[name] = p
         return p
     
-    def _bld_p_m1(self, name, coeff_funcs, solver, z_coeff_key='z', acodes=None, sense=opt.SENSE_MAXIMIZE):
+    def _bld_p_m1(self, name, coeff_funcs, solver, z_coeff_key='z', acodes=None, sense=opt.SENSE_MAXIMIZE, mask=None):
         """
         Builds optimization problem, using Model I (m1) formulation.
         Each column (variable) of the matrix represents a "prescription"
@@ -832,7 +845,7 @@ class ForestModel:
         p = opt.Problem(name, sense=sense, solver=solver)
         p.formulation = 1
         self._problems[name] = p
-        p.trees, p._vars = self._gen_vars_m1(coeff_funcs, acodes=acodes)
+        p.trees, p._vars = self._gen_vars_m1(coeff_funcs, acodes=acodes, mask=mask)
         for i, tree in list(p.trees.items()):
             #print('processing tree', i)
             cname = 'cov_%i' % hash(i)
@@ -840,9 +853,13 @@ class ForestModel:
             p.add_constraint(name=cname, coeffs=coeffs, sense=opt.SENSE_EQ, rhs=1.)
             for path in tree.paths():
                 try:
+                    #print('processing tree', i)
+                    #print(hash((i, tuple(n.data('acode') for n in path))))
+                    #print(tree, path)
                     p._z['x_%i' % hash((i, tuple(n.data('acode') for n in path)))] = path[-1].data(z_coeff_key)
-                except:
+                except Exception as e:
                     print('error processing tree', i)
+                    print(e)
                     assert False
         return p
             
@@ -893,14 +910,14 @@ class ForestModel:
 
     def _bld_tree_m1(self, area, dtk, age, coeff_funcs, tree=None, period=1, acodes=None, compile_c_ycomps=True):
         #print acodes
-        #print 'building tree for', dtk, age
+        #print('building tree for', dtk, age)
         #area = self.dt(dtk).area(period, age)
         tree = common.Tree() if not tree else tree
         acodes = list(self.actions.keys()) if not acodes else acodes
         for acode in acodes:
-            #print 'trying', period, dtk, age, acode#, exprs
+            #print('trying', period, dtk, age, acode)#, exprs)
             if self.dt(dtk).is_operable(acode, period, age):
-                #print 'applying', acode
+                #print('applying', acode)
                 self.reset_actions(period)
                 if period > 1:
                     self.dt(dtk).grow(period-1, False)
@@ -942,9 +959,11 @@ class ForestModel:
                 tree.ungrow()
         return tree
     
-    def _gen_vars_m1(self, coeff_funcs, acodes=None):
+    def _gen_vars_m1(self, coeff_funcs, acodes=None, mask=None):
         trees, vars = {}, {}
-        for dt in list(self.dtypes.values()):
+        dtype_keys = self.dtypes.keys() if not mask else self.unmask(mask)
+        for dtk in dtype_keys:
+            dt = self.dtypes[dtk]
             for age in list(dt._areas[1].keys()):
                 if not dt.area(1, age): continue
                 i = (dt.key, age)
@@ -963,8 +982,7 @@ class ForestModel:
 
     def add_null_action(self, acode='null', minage=None, maxage=None):
         mask = tuple(['?' for _ in range(self.nthemes)])
-        #oe = '_age >= 0 and _age <= %i' % self.max_age
-        oe = '_age >= 0 and _age <= 99'
+        oe = '_age >= 0 and _age <= %i' % self.max_age
         target = [(mask, 1.0, None, None, None, None, None)]
         self.actions[acode] = Action(acode)
         self.oper_expr[acode] = {mask:oe}
@@ -1056,7 +1074,10 @@ class ForestModel:
         """
         dtype_keys = list(self.dtypes.keys()) if not mask else self.unmask(mask)
         return sum(self.dtypes[dtk].operable_area(acode, period, age) for dtk in dtype_keys)
-        
+
+    def overwrite_initial_areas(self, period):
+        for dt in list(self.dtypes.values()): dt.overwrite_initial_areas(period)
+    
     def initialize_areas(self):
         """
         Copies areas from period 0 to period 1.

@@ -30,6 +30,7 @@ import os
 from profilehooks import profile
 #from random import randrange
 import random
+import copy
 
 """
 This module implements the ``ForestRaster`` class, which can be used to allocate an 
@@ -62,12 +63,15 @@ class ForestRaster:
         """
 
         :param dict hdt_map: A dictionary mapping hash values to development types.
-          The rasterized forest inventory is stored in a 2-layer GeoTIFF 
-          file. Pixel values for the first layer represent the *theme* values
+          The rasterized forest inventory is stored in a 3-layer GeoTIFF 
+          file. Pixel values for layer 1 represent the *theme* values
           (i.e., the stratification variables used to stratify the forest 
           inventory into development types). The value of the ``hdt_map`` 
           parameter is used to *expand* hash value back into a tuple of theme
-          values. 
+          values. Pixel values for layer 2 represent age (time unit may vary depending on 
+          how the model was compiled). Pixel values for layer 3 represent block ID code 
+          (the notion of what constitutes a block, and how ID codes are assigned, is entirely
+          up to the user when compiling the rasterized inventory).  
         :param function hdt_func: A function that accepts a tuple of theme values, and 
           returns a hash value. Must be the same function used to encode the 
           rasterized forest inventory (see documentation of the ``hdt_map`` 
@@ -120,21 +124,19 @@ class ForestRaster:
         self._src = rasterio.open(src_path, 'r')
         self._x = self._src.read()
         self._ix_forested = np.where(self._x[0] != 0)
-        #self._blkix = {b:np.where(self._x[2]==b) for b in np.unique(self._x[2])}
         self._blkid = np.unique(self._x[2])
         self._d = self._src.transform.a # pixel width
         self._pixel_area = pow(self._d, 2) * 0.0001 # m to hectares
-        profile = self._src.profile
+        profile = copy.copy(self._src.profile)
         profile.update(dtype=tif_dtype, compress=tif_compress, count=1, nodata=0)
         self._piggyback_acodes = piggyback_acodes
-        #for acode1 in piggyback_acodes:
-        #    for acode2, _ in piggyback_acodes[acode1]:
-        #        self._acodes.append(acode2)
-        self._snk = {(p, dy):{acode:rasterio.open(snk_path+'/%s_%i.tif' % (acode_map[acode], base_year+(p-1)*period_length + dy),
-                                                  'w', **profile)
-                      for acode in self._acodes}
-                      for dy in range(0, period_length, self._time_step) for p in range(1, (horizon+1))}
-        self._snkd = {(acode, dy):self._read_snk(acode, dy) for dy in range(0, period_length, self._time_step) for acode in self._acodes}
+        self._snk_path = snk_path
+        self._tif_dtype = tif_dtype
+        self._tif_compress = tif_compress
+        self._snk = {(p, dy):{acode:rasterio.open(snk_path+'/%s_%i.tif' % (acode_map[acode], base_year+(p-1)*period_length + dy), 'w+', **profile)
+            for acode in self._acodes}
+            for dy in range(0, period_length, self._time_step) for p in range(1, (horizon+1))}
+        self._init_snkd()
         self._is_valid = True
         
     def commit(self):
@@ -163,7 +165,7 @@ class ForestRaster:
 
     #@profile(immediate=True)
     def allocate_schedule(self, mask=None, verbose=False, commit=True, sda_mode='randblk',
-                          da=0, ovrflwthr=0, fudge=1., nthresh=0):
+                          da=0, ovrflwthr=0, fudge=1., nthresh=0, minage=1):
         """
         Allocates the current disturbance schedule from the
         :py:class:~`.forest.ForestModel` instance passed via the ``forestmodel``
@@ -246,6 +248,7 @@ class ForestRaster:
                         to_dtk = tuple(to_dtk)
                         to_age = self._forestmodel.resolve_targetage(to_dtk, tyield, from_age,
                                                                tage, acode, verbose=False)
+                        to_age = max(to_age, minage) # hack! (yuck)
                         tk = tuple(to_dtk)+(to_age,)
                         #th = self._hdt_func(tk)
                         #if acode in ['fire']:
@@ -254,15 +257,17 @@ class ForestRaster:
                         DY = list(range(0, self._period_length, self._time_step))
                         random.shuffle(DY)
                         for dy in DY:
+                            _tr = self._period_length / self._time_step # target ratio
                             #if not dy: _target_area = area
-                            if area < (self._period_length * self._pixel_area): # less than one pixel per year
+                            if area < (_tr * self._pixel_area): # less than one pixel per year
                                 if _target_area > self._pixel_area * 0.5:
                                     target_area = self._pixel_area
                                     _target_area -= self._pixel_area
                                 else:
                                     break
                             else:
-                                target_area = area / self._period_length
+                                target_area = area / _tr
+                            #print(p, acode, dtk, from_age, dy, _tr, target_area)
                             from_ages = [from_age]
                             while from_ages and target_area:
                                 from_age = from_ages.pop()
@@ -281,8 +286,7 @@ class ForestRaster:
                             #                                                verbose=False)
                             if target_area:
                                 print('failed', (from_dtk, from_age, to_dtk, to_age, acode), end=' ')
-                                print('(missing %4.1f of %4.1f)' % (target_area, area /
-                                                                    self._period_length),
+                                print('(missing %4.1f of %4.1f)' % (target_area, area / _tr),
                                       'in p%i dy%i' % (p, dy))
                 if acode in self._piggyback_acodes:
                     for _acode, _p in self._piggyback_acodes[acode]:
@@ -294,6 +298,13 @@ class ForestRaster:
                             ix = x[0][r], x[1][r]
                             self._snkd[(_acode, dy)][ix] = 1
             self._write_snk()
+            snk_filename = self._snk_path+'/inventory_%i.tif' % (self._base_year + ((p - 1) * self._period_length))
+            #print(self._src.profile)
+            with rasterio.open(snk_filename, 'w', **self._src.profile) as snk:
+                __x = np.copy(self._x)
+                #__x[1] += 1
+                #print(np.unique(__x))
+                snk.write(__x) # "grow" before saving out
             if p < self._horizon: self.grow()
 
         
@@ -314,15 +325,21 @@ class ForestRaster:
         if verbose: print('ForestRaster._read_snk()', self._p, acode)
         return self._snk[(self._p, dy)][acode].read(1)
 
-    
-    def _write_snk(self):
+
+    def _write_snk(self, write=True):
         for dy in range(0, self._period_length, self._time_step):
             for acode in self._acodes:
                 #print('writing snk', dy, acode)
                 snk = self._snk[(self._p, dy)][acode]
-                snk.write(self._snkd[(acode, dy)], indexes=1)
+                if write: snk.write(self._snkd[(acode, dy)], indexes=1)
                 snk.close()
 
+
+    def _init_snkd(self):
+        self._snkd = {(acode, dy):np.full(self._x[0].shape, 0, dtype=self._tif_dtype) 
+                      for dy in range(0, self._period_length, self._time_step) 
+                      for acode in self._acodes}
+                
                 
     def _transition_cells(self, from_dtk, from_age, to_dtk, to_age, tarea, acode, dy,
                           mode='randblk', da=0, fudge=1., ovrflwthr=0, allow_split=True,
@@ -350,6 +367,7 @@ class ForestRaster:
         if not n: return # found nothing to transition
         if mode == 'randpxl' or n <= nthresh:
             missing_area = self._transition_cells_randpxl(x, xn, n, th, to_age, acode, dy, tarea, xa)
+            #print('randpxl', x, xn, n, th, to_age, acode, dy, tarea, xa, missing_area)
         elif mode == 'randblk':
             missing_area = self._transition_cells_randblk(x, n, th, to_age, acode, dy,
                                                           ovrflwthr=ovrflwthr, allow_split=allow_split)            
@@ -363,7 +381,8 @@ class ForestRaster:
         self._x[1][ix] = to_age
         self._snkd[(acode, dy)][ix] = 1 #self._a2i[acode]
         missing_area = max(0., tarea - xa)
-
+        return missing_area
+    
         
     def _transition_cells_randblk(self, x, n, th, to_age, acode, dy, ovrflwthr=0, allow_split=True):
         if 0:
@@ -407,11 +426,14 @@ class ForestRaster:
                 self._x[1][ix] = to_age
                 self._snkd[(acode, dy)][ix] = 1
             missing_area = max(0., (n - _n) * self._pixel_area)
+        return missing_area
 
             
     def grow(self):
         self._p += 1
-        self._x[1] += 1 # age
-        self._snkd = {(acode, dy):self._read_snk(acode, dy)
-                      for dy in range(0, self._period_length, self._time_step)
-                      for acode in self._acodes}
+        # HACK! #############
+        # only increment non-NA values
+        self._x[1][self._x[1] != int(self._src.profile['nodata'])] += 1
+        #####################
+        #if self._p <= self._horizon:
+        self._init_snkd()
