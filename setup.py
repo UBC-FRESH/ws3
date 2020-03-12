@@ -8,5 +8,5 @@ setup(name='ws3',
       author_email='greg@globaloptimality.com',
       license='MIT',
       packages=['ws3'],
-      #install_requires=['scipy', 'pandas'],
+      install_requires=['scipy', 'pandas', 'numpy', 'matplotlib', 'rasterio', 'fiona'],
       zip_safe=False)

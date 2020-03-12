@@ -36,10 +36,34 @@ AREA_EPSILON_DEFAULT = 0.01
     
 """
 
+PACAL_BROKEN = True
+
 import time
 import scipy
 import numpy as np
-import pacal
+#################################################################################################
+# PaCal breaks when trying to import numpy.fft.fftpack (names have changed or some such... yuck).
+# Note that this will breaks the folowing functions in this ws3.common
+#   _sylv_credit_f1
+#   _sylv_credit_f2
+#   _sylv_credit_f3
+#   _sylv_credit_f4
+#   _sylv_credit_f5
+#   _sylv_credit_f6
+#   _sylv_credit_f7
+#   sylv_cred_rv
+#   harv_cost_rv
+# TO DO:
+#   Patch PaCal 1.6, maybe using pypatch (as part of the ws3 build process, in setup.py).
+# The fix:
+#   Patch line 29 in pacal/utils.py from
+#     from numpy.fft.fftpack import fft, ifft
+#   to
+#     from numpy.fft import fft, ifft 
+# 
+if not PACAL_BROKEN:
+    import pacal
+#################################################################################################
 import rasterio
 import hashlib
 import re

@@ -29,13 +29,7 @@ from itertools import repeat
 import copy
 import math
 
-try:
-    from ws3 import common
-    #from . import util
-except: # "__main__" case
-    from ws3 import common
-    #from . import util
-
+from ws3 import common
 
 """
 Used by ``Curve`` class to interpolate between real data points.
