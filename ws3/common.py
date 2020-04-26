@@ -88,16 +88,17 @@ def is_num(s):
 
 def reproject(f, srs_crs, dst_crs):
     f['geometry'] = transform_geom(srs_crs, dst_crs, f['geometry'],
-                          antimeridian_cutting=True,
+                          antimeridian_cutting=False,
                           precision=-1)
     return f
 
 def clean_vector_data(src_path, dst_path, dst_name, prop_names, clean=True, tolerance=0.,
                       preserve_topology=True, logfn='clean_stand_shapefile.log', max_records=None,
-                      theme0=None, prop_types=None, driver='ESRI Shapefile', dst_epsg=None):
+                      theme0=None, prop_types=None, driver='ESRI Shapefile', dst_epsg=None,
+                      update_area_prop=''):
     import logging
     import sys
-    from shapely.geometry import mapping, shape
+    from shapely.geometry import mapping, shape, Polygon, MultiPolygon
     import fiona
     from collections import OrderedDict
     logging.basicConfig(filename=logfn, level=logging.INFO)
@@ -117,9 +118,12 @@ def clean_vector_data(src_path, dst_path, dst_name, prop_names, clean=True, tole
             prop_types = prop_types + [(pn.lower(), src.schema['properties'][pn]) for pn in prop_names]
         kwds1['schema']['properties'] = OrderedDict(prop_types)
         kwds2['schema']['properties'] = OrderedDict(prop_types)
+        print(kwds1)
         with fiona.open(snk1_path, 'w', **kwds1) as snk1, fiona.open(snk2_path, 'w', **kwds2) as snk2:
             n = len(src) if not max_records else max_records
+            i = 0
             for f in src[:n]:
+                i += 1
                 prop_data = [('theme0', theme0)] if theme0 else []
                 if prop_types:
                     prop_data = prop_data + [(prop_types[i+len(prop_data)][0], f['properties'][pn])
@@ -131,17 +135,35 @@ def clean_vector_data(src_path, dst_path, dst_name, prop_names, clean=True, tole
                     g = shape(f['geometry'])
                     if not g.is_valid:
                         _g = g.buffer(0)
+                        ################################
+                        # HACK
+                        # Something changed (maybe in fiona?) and now all GDB datasets are
+                        # loading as MultiPolygon geometry type (instead of Polygon). 
+                        # The buffer(0) trick smashes the geometry back to Polygon, 
+                        # so this hack upcasts it back to MultiPolygon.
+                        # 
+                        # Not sure how robust this is going to be (guessing not robust).
+                        _g = MultiPolygon([_g])
                         assert _g.is_valid
-                        assert _g.geom_type == 'Polygon'
+                        assert _g.geom_type == 'MultiPolygon'
                         g = _g
-                    #g = g.simplify(tolerance=tolerance, preserve_topology=True)
-                    #if not g.is_valid:
-                    #    _g = g.buffer(0)
-                    #    assert _g.is_valid
-                    #    assert _g.geom_type == 'Polygon'
-                    #    g = _g
+                        ################################
+                    ##################################################################
+                    # The idea was to remove redundant vertices from polygons
+                    # (to make datasets smaller, but also speed up geometry processing).
+                    # This sort of worked, but was unstable so commented out for now.
+                    # g = g.simplify(tolerance=tolerance, preserve_topology=True)
+                    # if not g.is_valid:
+                    #     _g = g.buffer(0)
+                    #     assert _g.is_valid
+                    #     assert _g.geom_type == 'Polygon'
+                    #     g = _g
+                    ##################################################################
                     f['geometry'] = mapping(g)
+                    #print('geometry type 2', f['geometry']['type'])
                     if dst_epsg: f = reproject(f, src.crs, dst_crs)
+                    if update_area_prop:
+                        f['properties'][update_area_prop] = shape(f['geometry']).area
                     snk1.write(f)
                 except Exception as e: # log exception and write uncleanable feature a separate shapefile
                     logging.exception("Error cleaning feature %s:", f['id'])
@@ -194,7 +216,17 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_di
             dt = tuple(value_func(fp[t]) for t in theme_cols)
             h = hash_dt(dt, dtype, nbytes)
             hdt[h] = dt
-            age = np.int32(math.ceil(fp[age_col]/float(age_divisor)))
+            try:
+                age = np.int32(math.ceil(fp[age_col]/float(age_divisor)))
+            except:
+                #######################################
+                # DEBUG
+                # print(i, fp)                
+                #######################################
+                if fp[age_col] == None: 
+                    age = np.int32(1)
+                else:
+                    raise ValueError('Bad age value in record %i: %s' % (i, str(fp[age_col])))
             if cap_age and age > cap_age: age = cap_age
             try:
                 assert age > 0
