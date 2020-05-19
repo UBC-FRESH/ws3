@@ -67,9 +67,8 @@ class GreedyAreaSelector:
         Greedily operate on oldest operable age classes.
         Returns missing area (i.e., difference between target and operated areas).
         """
-        wm = self.parent
         key = lambda item: max(item[1])
-        odt = sorted(list(wm.operable_dtypes(acode, period, mask).items()), key=key)
+        odt = sorted(list(self.parent.operable_dtypes(acode, period, mask).items()), key=key)
         print(' entering selector.operate()', len(odt), 'operable dtypes')
         while target_area > 0 and odt:
             while target_area > 0 and odt:
@@ -81,7 +80,7 @@ class GreedyAreaSelector:
                     print(popped)
                     raise
                 age = sorted(ages)[-1]
-                oa = wm.dtypes[dtk].operable_area(acode, period, age)
+                oa = self.parent.dtypes[dtk].operable_area(acode, period, age)
                 if not oa: continue # nothing to operate
                 area = min(oa, target_area)
                 target_area -= area
@@ -90,9 +89,10 @@ class GreedyAreaSelector:
                     assert False
                 if verbose:
                     print(' selector found area', [' '.join(dtk)], acode, period, age, area)
-                wm.apply_action(dtk, acode, period, age, area, verbose=verbose)
-            odt = sorted(list(wm.operable_dtypes(acode, period).items()), key=key)
-        wm.commit_actions(period, repair_future_actions=True)
+                self.parent.apply_action(dtk, acode, period, age, area, 
+                                         fuzzy_age=False, recourse_enabled=False, verbose=verbose)
+            odt = sorted(list(self.parent.operable_dtypes(acode, period, mask).items()), key=key)
+        self.parent.commit_actions(period, repair_future_actions=True)
         if verbose:
             print('GreedyAreaSelector.operate done (remaining target_area: %0.1f)' % target_area)
         return target_area
