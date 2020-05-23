@@ -21,5 +21,5 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 ###################################################################################
-__version__ = '0.1a1'
+__version__ = '0.0.1-post0'
 __all__ = ['common', 'core', 'util', 'forest', 'spatial', 'opt']

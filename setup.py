@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='ws3',
-    version='0.0.1-post0',
+    version='0.0.1-post1',
     author='Gregory Paradis',
     author_email='0@01101.io',
     description='Wood Supply Simulation System',
