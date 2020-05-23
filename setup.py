@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='ws3',
-    version='0.0.1',
+    version='0.0.1-post0',
     author='Gregory Paradis',
     author_email='0@01101.io',
     description='Wood Supply Simulation System',
@@ -19,5 +19,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    install_requires=['scipy', 'pandas', 'numpy', 'matplotlib', 'rasterio', 'fiona']
+    install_requires=['scipy', 'pandas', 'numpy', 'matplotlib', 'rasterio', 'fiona', 'profilehooks']
 )
