@@ -1,7 +1,7 @@
 ###################################################################################
 # MIT License
 
-# Copyright (c) 2015-2017 Gregory Paradis
+# Copyright (c) 2015-2020 Gregory Paradis
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,10 @@
 ###################################################################################
 
 import pandas as pd
-#import fiona
 import numpy as np
 import rasterio
 import os
 from profilehooks import profile
-#from random import randrange
 import random
 import copy
 
@@ -229,7 +227,6 @@ class ForestRaster:
         if not self._is_valid: raise RuntimeError('commit() already called (i.e., instance is toast).')
         if mask: dtype_keys = self._forestmodel.unmask(mask)
         for p in range(1, self._horizon+1):
-            #assert p < 2
             if verbose > 0: print('processing schedule for period %i' % p)
             for acode in self._forestmodel.applied_actions[p]:
                 for dtk in self._forestmodel.applied_actions[p][acode]:
@@ -250,15 +247,11 @@ class ForestRaster:
                                                                tage, acode, verbose=False)
                         to_age = max(to_age, minage) # hack! (yuck)
                         tk = tuple(to_dtk)+(to_age,)
-                        #th = self._hdt_func(tk)
-                        #if acode in ['fire']:
-                        #    print(from_dtk, from_age, to_dtk, to_age, acode, area)
                         _target_area = area
                         DY = list(range(0, self._period_length, self._time_step))
                         random.shuffle(DY)
                         for dy in DY:
                             _tr = self._period_length / self._time_step # target ratio
-                            #if not dy: _target_area = area
                             if area < (_tr * self._pixel_area): # less than one pixel per year
                                 if _target_area > self._pixel_area * 0.5:
                                     target_area = self._pixel_area
@@ -267,7 +260,6 @@ class ForestRaster:
                                     break
                             else:
                                 target_area = area / _tr
-                            #print(p, acode, dtk, from_age, dy, _tr, target_area)
                             from_ages = [from_age]
                             while from_ages and target_area:
                                 from_age = from_ages.pop()
@@ -278,13 +270,7 @@ class ForestRaster:
                                                                      ovrflwthr=ovrflwthr,
                                                                      verbose=verbose,
                                                                      nthresh=nthresh)
-                            # old code ################################################
-                            #    target_area = self._transition_cells_random(from_dtk, from_age,
-                            #                                                to_dtk, to_age,
-                            #                                                target_area, acode,
-                            #                                                dy, da=da, fudge=fudge,
-                            #                                                verbose=False)
-                            if target_area:
+                            if target_area and verbose > 0:
                                 print('failed', (from_dtk, from_age, to_dtk, to_age, acode), end=' ')
                                 print('(missing %4.1f of %4.1f)' % (target_area, area / _tr),
                                       'in p%i dy%i' % (p, dy))
@@ -298,16 +284,16 @@ class ForestRaster:
                             ix = x[0][r], x[1][r]
                             self._snkd[(_acode, dy)][ix] = 1
             self._write_snk()
-            snk_filename = self._snk_path+'/inventory_%i.tif' % (self._base_year + ((p - 1) * self._period_length))
-            #print(self._src.profile)
+            year = self._base_year + ((p - 1) * self._period_length)
+            snk_filename = self._snk_path+'/inventory_%i.tif' % year
             with rasterio.open(snk_filename, 'w', **self._src.profile) as snk:
                 __x = np.copy(self._x)
-                #__x[1] += 1
-                #print(np.unique(__x))
-                snk.write(__x) # "grow" before saving out
+                if verbose > 0:
+                    print('saving %i post-harvest pixels to %s' % (year, snk_filename))
+                snk.write(__x) 
             if p < self._horizon: self.grow()
 
-        
+
     def __enter__(self):
         # The value returned by this method is
         # assigned to the variable after ``as``
@@ -329,7 +315,6 @@ class ForestRaster:
     def _write_snk(self, write=True):
         for dy in range(0, self._period_length, self._time_step):
             for acode in self._acodes:
-                #print('writing snk', dy, acode)
                 snk = self._snk[(self._p, dy)][acode]
                 if write: snk.write(self._snkd[(acode, dy)], indexes=1)
                 snk.close()
@@ -367,7 +352,6 @@ class ForestRaster:
         if not n: return # found nothing to transition
         if mode == 'randpxl' or n <= nthresh:
             missing_area = self._transition_cells_randpxl(x, xn, n, th, to_age, acode, dy, tarea, xa)
-            #print('randpxl', x, xn, n, th, to_age, acode, dy, tarea, xa, missing_area)
         elif mode == 'randblk':
             missing_area = self._transition_cells_randblk(x, n, th, to_age, acode, dy,
                                                           ovrflwthr=ovrflwthr, allow_split=allow_split)            
@@ -379,53 +363,30 @@ class ForestRaster:
         ix = x[0][r], x[1][r]
         self._x[0][ix] = th
         self._x[1][ix] = to_age
-        self._snkd[(acode, dy)][ix] = 1 #self._a2i[acode]
+        self._snkd[(acode, dy)][ix] = 1 
         missing_area = max(0., tarea - xa)
         return missing_area
     
         
     def _transition_cells_randblk(self, x, n, th, to_age, acode, dy, ovrflwthr=0, allow_split=True):
-        if 0:
-            _n = 0
-            blkid = np.unique(self._x[2][x])
-            np.random.shuffle(blkid)
-            blkid = list(blkid)
-            while _n < n and blkid:
-                b = blkid.pop()
-                b = 29958
-                print('b', b)
-                ix = np.where(self._x[2] == b)
-                if _n+ix[0].shape[0] > n+ovrflwthr:
-                    if blkid: # look for smaller block
-                        continue 
-                    elif allow_split:
-                        ix = ix[0][:n-_n], ix[1][:n-_n]
-                _n += ix[0].shape[0]
-                print(ix)
-                assert False
-                self._x[0][ix] = th
-                self._x[1][ix] = to_age
-                self._snkd[(acode, dy)][ix] = 1
-            missing_area = max(0., (n - _n) * self._pixel_area)
-        else:
-            _n = 0
-            blkid = np.unique(self._x[2][x])
-            np.random.shuffle(blkid)
-            blkid = list(blkid)
-            while _n < n and blkid:
-                b = blkid.pop()
-                _ix = np.where(self._x[2][x] == b)
-                ix = x[0][_ix], x[1][_ix]
-                if _n+ix[0].shape[0] > n+ovrflwthr:
-                    if blkid: # look for smaller block
-                        continue 
-                    elif allow_split:
-                        ix = ix[0][:n-_n], ix[1][:n-_n]
-                _n += ix[0].shape[0]
-                self._x[0][ix] = th
-                self._x[1][ix] = to_age
-                self._snkd[(acode, dy)][ix] = 1
-            missing_area = max(0., (n - _n) * self._pixel_area)
+        _n = 0
+        blkid = np.unique(self._x[2][x])
+        np.random.shuffle(blkid)
+        blkid = list(blkid)
+        while _n < n and blkid:
+            b = blkid.pop()
+            _ix = np.where(self._x[2][x] == b)
+            ix = x[0][_ix], x[1][_ix]
+            if _n+ix[0].shape[0] > n+ovrflwthr:
+                if blkid: # look for smaller block
+                    continue 
+                elif allow_split:
+                    ix = ix[0][:n-_n], ix[1][:n-_n]
+            _n += ix[0].shape[0]
+            self._x[0][ix] = th
+            self._x[1][ix] = to_age
+            self._snkd[(acode, dy)][ix] = 1
+        missing_area = max(0., (n - _n) * self._pixel_area)
         return missing_area
 
             
@@ -435,5 +396,4 @@ class ForestRaster:
         # only increment non-NA values
         self._x[1][self._x[1] != int(self._src.profile['nodata'])] += 1
         #####################
-        #if self._p <= self._horizon:
         self._init_snkd()

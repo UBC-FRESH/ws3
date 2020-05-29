@@ -780,10 +780,17 @@ class ForestModel:
         #self.total_volume_yname = total_volume_yname
         self._problems = {}
 
+        
+    def reset(self):
+        self.reset_actions()
+        self.initialize_areas()
+        
+        
     def set_horizon(self, horizon):
         self.horizon = horizon
         self.periods = list(range(1, horizon+1))
-            
+        
+        
     def compile_actions(self, mask=None, verbose=False):
         dtype_keys = self.unmask(mask) if mask else list(self.dtypes.keys())
         for dtk in dtype_keys:
@@ -821,6 +828,7 @@ class ForestModel:
     def add_problem(self, name, coeff_funcs, cflw_e, cgen_data=None,
                     solver=opt.SOLVR_GUROBI, formulation=1, z_coeff_key='z', acodes=None,
                     sense=opt.SENSE_MAXIMIZE, mask=None):
+        self.reset()
         bld_p_dsp = {1:self._bld_p_m1, 2:self._bld_p_m2}
         #cmp_z_dsp = {1:self._cmp_z_m1, 2:self._cmp_z_m2}
         cmp_cflw_dsp = {1:self._cmp_cflw_m1, 2:self._cmp_cflw_m2}
