@@ -1048,7 +1048,7 @@ class ForestModel:
                 result[dt.key] = operable_ages
         return result
 
-    def inventory(self, period, yname=None, age=None, mask=None, dtype_keys=None):
+    def inventory(self, period, yname=None, age=None, mask=None, dtype_keys=None, verbose=0):
         """
         Flexible method that compiles inventory at given period.
         Unit of return data defaults to area if yname not given, 
@@ -1058,7 +1058,7 @@ class ForestModel:
         result = 0.
         assert not (mask and dtype_keys) # too confusing to allow both to be specified...
         if mask:
-            _dtype_keys = self.unmask(mask)
+            _dtype_keys = self.unmask(mask, verbose=verbose)
         elif dtype_keys:
             _dtype_keys = dtype_keys
         else:
@@ -1656,7 +1656,8 @@ class ForestModel:
         """
         Return list of base codes, given theme index.
         """
-        return self._themes[theme_index]
+        return self._theme_basecodes[theme_index]
+        #return self._themes[theme_index]
         
     #@timed    
     def import_areas_section(self, model_path=None, model_name=None, filename_suffix='are', import_empty=False):
@@ -1689,8 +1690,8 @@ class ForestModel:
         return [c] if t[c] == c else list(_cfi(self._expand_action(t, c) for c in t[c]))
                 
     def _expand_theme(self, t, c, verbose=False): # depth-first search recursive aggregate theme code expansion
-        if verbose:
-            print(t)
+        if verbose > 1:
+            print('ws3.forest.ForestModel._expand_theme', t, c)
             print(c)
         return [c] if t[c] == c else list(_cfi(self._expand_theme(t, c) for c in t[c]))
 
@@ -1706,7 +1707,7 @@ class ForestModel:
             if key[ti] not in tacs: return False # reject key
         return True # key matches
         
-    def unmask(self, mask):
+    def unmask(self, mask, verbose=0):
         """
         Iteratively filter list of development type keys using mask values.
         Accepts Woodstock-style string masks to facilitate cut-and-paste testing.
@@ -1723,7 +1724,7 @@ class ForestModel:
         dtype_keys = copy.copy(list(self.dtypes.keys())) # filter this
         for ti, tac in enumerate(mask):
             if tac == '?': continue # wildcard matches all
-            tacs = self._expand_theme(self._themes[ti], tac) if tac in self._themes[ti] else []
+            tacs = self._expand_theme(self._themes[ti], tac, verbose=verbose) if tac in self._themes[ti] else []
             dtype_keys = [dtk for dtk in dtype_keys if dtk[ti] in tacs] # exclude bad matches
         return dtype_keys
 
