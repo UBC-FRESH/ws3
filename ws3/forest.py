@@ -787,7 +787,7 @@ class ForestModel:
         
         
     def set_horizon(self, horizon):
-        self.horizon = horizon
+        self.horizon = int(horizon)
         self.periods = list(range(1, horizon+1))
         
         
