@@ -185,10 +185,14 @@ def reproject_vector_data(src_path, snk_path, snk_epsg, driver='ESRI Shapefile')
             #print snk.meta
             for f in src: snk.write(reproject(f, src.crs, snk_crs))
 
+
+def custom_round(x, base=1.):
+    return int(base * round(float(x)/base))
+
                           
 def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_divisor=1., d=100.,
                      dtype=rasterio.int32, compress='lzw', round_coords=True,
-                     value_func=lambda x: re.sub(r'(-| )+', '_', str(x).lower()), cap_age=None,
+                     value_func=lambda x: re.sub(r'(-| )+', '_', str(x).lower()), cap_age=None, round_age=1.,
                      verbose=False):
     """
     Rasterize vector stand data.
@@ -218,6 +222,7 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_di
             hdt[h] = dt
             try:
                 age = np.int32(math.ceil(fp[age_col]/float(age_divisor)))
+                age = np.int32(custom_round(age, round_age))
             except:
                 #######################################
                 # DEBUG
@@ -228,14 +233,14 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_di
                 else:
                     raise ValueError('Bad age value in record %i: %s' % (i, str(fp[age_col])))
             if cap_age and age > cap_age: age = cap_age
-            try:
-                assert age > 0
-            except:
-                if fp[age_col] == 0:
-                    age = np.int32(1)
-                else:
-                    print('bad age', age, fp[age_col], age_divisor)
-                    raise
+            #try:
+            #    assert age > 0
+            #except:
+            #    if fp[age_col] == 0:
+            #        age = np.int32(1)
+            #    else:
+            #        print('bad age', age, fp[age_col], age_divisor)
+            #        raise
             blk = i if not blk_col else fp[blk_col]
             shapes[0].append((f['geometry'], h))   # themes
             shapes[1].append((f['geometry'], age)) # age

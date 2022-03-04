@@ -178,6 +178,7 @@ class Curve:
         self.interp = Interpolator(points)
         self._y = None
         if compile_y: self._compile_y()
+
             
     def add_points(self, points, simplify=True, compile_y=False):
         assert not self.is_locked
@@ -297,7 +298,7 @@ class Curve:
         return Curve(points=list(zip(self.x, y)))  
     
     def __mul__(self, other):
-        y = [_y*other for _y in self.y()] if isinstance(other, float) else [a*b for a,b in zip(self.y(), other.y())]
+        y = [_y*other for _y in self.y()] if isinstance(other, float) or isinstance(other, int) else [a*b for a,b in zip(self.y(), other.y())]
         return Curve(points=list(zip(self.x, y)))  
     
     def __div__(self, other):

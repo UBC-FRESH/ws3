@@ -49,6 +49,7 @@ class Variable:
     """
     Encapsulates data describing a variable in an optimization problem. This includes a variable name (should be unique within a problem, although the user is responsible for enforcing this condition), a variable type (should be one of ``VTYPE_CONTINUOUS``, ``VTYPE_INTEGER``, or ``VTYPE_BINARY``), variable value bound (lower bound defaults to zero, upper bound defaults to positive infinity), and variable value (defaults to ``None``).
     """
+    
     def __init__(self, name, vtype, lb=0., ub=VBNDS_INF, val=None):
         self.name = name
         self.vtype = vtype
@@ -56,20 +57,24 @@ class Variable:
         self.ub = ub
         self.val = val
 
+        
 class Constraint:
     """
     Encapsulates data describing a constraint in an optimization problem. This includes a constraint name (should be unique within a problem, although the user is responsible for enforcing this condition), a vector of coefficient values (length of vector should match the number of variables in the problem, although the user is responsible for enforcing this condition), a sense (should be one of ``SENSE_EQ``, ``SENSE_GEQ``, or ``SENSE_LEQ``), and a right-hand-side value.
     """
+    
     def __init__(self, name, coeffs, sense, rhs):
         self.name = name
         self.coeffs = coeffs
         self.sense = sense
         self.rhs = rhs
-                
+
+        
 class Problem:
     """
     This is the main class of the ``opt`` module---it encapsulates optimization problem data (i.e., variables, constraints, objective function, optimal solution, and choice of solver), as well as methods to operate on this data (i.e., methods to build and solve the problem, and report on the optimal solution).
     """
+    
     def __init__(self, name, sense=SENSE_MAXIMIZE, solver=SOLVR_GUROBI):
         self._name = name
         self._vars = {}
@@ -95,11 +100,11 @@ class Problem:
         """
         return list(self._vars.keys())
 
-    def constraint_names(self):
+    def constraint_names(self, prefix=''):
         """
         Returns a list of constraint names.
         """
-        return list(self._constraints.keys())
+        return list(filter(lambda cn: cn.startswith(prefix), self._constraints.keys()))
 
     def name(self):
         """
@@ -128,7 +133,7 @@ class Problem:
         Returns ``True`` if the problem has been solved, ``False`` otherwise.
         """
         return self._solution is not None
-        
+
     def z(self, coeffs=None, validate=False):
         """
         Returns the objective function value if ``coeffs`` is not provided (triggers an exception if problem has not been solved yet), or updates the objective function coefficient vector (resets the value of the optimal solution to ``None``).
@@ -179,7 +184,7 @@ class Problem:
             assert False # not implemented yet, but later check that all systems are GO before launching...
         return self._dispatch_map[self._solver].__get__(self, type(self))()
 
-    def _solve_gurobi(self, allow_feasrelax=True):
+    def _solve_gurobi(self, allow_feasrelax=True, relaxable_constraint_prefixes=('gen')):
         import gurobipy as grb
         GUROBI_MAP = {
             SENSE_MINIMIZE:grb.GRB.MINIMIZE,
@@ -207,10 +212,31 @@ class Problem:
                         rhs=constraint.rhs,
                         name=name)
         m.optimize()
-        print('foo')
         if allow_feasrelax and m.status in GUROBI_IU: # infeasible or unbounded model
-            print('ws3.opt._solve_gurobi: Model infeasible, enabling feasRelaxS mode.')
-            m.feasRelaxS(1, False, False, True)
+            ################################################################################
+            # Originally used the simplified feasRelaxS method, but this might relax
+            # "coverage" constraints, which is would result in nonsensical solutions.
+            #    print('ws3.opt._solve_gurobi: Model infeasible, enabling feasRelaxS mode.')
+            #    relaxobjtype = 1
+            #    minrelax = False
+            #    vrelax = False
+            #    crelax = True
+            #    m.feasRelaxS(relaxobjtype=relaxobjtype, minrelax, vrelax, crelax)
+            ################################################################################
+            # use advanced feasRelax method
+            print('ws3.opt._solve_gurobi: Model infeasible, enabling feasRelax mode.')
+            print(self.name())
+            relaxobjtype = 0
+            minrelax = False
+            vars = None
+            lbpen = None
+            ubpen = None
+            constrs = [m.getConstrByName(cn) for cn in self.constraint_names(relaxable_constraint_prefixes)]
+            rhspen = [1.] * len(constrs)
+            print(constrs)
+            print(rhspen)
+            self._tmp = relaxobjtype, minrelax, vars, lbpen, ubpen, constrs, rhspen
+            m.feasRelax(relaxobjtype, minrelax, vars, lbpen, ubpen, constrs, rhspen)
             m.optimize()
         if m.status == grb.GRB.OPTIMAL:
             for k, v in list(self._vars.items()):
@@ -218,3 +244,9 @@ class Problem:
                 v._solver_var = _v # might want to poke around this later...
                 v.val = _v.X
         return m
+
+    def dump(self, filename=None):
+        import dill
+        filename = 'problem_%s.dill' % self._name if not filename else filename
+        self._m = None # gurobi Model object cannot be serialized (because contains PyCapsule?)
+        dill.dump(self, open(filename, 'wb'))

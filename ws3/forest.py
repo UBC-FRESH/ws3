@@ -90,7 +90,7 @@ class GreedyAreaSelector:
                 if verbose:
                     print(' selector found area', [' '.join(dtk)], acode, period, age, area)
                 self.parent.apply_action(dtk, acode, period, age, area, 
-                                         fuzzy_age=False, recourse_enabled=False, verbose=verbose)
+                                         fuzzy_age=False, recourse_enabled=False, compile_c_ycomps=True, verbose=verbose)
             odt = sorted(list(self.parent.operable_dtypes(acode, period, mask).items()), key=key)
         self.parent.commit_actions(period, repair_future_actions=True)
         if verbose:
@@ -144,7 +144,7 @@ class DevelopmentType:
         self._complex_ycomps = {}
         self._zero_curve = parent.common_curves['zero']
         self._unit_curve = parent.common_curves['unit']
-        self._ages_curve = parent.common_curves['ages']                           
+        self._ages_curve = parent.common_curves['ages'] * parent.period_length                           
         self._resolvers = {'MULTIPLY':self._resolver_multiply,
                            'DIVIDE':self._resolver_divide,
                            'SUM':self._resolver_sum,
@@ -281,6 +281,12 @@ class DevelopmentType:
             if not self._ycomps[yname]: # complex ycomp not compiled yet
                 self._compile_complex_ycomp(yname)
             return self._ycomps[yname]
+        elif yname == 'zero':
+            return self._zero_curve
+        elif yname == 'unit':
+            return self._unit_curve
+        elif yname in ['ages', 'age']:
+            return self._ages_curve
         else: # not a valid yname
             if silent_fail:
                 return None 
@@ -340,16 +346,15 @@ class DevelopmentType:
 
     def _compile_complex_ycomp(self, yname):
         expression = self._complex_ycomps[yname]
-        keyword = re.search('(?<=_)[A-Z]+(?=\()', expression).group(0)
-        #print 'compiling complex', yname, keyword, expression
         try:
+            keyword = re.search('(?<=_)[A-Z]+(?=\()', expression).group(0)
             ytype, ycomp = self._resolvers[keyword](yname, expression)
             ycomp.label = yname
             ycomp.type = ytype
             self._ycomps[yname] = ycomp
             #assert False
         except KeyError:
-                raise ValueError('Problem compiling complex yield: %s, %s' % (yname, expression))
+            raise ValueError('Problem compiling complex yield: %s, %s' % (yname, expression))
             
     def compile_actions(self, verbose=False):
         """
@@ -469,7 +474,7 @@ class DevelopmentType:
         end_period = start_period + 1 if not cascade else self.parent.horizon
         for p in range(start_period, end_period):
             self.reset_areas(p+1) #, self._areas[p], self._areas[p+1] # WTF?
-            for age, area in list(self._areas[p].items()): self._areas[p+1][age+1] = area
+            for age, area in list(self._areas[p].items()): self._areas[p+1][age+self.parent.period_length] = area
 
     def overwrite_initial_areas(self, period):
         self._areas[0] = copy.copy(self._areas[period])
@@ -784,7 +789,7 @@ class ForestModel:
     def reset(self):
         self.reset_actions()
         self.initialize_areas()
-        
+        self.grow()
         
     def set_horizon(self, horizon):
         self.horizon = int(horizon)
@@ -816,7 +821,7 @@ class ForestModel:
                 for t, n in enumerate(path):
                     d = n.data()
                     if skip_null and d['acode'] == skip_null: continue
-                    #print 'sch', i, d['dtk'], d['period'], d['acode'], d['age'], d['area'], '%0.1f' % (d['area'] * sln[x])
+                    #print('sch', i, d['dtk'], d['period'], d['acode'], d['age'], d['area'], '%0.1f' % (d['area'] * sln[x]))
                     etype = '_existing' if self.dt(i[0]).area(0) else '_future'
                     _sch[t].append((d['dtk'], d['age'], d['area'] * sln[x], d['acode'], d['period'], etype))
                     #_sch[t].append((d['dtk'], d['age'], d['area'] * 1., d['acode'], d['period'], etype))
@@ -882,7 +887,11 @@ class ForestModel:
                 for o in list(cgen_data.keys()):
                     _mu = path[-1].data(o) 
                     for t in self.periods:
-                        mu[t][o][i, j] = _mu[t] if t in _mu else 0. 
+                        try:
+                            mu[t][o][i, j] = _mu[t] if t in _mu else 0. 
+                        except:
+                            self._tmp['_cmp_cgen_m1'] = path, o, _mu, t
+                            assert False
         for o, b in list(cgen_data.items()):
             for t in self.periods:
                 _mu = {'x_%i' % hash((i, j)):mu[t][o][i, j] for i, j in mu[t][o]}
@@ -908,6 +917,7 @@ class ForestModel:
                         mu[t][o][i, j] = _mu[t] if t in _mu else 0.
         for t in self.periods:
             for o, e in list(cflw_e.items()):
+                #self._foo = e
                 mu_lb = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 - e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
                 mu_ub = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 + e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
                 problem.add_constraint(name='flw-lb_%03d_%s' % (t, o), coeffs=mu_lb, sense=opt.SENSE_GEQ, rhs=0.)
@@ -954,7 +964,7 @@ class ForestModel:
                     self.dt(_dtk).grow(period, False)
                     #print ' post-grow new area', self.dt(_dtk).area(period+1, _age+1)
                     #print 'diving', _dtk, _age+1, period+1
-                    self._bld_tree_m1(area, _dtk, _age+1, coeff_funcs, tree, period+1, acodes)
+                    self._bld_tree_m1(area, _dtk, _age+self.period_length, coeff_funcs, tree, period+1, acodes)
                 elif period == self.periods[-1]: # found leaf
                     #print 'foo'
                     path = tree.path()
@@ -1153,6 +1163,7 @@ class ForestModel:
                         period,
                         expr,
                         acode=None,
+                        mask=None,
                         dtype_keys=None,
                         age=None,
                         coeff=False,
@@ -1162,6 +1173,14 @@ class ForestModel:
         Operated area can be filtered on action code, development type key list, and age. Result is product of sum of filtered 
         area and coefficient. 
         """
+        assert not (mask and dtype_keys) # too confusing to allow both to be specified...
+        if mask:
+            _dtype_keys = self.unmask(mask, verbose=verbose)
+        elif dtype_keys:
+            _dtype_keys = dtype_keys
+        else:
+            _dtype_keys = list(self.dtypes.keys())
+
         aa = self.applied_actions
         if acode is None:
             acodes = list(self.actions.keys())
@@ -1174,7 +1193,7 @@ class ForestModel:
         for _acode in acodes:
             #if not aa[period][_acode]: continue # acode not in solution
             if _acode not in list(aa[period].keys()): continue # acode not in solution
-            _dtype_keys = list(aa[period][_acode].keys()) if dtype_keys is None else dtype_keys
+            _dtype_keys = [dtk for dtk in aa[period][_acode].keys() if dtk in _dtype_keys]
             #print 'compile_product len(dtype_keys)', len(dtype_keys)
             #keep = 0
             #skip = 0
@@ -1208,7 +1227,6 @@ class ForestModel:
                         print(("Unexpected error:", sys.exc_info()[0]))
                         print("evaluating expression '%s' for case:" % ' '.join(_tokens), period, [' '.join(dtk)], _acode, _age)
                         raise
-
             #print _acode, 'keep', keep, 'skip', skip
         return result
         
@@ -1450,12 +1468,11 @@ class ForestModel:
         #    print 'action.partial', acode, ' '.join(dtype_key) # action.partial
         #    target_dt = [self.dtypes[dtk] for dtk in target_dtk] # avoid multiple lookups in loop
         for yname in dt.ycomps():
-            #print 'compiling', period, dt.key, age, yname
+            print('compiling', period, dt.key, age, yname)
             ycomp = dt.ycomp(yname)
-            #print 'ycomp.type: "%s"' % ycomp.type
+            print('ycomp.type: "%s"' % ycomp.type)
             if ycomp.type == 't' and not compile_t_ycomps: continue # skip time-indexed ycomps
             if ycomp.type == 'c' and not compile_c_ycomps: continue # skip complex ycomps
-            #print 'foo', ycomp[age]
             if yname in action.partial:
                 value = 0.
                 for dtk, tprop, targetage in target_dt:
@@ -1476,8 +1493,8 @@ class ForestModel:
                                 print(' ', ''.join(dtk), targetage)
                                 print()
             else: # not partial
-                #print 'bar'
                 value = dt.ycomp(yname)[age]
+                print('not partial', value)
             #print 'value', value
             if value != 0.:
                 aa[dtype_key][age][1][yname] = value
@@ -2098,10 +2115,12 @@ class ForestModel:
         That is: list of (dtype_key, age, area, acode, period, etype) tuples.
         Also assumes that actions in list are sorted by applied period.
         """
+        if not schedule: return
         if max_period is None: max_period = self.horizon
         #self.reset_actions()
         #self.initialize_areas()
-        _period = 1
+        #self._schedule = schedule 
+        _period = schedule[0][4]
         missing_area = 0.
         for dtype_key, age, area, acode, period, etype in schedule:
             if scale_area: area = area * scale_area
@@ -2142,7 +2161,7 @@ class ForestModel:
                     missing_area += _aa
             if verbose: print('missing area %0.1f (%0.2f)' % (_aa, _aa/area))
             _period = period
-        #self.commit_actions(period)
+        self.commit_actions(period)
         return missing_area
 
     def import_control_section(self, filename_suffix='run'):
