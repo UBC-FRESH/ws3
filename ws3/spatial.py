@@ -57,7 +57,8 @@ class ForestRaster:
                  tif_compress='lzw',
                  tif_dtype=rasterio.uint8,
                  piggyback_acodes=None,
-                 time_step=1):
+                 time_step=1,
+                 disturb_thresh=10):
         """
 
         :param dict hdt_map: A dictionary mapping hash values to development types.
@@ -136,6 +137,7 @@ class ForestRaster:
             for dy in range(0, period_length, self._time_step) for p in range(1, (horizon+1))}
         self._init_snkd()
         self._is_valid = True
+        self._disturb_thresh = disturb_thresh
         
     def commit(self):
         """
@@ -163,7 +165,7 @@ class ForestRaster:
 
     #@profile(immediate=True)
     def allocate_schedule(self, mask=None, verbose=False, commit=True, sda_mode='randblk',
-                          da=0, ovrflwthr=0, fudge=1., nthresh=0, minage=1):
+                          da=0, ovrflwthr=0, fudge=1., nthresh=0, minage=1, aggregate_disturbance=False):
         """
         Allocates the current disturbance schedule from the
         :py:class:~`.forest.ForestModel` instance passed via the ``forestmodel``
@@ -230,27 +232,27 @@ class ForestRaster:
             if verbose > 0: print('processing schedule for period %i' % p)
             for acode in self._forestmodel.applied_actions[p]:
                 for dtk in self._forestmodel.applied_actions[p][acode]:
+                    #print('dtk', dtk)
                     if mask:
                         if dtk not in dtype_keys: continue
                     for from_age in self._forestmodel.applied_actions[p][acode][dtk]:
                         area = self._forestmodel.applied_actions[p][acode][dtk][from_age][0]
+                        print('processing case', p, acode, dtk, from_age, area) # DEBUG
                         if not area: continue
                         from_dtk = list(dtk) 
                         trn = self._forestmodel.dtypes[dtk].transitions[acode, from_age][0]
                         tmask, tprop, tyield, tage, tlock, treplace, tappend = trn
-                        to_dtk = [t if tmask[i] == '?' else tmask[i]
-                                  for i, t in enumerate(from_dtk)] 
-                        if treplace: to_dtk[treplace[0]] = self._forestmodel.resolve_replace(from_dtk,
-                                                                                       treplace[1])
+                        to_dtk = [t if tmask[i] == '?' else tmask[i] for i, t in enumerate(from_dtk)] 
+                        if treplace: to_dtk[treplace[0]] = self._forestmodel.resolve_replace(from_dtk, treplace[1])
                         to_dtk = tuple(to_dtk)
-                        to_age = self._forestmodel.resolve_targetage(to_dtk, tyield, from_age,
-                                                               tage, acode, verbose=False)
+                        to_age = self._forestmodel.resolve_targetage(to_dtk, tyield, from_age, tage, acode, verbose=False)
                         to_age = max(to_age, minage) # hack! (yuck)
                         tk = tuple(to_dtk)+(to_age,)
                         _target_area = area
                         DY = list(range(0, self._period_length, self._time_step))
-                        random.shuffle(DY)
+                        #random.shuffle(DY)
                         for dy in DY:
+                            print('dy', dy)
                             _tr = self._period_length / self._time_step # target ratio
                             if area < (_tr * self._pixel_area): # less than one pixel per year
                                 if _target_area > self._pixel_area * 0.5:
@@ -269,7 +271,8 @@ class ForestRaster:
                                                                      mode=sda_mode, da=da, fudge=fudge,
                                                                      ovrflwthr=ovrflwthr,
                                                                      verbose=verbose,
-                                                                     nthresh=nthresh)
+                                                                     nthresh=nthresh,
+                                                                     aggregate_disturbance=aggregate_disturbance)
                             if target_area and verbose > 0:
                                 print('failed', (from_dtk, from_age, to_dtk, to_age, acode), end=' ')
                                 print('(missing %4.1f of %4.1f)' % (target_area, area / _tr),
@@ -328,7 +331,7 @@ class ForestRaster:
                 
     def _transition_cells(self, from_dtk, from_age, to_dtk, to_age, tarea, acode, dy,
                           mode='randblk', da=0, fudge=1., ovrflwthr=0, allow_split=True,
-                          verbose=False, nthresh=0):
+                          verbose=False, nthresh=0, aggregate_disturbance=False):
         """
         Modes:
           'randpxl': randomly select individual pixels
@@ -339,22 +342,33 @@ class ForestRaster:
         fk, tk = tuple(from_dtk), tuple(to_dtk)
         fh, th = self._hdt_func(fk), self._hdt_func(tk)
         if 1:
-            _ix = np.where((self._x[0][self._ix_forested] == fh) & (self._x[1][self._ix_forested]+da == from_age))
+            #print(fh, from_age)
+            #global ___foo
+            #___foo = self._x
+            #assert False
+            _ix = np.where((self._x[0][self._ix_forested] == fh) & 
+                           (self._x[1][self._ix_forested]+da >= from_age-0) &
+                           (self._x[1][self._ix_forested]+da <= from_age+0))
             x = self._ix_forested[0][_ix], self._ix_forested[1][_ix]
         else:
             x = np.where((self._x[0] == fh) & (self._x[1]+da == from_age))
         xn = len(x[0])
         xa = float(xn * self._pixel_area)
         c = tarea / xa if xa else np.inf
+        print(xn, xa, c, tarea)
         if c > 1. and verbose > 1: print('missing area:', acode, dy, tarea - xa, from_dtk)
         c = min(c, 1.)
         n = int(round(xa * c / self._pixel_area))
+        print('n', n, 'tarea', tarea)
         if not n: return # found nothing to transition
         if mode == 'randpxl' or n <= nthresh:
             missing_area = self._transition_cells_randpxl(x, xn, n, th, to_age, acode, dy, tarea, xa)
         elif mode == 'randblk':
             missing_area = self._transition_cells_randblk(x, n, th, to_age, acode, dy,
-                                                          ovrflwthr=ovrflwthr, allow_split=allow_split)            
+                                                          ovrflwthr=ovrflwthr, allow_split=allow_split,
+                                                          aggregate_disturbance=aggregate_disturbance)      
+        else:
+            assert False # no valid mode specified
         return missing_area
 
     
@@ -368,11 +382,23 @@ class ForestRaster:
         return missing_area
     
         
-    def _transition_cells_randblk(self, x, n, th, to_age, acode, dy, ovrflwthr=0, allow_split=True):
+    def _transition_cells_randblk(self, x, n, th, to_age, acode, dy, ovrflwthr=0, allow_split=True, aggregate_disturbance=False):
+        import scipy
         _n = 0
-        blkid = np.unique(self._x[2][x])
-        np.random.shuffle(blkid)
-        blkid = list(blkid)
+        if not aggregate_disturbance: # classic behaviour
+            blkid = np.unique(self._x[2][x])
+            np.random.shuffle(blkid)
+            blkid = list(blkid)
+        else: # new experimental behaviour
+            #print(np.unique(self._x[1]))
+            #assert False
+            disturb_heat = scipy.ndimage.gaussian_filter(((self._x[1] >= 0) & (self._x[1] <= self._disturb_thresh)).astype(float), sigma=100)
+            blkid = sorted(list(np.unique(self._x[2][x])), 
+                           key=lambda b: np.ma.MaskedArray(disturb_heat, self._x[2] != b).mean(), 
+                           reverse=True)
+            #print(np.ma.MaskedArray(disturb_heat, self._x[2] != blkid[0]).mean())
+            #print(np.ma.MaskedArray(disturb_heat, self._x[2] != blkid[-1]).mean())
+            #assert False
         while _n < n and blkid:
             b = blkid.pop()
             _ix = np.where(self._x[2][x] == b)
@@ -389,7 +415,7 @@ class ForestRaster:
         missing_area = max(0., (n - _n) * self._pixel_area)
         return missing_area
 
-            
+    
     def grow(self):
         self._p += 1
         # HACK! #############
