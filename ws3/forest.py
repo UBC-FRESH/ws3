@@ -469,7 +469,8 @@ class DevelopmentType:
         end_period = start_period + 1 if not cascade else self.parent.horizon
         for p in range(start_period, end_period):
             self.reset_areas(p+1) #, self._areas[p], self._areas[p+1] # WTF?
-            for age, area in list(self._areas[p].items()): self._areas[p+1][age+1] = area
+            #for age, area in list(self._areas[p].items()): self._areas[p+1][age+1] = area
+            for age, area in list(self._areas[p].items()): self._areas[p+1][age+self.parent.period_length] = area
 
     def overwrite_initial_areas(self, period):
         self._areas[0] = copy.copy(self._areas[period])
@@ -828,6 +829,62 @@ class ForestModel:
     def add_problem(self, name, coeff_funcs, cflw_e, cgen_data=None,
                     solver=opt.SOLVR_GUROBI, formulation=1, z_coeff_key='z', acodes=None,
                     sense=opt.SENSE_MAXIMIZE, mask=None):
+        """
+        Add an optimization problem to the model.
+        
+        Parameters
+        ----------
+        name : str
+            Used as key to store ``ws3.opt.Problem`` instances in a dict in the ``ws3.forest.ForestModel`` instanace, so make 
+            sure it is unique within a given model or you will overwrite dict values (assuming you want to stuff multiple 
+            problems, and their solutions, into your model at the same time). 
+    
+        coeff_funcs : dict
+            Dict of function references, keyed on _row name_ strings. These are the functions that generate 
+            the LP optimization problem matrix coefficients (for the objective function and constraint rows). This one gets
+            complicated, and is a likely source of bugs. Make sure the row name key strings are all unique or you will make 
+            a mess. You can name the constraint rows anything you want, but the objective function row has to be named 'z'. 
+            All coefficient functions must accept exactly two args, in this order: a ``ws3.forest.ForestModel`` instance and a
+            ``ws3.common.Path`` instance. The 'z' coefficient function is special in that it must return a single float value. 
+            All other (i.e., constraint) coefficient functions just return a dict of floats, keyed on period ints (can be 
+            sparse, i.e., not necessary to include key:value pairs in output dict if value is 0.0). It is useful (but not 
+            necessary) to use ``functools.partial`` to specialize a smaller number of more general function definitions (with 
+            more args, that get "locked down" and hidden by ``partial``) as we have done in the example in this notebook.
+
+        cflw_e : dict
+            Dict of (dict, int) tuples, keyed on _row name_ strings (must match _row name_ key values used to 
+            define coefficient functions for flow constraints in coeff_func dict), where the int:float dict embedded in the 
+            tuple defines epsilon values keyed on periods (must include all periods, even if epsilon value is always the same). 
+            See example below. 
+
+            ``{'foo':({1:0.01, ..., 10:0.01}, 1), 'bar':({1:0.05, ..., 10:0.05}, 1)}``
+
+        cgen_data : dict
+            Dict of dict of dicts. The outer-level dict is keyed on _row name_ strings (must match row names used 
+            in coeff_funcs. The middle second level of dicts always has keys 'lb' and 'ub', and the inner level of dicts 
+            specifies lower- and upper-bound general constraint RHS (float) values, keyed on period (int). See example below.
+            
+            ``{'foo':{'lb':{1:1., ..., 10:1.}, 'ub':{1:2., ..., 10:2.}}, 'bar':{{'lb':{1:1., ..., 10:1.}, 'ub':{1:2., ..., 10:4.}}}}``
+
+         acodes : list
+            List of strings. Action codes to be included in optimization problem formulation (actions must defined 
+            in the `ForestModel` instance, but can be only a subset). 
+
+        sense : int
+            Must be one of ``ws3.opt.SENSE_MAXIMIZE`` or ``ws3.opt.SENSE_MINIMIZE``, or equivalent int values (just use the
+            constants to keep code more legible).
+
+        mask : tuple
+            Tuple of strings constituting a valid mask for your `ForestModel` instance. Can be `None` if you do not want
+            to filter `DevelopmentType` instances.
+            
+        Returns
+        -------
+        ws3.opt.Problem
+            Reference to a new Problem instance that was created. Also stored in the ForestModel instance (problems attribute,
+            keyed on problem name). 
+            
+        """
         self.reset()
         bld_p_dsp = {1:self._bld_p_m1, 2:self._bld_p_m2}
         #cmp_z_dsp = {1:self._cmp_z_m1, 2:self._cmp_z_m2}
@@ -875,6 +932,7 @@ class ForestModel:
         pass # not implemented
         
     def _cmp_cgen_m1(self, problem, cgen_data):
+        import pdb
         mu = {t:{o:{} for o in list(cgen_data.keys())} for t in self.periods}
         for i, tree in list(problem.trees.items()):
             for path in tree.paths():
@@ -884,8 +942,10 @@ class ForestModel:
                     for t in self.periods:
                         mu[t][o][i, j] = _mu[t] if t in _mu else 0. 
         for o, b in list(cgen_data.items()):
+            #pdb.set_trace()
             for t in self.periods:
                 _mu = {'x_%i' % hash((i, j)):mu[t][o][i, j] for i, j in mu[t][o]}
+                #pdb.set_trace()
                 problem.add_constraint(name='gen-lb_%i_%s' % (t, o), coeffs=_mu, sense=opt.SENSE_GEQ, rhs=b['lb'][t])
                 problem.add_constraint(name='gen-ub_%i_%s' % (t, o), coeffs=_mu, sense=opt.SENSE_LEQ, rhs=b['ub'][t])
         
@@ -898,16 +958,18 @@ class ForestModel:
         """
         Compiles flow constraints (lb and ub, per targeted output, per targeted period).
         """
+        import pdb
         mu = {t:{o:{} for o in list(cflw_e.keys())} for t in self.periods}
         for i, tree in list(problem.trees.items()):
             for path in tree.paths():
                 j = tuple(n.data('acode') for n in path)
                 for o in list(cflw_e.keys()):
-                    _mu = path[-1].data(o) 
+                    _mu = path[-1].data(o)
                     for t in self.periods:
                         mu[t][o][i, j] = _mu[t] if t in _mu else 0.
         for t in self.periods:
             for o, e in list(cflw_e.items()):
+                #pdb.set_trace()
                 mu_lb = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 - e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
                 mu_ub = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 + e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
                 problem.add_constraint(name='flw-lb_%03d_%s' % (t, o), coeffs=mu_lb, sense=opt.SENSE_GEQ, rhs=0.)
@@ -950,20 +1012,23 @@ class ForestModel:
                 tree.grow({'dtk':dtk, 'acode':acode, 'period':period, 'age':age,
                            'products':products, 'area':area})
                 if period < self.periods[-1]: # dive deeper (dfs)
-                    #print ' pre-grow new area', self.dt(_dtk).area(period, _age)
+                    #print(' pre-grow new area', self.dt(_dtk).area(period, _age))
                     self.dt(_dtk).grow(period, False)
                     #print ' post-grow new area', self.dt(_dtk).area(period+1, _age+1)
-                    #print 'diving', _dtk, _age+1, period+1
-                    self._bld_tree_m1(area, _dtk, _age+1, coeff_funcs, tree, period+1, acodes)
+                    #print(' diving', _dtk, _age+1, period+1)
+                    #self._bld_tree_m1(area, _dtk, _age+1, coeff_funcs, tree, period+1, acodes)
+                    self._bld_tree_m1(area, _dtk, _age+self.period_length, coeff_funcs, tree, period+1, acodes)
                 elif period == self.periods[-1]: # found leaf
-                    #print 'foo'
+                    #print('found leaf')
                     path = tree.path()
                     leaf = path[-1]
                     assert leaf.is_leaf()
                     #print leaf.nid, leaf.is_leaf()
                     leaf._data.update({k:coeff_funcs[k](self, path) for k in coeff_funcs})
-                    #print coeff_funcs['z'](self, path)
-                    #print leaf._data
+                    #import pdb
+                    #pdb.set_trace()
+                    #print(coeff_funcs['z'](self, path))
+                    #print(leaf._data)
                 tree.ungrow()
         return tree
     
@@ -1768,7 +1833,7 @@ class ForestModel:
             #print ycomps
             self.yields.append((m, t, ycomps)) # stash for creating new dtypes at runtime...
             self.ynames.update(n)
-            print(m, len(self.unmask(m)))
+            #print(m, len(self.unmask(m)))
             if ycomps:
                 if ycomps[0][0] == 'vol':
                     print(ycomps[0][1].points())
