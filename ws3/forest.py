@@ -887,12 +887,10 @@ class ForestModel:
         """
         self.reset()
         bld_p_dsp = {1:self._bld_p_m1, 2:self._bld_p_m2}
-        #cmp_z_dsp = {1:self._cmp_z_m1, 2:self._cmp_z_m2}
         cmp_cflw_dsp = {1:self._cmp_cflw_m1, 2:self._cmp_cflw_m2}
         cmp_cgen_dsp = {1:self._cmp_cgen_m1, 2:self._cmp_cgen_m2}
         assert formulation == 1 # only support Model I formulations for now
         p = bld_p_dsp[formulation](name, coeff_funcs, solver, z_coeff_key, acodes, sense, mask) # build problem
-        ##cmp_z_dsp[formulation](p, coeff) # compile objective function
         cmp_cflw_dsp[formulation](p, cflw_e) # compile flow constraints
         cmp_cgen_dsp[formulation](p, cgen_data) # compile general constraints
         self.problems[name] = p
@@ -908,19 +906,16 @@ class ForestModel:
         Coverage constraints ensure that each zone i is fully covered by one or more prescriptions.
         """
         p = opt.Problem(name, sense=sense, solver=solver)
+        p.coeff_funcs = coeff_funcs
         p.formulation = 1
         self._problems[name] = p
         p.trees, p._vars = self._gen_vars_m1(coeff_funcs, acodes=acodes, mask=mask)
         for i, tree in list(p.trees.items()):
-            #print('processing tree', i)
             cname = 'cov_%i' % hash(i)
             coeffs = {'x_%i' % hash((i, tuple(n.data('acode') for n in path))):1. for path in tree.paths()}
             p.add_constraint(name=cname, coeffs=coeffs, sense=opt.SENSE_EQ, rhs=1.)
             for path in tree.paths():
                 try:
-                    #print('processing tree', i)
-                    #print(hash((i, tuple(n.data('acode') for n in path))))
-                    #print(tree, path)
                     p._z['x_%i' % hash((i, tuple(n.data('acode') for n in path)))] = path[-1].data(z_coeff_key)
                 except Exception as e:
                     print('error processing tree', i)
@@ -932,7 +927,7 @@ class ForestModel:
         pass # not implemented
         
     def _cmp_cgen_m1(self, problem, cgen_data):
-        import pdb
+        if not cgen_data: return
         mu = {t:{o:{} for o in list(cgen_data.keys())} for t in self.periods}
         for i, tree in list(problem.trees.items()):
             for path in tree.paths():
@@ -942,12 +937,13 @@ class ForestModel:
                     for t in self.periods:
                         mu[t][o][i, j] = _mu[t] if t in _mu else 0. 
         for o, b in list(cgen_data.items()):
-            #pdb.set_trace()
             for t in self.periods:
                 _mu = {'x_%i' % hash((i, j)):mu[t][o][i, j] for i, j in mu[t][o]}
-                #pdb.set_trace()
-                problem.add_constraint(name='gen-lb_%i_%s' % (t, o), coeffs=_mu, sense=opt.SENSE_GEQ, rhs=b['lb'][t])
-                problem.add_constraint(name='gen-ub_%i_%s' % (t, o), coeffs=_mu, sense=opt.SENSE_LEQ, rhs=b['ub'][t])
+                if b['lb'] is not None and t in b['lb']:
+                    problem.add_constraint(name='gen-lb_%03d_%s' % (t, o), coeffs=_mu, sense=opt.SENSE_GEQ, rhs=b['lb'][t])
+                if b['ub'] is not None and t in b['ub']:
+                    problem.add_constraint(name='gen-ub_%03d_%s' % (t, o), coeffs=_mu, sense=opt.SENSE_LEQ, rhs=b['ub'][t])
+                
         
 
     def _cmp_cgen_m2(self):
@@ -970,77 +966,62 @@ class ForestModel:
         for t in self.periods:
             for o, e in list(cflw_e.items()):
                 #pdb.set_trace()
-                mu_lb = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 - e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
-                mu_ub = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 + e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
-                problem.add_constraint(name='flw-lb_%03d_%s' % (t, o), coeffs=mu_lb, sense=opt.SENSE_GEQ, rhs=0.)
-                problem.add_constraint(name='flw-ub_%03d_%s' % (t, o), coeffs=mu_ub, sense=opt.SENSE_LEQ, rhs=0.)
+                if t in e[0]:
+                    mu_lb = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 - e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
+                    mu_ub = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 + e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
+                    problem.add_constraint(name='flw-lb_%03d_%s' % (t, o), coeffs=mu_lb, sense=opt.SENSE_GEQ, rhs=0.)
+                    problem.add_constraint(name='flw-ub_%03d_%s' % (t, o), coeffs=mu_ub, sense=opt.SENSE_LEQ, rhs=0.)
 
     def _cmp_cflw_m2(self):
         pass # not implemented
 
     def _bld_tree_m1(self, area, dtk, age, coeff_funcs, tree=None, period=1, acodes=None, compile_c_ycomps=True):
-        #print acodes
-        #print('building tree for', dtk, age)
-        #area = self.dt(dtk).area(period, age)
-        tree = common.Tree() if not tree else tree
+        if not tree:
+            self.reset_areas()
+            self.dtypes[dtk]._areas[1][age] = area
+            self.reset_actions()
+            tree = common.Tree()
         acodes = list(self.actions.keys()) if not acodes else acodes
         for acode in acodes:
-            #print('trying', period, dtk, age, acode)#, exprs)
             if self.dt(dtk).is_operable(acode, period, age):
-                #print('applying', acode)
                 self.reset_actions(period)
                 if period > 1:
                     self.dt(dtk).grow(period-1, False)
-                else:
-                    self.dt(dtk).initialize_areas()
-                #area = self.dt(dtk).area(period, age)
-                #assert area
                 errorcode, missingarea, tstate = self.apply_action(dtk, acode, period, age, area,
-                                                                   compile_c_ycomps=compile_c_ycomps)
+                                                                   compile_c_ycomps=compile_c_ycomps,
+                                                                   override_operability=False,
+                                                                   fuzzy_age=False,
+                                                                   recourse_enabled=False)
                 if errorcode:
                     print('apply_action error', dtk, acode, period, age, area, errorcode, missingarea, tstate)
                     #raise
                 _dtk, tprop, _age = tstate[0]
-                #print ' new state', _dtk, tprop, _age
+                
                 assert tprop == 1. # cannot handle 'split' case yet...
-                #products = {'z':,self.compile_product(period, exprs['z'], acode, dtk, age),
-                #            'cflw':{k:self.compile_product(period, exprs['cflw'][k], acode, dtk, age)
-                #                    for k in exprs['cflw']}} 
-                #p = {k:self.compile_product(period, e, acode, dtk, age)
-                #     for k, e in exprs} if self.is_harvest(acode) else 0.
                 products = None
-                tree.grow({'dtk':dtk, 'acode':acode, 'period':period, 'age':age,
-                           'products':products, 'area':area})
+                tree.grow({'dtk':dtk, '_dtk':_dtk, 'acode':acode, 'period':period, 
+                           'age':age, '_age':_age, 'products':products, 'area':area})
                 if period < self.periods[-1]: # dive deeper (dfs)
-                    #print(' pre-grow new area', self.dt(_dtk).area(period, _age))
                     self.dt(_dtk).grow(period, False)
-                    #print ' post-grow new area', self.dt(_dtk).area(period+1, _age+1)
-                    #print(' diving', _dtk, _age+1, period+1)
-                    #self._bld_tree_m1(area, _dtk, _age+1, coeff_funcs, tree, period+1, acodes)
                     self._bld_tree_m1(area, _dtk, _age+self.period_length, coeff_funcs, tree, period+1, acodes)
                 elif period == self.periods[-1]: # found leaf
-                    #print('found leaf')
                     path = tree.path()
                     leaf = path[-1]
                     assert leaf.is_leaf()
-                    #print leaf.nid, leaf.is_leaf()
                     leaf._data.update({k:coeff_funcs[k](self, path) for k in coeff_funcs})
-                    #import pdb
-                    #pdb.set_trace()
-                    #print(coeff_funcs['z'](self, path))
-                    #print(leaf._data)
                 tree.ungrow()
         return tree
     
     def _gen_vars_m1(self, coeff_funcs, acodes=None, mask=None):
         trees, vars = {}, {}
         dtype_keys = self.dtypes.keys() if not mask else self.unmask(mask)
-        for dtk in dtype_keys:
+        for dtk in list(dtype_keys):
+            self.reset()
             dt = self.dtypes[dtk]
             for age in list(dt._areas[1].keys()):
+                self.reset()
                 if not dt.area(1, age): continue
                 i = (dt.key, age)
-                #print '_gen_vars_m1', dt.key, age
                 t = trees[i] = self._bld_tree_m1(dt.area(1, age), dt.key, age, coeff_funcs, acodes=acodes)
                 for path in t.paths():
                     j = tuple(n.data('acode') for n in path)
@@ -1151,11 +1132,19 @@ class ForestModel:
     def overwrite_initial_areas(self, period):
         for dt in list(self.dtypes.values()): dt.overwrite_initial_areas(period)
     
-    def initialize_areas(self):
+    def initialize_areas(self, reset_areas=True):
         """
         Copies areas from period 0 to period 1.
         """
-        for dt in list(self.dtypes.values()): dt.initialize_areas()
+        if reset_areas: self.reset_areas()
+        #for dt in list(self.dtypes.values()): dt.initialize_areas()
+        for dtk in self.dtypes: self.dtypes[dtk].initialize_areas()
+        
+    def reset_areas(self, period=None):
+        """
+        Reset areas for all development types.
+        """
+        for dtk in self.dtypes: self.dtypes[dtk].reset_areas(period)
         
     def register_curve(self, curve):
         """
@@ -2157,57 +2146,55 @@ class ForestModel:
                        override_operability=False, fuzzy_age=True,
                        recourse_enabled=True, areaselector=None,
                        compile_t_ycomps=False, compile_c_ycomps=False,
-                       rounding_bias=0.15, scale_area=None):
+                       rounding_bias=0.15, scale_area=None, reset=True):
         """
         Assumes schedule in format returned by import_schedule_section().
         That is: list of (dtype_key, age, area, acode, period, etype) tuples.
         Also assumes that actions in list are sorted by applied period.
         """
         if max_period is None: max_period = self.horizon
-        #self.reset_actions()
-        #self.initialize_areas()
-        _period = 1
+        if reset: self.reset()
         missing_area = 0.
-        for dtype_key, age, area, acode, period, etype in schedule:
-            if scale_area: area = area * scale_area
-            if period > _period:
-                if verbose: print('apply_schedule: committing actions for period', _period, '(missing area %0.1f)' % missing_area)
-                self.commit_actions(_period)
-            if period > max_period: return
-            #print 'applying:', [' '.join(dtype_key)], age, area, acode, period, etype
-            if force_integral_area:
-                area = round(area+rounding_bias)
-                #area = math.floor(area)
-                if not area: continue
-                #print area, area % 1. 
-                assert not area % 1.
-            #print 'operable area slack', dtype_key, acode, period, age, '%0.3f' % (self.dt(dtype_key).operable_area(acode, period, age) - area)
-            e, _aa, _ = self.apply_action(dtype_key,
-                                          acode,
-                                          period,
-                                          age,
-                                          area,
-                                          override_operability=override_operability,
-                                          fuzzy_age=fuzzy_age,
-                                          recourse_enabled=recourse_enabled,
-                                          areaselector=areaselector,
-                                          compile_t_ycomps=compile_t_ycomps,
-                                          compile_c_ycomps=compile_c_ycomps,
-                                          verbose=verbose)
-            crash_on_apply_action_error = False # hack... put in method signature later
-            if crash_on_apply_action_error:
-                assert not e # crash on error (TO DO: better error handling)
-            else:
-                if e:
-                    print('apply action error', e, dtype_key, acode, period, age, area) 
-            if isinstance(_aa, float): 
-                if fail_on_missingarea and missing_area:
-                    raise
+        for _period in self.periods:
+            for dtype_key, age, area, acode, period, etype in schedule:
+                if period != _period: continue
+                if scale_area: area = area * scale_area
+                if period > _period:
+                    if verbose: print('apply_schedule: committing actions for period', _period, '(missing area %0.1f)' % missing_area)
+                    self.commit_actions(_period)
+                if period > max_period: return
+                if force_integral_area:
+                    area = round(area+rounding_bias)
+                    #area = math.floor(area)
+                    if not area: continue
+                    #print area, area % 1. 
+                    assert not area % 1.
+                e, _aa, _ = self.apply_action(dtype_key,
+                                              acode,
+                                              period,
+                                              age,
+                                              area,
+                                              override_operability=override_operability,
+                                              fuzzy_age=fuzzy_age,
+                                              recourse_enabled=recourse_enabled,
+                                              areaselector=areaselector,
+                                              compile_t_ycomps=compile_t_ycomps,
+                                              compile_c_ycomps=compile_c_ycomps,
+                                              verbose=verbose)
+                crash_on_apply_action_error = False # hack... put in method signature later
+                if crash_on_apply_action_error:
+                    assert not e # crash on error (TO DO: better error handling)
                 else:
-                    missing_area += _aa
-            if verbose: print('missing area %0.1f (%0.2f)' % (_aa, _aa/area))
-            _period = period
-        #self.commit_actions(period)
+                    if e:
+                        print('apply action error', e, dtype_key, acode, period, age, area) 
+                if isinstance(_aa, float): 
+                    if fail_on_missingarea and missing_area:
+                        raise
+                    else:
+                        missing_area += _aa
+                if verbose: print('missing area %0.1f (%0.2f)' % (_aa, _aa/area))
+                _period = period
+            self.commit_actions(_period)
         return missing_area
 
     def import_control_section(self, filename_suffix='run'):
