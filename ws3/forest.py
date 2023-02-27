@@ -1069,7 +1069,7 @@ class ForestModel:
         except:
             return None
 
-    def age_class_distribution(self, period, mask=None):
+    def age_class_distribution(self, period, mask=None, omit_null=True):
         """
         Returns age class distribution (dict of areas, keys on age).
         """
@@ -1078,6 +1078,7 @@ class ForestModel:
         for dtk in dtype_keys:
             dt = self.dtypes[dtk]
             for age in dt._areas[period]:
+                if omit_null: continue
                 result[age] += dt._areas[period][age]
         return result
            
