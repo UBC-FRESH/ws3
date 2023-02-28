@@ -69,7 +69,8 @@ class GreedyAreaSelector:
         """
         key = lambda item: max(item[1])
         odt = sorted(list(self.parent.operable_dtypes(acode, period, mask).items()), key=key)
-        print(' entering selector.operate()', len(odt), 'operable dtypes')
+        if verbose:
+            print(' entering selector.operate()', len(odt), 'operable dtypes')
         while target_area > 0 and odt:
             while target_area > 0 and odt:
                 popped = odt.pop()
@@ -89,7 +90,7 @@ class GreedyAreaSelector:
                     assert False
                 if verbose:
                     print(' selector found area', [' '.join(dtk)], acode, period, age, area)
-                self.parent.apply_action(dtk, acode, period, age, area, 
+                self.parent.apply_action(dtk, acode, period, age, area, compile_c_ycomps=True,
                                          fuzzy_age=False, recourse_enabled=False, verbose=verbose)
             odt = sorted(list(self.parent.operable_dtypes(acode, period, mask).items()), key=key)
         self.parent.commit_actions(period, repair_future_actions=True)
@@ -341,7 +342,7 @@ class DevelopmentType:
     def _compile_complex_ycomp(self, yname):
         expression = self._complex_ycomps[yname]
         keyword = re.search('(?<=_)[A-Z]+(?=\()', expression).group(0)
-        #print 'compiling complex', yname, keyword, expression
+        #print('compiling complex', yname, keyword, expression)
         try:
             ytype, ycomp = self._resolvers[keyword](yname, expression)
             ycomp.label = yname
@@ -920,6 +921,8 @@ class ForestModel:
                 except Exception as e:
                     print('error processing tree', i)
                     print(e)
+                    import pdb
+                    pdb.set_trace()
                     assert False
         return p
             
@@ -1069,7 +1072,7 @@ class ForestModel:
         except:
             return None
 
-    def age_class_distribution(self, period, mask=None, omit_null=True):
+    def age_class_distribution(self, period, mask=None, omit_null=False):
         """
         Returns age class distribution (dict of areas, keys on age).
         """
@@ -1078,8 +1081,9 @@ class ForestModel:
         for dtk in dtype_keys:
             dt = self.dtypes[dtk]
             for age in dt._areas[period]:
-                if omit_null: continue
                 result[age] += dt._areas[period][age]
+        if omit_null:
+            result = {k:v for k, v in result.items() if v}
         return result
            
     def operable_dtypes(self, acode, period, mask=None):
@@ -1283,7 +1287,7 @@ class ForestModel:
                     result += aa[period][_acode][_dtype_key][_age][0]
         return result
 
-    def repair_actions(self, period, areaselector=None):
+    def repair_actions(self, period, areaselector=None, verbose=False):
         """
         Attempts to repair the action schedule for given period, using an AreaSelector object 
         (defaults to class-default areaselector, which is a simple greedy oldest-first selector).
@@ -1294,7 +1298,6 @@ class ForestModel:
         self.reset_actions(period)
         for acode in aa:
             if not aa[acode]: continue # null solution, move along...
-            print(' ', acode)
             old_area = 0.
             new_area = 0.
             # start by re-applying as much of the old solution as possible
@@ -1310,7 +1313,8 @@ class ForestModel:
                     self.apply_action(dtype_key, acode, period, age, applied_area)
             # try to make up for missing area...
             target_area = old_area - new_area
-            print(' patched %i of %i solution hectares, missing' % (int(new_area), int(old_area)), target_area)
+            if verbose:
+                print(' patched %i of %i solution hectares, missing' % (int(new_area), int(old_area)), target_area)
             if areaselector is None: # use default area selector
                 areaselector = self.areaselector
             areaselector.operate(period, acode, target_area)
@@ -1510,7 +1514,7 @@ class ForestModel:
             #print 'ycomp.type: "%s"' % ycomp.type
             if ycomp.type == 't' and not compile_t_ycomps: continue # skip time-indexed ycomps
             if ycomp.type == 'c' and not compile_c_ycomps: continue # skip complex ycomps
-            #print 'foo', ycomp[age]
+            #print('foo', dt.key, yname, age, ycomp[age])
             if yname in action.partial:
                 value = 0.
                 for dtk, tprop, targetage in target_dt:
@@ -1824,9 +1828,9 @@ class ForestModel:
             self.yields.append((m, t, ycomps)) # stash for creating new dtypes at runtime...
             self.ynames.update(n)
             #print(m, len(self.unmask(m)))
-            if ycomps:
-                if ycomps[0][0] == 'vol':
-                    print(ycomps[0][1].points())
+            #if ycomps:
+            #    if ycomps[0][0] == 'vol':
+            #        print(ycomps[0][1].points())
             for k in self.unmask(m):
                 for yname, ycomp in ycomps:
                     self.dtypes[k].add_ycomp(t, yname, ycomp)

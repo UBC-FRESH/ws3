@@ -54,6 +54,9 @@ class Interpolator(object):
             raise
         
     def points(self):
+        #print('foo')
+        #print(self.x)
+        #print(list(map(int, self.x)), self.y)
         return list(zip(list(map(int, self.x)), self.y))
         
     def __call__(self, x):
@@ -256,16 +259,27 @@ class Curve:
             return Curve(points=points)
         
     def cai(self):
-        x = self.x
-        y = self.interp(x)
-        return Curve(points=list(zip(x, (y[1:]-y[:-1])/self.period_length)))
+        '''Current annual increment as curve'''        
+        #points = list(zip(self.interp.x, self.interp.m))
+        X = list(range(1, self.xmax))
+        Y = [self[x] - self[x-1] for x in X]
+        points = list(zip(X, Y))
+        #print(points)
+        return Curve(points=points)
+        #return Curve(points=list(zip(x, (y[1:]-y[:-1])/self.period_length)))
             
     def mai(self):
-        try:
-            p = [(0, 0.)] + [(x, self[x]/(float(x)*self.period_length)) for x in range(1, self.xmax+1)]
-        except:
-            print(self.x) #[1:]
-        return Curve(points=p)
+        X = range(1, self.xmax)
+        Y = [self[x] / x for x in X[1:]] 
+
+        return Curve(points=list(zip(X, Y)))
+
+        
+        #try:
+        #    p = [(0, 0.)] + [(x, self[x]/(float(x)*self.period_length)) for x in range(1, self.xmax+1)]
+        #except:
+        #    print(self.x) #[1:]
+        #return Curve(points=p)
             
     def ytp(self):
         y = self.y()
