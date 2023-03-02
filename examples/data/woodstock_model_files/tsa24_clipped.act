@@ -2,4 +2,4 @@
 ACTIONS
 *ACTION harvest 0
 *OPERABLE harvest
-? ? ? ? ? totvol >= 50 AND _AGE <= 999
+? ? ? ? ? _AGE >= 40 AND _AGE <= 999
