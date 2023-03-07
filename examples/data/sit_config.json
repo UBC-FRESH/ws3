@@ -1,0 +1,38 @@
+{
+    "import_config": {
+        "classifiers":       {"type": "csv", "params": {"path": "sit_classifiers.csv"}},
+        "disturbance_types": {"type": "csv", "params": {"path": "sit_disturbance_tyeps.csv"}},
+        "age_classes":       {"type": "csv", "params": {"path": "sit_age_classes.csv"}},
+        "inventory":         {"type": "csv", "params": {"path": "sit_inventory.csv"}},
+        "yield":             {"type": "csv", "params": {"path": "sit_yield.csv"}},
+        "events":            {"type": "csv", "params": {"path": "sit_events.csv"}},
+        "transitions": 	     {"type": "csv", "params": {"path": "sit_ransitions.csv"}}
+    },
+    "mapping_config": {
+        "nonforest": null,
+        "species": {
+            "species_classifier": "species",
+            "species_mapping": [
+                {"user_species": "softwood", "default_species": "Softwood forest type"},
+                {"user_species": "hardwood", "default_species": "Hardwood forest type"}
+            ]
+        },
+        "spatial_units": {
+            "mapping_mode": "SingleDefaultSpatialUnit",
+            "admin_boundary": "British Columbia",
+            "eco_boundary": "Montane Cordillera"
+        },
+        "disturbance_types": {
+            "disturbance_type_mapping": [
+                {
+                    "user_dist_type": "harvest",
+                    "default_dist_type": "Clearcut harvesting without salvage"
+                },
+                {
+                    "user_dist_type": "fire",
+                    "default_dist_type": "Wildfire"
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,100 @@
+canfi_species,genus,species,name,forest_type_id
+100,PICE,SPP,Spruce,1
+101,PICE,MAR,Black spruce,1
+102,PICE,RUB,Red spruce,1
+103,PICE,ABI,Norway spruce,1
+104,PICE,ENG,Engelmann spruce,1
+105,PICE,GLA,White spruce,1
+106,PICE,SIT,Sitka spruce,1
+107,PICE,MAR,Black and red spruce,1
+108,PICE,RUB,Red and white spruce,1
+109,PICE,SPP,other spruce,1
+201,PINU,MON,Western white pine,1
+202,PINU,STR,Eastern white pine,1
+203,PINU,BAN,Jack pine,1
+204,PINU,CON,Lodgepole pine,1
+205,PINU,CON,Shore pine,1
+206,PINU,ALB,Whitebark pine,1
+208,PINU,PON,Ponderosa pine,1
+209,PINU,RES,Red pine,1
+211,PINU,SYL,Scots pine,1
+216,PINU,MUR,hybrid pine,1
+217,PINU,ALB,Eastern white pine,1
+300,ABIE,SPP,Fir,1
+301,ABIE,AMA,Amabilis fir,1
+302,ABIE,BAL,Balsam fir,1
+303,ABIE,GRA,Grand fir,1
+304,ABIE,LAS,Subalpine fir,1
+305,ABIE,MX2,Balsam and alpine fir,1
+306,ABIE,MIX,"Alpine, amabilis and grand fir",1
+400,TSUG,SPP,Hemlock,1
+401,TSUG,CAN,Eastern hemlock,1
+402,TSUG,HET,Western hemlock,1
+403,TSUG,MER,Mountain hemlock,1
+500,PSEU,MEN,Douglas fir,1
+500,PSEU,SPP,Rocky mountain douglas fir,1
+600,LARI,SPP,Tamarack/larch,1
+601,LARI,DEC,European larch,1
+602,LARI,LAR,larch,1
+603,LARI,OCC,Western larch,1
+604,LARI,LYA,Subalpine larch,1
+605,LARI,KAE,Japanese larch,1
+701,THUJ,OCC,Eastern white-cedar,1
+702,THUJ,PLI,Western redcedar,1
+1001,CHAM,NOO,Yellow cypress,1
+1100,GENC,SPP,Other softwoods/other conifers,1
+1150,UNKN,SPP,Unspecified softwood species,1
+1200,POPU,SPP,Poplar/aspen,3
+1201,POPU,TRE,Trembling aspen,3
+1203,POPU,BAL,Balsam poplar,3
+1205,POPU,DEL,Eastern cottonwood,3
+1206,POPU,GRA,Largetooth aspen,3
+1211,POPU,BAL,"Balsam poplar, largetooth aspen and eastern cottonwood",3
+1301,BETU,ALL,Yellow birch,3
+1303,BETU,PAP,White birch,3
+1304,BETU,POP,Gray birch,3
+1305,BETU,NEO,Alaska paper birch,3
+1308,BETU,PAP,Alaska paper and white birch,3
+1400,ACER,SPP,Maple,3
+1401,ACER,SAH,Sugar maple,3
+1403,ACER,MAC,Bigleaf maple,3
+1404,ACER,NEG,Manitoba maple,3
+1405,ACER,RUB,Red maple,3
+1406,ACER,SAC,Silver maple,3
+1410,ACER,PEN,Striped maple,3
+1411,ACER,SPI,Mountain maple,3
+1500,GENH,SPP,Other hardwoods/other broad-leaved,3
+1550,GENH,SPP,Unspecified hardwood species,3
+1601,CARY,COR,Bitternut hickory,3
+1701,JUGL,CIN,Butternut,3
+1800,ALNU,SPP,Alder,3
+1802,ALNU,RUB,Red alder,3
+1900,OSTR,VIR,Ironwood (hop-hornbeam),3
+2000,FAGU,GRA,Beech,3
+2100,QUER,SPP,Oak,3
+2101,QUER,ALB,White oak,3
+2102,QUER,BIC,Swamp white oak,3
+2104,QUER,MAC,Bur oak,3
+2108,QUER,RUB,Red oak,3
+2200,ULMU,SPP,Elm,3
+2201,ULMU,AME,White elm,3
+2202,ULMU,RUB,Slippery elm,3
+2203,ULMU,THO,Rock elm,3
+2801,PRUN,SER,Black cherry,3
+2802,PRUN,PEN,Pin cherry,3
+2804,PRUN,VIR,Choke cherry,3
+3000,TILI,AME,Basswood,3
+3400,FRAX,SPP,Ash,3
+3401,FRAX,AME,White ash,3
+3402,FRAX,NIG,Black ash,3
+3403,FRAX,PEN,Red ash,3
+3405,FRAX,PEN,Northern red ash,3
+3500,SALI,SPP,Willow,3
+3900,CORY,COR,Beaked hazel,3
+3920,ILEX,VER,Common winterberry (black-alder),3
+3940,NEMO,MUC,Mountain-holly,3
+3960,SORB,SPP,Mountain-ash,3
+4000,TOLE,HAR,Tolerant hardwoods,3
+4500,UPLA,HAR,Upland hardwoods,3
+5000,INTO,HAR,Intolerant hardwoods,3
+5500,LOWL,HAR,Lowland hardwoods,3
