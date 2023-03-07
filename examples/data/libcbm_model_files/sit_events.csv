@@ -1,0 +1,10 @@
+theme0,theme1,theme2,theme3,theme4,species,using_age_class,min_softwood_age,max_softwood_age,min_hardwood_age,max_hardwood_age,MinYearsSinceDist,MaxYearsSinceDist,LastDistTypeID,MinTotBiomassC,MaxTotBiomassC,MinSWMerchBiomassC,MaxSWMerchBiomassC,MinHWMerchBiomassC,MaxHWMerchBiomassC,MinTotalStemSnagC,MaxTotalStemSnagC,MinSWStemSnagC,MaxSWStemSnagC,MinHWStemSnagC,MaxHWStemSnagC,MinTotalStemSnagMerchC,MaxTotalStemSnagMerchC,MinSWMerchStemSnagC,MaxSWMerchStemSnagC,MinHWMerchStemSnagC,MaxHWMerchStemSnagC,efficiency,sort_type,target_type,target,disturbance_type,disturbance_year
+tsa24_clipped,1,2402002,204,2402002,softwood,FALSE,1,999,1,999,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,3,A,3.195378954654358,harvest,10
+tsa24_clipped,1,2402002,204,2402002,softwood,FALSE,1,999,1,999,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,3,A,3.971358280652213,harvest,10
+tsa24_clipped,1,2402002,204,2422002,softwood,FALSE,1,999,1,999,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,3,A,6.390757909308716,harvest,10
+tsa24_clipped,1,2402000,100,2402000,softwood,FALSE,1,999,1,999,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,3,A,0.05696477399540633,harvest,10
+tsa24_clipped,1,2401002,204,2401002,softwood,FALSE,1,999,1,999,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,3,A,34.32629241113743,harvest,10
+tsa24_clipped,1,2401002,204,2421002,softwood,FALSE,1,999,1,999,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,3,A,60.1716990138173,harvest,10
+tsa24_clipped,1,2403002,204,2403002,softwood,FALSE,1,999,1,999,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,3,A,2.243990590272984,harvest,10
+tsa24_clipped,1,2403002,204,2423002,softwood,FALSE,1,999,1,999,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,3,A,8.24484870843623,harvest,10
+tsa24_clipped,1,2403000,100,2403000,softwood,FALSE,1,999,1,999,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,3,A,1.4811643286926839,harvest,10

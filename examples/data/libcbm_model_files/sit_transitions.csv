@@ -1,0 +1,14 @@
+theme0,theme1,theme2,theme3,theme4,species,using_age_class,min_softwood_age,max_softwood_age,min_hardwood_age,max_hardwood_age,disturbance_type,to_theme0,to_theme1,to_theme2,to_theme3,to_theme4,to_species,regen_delay,reset_age,percent
+?,?,2402000,?,?,softwood,FALSE,1,999,1,999,harvest,?,?,?,?,2422000,softwood,0,0,100
+?,?,2403000,?,?,softwood,FALSE,1,999,1,999,harvest,?,?,?,?,2423000,softwood,0,0,100
+?,?,2403001,?,?,softwood,FALSE,1,999,1,999,harvest,?,?,?,?,2423001,softwood,0,0,100
+?,?,2401002,?,?,softwood,FALSE,1,999,1,999,harvest,?,?,?,?,2421002,softwood,0,0,100
+?,?,2402002,?,?,softwood,FALSE,1,999,1,999,harvest,?,?,?,?,2422002,softwood,0,0,100
+?,?,2403002,?,?,softwood,FALSE,1,999,1,999,harvest,?,?,?,?,2423002,softwood,0,0,100
+?,?,2402003,?,?,softwood,FALSE,1,999,1,999,harvest,?,?,?,?,2422003,softwood,0,0,100
+?,?,2403003,?,?,softwood,FALSE,1,999,1,999,harvest,?,?,?,?,2423003,softwood,0,0,100
+?,?,2402004,?,?,softwood,FALSE,1,999,1,999,harvest,?,?,?,?,2422004,softwood,0,0,100
+?,?,2403004,?,?,softwood,FALSE,1,999,1,999,harvest,?,?,?,?,2423004,softwood,0,0,100
+?,?,2401007,?,?,softwood,FALSE,1,999,1,999,harvest,?,?,?,?,2421007,softwood,0,0,100
+?,?,2402007,?,?,softwood,FALSE,1,999,1,999,harvest,?,?,?,?,2422007,softwood,0,0,100
+?,?,2403007,?,?,softwood,FALSE,1,999,1,999,harvest,?,?,?,?,2423007,softwood,0,0,100
