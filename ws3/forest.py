@@ -53,6 +53,7 @@ except: # "__main__" case
     from ws3 import opt
 from ws3.common import timed
 
+from pdb import set_trace
     
 #_mad = common.MAX_AGE_DEFAULT
 
@@ -162,17 +163,7 @@ class DevelopmentType:
         self._areas = {p:dd(float) for p in range(0, self.parent.horizon+1)}
         #######################################################################
         self.oper_expr = dd(list)
-        self.operability = {}
-        self.leading_species = None
-        
-    def leading_species(self, species=None):
-        """
-        Gets or sets leading_speces attribute.
-        """
-        if not species:
-            return self.leading_species
-        else:
-            self.leading_species = species
+        self.operability = {}        
 
     def operable_ages(self, acode, period):
         """
@@ -1505,7 +1496,9 @@ class ForestModel:
         ###########################################################################
         dt.area(period, age, -area)
         target_dt = []
-        __age = age if (acode, age in dt.transitions) else -1
+        __age = age if (acode, age) in dt.transitions else -1
+        #import pdb
+        #pdb.set_trace()
         for target in dt.transitions[acode, __age]:
             tmask, tprop, tyield, tage, tlock, treplace, tappend = target # unpack tuple
             #print tmask
@@ -1513,8 +1506,8 @@ class ForestModel:
             ###########################################################################
             # DO TO: Confirm correct order for evaluating mask, _APPEND and _REPLACE...
             dtk = [t if tmask[i] == '?' else tmask[i] for i, t in enumerate(dtk)] 
-            if treplace: dtk[treplace[0]] = resolve_replace(dtk, treplace[1])
-            if tappend: dtk[tappend[0]] = resolve_append(dtk, tappend[1])
+            if treplace: dtk[treplace[0]] = self.resolve_replace(dtk, treplace[1])
+            if tappend: dtk[tappend[0]] = self.resolve_append(dtk, tappend[1])
             dtk = tuple(dtk)
             ###########################################################################
             foo = False
@@ -2202,9 +2195,7 @@ class ForestModel:
                 if period > max_period: return
                 if force_integral_area:
                     area = round(area+rounding_bias)
-                    #area = math.floor(area)
                     if not area: continue
-                    #print area, area % 1. 
                     assert not area % 1.
                 e, _aa, _ = self.apply_action(dtype_key,
                                               acode,
@@ -2256,7 +2247,7 @@ class ForestModel:
             data['classifier_id'].append(i+1)
             data['name'].append('_CLASSIFIER')
             data['description'].append(theme['__name__'])
-            for v in fm.theme_basecodes(i):
+            for v in self.theme_basecodes(i):
                 data['classifier_id'].append(i+1)
                 data['name'].append(v)
                 data['description'].append(v) # not great descriptions, but no effect on CBM output
@@ -2350,12 +2341,12 @@ class ForestModel:
         for dtype_key in self.dtypes:
             dt = self.dtypes[dtype_key]
             if not dt._areas[0]: continue # developement type not in initial inventory
-            for age, area in dt._areas[0]:
-                for i, c in theme_cols: data[c].append(dtype_key[i])
+            for age, area in dt._areas[0].items():
+                for i, c in enumerate(theme_cols): data[c].append(dtype_key[i])
                 data['age'].append(age)
                 data['area'].append(area)
-        result = pd.DataFrame(list(self.dtypes.keys()))
-        age_series, area_series = sit_inventory['age'], sit_inventory['area']
+        result = pd.DataFrame(data)
+        age_series, area_series = result['age'], result['area']
         result.drop(['age', 'area'], axis=1, inplace=True) # wrong column order                    
         result['species'] = result[theme_cols].apply(leading_species, axis=1)
         result['using_age_class'] = 'FALSE'
@@ -2398,24 +2389,27 @@ class ForestModel:
             tvol_curve = svol_curve + hvol_curve
             x_cmai = tvol_curve.mai().ytp().lookup(0)
             return 'softwood' if svol_curve[x_cmai] > hvol_curve[x_cmai] else 'hardwood'
+        schedule = self.compile_schedule()
         p = self.add_problem('__cbm_sit_bogus', {'z':(lambda forestmodel, path: 0.)})
         theme_cols = [theme['__name__'] for theme in self._themes]
         data = {**{c:[] for c in theme_cols}, 
                 'species':[], 'leading_species':[],        
                 **{'v%i' % i:[] for i in range(n_yield_vals + 1)}}
-        for dtype_key in self.dypes:
+        for dtype_key in self.dtypes:
             dt = self.dt(dtype_key)
-            dt.leading_species(leading_species(dt))
-            for species in ['softwood', 'hardwood']:
-                for i, c in theme_cols: data[c].append(dtype_key[i])
-                data['species'] = species
-                data['leading_species'] = dt.leading_species
-                for i in range(n_yield_vals + 1): data['v%i' % i].append(dt.ycomp(species)[i * self.period_length])
+            dt.leading_species = leading_species(dt)
+            for species, yname in zip(('softwood', 'hardwood'), (softwood_volume_yname, hardwood_volume_yname)):
+                for i, c in enumerate(theme_cols): data[c].append(dtype_key[i])
+                data['species'].append(species)
+                data['leading_species'].append(dt.leading_species)
+                for i in range(n_yield_vals + 1): data['v%i' % i].append(dt.ycomp(yname)[i * self.period_length])
         result = pd.DataFrame(data)
+        self.apply_schedule(schedule) # running add_problem above broke the schedule so restore from backup we stashed
         return result
 
     def _cbm_sit_events(self):
-        theme_cols = colunmns = [theme['__name__'] for theme in self._themes]
+        theme_cols = [theme['__name__'] for theme in self._themes]
+        columns = theme_cols.copy()
         columns += ['species',
                     'using_age_class',
                     'min_softwood_age',
@@ -2451,13 +2445,17 @@ class ForestModel:
                     'disturbance_year']
         data = {c:[] for c in columns}
         for dtype_key, age, area, acode, period, _ in self.compile_schedule():
+            #set_trace()
             for i, c in enumerate(theme_cols): data[c].append(dtype_key[i])
             data['species'].append(self.dt(dtype_key).leading_species)
             data['using_age_class'].append('FALSE')
-            data['min_softwood_age'].append(1)
-            data['max_softwood_age'].append(999)
-            data['min_hardwood_age'].append(1)
-            data['max_hardwood_age'].append(999)
+            #############################################################################
+            # might need to be more flexible with age range, to avoid OBO bugs and such?
+            data['min_softwood_age'].append(age)
+            data['max_softwood_age'].append(age)
+            data['min_hardwood_age'].append(age)
+            data['max_hardwood_age'].append(age)
+            #############################################################################
             for c in columns[11:-6]: data[c].append(-1)
             data['efficiency'].append(1)
             data['sort_type'].append(3) # oldest first (see Table 3-3 in the CBM-CFS3 user guide)
@@ -2469,8 +2467,17 @@ class ForestModel:
         return result
     
     def _cbm_sit_transitions(self, null_acode='null'):
+        def resolve_target(dtype_key, target, sage):
+            tmask, tprop, tyield, tage, tlock, treplace, tappend = target # unpack tuple
+            dtk = list(dtype_key) # start with source key
+            dtk = [t if tmask[i] == '?' else tmask[i] for i, t in enumerate(dtk)] 
+            if treplace: dtk[treplace[0]] = self.resolve_replace(dtk, treplace[1])
+            if tappend: dtk[tappend[0]] = self.resolve_append(dtk, tappend[1])
+            dtk = tuple(dtk)
+            targetage = self.resolve_targetage(dtk, tyield, sage, tage, acode)
+            return dtk, targetage
         theme_cols = colunmns = [theme['__name__'] for theme in self._themes]
-        columns = theme_cols
+        columns = theme_cols.copy()
         columns += ['species',
                     'using_age_class',
                     'min_softwood_age',
@@ -2486,17 +2493,26 @@ class ForestModel:
         data = {c:[] for c in columns}
         for dtype_key in self.dtypes:
             dt = self.dt(dtype_key)
-            for acode, age in dt.transitions:
+            for acode, sage in dt.transitions:
                 if acode == null_acode: continue
-                for tmask, tprop, tyield, tage, tlock, treplace, tappend in dt.transitions[acode, age]:
+                for target in dt.transitions[acode, sage]:
+                    #tmask, tprop, tyield, tage, tlock, treplace, tappend = target
                     for i, c in enumerate(theme_cols): data[c].append(dtype_key[i])
-                    data['species'].append(dt.leading_speces)
+                    data['species'].append(dt.leading_species)
                     data['using_age_class'].append('FALSE')
-                    data['min_softwood_age'].append(age)
-                    data['max_softwood_age'].append(age)
-                    data['min_hardwood_age'].append(age)
-                    data['max_hardwood_age'].append(age)
+                    data['min_softwood_age'].append(sage)
+                    data['max_softwood_age'].append(sage)
+                    data['min_hardwood_age'].append(sage)
+                    data['max_hardwood_age'].append(sage)
                     data['disturbance_type'].append(acode)
+                    to_dtype_key, to_age = resolve_target(dtype_key, target, sage)
+                    for i in range(5): data['to_theme%i' % i].append(to_dtype_key[i])
+                    data['to_species'].append(self.dt(to_dtype_key).leading_species)
+                    data['regen_delay'].append(0)
+                    data['reset_age'].append(to_age)
+                    data['percent'].append(int(target[1] * 100))
+        result = pd.DataFrame(data)
+        return result
 
         for acode in fm.transitions:
             if acode == null_acode: continue
@@ -2519,12 +2535,43 @@ class ForestModel:
         return result
         
     def to_cbm_sit(self, softwood_volume_yname, hardwood_volume_yname, admin_boundary, eco_boundary, 
+                   disturbance_type_mapping, 
                    export_csv=False, sit_data_path='', default_last_pass_disturbance='fire', n_yield_vals=100):
         """
         Exports model data in a CBM standard import tool (SIT) data exchange format.
-        Returns 
+        Returns sit_config (JSON-like dict namespace) and sit_tables (dict of pandas.DataFrame objects).
         """
-        pass
+        sit_config = {
+                        'mapping_config': {
+                            'nonforest': None,
+                            'species': {
+                                'species_classifier': 'species',
+                                'species_mapping': [
+                                    {'user_species': 'softwood', 'default_species': 'Softwood forest type'},
+                                    {'user_species': 'hardwood', 'default_species': 'Hardwood forest type'}
+                                ]
+                            },
+                            'spatial_units': {
+                                'mapping_mode': 'SingleDefaultSpatialUnit',
+                                'admin_boundary': admin_boundary,
+                                'eco_boundary': eco_boundary},
+                            'disturbance_types': {
+                                'disturbance_type_mapping': disturbance_type_mapping
+                            }
+                        }
+                    }
+        sit_tables = {'sit_classifiers':self._cbm_sit_classifiers(),
+                      'sit_disturbance_types':self._cbm_sit_disturbance_types(),
+                      'sit_age_classes':self._cbm_sit_age_classes(),
+                      'sit_inventory':self._cbm_sit_inventory(softwood_volume_yname='swdvol', 
+                                                              hardwood_volume_yname='hwdvol'),
+                      'sit_yield':self._cbm_sit_yield(softwood_volume_yname='swdvol', 
+                                                      hardwood_volume_yname='hwdvol', n_yield_vals=100),
+                      'sit_events':self._cbm_sit_events(),
+                      'sit_transitions':self._cbm_sit_transitions()}
+        return sit_config, sit_tables
+
+                      
         
                 
         
