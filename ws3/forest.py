@@ -939,8 +939,6 @@ class ForestModel:
                 except Exception as e:
                     print('error processing tree', i)
                     print(e)
-                    import pdb
-                    pdb.set_trace()
                     assert False
         return p
             
@@ -1014,9 +1012,6 @@ class ForestModel:
                                                                    recourse_enabled=False)
                 if errorcode:
                     print('apply_action error', dtk, acode, period, age, area, errorcode, missingarea, tstate)
-                    #raise
-                #import pdb
-                #pdb.set_trace()
                 _dtk, tprop, _age = tstate[0]
                 
                 assert tprop == 1. # cannot handle 'split' case yet...
@@ -1500,11 +1495,8 @@ class ForestModel:
         dt.area(period, age, -area)
         target_dt = []
         __age = age if (acode, age) in dt.transitions else -1
-        #import pdb
-        #pdb.set_trace()
         for target in dt.transitions[acode, __age]:
             tmask, tprop, tyield, tage, tlock, treplace, tappend = target # unpack tuple
-            #print tmask
             dtk = list(dtype_key) # start with source key
             ###########################################################################
             # DO TO: Confirm correct order for evaluating mask, _APPEND and _REPLACE...
@@ -1513,11 +1505,7 @@ class ForestModel:
             if tappend: dtk[tappend[0]] = self.resolve_append(dtk, tappend[1])
             dtk = tuple(dtk)
             ###########################################################################
-            foo = False
-            #if acode in ['aca', 'acp']: foo = True 
-            #print ' target mask', dtk
             _dt = self.create_dtype_fromkey(dtk) if dtk not in self.dtypes else self.dtypes[dtk]
-            #print dtk, tyield, tage, acode
             targetage = self.resolve_targetage(dtk, tyield, age, tage, acode)
             if foo:
                 print('creating new dt from', acode, age, [' '.join(dt.key)])
@@ -1528,16 +1516,10 @@ class ForestModel:
         if dtype_key not in aa: aa[dtype_key] = {}
         if age not in aa[dtype_key]: aa[dtype_key][age] = [0., {}]
         aa[dtype_key][age][0] += area
-        #if action.partial: # debug only
-        #    print 'action.partial', acode, ' '.join(dtype_key) # action.partial
-        #    target_dt = [self.dtypes[dtk] for dtk in target_dtk] # avoid multiple lookups in loop
         for yname in dt.ycomps():
-            #print 'compiling', period, dt.key, age, yname
             ycomp = dt.ycomp(yname)
-            #print 'ycomp.type: "%s"' % ycomp.type
             if ycomp.type == 't' and not compile_t_ycomps: continue # skip time-indexed ycomps
             if ycomp.type == 'c' and not compile_c_ycomps: continue # skip complex ycomps
-            #print('foo', dt.key, yname, age, ycomp[age])
             if yname in action.partial:
                 value = 0.
                 for dtk, tprop, targetage in target_dt:
@@ -1558,13 +1540,12 @@ class ForestModel:
                                 print(' ', ''.join(dtk), targetage)
                                 print()
             else: # not partial
-                #print 'bar'
                 value = dt.ycomp(yname)[age]
-            #print 'value', value
             if value != 0.:
                 aa[dtype_key][age][1][yname] = value
         return 0, missing_area, target_dt
 
+    
     def sylv_cred_formula(self, treatment_type, cover_type):
         if treatment_type == 'ec':
             return 1 if cover_type.lower() in ['r', 'm'] else 2
@@ -1593,7 +1574,6 @@ class ForestModel:
             for mask in self.oper_expr[acode]:
                 if self.match_mask(mask, key):
                     dt.oper_expr[acode].append(self.oper_expr[acode][mask]) 
-            #print 'building transitions for acode', acode, ' '.join(key)
             for mask in self.transitions[acode]:
                 if self.match_mask(mask, key):
                     for scond in self.transitions[acode][mask]:
@@ -2445,10 +2425,14 @@ class ForestModel:
             data['using_age_class'].append('FALSE')
             #############################################################################
             # might need to be more flexible with age range, to avoid OBO bugs and such?
-            data['min_softwood_age'].append(age)
-            data['max_softwood_age'].append(age)
-            data['min_hardwood_age'].append(age)
-            data['max_hardwood_age'].append(age)
+            data['min_softwood_age'].append(-1)
+            data['max_softwood_age'].append(-1)
+            data['min_hardwood_age'].append(-1)
+            data['max_hardwood_age'].append(-1)
+            # data['min_softwood_age'].append(age)
+            # data['max_softwood_age'].append(age)
+            # data['min_hardwood_age'].append(age)
+            # data['max_hardwood_age'].append(age)
             #############################################################################
             for c in columns[11:-6]: data[c].append(-1)
             data['efficiency'].append(1)
