@@ -242,7 +242,7 @@ def run_scenario(fm, scenario_name='base'):
 # Implement a simple function to run CBM from ws3 export data
 ##############################################################
 
-def run_cbm(sit_config, sit_tables, n_steps):
+def run_cbm(sit_config, sit_tables, n_steps, plot=True):
     from libcbm.input.sit import sit_reader
     from libcbm.input.sit import sit_cbm_factory 
     from libcbm.model.cbm.cbm_output import CBMOutput
@@ -274,7 +274,8 @@ def run_cbm(sit_config, sit_tables, n_steps):
     pi = cbm_output.classifiers.to_pandas().merge(cbm_output.pools.to_pandas(), 
                                                   left_on=["identifier", "timestep"], 
                                                   right_on=["identifier", "timestep"])
-    biomass_pools = ['SoftwoodMerch','SoftwoodFoliage', 'SoftwoodOther', 'SoftwoodCoarseRoots','SoftwoodFineRoots',                        'HardwoodMerch', 'HardwoodFoliage', 'HardwoodOther', 'HardwoodCoarseRoots', 'HardwoodFineRoots']
+    biomass_pools = ['SoftwoodMerch','SoftwoodFoliage', 'SoftwoodOther', 'SoftwoodCoarseRoots','SoftwoodFineRoots',                        
+                     'HardwoodMerch', 'HardwoodFoliage', 'HardwoodOther', 'HardwoodCoarseRoots', 'HardwoodFineRoots']
     dom_pools = ['AboveGroundVeryFastSoil', 'BelowGroundVeryFastSoil', 'AboveGroundFastSoil', 'BelowGroundFastSoil',
                  'MediumSoil', 'AboveGroundSlowSoil', 'BelowGroundSlowSoil', 'SoftwoodStemSnag', 'SoftwoodBranchSnag',
                  'HardwoodStemSnag', 'HardwoodBranchSnag']
@@ -285,5 +286,7 @@ def run_cbm(sit_config, sit_tables, n_steps):
                                          'Biomass':pi[biomass_pools].sum(axis=1),
                                          'DOM':pi[dom_pools].sum(axis=1),
                                          'Total Ecosystem': pi[biomass_pools+dom_pools].sum(axis=1)})
-    annual_carbon_stocks.groupby('Year').sum().plot(figsize=(10, 10),xlim=(0, n_steps), ylim=(0, None))
+    if plot:
+        annual_carbon_stocks.groupby('Year').sum().plot(figsize=(10, 10),xlim=(0, n_steps), ylim=(0, None))
+    return cbm_output
     
