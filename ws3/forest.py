@@ -583,8 +583,8 @@ class Output:
         # filter dtypes, if starts with mask
         mask = None
         if not (t[0] == '@' or t[0] == '_' or t[0] in self.parent.actions):
-            mask = tuple(t[:self.parent.nthemes])
-            t = t[self.parent.nthemes:] # pop
+            mask = tuple(t[:self.parent.nthemes()])
+            t = t[self.parent.nthemes():] # pop
         #try:
         #print expression
         #self._dtype_keys = self.parent.unmask(mask) if mask else self.parent.dtypes.keys()
@@ -796,7 +796,10 @@ class ForestModel:
         #self.piece_size_factor = piece_size_factor
         #self.total_volume_yname = total_volume_yname
         self._problems = {}
+        #self.nthemes = 0
 
+    def nthemes(self):
+        return len(self._themes)
         
     def reset(self):
         self.reset_actions()
@@ -1054,7 +1057,7 @@ class ForestModel:
         pass
 
     def add_null_action(self, acode='null', minage=None, maxage=None):
-        mask = tuple(['?' for _ in range(self.nthemes)])
+        mask = tuple(['?' for _ in range(self.nthemes())])
         oe = '_age >= 0 and _age <= %i' % self.max_age
         target = [(mask, 1.0, None, None, None, None, None)]
         self.actions[acode] = Action(acode)
@@ -1601,7 +1604,7 @@ class ForestModel:
         return dt
     
     def _resolve_outputs_buffer(self, s, for_flag=None):
-        n = self.nthemes
+        n = self.nthemes()
         group = 'no_group' # outputs declared at top of file assigned to 'no_group'
         self.output_groups[group] = set()
         ocode = ''
@@ -1695,7 +1698,7 @@ class ForestModel:
 
     def add_theme(self, name, basecodes=[], aggs={}, description=''):
         self._themes.append({})
-        self.nthemes +- 1
+        #self.nthemes +- 1
         self._themes[-1]['__name__'] = name
         self._themes[-1]['__description__'] = description
         if basecodes: self._theme_basecodes.append([])
@@ -1733,7 +1736,7 @@ class ForestModel:
                 else: # line defines aggregate values (parse out multiple values before comment)
                     _tacs = [_tac.lower() for _tac in re.split('\s+', l.strip().partition(';')[0].strip())]
                     self._themes[ti][tac].extend(_tacs)
-        self.nthemes = len(self._themes)
+        #self.nthemes = len(self._themes)
 
     def theme_basecodes(self, theme_index):
         """
@@ -1747,7 +1750,7 @@ class ForestModel:
         """
         Imports AREAS section from a Forest model.
         """
-        n = self.nthemes
+        n = self.nthemes()
         model_path = self.model_path if not model_path else model_path
         model_name = self.model_name if not model_name else model_name
         with open('%s/%s.%s' % (model_path, model_name, filename_suffix)) as f:
@@ -1797,10 +1800,10 @@ class ForestModel:
         """
         if isinstance(mask, str): # Woodstock-style string mask format
             mask = tuple(re.sub('\s+', ' ', mask).lower().split(' '))
-            assert len(mask) == self.nthemes # must be bad mask if wrong theme count
+            assert len(mask) == self.nthemes() # must be bad mask if wrong theme count
         else:
             try:
-                assert isinstance(mask, tuple) and len(mask) == self.nthemes
+                assert isinstance(mask, tuple) and len(mask) == self.nthemes()
             except:
                 print(len(mask), type(mask), mask)
                 assert False
@@ -1831,8 +1834,6 @@ class ForestModel:
         ###################################################
         # local utility functions #########################
         def flush_ycomps(t, m, n, c):
-            #if verbose: print t, m, n, c
-            #self.ycomps.update(n)
             if t == 'a': # age-based ycomps
                 _c = lambda y: self.register_curve(core.Curve(y,
                                                               points=c[y],
@@ -1848,26 +1849,19 @@ class ForestModel:
                 ycomps = [(y, _c(y)) for y in n]
             else: # complex ycomps
                 ycomps = [(y, c[y]) for y in n]
-            #print ycomps
             self.yields.append((m, t, ycomps)) # stash for creating new dtypes at runtime...
             self.ynames.update(n)
-            #print(m, len(self.unmask(m)))
-            #if ycomps:
-            #    if ycomps[0][0] == 'vol':
-            #        print(ycomps[0][1].points())
             for k in self.unmask(m):
                 for yname, ycomp in ycomps:
                     self.dtypes[k].add_ycomp(t, yname, ycomp)
-            #print
         ###################################################
-        n = self.nthemes
+        n = self.nthemes()
         ytype = ''
-        mask = ('?',) * self.nthemes
+        mask = ('?',) * self.nthemes()
         ynames = []
         data = None
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             for lnum, l in enumerate(f):
-                #if lnum > 50: assert False
                 if re.match('^\s*(;|$)', l): continue # skip comments and blank lines
                 l = l.strip().partition(';')[0].strip() # strip leading whitespace and trailing comments
                 t = re.split('\s+', l)
@@ -1877,7 +1871,6 @@ class ForestModel:
                     ytype = self._ytypes[t[0]]
                     mask = tuple(_t.lower() for _t in t[1:])
                     mask = mask_func(mask) if mask_func else mask
-
                     if verbose: print(lnum, ' '.join(mask))
                     continue
                 if newyield:
@@ -1912,7 +1905,9 @@ class ForestModel:
                         if not common.is_num(t[0]): # first line of row-based yield component
                             yname = t[0].lower()
                             ynames.append(yname)
-                            data[yname] = [(i+int(t[1]), float(t[i+2])) for i in range(len(t)-2)]
+                            data[yname] = [((int(t[1])*self.period_length)+(i*self.period_length),
+                                             float(t[i+2])) 
+                                           for i in range(len(t)-2)]
                         else: # continuation of row-based yield compontent
                             x_last = data[yname][-1][0]
                             data[yname].extend([(i+x_last+1, float(t[i])) for i in range(len(t))])
@@ -1920,7 +1915,6 @@ class ForestModel:
                         yname = t[0].lower()
                         ynames.append(yname)
                         data[yname] = ' '.join(t[1:]) # complex yield (defer interpretation)
-                        #print yname, data[yname]
         flush_ycomps(ytype, mask, ynames, data)
 
                     
@@ -1930,7 +1924,7 @@ class ForestModel:
         """
         Imports ACTIONS section from a Forest model.
         """
-        nthemes = nthemes if nthemes else self.nthemes
+        nthemes = nthemes if nthemes else self.nthemes()
         actions = {}
         #oper = {}
         aggregates = {}
@@ -2027,7 +2021,7 @@ class ForestModel:
         """
         Imports TRANSITIONS section from a Forest model.
         """
-        nthemes = nthemes if nthemes else self.nthemes
+        nthemes = nthemes if nthemes else self.nthemes()
         # local utility function ####################################
         def flush_transitions(acode, sources):
             if not acode: return # nothing to flush on first loop
@@ -2133,7 +2127,7 @@ class ForestModel:
         """
         filename_prefix = self.model_name if filename_prefix is None else filename_prefix
         schedule = []
-        n = self.nthemes
+        n = self.nthemes()
         with open('%s/%s.%s' % (self.model_path, filename_prefix, filename_suffix)) as f:
             for lnum, l in enumerate(f):
                 if re.match('^\s*(;|$)', l): continue # skip comments and blank lines
@@ -2251,13 +2245,13 @@ class ForestModel:
                 data['classifier_id'].append(i+1)
                 data['name'].append(v)
                 data['description'].append(v) # not great descriptions, but no effect on CBM output
-        data['classifier_id'].append(self.nthemes+1)
+        data['classifier_id'].append(self.nthemes()+1)
         data['name'].append('_CLASSIFIER')
         data['description'].append('species') 
-        data['classifier_id'].append(self.nthemes+1)
+        data['classifier_id'].append(self.nthemes()+1)
         data['name'].append('softwood')
         data['description'].append('softwood') 
-        data['classifier_id'].append(self.nthemes+1)
+        data['classifier_id'].append(self.nthemes()+1)
         data['name'].append('hardwood')
         data['description'].append('hardwood')
         result = pd.DataFrame(data)
