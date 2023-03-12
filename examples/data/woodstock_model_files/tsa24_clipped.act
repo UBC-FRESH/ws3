@@ -1,4 +1,5 @@
+
 ACTIONS
 *ACTION harvest 0
 *OPERABLE harvest
-? 1 ? ? ? _AGE >= 40 AND _AGE <= 999
+? ? ? ? ? _AGE >= 80 AND _AGE <= 999
