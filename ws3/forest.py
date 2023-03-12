@@ -1507,9 +1507,6 @@ class ForestModel:
             ###########################################################################
             _dt = self.create_dtype_fromkey(dtk) if dtk not in self.dtypes else self.dtypes[dtk]
             targetage = self.resolve_targetage(dtk, tyield, age, tage, acode)
-            if foo:
-                print('creating new dt from', acode, age, [' '.join(dt.key)])
-                print(' new dt', [' '.join(dtk)], period, targetage, area, tprop, area*tprop)
             _dt.area(period, targetage, area*tprop)
             target_dt.append([dtk, tprop, targetage])
         aa = self.applied_actions[period][acode]
