@@ -40,6 +40,8 @@ from itertools import chain
 from functools import reduce
 _cfi = chain.from_iterable
 from collections import defaultdict as dd
+import pandas as pd
+
 
 try:
     from ws3 import common
@@ -50,6 +52,8 @@ except: # "__main__" case
     from ws3 import core
     from ws3 import opt
 from ws3.common import timed
+
+from pdb import set_trace
     
 #_mad = common.MAX_AGE_DEFAULT
 
@@ -159,7 +163,7 @@ class DevelopmentType:
         self._areas = {p:dd(float) for p in range(0, self.parent.horizon+1)}
         #######################################################################
         self.oper_expr = dd(list)
-        self.operability = {}
+        self.operability = {}        
 
     def operable_ages(self, acode, period):
         """
@@ -579,8 +583,8 @@ class Output:
         # filter dtypes, if starts with mask
         mask = None
         if not (t[0] == '@' or t[0] == '_' or t[0] in self.parent.actions):
-            mask = tuple(t[:self.parent.nthemes])
-            t = t[self.parent.nthemes:] # pop
+            mask = tuple(t[:self.parent.nthemes()])
+            t = t[self.parent.nthemes():] # pop
         #try:
         #print expression
         #self._dtype_keys = self.parent.unmask(mask) if mask else self.parent.dtypes.keys()
@@ -701,13 +705,24 @@ class ForestModel:
     """
     This is the core class of the ws3 package.
     Includes methods import data from various sources, simulate growth and apply actions.
-    The model can be used in either a (prescriptive) simulation-based approach or a (descriptive) optimization-based approach.
+    The model can be used in either a (prescriptive) simulation-based approach or a (descriptive) 
+    optimization-based approach.
 
-    This class encapsulates all the information used to simulate scenarios from a given dataset (i.e., stratified intial inventory, growth and yield functions, action eligibility, transition matrix, action schedule, etc.), as well as a large collection of functions to import and export data, generate activity schedules, and simulate application of these schedules  (i.e., run scenarios).
+    This class encapsulates all the information used to simulate scenarios from a given dataset (i.e., 
+    stratified intial inventory, growth and yield functions, action eligibility, transition matrix, action 
+    schedule, etc.), as well as a large collection of functions to import and export data, generate activity 
+    schedules, and simulate application of these schedules  (i.e., run scenarios).
 
-    At the heart of the ``ForestModel`` class is a list of ``DevelopentType`` instances. Each ``DevelopmentType`` instance encapsulates information about one development type (i.e., a forest stratum, which is an aggregate of smaller *stands* that make up the raw forest inventory input data). The ``DevelopmentType`` class also stores a list of operable *actions*, maps *state variable transitions* to these actions, stores growth and yield functions, and knows how to *grow itself* when time is incremented during a simulation.
+    At the heart of the ``ForestModel`` class is a list of ``DevelopentType`` instances. Each ``DevelopmentType``
+    instance encapsulates information about one development type (i.e., a forest stratum, which is an aggregate of 
+    smaller *stands* that make up the raw forest inventory input data). The ``DevelopmentType`` class also 
+    stores a list of operable *actions*, maps *state variable transitions* to these actions, stores growth and 
+    yield functions, and knows how to *grow itself* when time is incremented during a simulation.
 
-    A typical use case starts with creating an instance of the ``ForestModel`` class. Then, we need to load data into this instance, define one or more scenarios (using a mix of heuristic and optimization approaches), run the scenarios, and export output data to a format suitable for analysis (or link to the next model in a larger modelling pipeline).  
+    A typical use case starts with creating an instance of the ``ForestModel`` class. Then, we need to load data 
+    into this instance, define one or more scenarios (using a mix of heuristic and optimization approaches), 
+    run the scenarios, and export output data to a format suitable for analysis (or link to the next model in 
+    a larger modelling pipeline).  
     """
     _ytypes = {'*Y':'a', '*YT':'t', '*YC':'c'}
     tree = (lambda f: f(f))(lambda a: (lambda: dd(a(a))))
@@ -781,7 +796,10 @@ class ForestModel:
         #self.piece_size_factor = piece_size_factor
         #self.total_volume_yname = total_volume_yname
         self._problems = {}
+        #self.nthemes = 0
 
+    def nthemes(self):
+        return len(self._themes)
         
     def reset(self):
         self.reset_actions()
@@ -827,7 +845,7 @@ class ForestModel:
     def _cmp_sch_m2(self, problem):
         pass
 
-    def add_problem(self, name, coeff_funcs, cflw_e, cgen_data=None,
+    def add_problem(self, name, coeff_funcs, cflw_e=None, cgen_data=None,
                     solver=opt.SOLVR_GUROBI, formulation=1, z_coeff_key='z', acodes=None,
                     sense=opt.SENSE_MAXIMIZE, mask=None):
         """
@@ -921,8 +939,6 @@ class ForestModel:
                 except Exception as e:
                     print('error processing tree', i)
                     print(e)
-                    import pdb
-                    pdb.set_trace()
                     assert False
         return p
             
@@ -957,7 +973,7 @@ class ForestModel:
         """
         Compiles flow constraints (lb and ub, per targeted output, per targeted period).
         """
-        import pdb
+        if not cflw_e: return
         mu = {t:{o:{} for o in list(cflw_e.keys())} for t in self.periods}
         for i, tree in list(problem.trees.items()):
             for path in tree.paths():
@@ -968,7 +984,6 @@ class ForestModel:
                         mu[t][o][i, j] = _mu[t] if t in _mu else 0.
         for t in self.periods:
             for o, e in list(cflw_e.items()):
-                #pdb.set_trace()
                 if t in e[0]:
                     mu_lb = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 - e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
                     mu_ub = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 + e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
@@ -997,7 +1012,6 @@ class ForestModel:
                                                                    recourse_enabled=False)
                 if errorcode:
                     print('apply_action error', dtk, acode, period, age, area, errorcode, missingarea, tstate)
-                    #raise
                 _dtk, tprop, _age = tstate[0]
                 
                 assert tprop == 1. # cannot handle 'split' case yet...
@@ -1038,7 +1052,7 @@ class ForestModel:
         pass
 
     def add_null_action(self, acode='null', minage=None, maxage=None):
-        mask = tuple(['?' for _ in range(self.nthemes)])
+        mask = tuple(['?' for _ in range(self.nthemes())])
         oe = '_age >= 0 and _age <= %i' % self.max_age
         target = [(mask, 1.0, None, None, None, None, None)]
         self.actions[acode] = Action(acode)
@@ -1046,8 +1060,9 @@ class ForestModel:
         self.transitions[acode] = {mask:{'':target}}
         for dtk in self.dtypes:
             self.dtypes[dtk].oper_expr[acode] = [oe]
-            for age in range(self.dtypes[dtk]._max_age):
-                self.dtypes[dtk].transitions[acode, age] = target
+            self.dtypes[dtk].transitions[acode, -1] = target
+            #for age in range(self.dtypes[dtk]._max_age):
+            #    self.dtypes[dtk].transitions[acode, age] = target
         for p in self.applied_actions:
             self.applied_actions[p][acode] = {}
     
@@ -1437,7 +1452,7 @@ class ForestModel:
             print(dt.operability[acode][period])
             #assert False # dt.is_operable(acode, period, age)
             return 4, None, None
-        if (acode, age) not in dt.transitions: # sanity check...
+        if not any((acode, __age) in dt.transitions for __age in (age, -1)): # sanity check...
             print('transitions not defined...')
             print(' ', [' '.join(dtype_key)], acode, period, age, area)
             print(dt.oper_expr)
@@ -1461,7 +1476,7 @@ class ForestModel:
             if fuzzy_age and missing_area:
                 for age_delta in [+1, -1, +2, -2]:
                     _age = age + age_delta
-                    if dt.area(period, _age) > 0 and (acode, _age) in dt.transitions:
+                    if dt.area(period, _age) > 0 and any((acode, __age) in dt.transitions for __age in (_age, -1)):
                         _area = min(missing_area, dt.area(period, _age))
                         self.apply_action(dtype_key, acode, period, _age, _area,
                                           False, False, False, None, True)
@@ -1479,42 +1494,29 @@ class ForestModel:
         ###########################################################################
         dt.area(period, age, -area)
         target_dt = []
-        for target in dt.transitions[acode, age]:
+        __age = age if (acode, age) in dt.transitions else -1
+        for target in dt.transitions[acode, __age]:
             tmask, tprop, tyield, tage, tlock, treplace, tappend = target # unpack tuple
-            #print tmask
             dtk = list(dtype_key) # start with source key
             ###########################################################################
             # DO TO: Confirm correct order for evaluating mask, _APPEND and _REPLACE...
             dtk = [t if tmask[i] == '?' else tmask[i] for i, t in enumerate(dtk)] 
-            if treplace: dtk[treplace[0]] = resolve_replace(dtk, treplace[1])
-            if tappend: dtk[tappend[0]] = resolve_append(dtk, tappend[1])
+            if treplace: dtk[treplace[0]] = self.resolve_replace(dtk, treplace[1])
+            if tappend: dtk[tappend[0]] = self.resolve_append(dtk, tappend[1])
             dtk = tuple(dtk)
             ###########################################################################
-            foo = False
-            #if acode in ['aca', 'acp']: foo = True 
-            #print ' target mask', dtk
             _dt = self.create_dtype_fromkey(dtk) if dtk not in self.dtypes else self.dtypes[dtk]
-            #print dtk, tyield, tage, acode
             targetage = self.resolve_targetage(dtk, tyield, age, tage, acode)
-            if foo:
-                print('creating new dt from', acode, age, [' '.join(dt.key)])
-                print(' new dt', [' '.join(dtk)], period, targetage, area, tprop, area*tprop)
             _dt.area(period, targetage, area*tprop)
             target_dt.append([dtk, tprop, targetage])
         aa = self.applied_actions[period][acode]
         if dtype_key not in aa: aa[dtype_key] = {}
         if age not in aa[dtype_key]: aa[dtype_key][age] = [0., {}]
         aa[dtype_key][age][0] += area
-        #if action.partial: # debug only
-        #    print 'action.partial', acode, ' '.join(dtype_key) # action.partial
-        #    target_dt = [self.dtypes[dtk] for dtk in target_dtk] # avoid multiple lookups in loop
         for yname in dt.ycomps():
-            #print 'compiling', period, dt.key, age, yname
             ycomp = dt.ycomp(yname)
-            #print 'ycomp.type: "%s"' % ycomp.type
             if ycomp.type == 't' and not compile_t_ycomps: continue # skip time-indexed ycomps
             if ycomp.type == 'c' and not compile_c_ycomps: continue # skip complex ycomps
-            #print('foo', dt.key, yname, age, ycomp[age])
             if yname in action.partial:
                 value = 0.
                 for dtk, tprop, targetage in target_dt:
@@ -1535,13 +1537,12 @@ class ForestModel:
                                 print(' ', ''.join(dtk), targetage)
                                 print()
             else: # not partial
-                #print 'bar'
                 value = dt.ycomp(yname)[age]
-            #print 'value', value
             if value != 0.:
                 aa[dtype_key][age][1][yname] = value
         return 0, missing_area, target_dt
 
+    
     def sylv_cred_formula(self, treatment_type, cover_type):
         if treatment_type == 'ec':
             return 1 if cover_type.lower() in ['r', 'm'] else 2
@@ -1570,7 +1571,6 @@ class ForestModel:
             for mask in self.oper_expr[acode]:
                 if self.match_mask(mask, key):
                     dt.oper_expr[acode].append(self.oper_expr[acode][mask]) 
-            #print 'building transitions for acode', acode, ' '.join(key)
             for mask in self.transitions[acode]:
                 if self.match_mask(mask, key):
                     for scond in self.transitions[acode][mask]:
@@ -1581,7 +1581,7 @@ class ForestModel:
         return dt
     
     def _resolve_outputs_buffer(self, s, for_flag=None):
-        n = self.nthemes
+        n = self.nthemes()
         group = 'no_group' # outputs declared at top of file assigned to 'no_group'
         self.output_groups[group] = set()
         ocode = ''
@@ -1673,11 +1673,13 @@ class ForestModel:
             s = f.read()
         self._resolve_outputs_buffer(s)
 
-    def add_theme(self, name, basecodes=[], aggs={}):
+    def add_theme(self, name, basecodes=[], aggs={}, description=''):
         self._themes.append({})
+        #self.nthemes +- 1
+        self._themes[-1]['__name__'] = name
+        self._themes[-1]['__description__'] = description
         if basecodes: self._theme_basecodes.append([])
         for c in basecodes:
-            #print name, c, type(c)
             self._themes[-1][c] = c
             self._theme_basecodes[-1].append(c)
         for c in aggs:            
@@ -1694,6 +1696,8 @@ class ForestModel:
         t_data = re.split(r'\*THEME.*\n', _data)[1:] # split into theme-wise chunks
         for ti, t in enumerate(t_data, start=ti_offset):
             self._themes.append({})
+            self._themes[-1]['__name__'] = 'theme%i' % ti
+            self._themes[-1]['__description__'] = '' # TO DO: extract comments in theme declaration
             self._theme_basecodes.append([])
             defining_aggregates = False
             for l in [l for l in t.split('\n') if not re.match('^\s*(;|{|$)', l)]: 
@@ -1709,7 +1713,7 @@ class ForestModel:
                 else: # line defines aggregate values (parse out multiple values before comment)
                     _tacs = [_tac.lower() for _tac in re.split('\s+', l.strip().partition(';')[0].strip())]
                     self._themes[ti][tac].extend(_tacs)
-        self.nthemes = len(self._themes)
+        #self.nthemes = len(self._themes)
 
     def theme_basecodes(self, theme_index):
         """
@@ -1723,7 +1727,7 @@ class ForestModel:
         """
         Imports AREAS section from a Forest model.
         """
-        n = self.nthemes
+        n = self.nthemes()
         model_path = self.model_path if not model_path else model_path
         model_name = self.model_name if not model_name else model_name
         with open('%s/%s.%s' % (model_path, model_name, filename_suffix)) as f:
@@ -1773,10 +1777,10 @@ class ForestModel:
         """
         if isinstance(mask, str): # Woodstock-style string mask format
             mask = tuple(re.sub('\s+', ' ', mask).lower().split(' '))
-            assert len(mask) == self.nthemes # must be bad mask if wrong theme count
+            assert len(mask) == self.nthemes() # must be bad mask if wrong theme count
         else:
             try:
-                assert isinstance(mask, tuple) and len(mask) == self.nthemes
+                assert isinstance(mask, tuple) and len(mask) == self.nthemes()
             except:
                 print(len(mask), type(mask), mask)
                 assert False
@@ -1807,8 +1811,6 @@ class ForestModel:
         ###################################################
         # local utility functions #########################
         def flush_ycomps(t, m, n, c):
-            #if verbose: print t, m, n, c
-            #self.ycomps.update(n)
             if t == 'a': # age-based ycomps
                 _c = lambda y: self.register_curve(core.Curve(y,
                                                               points=c[y],
@@ -1824,26 +1826,19 @@ class ForestModel:
                 ycomps = [(y, _c(y)) for y in n]
             else: # complex ycomps
                 ycomps = [(y, c[y]) for y in n]
-            #print ycomps
             self.yields.append((m, t, ycomps)) # stash for creating new dtypes at runtime...
             self.ynames.update(n)
-            #print(m, len(self.unmask(m)))
-            #if ycomps:
-            #    if ycomps[0][0] == 'vol':
-            #        print(ycomps[0][1].points())
             for k in self.unmask(m):
                 for yname, ycomp in ycomps:
                     self.dtypes[k].add_ycomp(t, yname, ycomp)
-            #print
         ###################################################
-        n = self.nthemes
+        n = self.nthemes()
         ytype = ''
-        mask = ('?',) * self.nthemes
+        mask = ('?',) * self.nthemes()
         ynames = []
         data = None
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             for lnum, l in enumerate(f):
-                #if lnum > 50: assert False
                 if re.match('^\s*(;|$)', l): continue # skip comments and blank lines
                 l = l.strip().partition(';')[0].strip() # strip leading whitespace and trailing comments
                 t = re.split('\s+', l)
@@ -1853,7 +1848,6 @@ class ForestModel:
                     ytype = self._ytypes[t[0]]
                     mask = tuple(_t.lower() for _t in t[1:])
                     mask = mask_func(mask) if mask_func else mask
-
                     if verbose: print(lnum, ' '.join(mask))
                     continue
                 if newyield:
@@ -1888,7 +1882,9 @@ class ForestModel:
                         if not common.is_num(t[0]): # first line of row-based yield component
                             yname = t[0].lower()
                             ynames.append(yname)
-                            data[yname] = [(i+int(t[1]), float(t[i+2])) for i in range(len(t)-2)]
+                            data[yname] = [((int(t[1])*self.period_length)+(i*self.period_length),
+                                             float(t[i+2])) 
+                                           for i in range(len(t)-2)]
                         else: # continuation of row-based yield compontent
                             x_last = data[yname][-1][0]
                             data[yname].extend([(i+x_last+1, float(t[i])) for i in range(len(t))])
@@ -1896,7 +1892,6 @@ class ForestModel:
                         yname = t[0].lower()
                         ynames.append(yname)
                         data[yname] = ' '.join(t[1:]) # complex yield (defer interpretation)
-                        #print yname, data[yname]
         flush_ycomps(ytype, mask, ynames, data)
 
                     
@@ -1906,7 +1901,7 @@ class ForestModel:
         """
         Imports ACTIONS section from a Forest model.
         """
-        nthemes = nthemes if nthemes else self.nthemes
+        nthemes = nthemes if nthemes else self.nthemes()
         actions = {}
         #oper = {}
         aggregates = {}
@@ -1984,7 +1979,8 @@ class ForestModel:
         Returns list of ages.
         """
         if not condition:
-            return self.ages
+            #return self.ages
+            return [-1]
         elif condition.startswith('@AGE'):
             lo, hi = [int(a) for a in condition[5:-1].split('..')]
             return list(range(lo, hi+1))
@@ -2002,7 +1998,7 @@ class ForestModel:
         """
         Imports TRANSITIONS section from a Forest model.
         """
-        nthemes = nthemes if nthemes else self.nthemes
+        nthemes = nthemes if nthemes else self.nthemes()
         # local utility function ####################################
         def flush_transitions(acode, sources):
             if not acode: return # nothing to flush on first loop
@@ -2108,7 +2104,7 @@ class ForestModel:
         """
         filename_prefix = self.model_name if filename_prefix is None else filename_prefix
         schedule = []
-        n = self.nthemes
+        n = self.nthemes()
         with open('%s/%s.%s' % (self.model_path, filename_prefix, filename_suffix)) as f:
             for lnum, l in enumerate(f):
                 if re.match('^\s*(;|$)', l): continue # skip comments and blank lines
@@ -2170,9 +2166,7 @@ class ForestModel:
                 if period > max_period: return
                 if force_integral_area:
                     area = round(area+rounding_bias)
-                    #area = math.floor(area)
                     if not area: continue
-                    #print area, area % 1. 
                     assert not area % 1.
                 e, _aa, _ = self.apply_action(dtype_key,
                                               acode,
@@ -2214,7 +2208,348 @@ class ForestModel:
         Simulates growth (default startint at period 1 and cascading to the end of the planning horizon).
         """
         for dt in list(self.dtypes.values()): dt.grow(start_period, cascade)
+    
+    def _cbm_sit_classifiers(self):
+        """
+        Compile sit_classifiers dataframe.
+        """
+        data = {'classifier_id':[], 'name':[], 'description':[]}
+        for i, theme in enumerate(self._themes):
+            data['classifier_id'].append(i+1)
+            data['name'].append('_CLASSIFIER')
+            data['description'].append(theme['__name__'])
+            for v in self.theme_basecodes(i):
+                data['classifier_id'].append(i+1)
+                data['name'].append(v)
+                data['description'].append(v) # not great descriptions, but no effect on CBM output
+        data['classifier_id'].append(self.nthemes()+1)
+        data['name'].append('_CLASSIFIER')
+        data['description'].append('species') 
+        data['classifier_id'].append(self.nthemes()+1)
+        data['name'].append('softwood')
+        data['description'].append('softwood') 
+        data['classifier_id'].append(self.nthemes()+1)
+        data['name'].append('hardwood')
+        data['description'].append('hardwood')
+        result = pd.DataFrame(data)
+        return result
+    
+    def _cbm_sit_disturbance_types(self):
+        """
+        Compile sit_disturbance_types dataframe.
+        """
+        acodes = [acode for acode in self.actions.keys() if acode != 'null'] + ['fire']
+        data = {'id':acodes, 'name':acodes}
+        result = pd.DataFrame(data)
+        return result
+    
+    def _cbm_sit_age_classes(self):
+        """
+        Compile sit_age_classes dataframe.
+        """
+        data = {'name':['age_0'],
+                'class_size':[0],
+                'start_year':[0],
+                'end_year':[0]}
+        for i, ac in enumerate(range(self.period_length, 
+                                     self.max_age+self.period_length, 
+                                     self.period_length)):
+            data['name'].append('age_%i' % (i+1))
+            data['class_size'].append(self.period_length)
+            data['start_year'].append(ac - self.period_length + 1)
+            data['end_year'].append(ac)
+        result = pd.DataFrame(data)
+        return result
+    
+    def _cbm_sit_inventory(self, softwood_volume_yname, hardwood_volume_yname, default_last_pass_disturbance='fire'):
+        """
+        Compile sit_inventory dataframe.
+        """
+        def leading_species(r):
+            """
+            Determine if softwood or hardwood leading species by comparing softwood and hardwood
+            volume at peak MAI age.
+            """
+            dt = self.dtypes[tuple(r.tolist())]
+            svol_curve, hvol_curve = dt.ycomp(softwood_volume_yname), dt.ycomp(hardwood_volume_yname)
+            tvol_curve = svol_curve + hvol_curve
+            x_cmai = tvol_curve.mai().ytp().lookup(0)
+            return 'softwood' if svol_curve[x_cmai] > hvol_curve[x_cmai] else 'hardwood'
+        def landclass(r):
+            """
+            The landclass column values should contain an integer in the range [0, 22], which CBM 
+            maps to one of 23 UNFCCC land classes (see Table 3-1 in the the CBM-CFS3 user guide. 
+            Use the value of the 'landclass' attribute of the corresponding development type (if defined), 
+            otherwise default to 0 ('forest land remaining forest land').
+            """
+            dt = self.dtypes[tuple(r.tolist())]
+            if hasattr(dt, 'landclass'):
+                return dt.landclass
+            else:
+                return '0'            
+        def last_pass_disturbance(r):
+            """
+            We use the value of the 'last_pass_disturbance' attribute of the corresponding development 
+            type (if defined), otherwise default to default_last_pass_disturbance.
 
+            """
+            dt = self.dtypes[tuple(r.tolist())]
+            if hasattr(dt, 'last_pass_disturbance'):
+                return dt.last_pass_disturbance
+            else:
+                return default_last_pass_disturbance
+        theme_cols = [theme['__name__'] for theme in self._themes]
+        other_cols = ['species',
+                      'using_age_class', 
+                      'age', 
+                      'area', 
+                      'delay', 
+                      'landclass', 
+                      'historic_disturbance', 
+                      'last_pass_disturbance']
+
+        data = {**{c:[] for c in theme_cols}, **{c:[] for c in ['age', 'area']}}
+        for dtype_key in self.dtypes:
+            dt = self.dtypes[dtype_key]
+            if not dt._areas[0]: continue # developement type not in initial inventory
+            for age, area in dt._areas[0].items():
+                for i, c in enumerate(theme_cols): data[c].append(dtype_key[i])
+                data['age'].append(age)
+                data['area'].append(area)
+        result = pd.DataFrame(data)
+        age_series, area_series = result['age'], result['area']
+        result.drop(['age', 'area'], axis=1, inplace=True) # wrong column order                    
+        result['species'] = result[theme_cols].apply(leading_species, axis=1)
+        result['using_age_class'] = 'FALSE'
+        result['age'] = age_series
+        result['area'] = area_series
+        result['delay'] = 0
+        result['landclass'] = result[theme_cols].apply(landclass, axis=1)
+        result['historic_disturbance'] = 'fire'
+        result['last_pass_disturbance'] = result[theme_cols].apply(last_pass_disturbance, axis=1)
+        return result
+    
+    def _cbm_sit_yield(self, softwood_volume_yname, hardwood_volume_yname, n_yield_vals):
+        """
+        Compile sit_yields dataframe.
+        
+        This is where the ws3 and CBM data models diverge and things get a bit messy.
+        The hack: 
+            Define a bogus Model I optimization problem in ws3.
+            A side effect of generating the Model I problem matrix is to dynamically create 
+            all possible DevelopmentType cases and add them to the ForestModel. 
+            Then we can can use ForestModel.unmask to get at least one valid
+            DevelopmentType instance for each yield mask in ForestModel.yields
+            (there could be multiple, but just grap the first one in the list).
+            From there, use the same species-grokking logic we used to compile
+            the species column in sit_inventory. Ugly, but should work
+            as long as ForestModel.yields includes full-wildcard softwood and 
+            hardwood complex yield curves defined with the _SUM(...) function (because
+            this way all DevelopmentType instances, initially present or dynamically
+            created, will automatically have softwood and hardwood yield curves defined).
+            The bogus Model I problem can just use a bogus z coefficient 
+            function (that alwasy returns 0) and no flow or general constraints.
+            Maybe there is a better way?
+        """
+        def leading_species(dt):
+            """
+            Determine if softwood or hardwood leading species by comparing softwood and hardwood
+            volume at peak MAI age.
+            """
+            svol_curve, hvol_curve = dt.ycomp(softwood_volume_yname), dt.ycomp(hardwood_volume_yname)
+            tvol_curve = svol_curve + hvol_curve
+            x_cmai = tvol_curve.mai().ytp().lookup(0)
+            return 'softwood' if svol_curve[x_cmai] > hvol_curve[x_cmai] else 'hardwood'
+        schedule = self.compile_schedule()
+        p = self.add_problem('__cbm_sit_bogus', {'z':(lambda forestmodel, path: 0.)})
+        theme_cols = [theme['__name__'] for theme in self._themes]
+        data = {**{c:[] for c in theme_cols}, 
+                'species':[], 'leading_species':[],        
+                **{'v%i' % i:[] for i in range(n_yield_vals + 1)}}
+        for dtype_key in self.dtypes:
+            dt = self.dt(dtype_key)
+            dt.leading_species = leading_species(dt)
+            for species, yname in zip(('softwood', 'hardwood'), (softwood_volume_yname, hardwood_volume_yname)):
+                for i, c in enumerate(theme_cols): data[c].append(dtype_key[i])
+                data['species'].append(species)
+                data['leading_species'].append(dt.leading_species)
+                for i in range(n_yield_vals + 1): data['v%i' % i].append(dt.ycomp(yname)[i * self.period_length])
+        result = pd.DataFrame(data)
+        self.apply_schedule(schedule) # running add_problem above broke the schedule so restore from backup we stashed
+        return result
+
+    def _cbm_sit_events(self):
+        theme_cols = [theme['__name__'] for theme in self._themes]
+        columns = theme_cols.copy()
+        columns += ['species',
+                    'using_age_class',
+                    'min_softwood_age',
+                    'max_softwood_age',
+                    'min_hardwood_age',
+                    'max_hardwood_age',
+                    'MinYearsSinceDist',
+                    'MaxYearsSinceDist',
+                    'LastDistTypeID',
+                    'MinTotBiomassC',
+                    'MaxTotBiomassC',
+                    'MinSWMerchBiomassC',
+                    'MaxSWMerchBiomassC',
+                    'MinHWMerchBiomassC',
+                    'MaxHWMerchBiomassC',
+                    'MinTotalStemSnagC',
+                    'MaxTotalStemSnagC',	
+                    'MinSWStemSnagC',
+                    'MaxSWStemSnagC',
+                    'MinHWStemSnagC',
+                    'MaxHWStemSnagC',
+                    'MinTotalStemSnagMerchC',
+                    'MaxTotalStemSnagMerchC',
+                    'MinSWMerchStemSnagC',
+                    'MaxSWMerchStemSnagC',
+                    'MinHWMerchStemSnagC',
+                    'MaxHWMerchStemSnagC',
+                    'efficiency',
+                    'sort_type',
+                    'target_type',
+                    'target',
+                    'disturbance_type',
+                    'disturbance_year']
+        data = {c:[] for c in columns}
+        for dtype_key, age, area, acode, period, _ in self.compile_schedule():
+            #set_trace()
+            for i, c in enumerate(theme_cols): data[c].append(dtype_key[i])
+            data['species'].append(self.dt(dtype_key).leading_species)
+            data['using_age_class'].append('FALSE')
+            #############################################################################
+            # might need to be more flexible with age range, to avoid OBO bugs and such?
+            data['min_softwood_age'].append(-1)
+            data['max_softwood_age'].append(-1)
+            data['min_hardwood_age'].append(-1)
+            data['max_hardwood_age'].append(-1)
+            # data['min_softwood_age'].append(age)
+            # data['max_softwood_age'].append(age)
+            # data['min_hardwood_age'].append(age)
+            # data['max_hardwood_age'].append(age)
+            #############################################################################
+            for c in columns[11:-6]: data[c].append(-1)
+            data['efficiency'].append(1)
+            data['sort_type'].append(3) # oldest first (see Table 3-3 in the CBM-CFS3 user guide)
+            data['target_type'].append('A') # area target
+            data['target'].append(area)
+            data['disturbance_type'].append(acode)
+            data['disturbance_year'].append(period*self.period_length)
+        result = pd.DataFrame(data)         
+        return result
+    
+    def _cbm_sit_transitions(self, null_acode='null'):
+        def resolve_target(dtype_key, target, sage):
+            tmask, tprop, tyield, tage, tlock, treplace, tappend = target # unpack tuple
+            dtk = list(dtype_key) # start with source key
+            dtk = [t if tmask[i] == '?' else tmask[i] for i, t in enumerate(dtk)] 
+            if treplace: dtk[treplace[0]] = self.resolve_replace(dtk, treplace[1])
+            if tappend: dtk[tappend[0]] = self.resolve_append(dtk, tappend[1])
+            dtk = tuple(dtk)
+            targetage = self.resolve_targetage(dtk, tyield, sage, tage, acode)
+            return dtk, targetage
+        theme_cols = colunmns = [theme['__name__'] for theme in self._themes]
+        columns = theme_cols.copy()
+        columns += ['species',
+                    'using_age_class',
+                    'min_softwood_age',
+                    'max_softwood_age',
+                    'min_hardwood_age',
+                    'max_hardwood_age',
+                    'disturbance_type']
+        columns += ['to_%s' % c for c in theme_cols]
+        columns += ['to_species',
+                    'regen_delay',
+                    'reset_age',
+                    'percent']
+        data = {c:[] for c in columns}
+        for dtype_key in self.dtypes:
+            dt = self.dt(dtype_key)
+            for acode, sage in dt.transitions:
+                if acode == null_acode: continue
+                for target in dt.transitions[acode, sage]:
+                    #tmask, tprop, tyield, tage, tlock, treplace, tappend = target
+                    for i, c in enumerate(theme_cols): data[c].append(dtype_key[i])
+                    data['species'].append(dt.leading_species)
+                    data['using_age_class'].append('FALSE')
+                    data['min_softwood_age'].append(sage)
+                    data['max_softwood_age'].append(sage)
+                    data['min_hardwood_age'].append(sage)
+                    data['max_hardwood_age'].append(sage)
+                    data['disturbance_type'].append(acode)
+                    to_dtype_key, to_age = resolve_target(dtype_key, target, sage)
+                    for i in range(5): data['to_theme%i' % i].append(to_dtype_key[i])
+                    data['to_species'].append(self.dt(to_dtype_key).leading_species)
+                    data['regen_delay'].append(0)
+                    data['reset_age'].append(to_age)
+                    data['percent'].append(int(target[1] * 100))
+        result = pd.DataFrame(data)
+        return result
+
+        for acode in fm.transitions:
+            if acode == null_acode: continue
+            for smask in self.transitions[acode]:
+                tmask, tprop, _, _, _, _, _ = self.transitions[acode][smask][''][0]
+                for i, c in enumerate(theme_cols): data[c].append(smask[i])
+                data['species'].append('softwood' if au_table1.loc[int(smask[2])].canfi_species < 1200 else 'hardwood')
+                data['using_age_class'].append('FALSE')
+                data['min_softwood_age'].append(1)
+                data['max_softwood_age'].append(999)
+                data['min_hardwood_age'].append(1)
+                data['max_hardwood_age'].append(999)
+                data['disturbance_type'].append('harvest')
+                for i in range(5): data['to_theme%i' % i].append(tmask[i])
+                data['to_%s' % species_classifier_colname].append('softwood' if au_table2.loc[int(tmask[4])].canfi_species < 1200 else 'hardwood')
+                data['regen_delay'].append(0)
+                data['reset_age'].append(0)
+                data['percent'].append(100)
+        result = pd.DataFrame(data)
+        return result
+        
+    def to_cbm_sit(self, softwood_volume_yname, hardwood_volume_yname, admin_boundary, eco_boundary, 
+                   disturbance_type_mapping, 
+                   export_csv=False, sit_data_path='', default_last_pass_disturbance='fire', n_yield_vals=100):
+        """
+        Exports model data in a CBM standard import tool (SIT) data exchange format.
+        Returns sit_config (JSON-like dict namespace) and sit_tables (dict of pandas.DataFrame objects).
+        """
+        sit_config = {
+                        'mapping_config': {
+                            'nonforest': None,
+                            'species': {
+                                'species_classifier': 'species',
+                                'species_mapping': [
+                                    {'user_species': 'softwood', 'default_species': 'Softwood forest type'},
+                                    {'user_species': 'hardwood', 'default_species': 'Hardwood forest type'}
+                                ]
+                            },
+                            'spatial_units': {
+                                'mapping_mode': 'SingleDefaultSpatialUnit',
+                                'admin_boundary': admin_boundary,
+                                'eco_boundary': eco_boundary},
+                            'disturbance_types': {
+                                'disturbance_type_mapping': disturbance_type_mapping
+                            }
+                        }
+                    }
+        sit_tables = {'sit_classifiers':self._cbm_sit_classifiers(),
+                      'sit_disturbance_types':self._cbm_sit_disturbance_types(),
+                      'sit_age_classes':self._cbm_sit_age_classes(),
+                      'sit_inventory':self._cbm_sit_inventory(softwood_volume_yname='swdvol', 
+                                                              hardwood_volume_yname='hwdvol'),
+                      'sit_yield':self._cbm_sit_yield(softwood_volume_yname='swdvol', 
+                                                      hardwood_volume_yname='hwdvol', n_yield_vals=100),
+                      'sit_events':self._cbm_sit_events(),
+                      'sit_transitions':self._cbm_sit_transitions()}
+        return sit_config, sit_tables
+
+                      
+        
+                
+        
         
 if __name__ == '__main__':
     pass

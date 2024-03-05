@@ -3,11 +3,14 @@
 # in example notebooks to help reduce clutter.
 ##################################################################################
 
+import pandas as pd
+import matplotlib.pyplot as plt
+
 ##########################################################
 # Implement a priority queue heuristic harvest scheduler
 ##########################################################
 
-def schedule_harvest_areacontrol(fm, period=1, acode='harvest', util=0.85, 
+def schedule_harvest_areacontrol(fm, period=None, acode='harvest', util=0.85, 
                                  target_masks=None, target_areas=None,
                                  target_scalefactors=None,
                                  mask_area_thresh=0.,
@@ -39,10 +42,12 @@ def schedule_harvest_areacontrol(fm, period=1, acode='harvest', util=0.85,
             asf = 1. if not target_scalefactors else target_scalefactors[i]  
             ta = (1/r) * fm.period_length * masked_area * asf
             target_areas.append(ta)
-    for mask, target_area in zip(target_masks, target_areas):
-        if verbose > 0:
-            print('calling areaselector', period, acode, target_area, mask)
-        fm.areaselector.operate(period, acode, target_area, mask=mask, verbose=verbose)
+    periods = fm.periods if not period else [period]
+    for period in periods:
+        for mask, target_area in zip(target_masks, target_areas):
+            if verbose > 0:
+                print('calling areaselector', period, acode, target_area, mask)
+            fm.areaselector.operate(period, acode, target_area, mask=mask, verbose=verbose)
     sch = fm.compile_schedule()
     return sch
 
@@ -232,3 +237,56 @@ def run_scenario(fm, scenario_name='base'):
     fig, ax = plot_scenario(df)
     return fig, df, p
 
+
+##############################################################
+# Implement a simple function to run CBM from ws3 export data
+##############################################################
+
+def run_cbm(sit_config, sit_tables, n_steps, plot=True):
+    from libcbm.input.sit import sit_reader
+    from libcbm.input.sit import sit_cbm_factory 
+    from libcbm.model.cbm.cbm_output import CBMOutput
+    from libcbm.storage.backends import BackendType
+    from libcbm.model.cbm import cbm_simulator
+    sit_data = sit_reader.parse(sit_classifiers=sit_tables['sit_classifiers'],
+                                sit_disturbance_types=sit_tables['sit_disturbance_types'],
+                                sit_age_classes=sit_tables['sit_age_classes'],
+                                sit_inventory=sit_tables['sit_inventory'],
+                                sit_yield=sit_tables['sit_yield'],
+                                sit_events=sit_tables['sit_events'],
+                                sit_transitions=sit_tables['sit_transitions'],
+                                sit_eligibilities=None)
+    sit = sit_cbm_factory.initialize_sit(sit_data=sit_data, config=sit_config)
+    classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
+    cbm_output = CBMOutput(classifier_map=sit.classifier_value_names,
+                           disturbance_type_map=sit.disturbance_name_map)
+    with sit_cbm_factory.initialize_cbm(sit) as cbm:
+        # Create a function to apply rule based disturbance events and transition rules based on the SIT input
+        rule_based_processor = sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
+        # The following line of code spins up the CBM inventory and runs it through 200 timesteps.
+        cbm_simulator.simulate(cbm,
+                               n_steps=n_steps,
+                               classifiers=classifiers,
+                               inventory=inventory,
+                               pre_dynamics_func=rule_based_processor.pre_dynamics_func,
+                               reporting_func=cbm_output.append_simulation_result,
+                               backend_type=BackendType.numpy)
+    pi = cbm_output.classifiers.to_pandas().merge(cbm_output.pools.to_pandas(), 
+                                                  left_on=["identifier", "timestep"], 
+                                                  right_on=["identifier", "timestep"])
+    biomass_pools = ['SoftwoodMerch','SoftwoodFoliage', 'SoftwoodOther', 'SoftwoodCoarseRoots','SoftwoodFineRoots',                        
+                     'HardwoodMerch', 'HardwoodFoliage', 'HardwoodOther', 'HardwoodCoarseRoots', 'HardwoodFineRoots']
+    dom_pools = ['AboveGroundVeryFastSoil', 'BelowGroundVeryFastSoil', 'AboveGroundFastSoil', 'BelowGroundFastSoil',
+                 'MediumSoil', 'AboveGroundSlowSoil', 'BelowGroundSlowSoil', 'SoftwoodStemSnag', 'SoftwoodBranchSnag',
+                 'HardwoodStemSnag', 'HardwoodBranchSnag']
+    biomass_result = pi[['timestep']+biomass_pools]
+    dom_result = pi[['timestep']+dom_pools]
+    total_eco_result = pi[['timestep']+biomass_pools+dom_pools]
+    annual_carbon_stocks = pd.DataFrame({'Year':pi['timestep'],
+                                         'Biomass':pi[biomass_pools].sum(axis=1),
+                                         'DOM':pi[dom_pools].sum(axis=1),
+                                         'Total Ecosystem': pi[biomass_pools+dom_pools].sum(axis=1)})
+    if plot:
+        annual_carbon_stocks.groupby('Year').sum().plot(figsize=(10, 10),xlim=(0, n_steps), ylim=(0, None))
+    return cbm_output
+    
