@@ -69,7 +69,6 @@ class GreedyAreaSelector:
         Parameters:
             parent (object): The parent object associated with this selector.
         """
-
     def operate(self, period, acode, target_area, mask=None,
                 commit_actions=True, verbose=False):
         """
