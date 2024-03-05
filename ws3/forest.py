@@ -60,7 +60,7 @@ from pdb import set_trace
 
 class GreedyAreaSelector:
     """
-    Default AreaSelector implementation. Selects areas for treatment from oldest age classes!!
+    Default AreaSelector implementation. Selects areas for treatment from oldest age classes.
     """
     def __init__(self, parent):
         self.parent = parent
