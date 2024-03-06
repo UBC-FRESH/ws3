@@ -12,6 +12,8 @@ ws3 Package Documentation
 
   intro	    
   modules
+  appendices 
+
 
  
 
