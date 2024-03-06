@@ -23,7 +23,7 @@
 ###################################################################################
 
 """
-This module implements functions for building and running wood supply simulation
+This module implements functions for building and running the wood supply simulation
 models.
 
 The ``ForestModel`` and ``DevelopmentType`` classes constitute the core functional units of this module, and of the ``ws3`` package in general.
