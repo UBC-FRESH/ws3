@@ -23,8 +23,6 @@
 ###################################################################################
 
 """
-Hello Woerld!
-
 This module implements functions for building and running the wood supply simulation
 models.
 
