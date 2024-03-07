@@ -73,9 +73,8 @@ class GreedyAreaSelector:
         
         Returns missing area (i.e., difference between target and operated areas).
         
-        :param int period: The time period for the operation. 
-          
-          :param int period: The time period for the operation.
+        :param int period: The time period for the operation.           
+        :param int period: The time period for the operation.
         :param str acode: The action code Specify action (e.g., harvest, fire, null , etc.).
         :param float target_area: The desired area to be achieved through operation.
         :param tuple mask: (Optional) Mask for the development type (a tuple of values).
@@ -139,9 +138,22 @@ class Action:
         self.is_harvest = is_harvest
         self.is_sticky = is_sticky
         self.treatment_type = None
+
+        """
+        
+        :param str code: The code for action.
+        :param int targetage: (Optional) The target age for the action. Defaults to None.
+        :param str descr: (Optional) Description of the action. Defaults to an empty string.
+        
+
+          
+          
+        """
+
+
     
 class DevelopmentType:
-    """
+   
     Encapsulates Forest development type data (curves, age, area), and provides methods to operate on the data.
     """
     _bo = {'AND':operator.and_, '&':operator.and_, 'OR':operator.or_, '|':operator.or_}
