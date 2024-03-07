@@ -116,14 +116,7 @@ class GreedyAreaSelector:
     
 class Action:
     """
-    Encapsulates data for an action.
-    
-    
-    :param str code: The code for action.
-    
-    :param int targetage: (Optional) The target age for the action. Defaults to None.
-    :param str descr: (Optional) Description of the action. Defaults to an empty string.
-    
+    Encapsulates data for an action.   
     """
     def __init__(self,
                  code,
