@@ -73,9 +73,11 @@ class GreedyAreaSelector:
 
         :param int period: The time period for the operation.
         :param str acode: The action code to specify the action.
-        
-        
-          
+        :param float target_area: The desired area to be achieved through operation.
+        :param tuple mask: (Optional) Mask for operation.
+        :param bool commit_actions: (Optional) Flag indicating whether to commit actions. Defaults to True.
+        :param bool verbose: (Optional) Verbosity flag. Defaults to False.
+         
         """
         key = lambda item: max(item[1])
         odt = sorted(list(self.parent.operable_dtypes(acode, period, mask).items()), key=key)
