@@ -70,6 +70,12 @@ class GreedyAreaSelector:
         """
         Greedily operate on oldest operable age classes.
         Returns missing area (i.e., difference between target and operated areas).
+
+        :param int period: The time period for the operation.
+        :param str acode: The action code to specify the action.
+        
+        
+          
         """
         key = lambda item: max(item[1])
         odt = sorted(list(self.parent.operable_dtypes(acode, period, mask).items()), key=key)
