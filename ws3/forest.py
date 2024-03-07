@@ -73,7 +73,9 @@ class GreedyAreaSelector:
         
         Returns missing area (i.e., difference between target and operated areas).
         
-        :param int period: The time period for the operation.
+        :param int period: The time period for the operation. 
+          
+          :param int period: The time period for the operation.
         :param str acode: The action code Specify action (e.g., harvest, fire, null , etc.).
         :param float target_area: The desired area to be achieved through operation.
         :param tuple mask: (Optional) Mask for the development type (a tuple of values).
