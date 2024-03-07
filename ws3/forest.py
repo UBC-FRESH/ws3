@@ -70,6 +70,13 @@ class GreedyAreaSelector:
         """
         Greedily operate on oldest operable age classes.
         Returns missing area (i.e., difference between target and operated areas).
+        :param period: The time period for the operation.
+        :param acode: The action code Specify action (e.g., harvest, fire, null , etc.).
+        :param target_area: The desired area to be achieved through operation.
+        :param mask: (Optional) Mask for the development type (a tuple of values).
+        :param commit_actions: (Optional) Flag indicating whether to commit actions. Defaults to True.
+        :param verbose: (Optional) Verbosity flag. Defaults to False.
+        :return: The remaining target area after operation.
         """
         key = lambda item: max(item[1])
         odt = sorted(list(self.parent.operable_dtypes(acode, period, mask).items()), key=key)
