@@ -67,10 +67,10 @@ class GreedyAreaSelector:
         
     def operate(self, period, acode, target_area, mask=None,
                 commit_actions=True, verbose=False):
-        """
-        
+        """        
         Greedily operate on oldest operable age classes.
         Returns missing area (i.e., difference between target and operated areas).
+        
         :param int period:The time period for the operation.
         :param str acode: The action code Specify action (e.g., harvest, fire, null , etc.).
         :param float target_area: The desired area to be achieved through operation.
