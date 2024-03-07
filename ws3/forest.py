@@ -73,7 +73,8 @@ class GreedyAreaSelector:
         
         Returns missing area (i.e., difference between target and operated areas).
         
-        :param int period: The time period for the operation.           
+        :param int period: The time period for the operation.   
+        
         :param int period: The time period for the operation.
         :param str acode: The action code Specify action (e.g., harvest, fire, null , etc.).
         :param float target_area: The desired area to be achieved through operation.
@@ -116,6 +117,13 @@ class GreedyAreaSelector:
 class Action:
     """
     Encapsulates data for an action.
+    
+    
+    :param str code: The code for action.
+    
+    :param int targetage: (Optional) The target age for the action. Defaults to None.
+    :param str descr: (Optional) Description of the action. Defaults to an empty string.
+    
     """
     def __init__(self,
                  code,
@@ -138,18 +146,6 @@ class Action:
         self.is_harvest = is_harvest
         self.is_sticky = is_sticky
         self.treatment_type = None
-
-        """
-        
-        :param str code: The code for action.
-        :param int targetage: (Optional) The target age for the action. Defaults to None.
-        :param str descr: (Optional) Description of the action. Defaults to an empty string.
-        
-
-          
-          
-        """
-
 
     
 class DevelopmentType:
