@@ -113,6 +113,16 @@ class GreedyAreaSelector:
 class Action:
     """
     Encapsulates data for an action.
+
+    :param str code: The code for action.
+    :param int targetage: (Optional) The target age for the action. Defaults to None.
+    :param str descr: (Optional) Description of the action. Defaults to an empty string.
+    :param bool lockexempt: (Optional) Flag indicating whether the action is lock exempt. Defaults to False.
+    :param list components: (Optional) List of action components. Defaults to an empty list.
+    :param list partial: (Optional) List of partial actions. Defaults to an empty list.
+    :param bool is_harvest: (Optional) Flag indicating whether the action is a harvest. Defaults to 0.
+    :param bool is_sticky: (Optional) Flag indicating whether the action is sticky. Defaults to 0.
+    
     """
     def __init__(self,
                  code,
