@@ -70,6 +70,9 @@ class GreedyAreaSelector:
         """
         Greedily operate on oldest operable age classes.
         Returns missing area (i.e., difference between target and operated areas).
+
+        """
+        """
         :param period: The time period for the operation.
         :param acode: The action code Specify action (e.g., harvest, fire, null , etc.).
         :param target_area: The desired area to be achieved through operation.
