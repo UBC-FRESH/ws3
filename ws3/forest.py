@@ -521,9 +521,12 @@ class Output:
     """
     Encapsulates data and methods to operate on aggregate outputs from the model.
     Emulates behaviour of Forest outputs.
-    .. warning:: Behaviour of Forest outputs is quite complex. 
+    
+    .. warning:: 
+    Behaviour of Forest outputs is quite complex. 
     This class needs more work before it is used in a production setting 
     (i.e., resolution of some complex output cases is buggy).
+  
     """
     def __init__(self,
                  parent,
