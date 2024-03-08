@@ -74,7 +74,7 @@ class GreedyAreaSelector:
         :param int period: The time period for the operation.
         :param str acode: The action code to specify the action.
         :param float target_area: The desired area to be achieved through operation.
-        :param tuple mask: (Optional) Mask for operation.
+        :param tuple mask: (Optional) tuple of values for development types.
         :param bool commit_actions: (Optional) Flag indicating whether to commit actions. Defaults to True.
         :param bool verbose: (Optional) Verbosity flag. Defaults to False.
          
@@ -478,6 +478,18 @@ class DevelopmentType:
             
                 
     def add_ycomp(self, ytype, yname, ycomp, first_match=True):
+        
+        """
+        
+        Adds a yield component to the yield components.
+        
+        :param str ytype: The type of yield component to add ('c' for complex).
+        :param str yname: The name of the yield component.
+        :param str ycomp: The yield component  to add.
+        :param bool first_match: (Optional) Flag indicating whether to only add the component if it doesn't already exist. Defaults to True.
+    
+        """
+       
         if first_match and yname in self._ycomps: return # already exists (reject)
         if ytype == 'c':
             self._complex_ycomps[yname] = ycomp
