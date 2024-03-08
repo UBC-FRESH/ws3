@@ -925,7 +925,7 @@ class ForestModel:
             
             ``{'foo':{'lb':{1:1., ..., 10:1.}, 'ub':{1:2., ..., 10:2.}}, 'bar':{{'lb':{1:1., ..., 10:1.}, 'ub':{1:2., ..., 10:4.}}}}``
             
-         :param list acodes : List of strings. Action codes to be included in optimization problem formulation (actions must defined 
+         :param list acodes: List of strings. Action codes to be included in optimization problem formulation (actions must defined 
             in the `ForestModel` instance, but can be only a subset). 
             
         :param int sense: Must be one of ``ws3.opt.SENSE_MAXIMIZE`` or ``ws3.opt.SENSE_MINIMIZE``, or equivalent int values (just use the
@@ -934,8 +934,7 @@ class ForestModel:
         :param tuple mask: Tuple of strings constituting a valid mask for your `ForestModel` instance. Can be `None` if you do not want
             to filter `DevelopmentType` instances.
 
-        :return: ws3.opt.Problem
-            Reference to a new Problem instance that was created. Also stored in the ForestModel instance (problems attribute,
+        :return: ws3.opt.Problem. Reference to a new Problem instance that was created. Also stored in the ForestModel instance (problems attribute,
             keyed on problem name). 
             
         """
