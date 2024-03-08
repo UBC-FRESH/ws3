@@ -790,12 +790,8 @@ class ForestModel:
          :param int max_age: The maximum age considered in the model.
          :param int area_epsilon: (Optional)
          :param int curve_epsilon: (Optional)
-          
-                 
-        """
-
-
-        
+                           
+        """       
         self.model_name = model_name
         self.model_path = model_path
         self.base_year = base_year
@@ -899,16 +895,12 @@ class ForestModel:
                     sense=opt.SENSE_MAXIMIZE, mask=None):
         """
         Add an optimization problem to the model.
-        
-        Parameters
-        ----------
-        name : str
-            Used as key to store ``ws3.opt.Problem`` instances in a dict in the ``ws3.forest.ForestModel`` instanace, so make 
+
+        :param str name: Used as key to store ``ws3.opt.Problem`` instances in a dict in the ``ws3.forest.ForestModel`` instanace, so make 
             sure it is unique within a given model or you will overwrite dict values (assuming you want to stuff multiple 
-            problems, and their solutions, into your model at the same time). 
+            problems, and their solutions, into your model at the same time).                   
     
-        coeff_funcs : dict
-            Dict of function references, keyed on _row name_ strings. These are the functions that generate 
+        :param dict coeff_funcs: Dict of function references, keyed on _row name_ strings. These are the functions that generate 
             the LP optimization problem matrix coefficients (for the objective function and constraint rows). This one gets
             complicated, and is a likely source of bugs. Make sure the row name key strings are all unique or you will make 
             a mess. You can name the constraint rows anything you want, but the objective function row has to be named 'z'. 
@@ -917,38 +909,32 @@ class ForestModel:
             All other (i.e., constraint) coefficient functions just return a dict of floats, keyed on period ints (can be 
             sparse, i.e., not necessary to include key:value pairs in output dict if value is 0.0). It is useful (but not 
             necessary) to use ``functools.partial`` to specialize a smaller number of more general function definitions (with 
-            more args, that get "locked down" and hidden by ``partial``) as we have done in the example in this notebook.
+            more args, that get "locked down" and hidden by ``partial``) as we have done in the example in this notebook. 
+           
 
-        cflw_e : dict
-            Dict of (dict, int) tuples, keyed on _row name_ strings (must match _row name_ key values used to 
+        :param dict cflw_e: Dict of (dict, int) tuples, keyed on _row name_ strings (must match _row name_ key values used to 
             define coefficient functions for flow constraints in coeff_func dict), where the int:float dict embedded in the 
             tuple defines epsilon values keyed on periods (must include all periods, even if epsilon value is always the same). 
             See example below. 
 
-            ``{'foo':({1:0.01, ..., 10:0.01}, 1), 'bar':({1:0.05, ..., 10:0.05}, 1)}``
+            ``{'foo':({1:0.01, ..., 10:0.01}, 1), 'bar':({1:0.05, ..., 10:0.05}, 1)}``            
 
-        cgen_data : dict
-            Dict of dict of dicts. The outer-level dict is keyed on _row name_ strings (must match row names used 
+        :param dict cgen_data: Dict of dict of dicts. The outer-level dict is keyed on _row name_ strings (must match row names used 
             in coeff_funcs. The middle second level of dicts always has keys 'lb' and 'ub', and the inner level of dicts 
             specifies lower- and upper-bound general constraint RHS (float) values, keyed on period (int). See example below.
             
             ``{'foo':{'lb':{1:1., ..., 10:1.}, 'ub':{1:2., ..., 10:2.}}, 'bar':{{'lb':{1:1., ..., 10:1.}, 'ub':{1:2., ..., 10:4.}}}}``
-
-         acodes : list
-            List of strings. Action codes to be included in optimization problem formulation (actions must defined 
-            in the `ForestModel` instance, but can be only a subset). 
-
-        sense : int
-            Must be one of ``ws3.opt.SENSE_MAXIMIZE`` or ``ws3.opt.SENSE_MINIMIZE``, or equivalent int values (just use the
-            constants to keep code more legible).
-
-        mask : tuple
-            Tuple of strings constituting a valid mask for your `ForestModel` instance. Can be `None` if you do not want
-            to filter `DevelopmentType` instances.
             
-        Returns
-        -------
-        ws3.opt.Problem
+         :param list acodes : List of strings. Action codes to be included in optimization problem formulation (actions must defined 
+            in the `ForestModel` instance, but can be only a subset). 
+            
+        :param int sense: Must be one of ``ws3.opt.SENSE_MAXIMIZE`` or ``ws3.opt.SENSE_MINIMIZE``, or equivalent int values (just use the
+            constants to keep code more legible).            
+
+        :param tuple mask: Tuple of strings constituting a valid mask for your `ForestModel` instance. Can be `None` if you do not want
+            to filter `DevelopmentType` instances.
+
+        :return: ws3.opt.Problem
             Reference to a new Problem instance that was created. Also stored in the ForestModel instance (problems attribute,
             keyed on problem name). 
             
@@ -1101,6 +1087,10 @@ class ForestModel:
         pass
 
     def add_null_action(self, acode='null', minage=None, maxage=None):
+        """
+        Adds a null action with the specified action code, minimum age, and maximum age.
+        
+        """  
         mask = tuple(['?' for _ in range(self.nthemes())])
         oe = '_age >= 0 and _age <= %i' % self.max_age
         target = [(mask, 1.0, None, None, None, None, None)]
