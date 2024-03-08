@@ -523,10 +523,8 @@ class Output:
     Emulates behaviour of Forest outputs.
     
     .. warning:: 
-        
-        Behaviour of Forest outputs is quite complex. 
-        This class needs more work before it is used in a production setting 
-        (i.e., resolution of some complex output cases is buggy).
+       Behaviour of Forest outputs is quite complex. This class needs more work before it is used in a production setting 
+                 (i.e., resolution of some complex output cases is buggy).
   
     """
     def __init__(self,
@@ -781,6 +779,23 @@ class ForestModel:
                  #piece_size_yname=_piece_size_yname_default,
                  #piece_size_factor=_piece_size_factor_default,
                  #total_volume_yname=_total_volume_yname_default):
+        """
+         Initializes the ForestModel with the provided parameters.
+
+         :param str model_name: The name of model.
+         :param str model_path: The path to input data of model.
+         :param int base_year: The base year of teh model.
+         :param int horizon: The simulation horizon of the model.
+         :param int horizon: The length of the simulation period.
+         :param int max_age: The maximum age considered in the model.
+         :param int area_epsilon: (Optional)
+         :param int curve_epsilon: (Optional)
+          
+                 
+        """
+
+
+        
         self.model_name = model_name
         self.model_path = model_path
         self.base_year = base_year
