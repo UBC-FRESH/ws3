@@ -919,13 +919,14 @@ class ForestModel:
 
             ``{'foo':({1:0.01, ..., 10:0.01}, 1), 'bar':({1:0.05, ..., 10:0.05}, 1)}``            
 
+
         :param dict cgen_data: Dict of dict of dicts. The outer-level dict is keyed on _row name_ strings (must match row names used 
             in coeff_funcs. The middle second level of dicts always has keys 'lb' and 'ub', and the inner level of dicts 
             specifies lower- and upper-bound general constraint RHS (float) values, keyed on period (int). See example below.
             
             ``{'foo':{'lb':{1:1., ..., 10:1.}, 'ub':{1:2., ..., 10:2.}}, 'bar':{{'lb':{1:1., ..., 10:1.}, 'ub':{1:2., ..., 10:4.}}}}``
             
-         :param list acodes: List of strings. Action codes to be included in optimization problem formulation (actions must defined 
+        :param int acodes: List of strings. Action codes to be included in optimization problem formulation (actions must defined 
             in the `ForestModel` instance, but can be only a subset). 
             
         :param int sense: Must be one of ``ws3.opt.SENSE_MAXIMIZE`` or ``ws3.opt.SENSE_MINIMIZE``, or equivalent int values (just use the
@@ -1712,6 +1713,19 @@ class ForestModel:
         self._resolve_outputs_buffer(s)
 
     def add_theme(self, name, basecodes=[], aggs={}, description=''):
+        """
+        Adds a theme to the model.
+
+        
+        :param str name: The name of theme.
+        :param list basecodes: List of base codes for the theme.
+        :param dict aggs: Dictionary containing aggregated values for the theme.
+        :param str description: Description of the theme.       
+        """
+
+
+
+        
         self._themes.append({})
         #self.nthemes +- 1
         self._themes[-1]['__name__'] = name
