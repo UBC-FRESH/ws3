@@ -303,8 +303,6 @@ class DevelopmentType:
     def reset_areas(self, period=None):
         """
         Reset areas dictionary.
-
-        :param int or None: The period to reset areas for. If None, resets areas for all periods.
         """
         periods = self.parent.periods if period is None else [period]
         for period in periods:
@@ -562,8 +560,7 @@ class Output:
     Emulates behaviour of Forest outputs.
     
     .. warning:: 
-       Behaviour of Forest outputs is quite complex. This class needs more work before it is used in a production setting 
-                 (i.e., resolution of some complex output cases is buggy).
+       Behaviour of Forest outputs is quite complex. This class needs more work before it is used in a production setting (i.e., resolution of some complex output cases is buggy).
   
     """
     def __init__(self,
@@ -883,19 +880,33 @@ class ForestModel:
         #self.nthemes = 0
 
     def nthemes(self):
+        """
+        Returns number of themes
+        """
         return len(self._themes)
         
     def reset(self):
+        """
+        Resets the forest model by clearing applied actions and reinitializing areas.
+        """
         self.reset_actions()
         self.initialize_areas()
         
         
     def set_horizon(self, horizon):
+        """
+        Sets the horizon of the model.
+
+        This method updates the horizon of the model to the specified value and adjusts the list of periods accordingly.
+        """
         self.horizon = int(horizon)
         self.periods = list(range(1, horizon+1))
         
         
     def compile_actions(self, mask=None, verbose=False):
+        """
+        Compile actions for the development types filtered by mask.
+        """
         dtype_keys = self.unmask(mask) if mask else list(self.dtypes.keys())
         for dtk in dtype_keys:
             dt = self.dtypes[dtk]
@@ -1127,7 +1138,7 @@ class ForestModel:
 
     def add_null_action(self, acode='null', minage=None, maxage=None):
         """
-        Adds a null action with the specified action code, minimum age, and maximum age.
+        Adds a null action with the specified action code, minimum age (default is None), and maximum age (default is None).
         
         """  
         mask = tuple(['?' for _ in range(self.nthemes())])
@@ -1168,6 +1179,12 @@ class ForestModel:
     def age_class_distribution(self, period, mask=None, omit_null=False):
         """
         Returns age class distribution (dict of areas, keys on age).
+
+        :param int period: The period for which to retrieve the age class distribution. 
+        :param tuple mask: A mask to filter development types. Default is None.
+        :param bool omit_null: (Optional) If True, omits null areas from the distribution. Default is False.  
+
+        :return: A dictionary where keys are ages and values are the corresponding area distributions.
         """
         result = {age:0. for age in self.ages}
         dtype_keys = self.unmask(mask) if mask else list(self.dtypes.keys())
@@ -1243,10 +1260,7 @@ class ForestModel:
         
     def reset_areas(self, period=None):
         """
-        Reset areas for all development types.
-
-        :param int or None period: (Optional) The period to reset areas for. If None, resets areas for all periods.
-        
+        Reset areas for all development types.        
         """
         for dtk in self.dtypes: self.dtypes[dtk].reset_areas(period)
         
@@ -1319,6 +1333,7 @@ class ForestModel:
         Compiles products from applied actions in given period. Parses string expression, which resolves to a single coefficient. 
         Operated area can be filtered on action code, development type key list, and age. Result is product of sum of filtered 
         area and coefficient. 
+ 
         """
         aa = self.applied_actions
         if acode is None:
@@ -1435,6 +1450,12 @@ class ForestModel:
                 self.reset_actions(period)
 
     def resolve_replace(self, dtk, expr):
+        """
+        Resolves the 'replace' keyword in transition definitions.
+
+        :param tuple dtk: The development type key.
+        : param str expr: The expression containing the 'replace' keyword
+        """
         # HACK ####################################################################
         # Too lazy to implement all the use cases.
         # This should work OK for BFEC models (TO DO: confirm).
@@ -1456,6 +1477,11 @@ class ForestModel:
         assert False # brick wall (deal with this case later, as needed)
 
     def resolve_targetage(self, dtk, tyield, sage, tage, acode, verbose=False):
+        """
+        This method determines the target age for a transition based on different
+        parameters such as the development type key (dtk), yield information (tyield),
+        stand age (sage), target age override (tage), and action code (acode).
+        """
         action = self.actions[acode]
         if tyield is not None: # yield-based age definition
             if verbose:
@@ -1502,17 +1528,32 @@ class ForestModel:
         (as needed), doing the area accounting correctly (without creating or destroying any area)
         and compiling the products from the action (which gets a bit complicated in the case of 
         partial cuts...).
+
+        :param tuple dtype_key: The key identifying the development type.
+        :param str acode: The action code to apply.
+        :param int period: The period in which to apply the action.
+        :param int age:  The age at which to apply the action.
+        :param float area: The area to apply the action on.
+        :param bool override_operability: If True, overrides operability limits. Default is False.
+        :param bool fuzzy_age: If True, attempts to apply action to proximal age class if specified age is not operable.
+        :param bool recourse_enabled: If True, uses default AreaSelector to patch missing area. Default is True.
+        :param bool areaselector: The AreaSelector object to use for patching missing area. Default is None.
+        :param bool compile_t_ycomps: If True, compiles time-indexed yield components. Default is False.
+        :param bool compile_c_ycomps: If True, compiles complex yield components. Default is False.
+        :param bool verbose: If True, prints additional information for debugging purposes. Default is False.
  
         Returns (errorcode, missing_area, target_dt) triplet, where errorcode is an error code, 
         missing_area is the missing area, and target_dt is a list of (dtk, tprop, targetage) 
         triplets (one triplet per target development type).
 
-        Error codes:
-        1: invalid area argument
-        2: requested action not defined for development type
-        3: requested action defined, but never operable
-        4: action not operable
-        5: transitions not defined for action
+        :return: A tuple containing errorcode, missing_area, and target_dt.
+
+        **Error codes:**
+        1. invalid area argument
+        2. requested action not defined for development type
+        3. requested action defined, but never operable
+        4. action not operable
+        5. transitions not defined for action
         """
         if area <= 0.: return 1, None, None 
         if verbose > 1:
@@ -1628,6 +1669,9 @@ class ForestModel:
 
     
     def sylv_cred_formula(self, treatment_type, cover_type):
+        """
+        Calculate Sylviculture Credits based on treatment type and cover type.
+        """
         if treatment_type == 'ec':
             return 1 if cover_type.lower() in ['r', 'm'] else 2
         if treatment_type == 'cj':
@@ -1823,6 +1867,12 @@ class ForestModel:
     def import_areas_section(self, model_path=None, model_name=None, filename_suffix='are', import_empty=False):
         """
         Imports AREAS section from a Forest model.
+
+        .. note::
+            - This method parses the AREAS section from a Forest model file.
+            - Each line in the section represents an area for a specific development type and age class.
+            - The section should contain information about development type keys, ages, and corresponding areas.
+            - Empty areas (with values less than the area_epsilon) can be skipped if import_empty is False.
         """
         n = self.nthemes()
         model_path = self.model_path if not model_path else model_path
@@ -1892,6 +1942,12 @@ class ForestModel:
     def import_constants_section(self, filename_suffix='con'):
         """
         Imports CONSTANTS section from a Forest model.
+
+        .. note::
+            - This method parses the CONSTANTS section from a Forest model file.
+            - Each line in the section represents a constant and its value.
+            - Constants are stored in a dictionary where the keys are the constant names and the values are their respective values.
+            - The section should contain information about various constants used in the model.
         """
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             for lnum, l in enumerate(f):
@@ -1997,6 +2053,14 @@ class ForestModel:
     def import_actions_section(self, filename_suffix='act', mask_func=None, nthemes=None):
         """
         Imports ACTIONS section from a Forest model.
+
+        .. note:: 
+            - This method parses the ACTIONS section from a Forest model file.
+            - The section should contain information about actions, operability, aggregates, and partials.
+            - Each action is represented by a code, description, and operability condition.
+            - Operability conditions are defined for different masks.
+            - Aggregates combine multiple actions.
+            - Partials represent components of an action.        
         """
         nthemes = nthemes if nthemes else self.nthemes()
         actions = {}
@@ -2054,6 +2118,11 @@ class ForestModel:
             assert False # many other possible arguments (see Forest documentation)
 
     def resolve_tappend(self, dt, tappend):
+        """
+        :param dt: The development type for which the transition append operation is being resolved
+        :param tuple tappend:   
+        """
+
         assert False # brick wall (not implemented yet)
 
     def resolve_tmask(self, dt, tmask, treplace, tappend):
@@ -2174,14 +2243,18 @@ class ForestModel:
     def import_optimize_section(self, filename_suffix='opt'):
         """
         Imports OPTIMIZE section from a Forest model.
-        .. warning:: Not implemented yet.
+        
+        .. warning:: 
+            Not implemented yet.
         """
         pass
 
     def import_graphics_section(self, filename_suffix='gra'):
         """
         Imports GRAPHICS section from a Forest model.
-        .. warning:: Not implemented yet.
+        
+        .. warning:: 
+            Not implemented yet.
 
         """
         pass
@@ -2189,7 +2262,9 @@ class ForestModel:
     def import_lifespan_section(self, filename_suffix='lif'):
         """
         Imports LIFESPAN section from a Forest model.
-        .. warning:: Not implemented yet.
+        
+        .. warning:: 
+            Not implemented yet.
 
         """
         pass
@@ -2220,6 +2295,11 @@ class ForestModel:
 
     
     def compile_schedule(self, problem=None):
+        """
+        Compiles the schedule of actions.
+        If a problem is specified, compiles the schedule from the given problem data. 
+        Otherwise, compiles the schedule from the data in `self.applied_actions`.        
+        """
         if problem is not None:
             return self._compile_schedule_from_problem(problem)
         else: # use data in self.applied_actions
@@ -2249,6 +2329,26 @@ class ForestModel:
         Assumes schedule in format returned by import_schedule_section().
         That is: list of (dtype_key, age, area, acode, period, etype) tuples.
         Also assumes that actions in list are sorted by applied period.
+
+        :param list schedule: The schedule of actions to apply.
+        :param int max_period: The maximum period to apply actions for. If None, defaults to the horizon.
+        :param bool verbose: If True, prints additional information for debugging purposes. Default is False.
+        :param bool fail_on_missingarea: If True, raises an exception if missing area is encountered. Default is False.
+        :param bool force_integral_area: If True, forces the area to be integral. Default is False.
+        :param bool override_operability:  If True, overrides operability limits. Default is False.
+        :param bool fuzzy_age: If True, attempts to apply action to proximal age class if specified age is not operable.
+                               Default is True.
+        :param bool recourse_enabled: If True, uses default AreaSelector to patch missing area. Default is True.
+        :param object areaselector: The AreaSelector object to use for patching missing area. Default is None.
+        :param bool compile_t_ycomps: If True, compiles time-indexed yield components. Default is False.
+        :param bool compile_c_ycomps: If True, compiles complex yield components. Default is False.
+        :param float rounding_bias:  The rounding bias to use when forcing integral area. Default is 0.15.
+        :param scale_area: The scaling factor to apply to the area. Default is None. 
+        :param bool reset: If True, resets the model before applying the schedule. Default is True.
+
+
+        :return: The missing area (float) after applying the schedule. 
+        
         """
         if max_period is None: max_period = self.horizon
         if reset: self.reset()
@@ -2296,7 +2396,9 @@ class ForestModel:
     def import_control_section(self, filename_suffix='run'):
         """
         Imports CONTROL section from a Forest model.
-        .. warning:: Not implemented yet.
+        
+        .. warning:: 
+            Not implemented yet.
         """
         pass
 
@@ -2612,6 +2714,17 @@ class ForestModel:
         """
         Exports model data in a CBM standard import tool (SIT) data exchange format.
         Returns sit_config (JSON-like dict namespace) and sit_tables (dict of pandas.DataFrame objects).
+
+        :param str softwood_volume_yname: The yield component name for softwood volume.
+        :param str hardwood_volume_yname: The yield component name for hardwood volume.
+        :param str admin_boundary: The administrative boundary for spatial units mapping.
+        :param str eco_boundary: The ecological boundary for spatial units mapping.
+        :param dict disturbance_type_mapping: A dictionary containing disturbance type mapping information.
+        :param bool export_csv: Flag indicating whether to export data to CSV files. Default is False.
+        :param str sit_data_path: The path to export CSV files. Default is empty string.
+        :param str default_last_pass_disturbance:  The default last pass disturbance type. Default is 'fire'.
+        :param int n_yield_vals: The number of yield values. Default is 100.
+        
         """
         sit_config = {
                         'mapping_config': {
