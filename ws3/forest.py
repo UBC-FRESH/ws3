@@ -202,6 +202,11 @@ class DevelopmentType:
         """
         Test hypothetical operability.
         Does not imply that there is any operable area in current inventory.
+
+        :param str acode: The action code to test operability for.
+        :param int period: The period to test operability for.
+        :param int age: (Optional) The age to test operability for. If None, only checks operability for the period.
+        :param bool verbose: If True, prints additional information for debugging purposes. Default is False.
         """
         if acode not in self.oper_expr: # action not defined for this development type
             if verbose: print('acode operability undefined', acode, self.oper_expr)
@@ -222,8 +227,13 @@ class DevelopmentType:
     def operable_area(self, acode, period, age=None, cleanup=True):
         """
         Returns 0 if inoperable or no current inventory, operable area given action code and period 
-        (and optionally age) index otherwise. If cleanup switch activated (default True) and age specified, 
-        deletes the ageclass from the inventory dict if operable area is less than self.parent.area_epsilon. 
+        (and optionally age) index otherwise.
+
+        :param str acode: The action code to determine operability.
+        :param int period: The period to determine operability for.
+        :param int age: (Optional) The age to determine operability for. If None, only checks operability for the period.
+        :param bool cleanup: (Optional) If True (default), removes the age class from the inventory dict if operable area is less than                                 self.parent.area_epsilon.
+
         """
         if acode not in self.oper_expr: # action not defined for this development type
             return 0.
@@ -259,6 +269,12 @@ class DevelopmentType:
         """
         If area not specified, returns area inventory for period (optionally age), else sets area for period and age. 
         If delta switch active (default True), area value is interpreted as an increment on current inventory.
+        
+        :param int period: The period for which the area is being retrieved or set.
+        :param int age: (Optional) The age for which the area is being retrieved or set. If None, returns total area.
+        :param float area:  (Optional) The area value to set. If None, returns the area inventory.
+        :param bool delta:  (Optional) If True (default), interprets the area value as an increment on the current inventory. 
+                            If False, sets the area value directly.       
         """
         #if area is not None:
         #    print area
@@ -300,6 +316,12 @@ class DevelopmentType:
             
             
     def ycomp(self, yname, silent_fail=True):
+        """
+        Returns the yield components associated with the given yield name. Returns None if the yield name is not found and silent_fail is True.
+
+        :param str yname: The name of the yield to retrieve components for.
+        :param bool silent_fail: (Optional) If True (default), returns None if the yield name is not found. If False, raises a KeyError                                    that yield name is not found.        
+        """
         if yname in self._ycomps:
             if not self._ycomps[yname]: # complex ycomp not compiled yet
                 self._compile_complex_ycomp(yname)
@@ -377,6 +399,9 @@ class DevelopmentType:
     def compile_actions(self, verbose=False):
         """
         Compile all actions.
+
+        :param bool verbose: (Optional) Verbosity flag. Defaults to False.
+        
         """
         for acode in self.oper_expr:
             self.compile_action(acode, verbose)
@@ -387,6 +412,9 @@ class DevelopmentType:
         This mostly involves resolving operability expression strings into
         lower and upper operability limits, defined as (alo, ahi) age pair for each period.
         Deletes action from self if not operable in any period.
+        
+        :param str acode: The action code.
+        :param bool verbose: (Optional) Verbosity flag. Defaults to False.
         """
         self.operability[acode] = {}
         for expr in self.oper_expr[acode]:
@@ -500,7 +528,12 @@ class DevelopmentType:
     def grow(self, start_period=1, cascade=True):
         """
         Grow self (default starting period 1, and cascading to end of planning horizon).
+
+        :param int start_period: The starting period for growth (default is 1).
+        :param bool cascade: If True, growth cascades to the end of the planning horizon. Default is True.
+
         """
+        
         end_period = start_period + 1 if not cascade else self.parent.horizon
         for p in range(start_period, end_period):
             self.reset_areas(p+1) #, self._areas[p], self._areas[p+1] # WTF?
@@ -1189,6 +1222,9 @@ class ForestModel:
         return sum(self.dtypes[dtk].operable_area(acode, period, age) for dtk in dtype_keys)
 
     def overwrite_initial_areas(self, period):
+        """
+        Overwrites the initial areas for all development types for the specified period.
+        """
         for dt in list(self.dtypes.values()): dt.overwrite_initial_areas(period)
     
     def initialize_areas(self, reset_areas=True):
@@ -1202,6 +1238,9 @@ class ForestModel:
     def reset_areas(self, period=None):
         """
         Reset areas for all development types.
+
+        :param int or None period: (Optional) The period to reset areas for. If None, resets areas for all periods.
+        
         """
         for dtk in self.dtypes: self.dtypes[dtk].reset_areas(period)
         
