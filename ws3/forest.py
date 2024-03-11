@@ -302,7 +302,9 @@ class DevelopmentType:
        
     def reset_areas(self, period=None):
         """
-        Reset areas dict.
+        Reset areas dictionary.
+
+        :param int or None: The period to reset areas for. If None, resets areas for all periods.
         """
         periods = self.parent.periods if period is None else [period]
         for period in periods:
@@ -541,6 +543,10 @@ class DevelopmentType:
             for age, area in list(self._areas[p].items()): self._areas[p+1][age+self.parent.period_length] = area
 
     def overwrite_initial_areas(self, period):
+
+        """
+        Overwrites the initial areas for a specified period.   
+        """
         self._areas[0] = copy.copy(self._areas[period])
         self.initialize_areas()
             
