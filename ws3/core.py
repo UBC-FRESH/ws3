@@ -1,3 +1,4 @@
+
 ###################################################################################
 # MIT License
 
@@ -54,6 +55,10 @@ class Interpolator(object):
             raise
         
     def points(self):
+        """
+        Returns the points as a list of tuples representing the points.
+        
+        """
         #print('foo')
         #print(self.x)
         #print(list(map(int, self.x)), self.y)
@@ -75,6 +80,12 @@ class Interpolator(object):
         #     assert False
 
     def lookup(self, y, from_right=False):
+        """
+        Looks up the x-coordinate corresponding to the given y-coordinate.
+
+        :param float y: The y-coordinate to look up.
+        :param bool from_right: (Optional) Flag indicating whether to search from the right. Defaults to False.
+        """
         ##########################################################################
         # NOTE: This seemed to work fine at first, but breaks badly if y-values
         #       are not monotonically increasing from left to right...
@@ -138,6 +149,14 @@ class Curve:
         self.add_points(points or [(0, 0)], simplify=simplify) # defaults to zero curve
 
     def simplify(self, points=None, autotune=True, compile_y=False, verbose=False):
+        """
+        Simplifies the curve by removing redundant points.
+
+        :param list of tuples points: The points to simplify. Defaults to None.
+        :param bool autotune: Flag indicating whether to automatically tune the simplification process. Defaults to True.
+        :param bool compile_y: Flag indicating whether to compile the y-component. Defaults to False.
+        :param bool verbose: Flag indicating whether to print verbose output. Defaults to False.
+        """
         if self.is_special: return
         assert not self.is_locked
         points = self.points() if points is None else points
@@ -167,7 +186,8 @@ class Curve:
         
     def _simplify(self, e, compile_y=False):
         """
-        NOTE: Implementation was modified so that point list is stored only once (in interp).
+        .. note:: 
+           Implementation was modified so that point list is stored only once (in interp).
         """
         points = self.points()
         p = copy.copy(points)
@@ -183,6 +203,13 @@ class Curve:
         if compile_y: self._compile_y()
             
     def add_points(self, points, simplify=True, compile_y=False):
+        """
+        Adds points to the curve and optionally simplifies it.
+    
+        :param list of tuples points: The points to add to the curve.
+        :param bool simplify: Flag indicating whether to simplify the curve after adding points. Defaults to True.
+        :param bool compile_y: Flag indicating whether to compile the y-component after adding points. Defaults to False.
+        """
         assert not self.is_locked
         x, y = list(zip(*points)) # assume sorted ascending x
         x = list(x)
@@ -228,6 +255,14 @@ class Curve:
     #     return Curve(points=zip(self.x, y))
 
     def lookup(self, y, from_right=False, roundx=False):
+
+        """
+        Looks up the x-coordinate corresponding to the given y-coordinate.
+    
+        :param float y: The y-coordinate to look up.
+        :param bool from_right: Flag indicating whether to search from the right. Defaults to False.
+        :param bool roundx: Flag indicating whether to round the x-coordinate to the nearest integer. Defaults to False.
+        """
         x = self.interp.lookup(y, from_right)
         if roundx:
             return int(round(x))
@@ -236,8 +271,12 @@ class Curve:
     
     def range(self, lo=None, hi=None, as_bounds=False, left_range=True):
         """
-        left_range True:  ub lookup from left (default)
-        left_range False: ub lookup from right (widest possible range)
+        Returns a Curve representing the range within the specified bounds.
+
+        :param float lo: The lower bound of the range. Defaults to None.
+        :param float hi: The upper bound of the range. Defaults to None.
+        :param bool as_bounds: Flag indicating whether to return the range as a tuple of bounds. Defaults to False.
+        :param bool left_range: Flag indicating whether to look up the upper bound from the left (default) or from the right (widest possible range).
         """
         lb = int(round(self.interp.lookup(lo))) if lo is not None else 0
         ub = int(round(self.interp.lookup(hi, from_right=not left_range))) if hi is not None else self.xmax
@@ -259,7 +298,9 @@ class Curve:
             return Curve(points=points)
         
     def cai(self):
-        '''Current annual increment as curve'''        
+        """
+        Calculates the current annual increment (CAI) as a curve.
+        """
         #points = list(zip(self.interp.x, self.interp.m))
         X = list(range(1, self.xmax))
         Y = [self[x] - self[x-1] for x in X]
@@ -269,6 +310,10 @@ class Curve:
         #return Curve(points=list(zip(x, (y[1:]-y[:-1])/self.period_length)))
             
     def mai(self):
+        """
+        Calculates the mean annual increment (MAI) as a curve.
+        
+        """
         X = range(1, self.xmax)
         Y = [self[x] / x for x in X[1:]] 
 
@@ -282,6 +327,9 @@ class Curve:
         #return Curve(points=p)
             
     def ytp(self):
+        """
+        Returns the yield-to-point (YTP) curve.
+        """
         y = self.y()
         argmax = y.index(max(y))
         return Curve(points=[(x, argmax-x) for x in self.x])
@@ -290,6 +338,11 @@ class Curve:
         self._y = [self.interp(x) for x in self.x]
     
     def y(self, compile_y=False):
+        """
+        Calculates the y-values of the curve.
+
+        :param bool compile_y: Flag indicating whether to compile the y-component of the curve. Defaults to False.
+        """
         if compile_y and not self._y:
             self._compile_y()
             return self._y
