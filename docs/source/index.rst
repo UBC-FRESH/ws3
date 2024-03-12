@@ -10,7 +10,8 @@ ws3 Package Documentation
   :maxdepth: 2
   :caption: Contents:
 
-  intro	    
+  intro
+  Chapter 1
   modules
   appendices 
 
