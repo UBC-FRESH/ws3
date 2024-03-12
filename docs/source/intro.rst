@@ -26,7 +26,12 @@ A slightly more complex approach, which we call the *optimization* activity sche
 
 Although the optimization approach is more powerful than the heuristic approach for modelling harvesting and other anthopic activites, an optimization approach is not appropriate for modelling strongly-stochastic disturbance processes (e.g., wildfire, insect invasions, blowdown). Thus, a hybrid heuristic-optimization approach may be best when modelling a combination of anthopic and natural disturbance processes.
 
-Package Design and Implementation
+About this User Guide
+================
+
+Add in general information abuot how the guide is structured and how to use it. 
+
+About the ``ws3`` Package
 ================
 
 The ``ws3`` package is implemented using the Python programming language. ``ws3`` is basically an aspatial wood supply model, which applies actions to development types, simulates growth, and tracks inventory area at each time step. Aspatial models output aspatial activity schedules---each line of the output schedule specifies the stratification variable values (which constitute a unique key into the list of development types), the time step, the action code, and the area treated.
@@ -39,6 +44,14 @@ Although we recommend using Jupyter Notebooks as an interactive interface to ``w
 
 ``ws3`` is a complex and flexible collection of functional software units. The following sections describe some of the main classes and functions in the package, and describe some common use cases, and link to sample notebooks that implement these use cases.
 
+Contact information
+==========================
+
+Add in contact information - should we have a seperate email that bumps to someone?
+
+
+Move these sections to different part - don't think that they should count as "over view" seem more complicated
+=========================
 Overview of Main Classes and Functions
 =========================
 
