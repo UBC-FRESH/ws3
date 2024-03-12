@@ -82,10 +82,15 @@ class Problem:
 
     def add_var(self, name, vtype, lb=0., ub=VBNDS_INF):
         """
-        Adds a variable to the problem. The variable name should be unique within the problem (user is responsible for enforcing this condition). Variable type should be one of ``VTYPE_CONTINUOUS``, ``VTYPE_INTEGER``, or ``VTYPE_BINARY``. Variable value bounds default to zero for the lower bound and positive infinity for the upper bound.
-
-        Note that calling this method resets the value of the optimal solution to ``None``. 
+        The function adds a variable to the problem.
+    
+        :param str name: The variable name that needs to be unique within the problem (user is responsible for enforcing this condition) type.
+        :param str vtype: The variable type that has to be one of ``VTYPE_CONTINUOUS``, ``VTYPE_INTEGER``, or ``VTYPE_BINARY``.
+        :param float lb: The lower bound value for the variable (Default is zero).
+        :param float ub: The upper bound value for the variable (Default is positive infinity).
+    
         """
+
         self._vars[name] = Variable(name, vtype, lb, ub)
         self._solution = None # modifying problem kills solution
 
@@ -115,7 +120,8 @@ class Problem:
 
     def sense(self, val=None):
         """
-        Returns (or sets) objective function sense. Value should be one of ``SENSE_MINIMIZE`` or ``SENSE_MAXIMIZE``.
+        Returns (or sets) objective function sense.
+        :param str val: Value should be one of ``SENSE_MINIMIZE`` or ``SENSE_MAXIMIZE``.
         """
         if val:
             self._sense = val
@@ -145,10 +151,17 @@ class Problem:
         
     def add_constraint(self, name, coeffs, sense, rhs, validate=False):
         """
-        Adds a constraint to the problem. The constraint name should be unique within the problem (user is responsible for enforcing this condition). Constraint coeffients should be provided as a ``dict``, keyed on variable names---length of constraint coefficient ``dict`` should match number of variables in the problem (user is responsible for enforcing this condition). Constraint sense should be one of ``SENSE_EQ``, ``SENSE_GEQ``, or ``SENSE_LEQ``. 
+        This function adds a constraint to the problem.
+    
+        :param str name: The constraint name should be unique within the problem (user is responsible for enforcing this condition).
+        :param dict coeffs: Constraint coeffients should be provided as a ``dict``, keyed on variable names---length of constraint coefficient ``dict`` should match number of variables in the problem (user is responsible for enforcing this condition).
+        :param float sense: Constraint sense should be one of ``SENSE_EQ``, ``SENSE_GEQ``, or ``SENSE_LEQ``.
+        :param float rhs: The right hand side of the constraint.
 
-        Note that calling this method resets the value of the optimal solution to ``None``. 
+        Note that calling this method resets the value of the optimal solution to ``None``
+    
         """
+
         if validate:
             for v in coeffs:
                 assert v in self._vars
