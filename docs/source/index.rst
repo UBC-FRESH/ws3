@@ -11,7 +11,7 @@ ws3 Package Documentation
   :caption: Contents:
 
   intro
-  Chapter 1
+  chapters
   modules
   appendices 
 
