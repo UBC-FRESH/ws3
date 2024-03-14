@@ -27,6 +27,7 @@
 This module contains definitions for global attributes, functions, and classes that might be used anywhere in the package.
 
 Attributes:
+
     HORIZON_DEFAULT (int): Default value for ''.
     PERIOD_LENGTH_DEFAULT (int): Default number of years per period.
     MIN_AGE_DEFAULT (int): Default value for `core.Curve.xmin`.
