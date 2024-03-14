@@ -28,10 +28,15 @@ This module contains definitions for global attributes, functions, and classes t
 
 Attributes:
     HORIZON_DEFAULT (int): Default value for ''.
+    
     PERIOD_LENGTH_DEFAULT (int): Default number of years per period.
+    
     MIN_AGE_DEFAULT (int): Default value for `core.Curve.xmin`.
+    
     MAX_AGE_DEFAULT (int): Default value for `core.Curve.xmax`.
+    
     CURVE_EPSILON_DEFAULT (float): Defalut value for `core.Curve.epsilon`.
+    
     AREA_EPSILON_DEFAULT = 0.01
     
 """
