@@ -1442,10 +1442,9 @@ class ForestModel:
 
     def resolve_replace(self, dtk, expr):
         """
-        Resolves the 'replace' keyword in transition definitions.
 
         :param tuple dtk: The development type key.
-        : param str expr: The expression containing the 'replace' keyword
+        :param str expr: 
         """
         # HACK ####################################################################
         # Too lazy to implement all the use cases.

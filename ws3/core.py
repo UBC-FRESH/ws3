@@ -84,7 +84,7 @@ class Interpolator(object):
         Looks up the x-coordinate corresponding to the given y-coordinate.
 
         :param float y: The y-coordinate to look up.
-        :param bool from_right: (Optional) Flag indicating whether to search from the right. Defaults to False.
+        :param bool from_right: Flag indicating whether to search from the right. Defaults to False.
         """
         ##########################################################################
         # NOTE: This seemed to work fine at first, but breaks badly if y-values
