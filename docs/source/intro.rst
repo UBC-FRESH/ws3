@@ -26,7 +26,9 @@ The fourth section provides information on connecting ``ws3`` to SpaDES. SpaDES 
 About F.R.E.S.H.
 ==========================
 
-words.
+The Forest Resources Environmental Services Hub (FRESH) is a research group at the Unviersity of British Columbia (UBC), Canada, that focuses on sustainable forest management including wood supply analysis, optimization research and supply chain analysis. 
+
+One of the primary focuses of the research group is to develop open sourced information and software packages that increase the accessibility of higher level forest modelling including tools used in WSPP and WSM. The ``ws3`` package, this user guide and the API all aim to help meet this goal. 
 
 Contact information
 ==========================

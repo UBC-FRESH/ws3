@@ -1,4 +1,8 @@
-TAbout the ``ws3`` Package
+****************************
+ws3 Package and Data Preparation
+****************************
+
+About the ``ws3`` Package
 ================
 
 The ``ws3`` package is implemented using the Python programming language. ``ws3`` is an aspatial wood supply model, which applies actions to development types, simulates growth, and tracks inventory area at each time step. Aspatial models output aspatial activity schedules---each line of the output schedule specifies the stratification variable values (which constitute a unique key into the list of development types), the time step, the action code, and the area treated.
