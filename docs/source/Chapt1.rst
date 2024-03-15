@@ -41,9 +41,17 @@ Spatial
 Aspatial
 ----------------
 
+Linear Programming
+================
 
+Model 1
+----------------
 
-A WSPP consists of determining the location, nature, and timing of forest management activities (i.e., *actions*) for a given forest, typically over multiple planning periods or rotations. The planning horizon often spans over 100 years or more. WSPP are intently complicated problems. In practice WSPP are supported by complex software models that that simulate different sequences of *actions* and *growth* for each time step, starting from and initial forest inventory. These software models are typically classified as wood supply models.
+Model 2
+----------------
+
+Model 3
+----------------
 
 
 The forest inventory data is typically aggregated into a manageable number of *strata* (i.e., *development types*),  which simplifies the modelling.  Each development type is linked to *growth and yield* functions describing the change in key attributes attributes (e.g., species-wise standing timber volume, number of merchantable stems per unit area, wildlife habitat suitability index value, etc.) expressed as a function of stratum age. Each development type may also be associated with one or more *actions*, which can yield *output products* (e.g., species-wise assortments of raw timber products, cost, treated area, etc.). Applying an action to a development type induces a *state transition* (i.e., applying an action may modify one or more stratification variables, effectively transitioning the treated area to a different development type). 

@@ -36,9 +36,9 @@ One of the primary focuses of the research group is to develop open sourced info
 Contact information
 ==========================
 
-If you have any questions about this guide or want to ask questions about ``ws3``, WSM or WSPP please reach out:
+If you have any questions about this guide or want to ask questions about ``ws3``, WSM or WSPP please reach out
 
-	'_Address_'
+	**Address**
 	
 	2430 - 2424 Main Mall
 	
@@ -48,13 +48,13 @@ If you have any questions about this guide or want to ask questions about ``ws3`
 	
 	Canada
 	
-	'_Email_'
+	**Email**
 	
 	kathleen.coupland@ubc.ca
 	
 	gregory.paradis@ubc.ca
 	
-	'_Phone_'
+	**Phone**
 	
 	(604) 827 - 0845
 	
