@@ -15,33 +15,18 @@ Given a set of static inputs, a given WSM can be used to simulate a number of *s
 About this User Guide
 ================
 
-This guide is divided into four main sections. The first section describes general concepts about WSP with specific linkages to the ``ws3`` requirements. This section covers ideas and requirements that are consistent across all WSP and is designed to ensure proper language use and highlight commonalities. Users who are familiar with WSM will likely find this section a review but, it will help ensure clarity for successive sections in this guide. The second section provides specific and detailed information about ``ws3`` and provides guidance on data preparation and running a wood supply simulation. The third section provides information for connecting ``ws3`` to libCMB, allowing for carbon accounting to be included as a dynamic value within the WSM. Finally, the fourth section provides information on connecting ``ws3`` to SpaDES. SpaDES is a **SPA**\ tially explicit **D**\ iscrete **E**\ vent **S**\ imulation used for disturbance modelling.  
+This guide is divided into four main sections. The first section describes general concepts about WSP with specific linkages to the ``ws3`` requirements. This section covers ideas and requirements that are consistent across all WSP and is designed to ensure proper language use and highlight commonalities. Users who are familiar with WSM will likely find this section a review but, it will help ensure clarity for successive sections in this guide. 
 
-About the ``ws3`` Package
-================
+The second section provides specific and detailed information about ``ws3`` and provides guidance on data preparation and running a wood supply simulation. 
 
-The ``ws3`` package is implemented using the Python programming language. ``ws3`` is an aspatial wood supply model, which applies actions to development types, simulates growth, and tracks inventory area at each time step. Aspatial models output aspatial activity schedules---each line of the output schedule specifies the stratification variable values (which constitute a unique key into the list of development types), the time step, the action code, and the area treated.
+The third section provides information for connecting ``ws3`` to libCMB, allowing for carbon accounting to be included as a dynamic value within the WSM. 
 
-Because the model is aspatial, the area treated on a given line of the output schedule may not be spatially contiguous (i.e., the area may be geographically dispersed throughout the landscape). Furthermore, in the common case where only a subset of development type area is treated in a given time step, the aspatial model provides not information regarding which subset of available area is treated (and, conversely, not treated). Some applications (e.g., linking to spatially-explicit or highly--spatially-referenced models) require a spatially-explicit activity schedule. ``ws3`` includes a *spatial disturbance allocator* sub-module, which contains functions that can map aspatial multi-period action schedules onto a rasterized spatial representation of the forest.
+The fourth section provides information on connecting ``ws3`` to SpaDES. SpaDES is a **SPA**\ tially explicit **D**\ iscrete **E**\ vent **S**\ imulation used for disturbance modelling.  
 
-``ws3`` uses a scripted Python interface to control the model, which provides maximum flexibility and makes it very
- easy to automate modelling workflows. This ensures reproducible methodologies, and makes it relatively easy to 
-link ``ws3`` models to other software packages to form complex modelling pipelines. The scripted interface also 
-makes it relatively easy to implement custom data-importing functions, which makes it easier to import existing 
-data from a variety of ad-hoc sources without the need to recompile the data into a standard ``ws3``-specific 
-format (i.e., importing functions can be implemented such that the conversion process is fully automated and 
-applied to raw input data *on the fly*). Similarly, users can easily implment custom functions to re-format ``ws3``
- output data *on the fly* (either for static serialization to disk, or to be piped live into another process). 
+About F.R.E.S.H.
+==========================
 
-Although we recommend using Jupyter Notebooks as an interactive interface to ``ws3`` (the package was specifically 
-designed with an interactive notebook interface in mind), ``ws3`` functions can also be imported and run in fully 
-scripted workflow (e.g., non-interactive batch processes can be run in a massively-parallelled workflow on 
-high-performance--computing resources, if available). The ability to mix interactive and massively-paralleled 
-non-interactive workflows is a unique feature of ``ws3``.
-
-``ws3`` is a complex and flexible collection of functional software units. The following sections describe some of 
-the main classes and functions in the package, and describe some common use cases, and link to sample notebooks 
-that implement these use cases.
+words.
 
 Contact information
 ==========================
