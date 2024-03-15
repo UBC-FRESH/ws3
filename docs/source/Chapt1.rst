@@ -20,6 +20,8 @@ Landscape Classification
 Initial Forest Inventory
 ================
 
+Since WSM aim to project a forested area through time, it is essential that there is an initial inventory. Initial inventories can have many different structures but, generally contain information about stand delineation or polygons, volume, tree species, 
+
 Stratifying the Forest 
 ================
 

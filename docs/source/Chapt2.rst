@@ -12,8 +12,6 @@ Although we recommend using Jupyter Notebooks as an interactive interface to ``w
 
 ``ws3`` is a complex and flexible collection of functional software units. The following sections describe some of the main classes and functions in the package, and describe some common use cases, and link to sample notebooks that implement these use cases.
 
-
-=========================
 Overview of Main Classes and Functions
 =========================
 
