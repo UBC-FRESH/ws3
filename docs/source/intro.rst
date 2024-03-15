@@ -2,65 +2,20 @@
 Overview
 ****************************
 
-Wood Supply Simulation System (``ws3``) is an open-open-source Python software package that is designed 
-to model *wood supply planning problems* (WSPP), in the context of  sustainable forest management. 
+Wood Supply Simulation System (``ws3``) is an open-open-source Python software package that is designed to model *wood supply planning problems* (WSPP), in the context of  sustainable forest management. 
 
-A WSPP consists of determining the location, nature, and timing of forest managment 
-activities (i.e., *actions*) for a given forest, typically over multiple planning periods or rotations.
-The planning horizon often spans over 100 years or more. 
+A WSPP consists of determining the location, nature, and timing of forest management activities (i.e., *actions*) for a given forest, typically over multiple planning periods or rotations. The planning horizon often spans over 100 years or more. WSPP are intently complicated problems. In practice WSPP are supported by complex software models that that simulate different sequences of *actions* and *growth* for each time step, starting from and initial forest inventory. These software models are typically classified as wood supply models.
 
+All wood supply models (WSM) require complex input data sets, which can be divided into *static* and *dynamic* components. Static WSM input data types include initial forest inventory, growth and yield curves, action definitions, transition definitions, and a schedule of prescribed activities. Dynamic WSM input data may include a combination of heuristic and optimization-based processes to automatically derive a dynamic activity schedule. The dynamic inputs get layered on top of the static activity schedule.
 
+Given a set of static inputs, a given WSM can be used to simulate a number of *scenarios*. Generally, scenarios differ only in terms of the dynamic activity schedule that is simulated. Comparing output from several scenarios is the basic mechanism by which forest managers derive insight from wood supply models.
 
-Background
-=======
-
-The WSPP basically consists of  This is a very complex problem, so in practice 
-the WSPP process is typically supported by complex software models that simulate an alternating 
-sequence of *actions* and *growth* for each time step, starting from an initial forest inventory.
-
-Wood supply models require complex input datasets. WSM input data can be divided into *static* and *dynamic* 
-components.
-
-Static WSM input data types include initial forest inventory, growth and yield curves, action definitions, 
-transition definitions, and a schedule of prescribed activities to simulate.
-Dynamic WSM input data may include a combination of heuristic and optimization-based processes to automatically 
-derive a dynamic activity schedule (which gets layered on top of the static activity schedule).
-
-The forest inventory data is typically aggregated into a manageable number of *strata* (i.e., *development types*),
- which simplifies the modelling.  Each development type is linked to *growth and yield* functions describing the 
-change in key attributes attributes (e.g., species-wise standing timber volume, number of merchantable stems per 
-unit area, wildlife habitat suitability index value, etc.) expressed as a function of statum age. Each development 
-type may also be associated with one or more *actions*, which can yield *output products* (e.g., species-wise 
-assortments of raw timber products, cost, treated area, etc.). Applying an action to a development type induces a 
-*state transition* (i.e., applying an action may modify one or more stratification variables, effectively 
-transitioning the treated area to a different development type). 
-
-Given a set of static inputs, a given WSM can be used to simulate a number of *scenarios*. Generally, scenarios 
-differ only in terms of the dynamic activity schedule that is simulated. Comparing output from several scenarios is
- the basic mechanism by which forest managers derive insight from wood supply models.
-
-There are two basic approached that can be used (independently, or in combination) to generate the dynamic activity
- schedules for each scenario.
-
-The simplest approach, which we call the *heuristic* activity scheduling method, involves defining period-wise 
-targets for a single key output (e.g., total harvest volume) along with a set of rules that determines the order in
- which actions are applied to eligible development types. At each time step, the model iteratively applies actions 
-according to the rules until the output target value is met, or it runs out of eligible area. At this point, the 
-model simulates one time-step worth of growth, and the process repeats until the end of the planning horizon.
-
-A slightly more complex approach, which we call the *optimization* activity scheduling method, involves defining an
- optimization problem (i.e., an objective function and constraints), and solving this problem to optimality (using 
-one of several available third-party mathematical solver software packages).
-
-Although the optimization approach is more powerful than the heuristic approach for modelling harvesting and other 
-anthopic activites, an optimization approach is not appropriate for modelling strongly-stochastic disturbance 
-processes (e.g., wildfire, insect invasions, blowdown). Thus, a hybrid heuristic-optimization approach may be best 
-when modelling a combination of anthopic and natural disturbance processes.
+``ws3`` is backed by a well documented application programming interface (API), which can be customized to control the way ``ws3`` behaves. 
 
 About this User Guide
 ================
 
-Add in general information abuot how the guide is structured and how to use it. 
+This guide is divided into four main sections. The first section describes general concepts about WSP with specific linkages to the ``ws3`` requirements. This section covers ideas and requirements that are consistent across all WSP and is designed to ensure proper language use and highlight commonalities. Users who are familiar with WSM will likely find this section a review but, it will help ensure clarity for successive sections in this guide. The second section provides specific and detailed information about ``ws3`` and provides guidance on data preparation and running a wood supply simulation. The third section provides information for connecting ``ws3`` to libCMB, allowing for carbon accounting to be included as a dynamic value within the WSM. Finally, the fourth section provides information on connecting ``ws3`` to SpaDES. SpaDES is a *SPA*tially explicit *D*iscrete *E*vent *S*imulation used for disturbance modelling.  
 
 About the ``ws3`` Package
 ================
