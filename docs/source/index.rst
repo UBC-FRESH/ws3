@@ -13,8 +13,7 @@ ws3 Package Documentation
 
   intro
   Chapt1
-  Chapt2
-	modules
+  aboutws3
   libCBM
   SpaDES
 
