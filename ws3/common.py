@@ -32,7 +32,7 @@ Attributes:
     MIN_AGE_DEFAULT (int): Default value for `core.Curve.xmin`.
     MAX_AGE_DEFAULT (int): Default value for `core.Curve.xmax`.
     CURVE_EPSILON_DEFAULT (float): Defalut value for `core.Curve.epsilon`.
-AREA_EPSILON_DEFAULT = 0.01
+    AREA_EPSILON_DEFAULT = 0.01
     
 """
 
@@ -114,7 +114,7 @@ def clean_vector_data(src_path, dst_path, dst_name, prop_names, clean=True, tole
     :param list prop_names: List of property names.
     :param bool clean: If the value of clean is True, the function will do cleaning; otherwise, it will do only reprojecting.
     :param float tolerance: This tolerance adjust the level of geometry modifications.
-    :param bool preserve_topology: If the value of preserve_topology is True,it will perserve the topology.
+    :param bool preserve_topology: If the value of preserve_topology is True, it will perserve the topology.
     :param str logfn: The filename for the log file to store the cleaned info.
     :param int max_records: If required, the user can define the maximum number of records for processing the source shapefile.
     :param str theme0: If required, the user can define theme0 for the cleaned shapefile.
@@ -206,9 +206,7 @@ def reproject_vector_data(src_path, snk_path, snk_epsg, driver='ESRI Shapefile')
     :param str src_path: Path to the source shapefile.
     :param str snk_path: Path to the destination shapefile.
     :param int snk_epsg: EPSG code for the destination CRS.
-    :param str driver: The driver for writing the shapfiles.
-
-        
+    :param str driver: The driver for writing the shapfiles.        
     """
     import fiona
     from fiona.crs import from_epsg
@@ -244,8 +242,6 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_di
     :param function value_func: A function that is applied to theme columns (in this case, the function replaces hyphens and spaces with underscores and changes all letters to lowercase)
     :param int cap_age: Maximum stand age defined by usder that will be considered as a cap age for stands (optional)
     :param bool verbose: (Optional) Verbosity flag. Defaults to False
-
-
     """
     import fiona
     from rasterio.features import rasterize
@@ -338,7 +334,6 @@ def warp_raster(src, dst_path, dst_crs={'init':'EPSG:4326'}):
     :param raserio.DatasetReader src: The source rasterio dataset to be warped.
     :param str dst_path: The path to save the warped raster
     :param dict dst_crs: The destination CRS in rasterio format (Default is init':'EPSG:4326')
-
     """
     from rasterio.warp import calculate_default_transform, reproject
     from rasterio.enums import Resampling
@@ -361,8 +356,6 @@ def timed(func):
     The function records the execution time of a function.
 
     :param function func: The function to be timed.
-
-
     """
     def wrapper(*args):
         t = time.time()
@@ -700,9 +693,7 @@ def sylv_cred(P, vr, vp, formula):
     :param float P: Volume harvested per hectare.
     :param float vr: Mean piece size of harvested stems.
     :param float vp: mean piece size of stand before harvesting.
-    :param formula: formula index (1 to 7).
-
-        
+    :param formula: formula index (1 to 7).        
     """
     f = {1:_sylv_cred_f1,
          2:_sylv_cred_f2,
@@ -770,6 +761,7 @@ def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
 def sylv_cred_formula(treatment_type, cover_type):
     """
     Returns sylviculture credit formula index.
+
     :param str treatment_type: Treatment type.
     :param str cover_type: Cover type.
     """
@@ -785,11 +777,14 @@ def sylv_cred_formula(treatment_type, cover_type):
 def piece_size_ratio(treatment_type, cover_type, piece_size_ratios):
     """
     Returns piece size ratio.
+    
     Assume Action.is_harvest in [0, 1, 2, 3]
+    
     Assume cover_type in ['r', 'm', 'f']
+    
     Return vr/vp ratio, where
-      vr is mean piece size of harvested stems, and
-      vp is mean piece size of stand before harvesting.
+      - vr is mean piece size of harvested stems, and
+      - vp is mean piece size of stand before harvesting.
     """
     if treatment_type in [1, 2, 3] and cover_type in ['r', 'm', 'f']:
         if piece_size_ratios:
@@ -814,9 +809,7 @@ def harv_cost(piece_size,
     :param bool is_toleranthw: Stand type (tolerant hardwood or not).
     :param bool partialcut_extracare: Partialcut "extra care" flag.
     :param float A: Series of regression coefficients (A, B, C, D, E, F, G, K, all with defaults that are extracted from MERIS technical documentation; also see Sebastien Lacroix, BMMB).
-    :param bool rv: Types of variables (default: Variables are deterministic).
-    
-        
+    :param bool rv: Types of variables (default: Variables are deterministic).        
     """
 
     _ifc = float(is_finalcut)
@@ -848,9 +841,7 @@ def harv_cost_rv(tv_mu, tv_sigma, N_mu, N_sigma, psr,
     :param bool partialcut_extracare: Partialcut "extra care" flag.
     :param float A: Series of regression coefficients (A, B, C, D, E, F, G, K, all with defaults that are extracted from MERIS technical documentation; also see Sebastien Lacroix, BMMB).
     :param bool rv: Types of variables (default: Variables random variates).
-    Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).
-
-        
+    Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).       
     """
     
 
@@ -893,9 +884,7 @@ def harv_cost_wec(piece_size,
     :param bool is_toleranthw: True if tolerant hardwood cover type, False otherwise.
     :param bool sigma: Standard deviation of piece size estimator.
     :param int nsigmas: Number of standard deviations to model on either side of the mean (default 3).
-    :param float binw: Width of bins for weighted numerical integration, in multiples of sigma (default 1.0).
-
-        
+    :param float binw: Width of bins for weighted numerical integration, in multiples of sigma (default 1.0).       
     """
 
     # bin centerpoints
@@ -953,6 +942,7 @@ class Node:
     def is_root(self):
         """
         The function checks if the current object is the root node.
+        
         :return: True if the object is the root node, False otherwise
     
         """
@@ -961,6 +951,7 @@ class Node:
     def is_leaf(self):
         """
         The function checks if the current object is a leaf node with no children.
+        
         :return: True if the object is a leaf node, False otherwise
     
         """
@@ -969,6 +960,7 @@ class Node:
     def add_child(self, child):
         """
         The function adds a child node to the current object.
+        
         :param child: The child node to be added.
     
         """
@@ -977,6 +969,7 @@ class Node:
     def parent(self):
         """
         The function gets the parent node of the current object.
+       
         :return: The parent node.
     
         """
@@ -985,6 +978,7 @@ class Node:
     def children(self):
         """
         The function gets the list of child nodes of the current object.
+        
         :return: List of child nodes.
     
         """ 
@@ -995,8 +989,8 @@ class Node:
         The function gets the data associated with the current object.
         If a specific key is provided, return the corresponding value.
         If no key is provided, return the entire data dictionary.
-        :param key: The key to retrieve a specific value (default is None).
-    
+        
+        :param key: The key to retrieve a specific value (default is None).   
         """
         if key:
             return self._data[key]
@@ -1013,8 +1007,8 @@ class Tree:
     def children(self, nid):
         """
         The function gets the child nodes of the node with the specified ID.
-        :param nid: The ID of the node to retrieve children for.
-    
+        
+        :param nid: The ID of the node to retrieve children for.    
         """
         return [self._nodes[cid] for cid in self._nodes[nid].children()]
         
@@ -1028,17 +1022,17 @@ class Tree:
     def node(self, nid):
         """
         The function retruns a node with the specified ID.
-        :param nid: The unique identifier of the node to be retrieved.
-    
+        
+        :param nid: The unique identifier of the node to be retrieved.    
         """
         return self._nodes[nid]
     
     def add_node(self, data, parent=None):
         """
         The function adds a new node.
+        
         :param data: The data associated with the new node.
-        :param parent: The parent node to which the new node will be attached.
-    
+        :param parent: The parent node to which the new node will be attached.    
         """
         n = Node(len(self._nodes), data, parent)
         self._nodes.append(n)
@@ -1047,8 +1041,8 @@ class Tree:
     def grow(self, data):
         """
         The function expands the current path by adding a new child node.
-        :param data: The data associated with the new node.
-    
+        
+        :param data: The data associated with the new node.   
         """
         parent = self._path[-1]
         child = self.add_node(data, parent=parent.nid)
@@ -1086,8 +1080,8 @@ class Tree:
     def path(self, leaf=None):
         """
         The function retrieves the path from the root to a specific leaf node or to the currect path.
+        
         :param leaf: The leaf node for which the path is to be retrieved (Default if None).
-    
         """
         if not leaf: return self._path[1:]
         path = []

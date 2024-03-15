@@ -74,9 +74,9 @@ class GreedyAreaSelector:
         :param int period: The time period for the operation.
         :param str acode: The action code to specify the action.
         :param float target_area: The desired area to be achieved through operation.
-        :param tuple mask: (Optional) tuple of values for development types.
-        :param bool commit_actions: (Optional) Flag indicating whether to commit actions. Defaults to True.
-        :param bool verbose: (Optional) Verbosity flag. Defaults to False.
+        :param tuple mask: Tuple of values for development types.
+        :param bool commit_actions: Flag indicating whether to commit actions. Defaults to True.
+        :param bool verbose: Verbosity flag. Defaults to False.
          
         """
         key = lambda item: max(item[1])
@@ -113,15 +113,6 @@ class GreedyAreaSelector:
 class Action:
     """
     Encapsulates data for an action.
-
-    :param str code: The code for action.
-    :param int targetage: (Optional) The target age for the action. Defaults to None.
-    :param str descr: (Optional) Description of the action. Defaults to an empty string.
-    :param bool lockexempt: (Optional) Flag indicating whether the action is lock exempt. Defaults to False.
-    :param list components: (Optional) List of action components. Defaults to an empty list.
-    :param list partial: (Optional) List of partial actions. Defaults to an empty list.
-    :param bool is_harvest: (Optional) Flag indicating whether the action is a harvest. Defaults to 0.
-    :param bool is_sticky: (Optional) Flag indicating whether the action is sticky. Defaults to 0.
     
     """
     def __init__(self,
@@ -205,7 +196,7 @@ class DevelopmentType:
 
         :param str acode: The action code to test operability for.
         :param int period: The period to test operability for.
-        :param int age: (Optional) The age to test operability for. If None, only checks operability for the period.
+        :param int age: The age to test operability for. If None, only checks operability for the period.
         :param bool verbose: If True, prints additional information for debugging purposes. Default is False.
         """
         if acode not in self.oper_expr: # action not defined for this development type
@@ -231,8 +222,8 @@ class DevelopmentType:
 
         :param str acode: The action code to determine operability.
         :param int period: The period to determine operability for.
-        :param int age: (Optional) The age to determine operability for. If None, only checks operability for the period.
-        :param bool cleanup: (Optional) If True (default), removes the age class from the inventory dict if operable area is less than                                 self.parent.area_epsilon.
+        :param int age: The age to determine operability for. If None, only checks operability for the period.
+        :param bool cleanup: If True (default), removes the age class from the inventory dict if operable area is less than                                 self.parent.area_epsilon.
 
         """
         if acode not in self.oper_expr: # action not defined for this development type
@@ -271,9 +262,9 @@ class DevelopmentType:
         If delta switch active (default True), area value is interpreted as an increment on current inventory.
         
         :param int period: The period for which the area is being retrieved or set.
-        :param int age: (Optional) The age for which the area is being retrieved or set. If None, returns total area.
-        :param float area:  (Optional) The area value to set. If None, returns the area inventory.
-        :param bool delta:  (Optional) If True (default), interprets the area value as an increment on the current inventory. 
+        :param int age: The age for which the area is being retrieved or set. If None, returns total area.
+        :param float area:  The area value to set. If None, returns the area inventory.
+        :param bool delta:  If True (default), interprets the area value as an increment on the current inventory. 
                             If False, sets the area value directly.       
         """
         #if area is not None:
@@ -320,7 +311,7 @@ class DevelopmentType:
         Returns the yield components associated with the given yield name. Returns None if the yield name is not found and silent_fail is True.
 
         :param str yname: The name of the yield to retrieve components for.
-        :param bool silent_fail: (Optional) If True (default), returns None if the yield name is not found. If False, raises a KeyError                                    that yield name is not found.        
+        :param bool silent_fail: If True (default), returns None if the yield name is not found. If False, raises a KeyError                                    that yield name is not found.        
         """
         if yname in self._ycomps:
             if not self._ycomps[yname]: # complex ycomp not compiled yet
@@ -400,7 +391,7 @@ class DevelopmentType:
         """
         Compile all actions.
 
-        :param bool verbose: (Optional) Verbosity flag. Defaults to False.
+        :param bool verbose: Verbosity flag. Defaults to False.
         
         """
         for acode in self.oper_expr:
@@ -414,7 +405,7 @@ class DevelopmentType:
         Deletes action from self if not operable in any period.
         
         :param str acode: The action code.
-        :param bool verbose: (Optional) Verbosity flag. Defaults to False.
+        :param bool verbose: Verbosity flag. Defaults to False.
         """
         self.operability[acode] = {}
         for expr in self.oper_expr[acode]:
@@ -514,7 +505,7 @@ class DevelopmentType:
         :param str ytype: The type of yield component to add ('c' for complex).
         :param str yname: The name of the yield component.
         :param str ycomp: The yield component  to add.
-        :param bool first_match: (Optional) Flag indicating whether to only add the component if it doesn't already exist. Defaults to True.
+        :param bool first_match: Flag indicating whether to only add the component if it doesn't already exist. Defaults to True.
     
         """
        
@@ -824,8 +815,8 @@ class ForestModel:
          :param int horizon: The simulation horizon of the model.
          :param int horizon: The length of the simulation period.
          :param int max_age: The maximum age considered in the model.
-         :param int area_epsilon: (Optional)
-         :param int curve_epsilon: (Optional)
+         :param int area_epsilon: 
+         :param int curve_epsilon: 
                            
         """       
         self.model_name = model_name
@@ -1182,7 +1173,7 @@ class ForestModel:
 
         :param int period: The period for which to retrieve the age class distribution. 
         :param tuple mask: A mask to filter development types. Default is None.
-        :param bool omit_null: (Optional) If True, omits null areas from the distribution. Default is False.  
+        :param bool omit_null: If True, omits null areas from the distribution. Default is False.  
 
         :return: A dictionary where keys are ages and values are the corresponding area distributions.
         """
@@ -1451,10 +1442,9 @@ class ForestModel:
 
     def resolve_replace(self, dtk, expr):
         """
-        Resolves the 'replace' keyword in transition definitions.
 
         :param tuple dtk: The development type key.
-        : param str expr: The expression containing the 'replace' keyword
+        :param str expr: 
         """
         # HACK ####################################################################
         # Too lazy to implement all the use cases.
