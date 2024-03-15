@@ -38,12 +38,11 @@ Contact information
 
 If you have any questions about this guide or want to ask questions about ``ws3``, WSM or WSPP please reach out
 
-	**Address**
-	
-		2430 - 2424 Main Mall
-		Vancouver B.C.
-		V6T 1Z4
-		Canada
+|	**Address**
+|	2430 - 2424 Main Mall
+|		Vancouver B.C.
+|		V6T 1Z4
+|		Canada
 	
 	**Email**
 	
