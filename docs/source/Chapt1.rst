@@ -2,8 +2,17 @@
 Wood Supply Models
 ****************************
 
+Wood supply models (WSM) are a suite of software and packages that simulate forest activities to assist in the development of forest plans, wood supply analysis and sustainable forest management. 
+WSM aim to provide foresters, landowners and stakeholders with information about how a forested land base will progress through time. They help by providing a glimpse into the future of how a forested land base could change through time given a particular set of proposed management objectives and activities. 
+Although there are many different WSM available for forest planners there are some commonalities between the required input data, the development process and approach to identifying a solution.
+
 Area of Interest
 ================
+All WSP require the identification of an Area of Interest (AOI). On a simple level an AOI is spatial explicit delineation of a forested area that you wish to project forward through time on which activities are applied. AOI's can be defined by legal or administrative boundaries, terrain or landscape features, forest type or any characteristic that separates the area you are interested vs. the area you are not interested in. In some instances defining an AOI is simple process and potentially has been predefined by higher level management, the landowners or other stakeholders. In other instances AOI's are not predefined and require defining at the start of the project. 
+
+Defining AOI's
+----------------
+
 
 Landscape Classification
 ----------------
