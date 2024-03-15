@@ -14,7 +14,8 @@ ws3 Package Documentation
   Chapt1
   Chapt2
   modules
-  appendices 
+  libCBM
+  SpaDES
 
 
  
