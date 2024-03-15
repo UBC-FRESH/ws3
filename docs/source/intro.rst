@@ -40,22 +40,18 @@ If you have any questions about this guide or want to ask questions about ``ws3`
 
 	**Address**
 	
-	2430 - 2424 Main Mall
-	
-	Vancouver B.C.
-	
-	V6T 1Z4
-	
-	Canada
+		2430 - 2424 Main Mall
+		Vancouver B.C.
+		V6T 1Z4
+		Canada
 	
 	**Email**
 	
-	kathleen.coupland@ubc.ca
-	
-	gregory.paradis@ubc.ca
+		kathleen.coupland@ubc.ca
+		gregory.paradis@ubc.ca
 	
 	**Phone**
 	
-	(604) 827 - 0845
+		(604) 827 - 0845
 	
  
