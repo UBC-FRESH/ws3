@@ -15,24 +15,14 @@ Given a set of static inputs, a given WSM can be used to simulate a number of *s
 About this User Guide
 ================
 
-This guide is divided into four main sections. The first section describes general concepts about WSP with specific linkages to the ``ws3`` requirements. This section covers ideas and requirements that are consistent across all WSP and is designed to ensure proper language use and highlight commonalities. Users who are familiar with WSM will likely find this section a review but, it will help ensure clarity for successive sections in this guide. The second section provides specific and detailed information about ``ws3`` and provides guidance on data preparation and running a wood supply simulation. The third section provides information for connecting ``ws3`` to libCMB, allowing for carbon accounting to be included as a dynamic value within the WSM. Finally, the fourth section provides information on connecting ``ws3`` to SpaDES. SpaDES is a **SPA**tially explicit **D**iscrete **E**vent **S**imulation used for disturbance modelling.  
+This guide is divided into four main sections. The first section describes general concepts about WSP with specific linkages to the ``ws3`` requirements. This section covers ideas and requirements that are consistent across all WSP and is designed to ensure proper language use and highlight commonalities. Users who are familiar with WSM will likely find this section a review but, it will help ensure clarity for successive sections in this guide. The second section provides specific and detailed information about ``ws3`` and provides guidance on data preparation and running a wood supply simulation. The third section provides information for connecting ``ws3`` to libCMB, allowing for carbon accounting to be included as a dynamic value within the WSM. Finally, the fourth section provides information on connecting ``ws3`` to SpaDES. SpaDES is a **SPA**\ tially explicit **D**\ iscrete **E**\ vent **S**\ imulation used for disturbance modelling.  
 
 About the ``ws3`` Package
 ================
 
-The ``ws3`` package is implemented using the Python programming language. ``ws3`` is basically an aspatial wood 
-supply model, which applies actions to development types, simulates growth, and tracks inventory area at each time 
-step. Aspatial models output aspatial activity schedules---each line of the output schedule specifies the 
-stratification variable values (which constitute a unique key into the list of development types), the time step, 
-the action code, and the area treated.
+The ``ws3`` package is implemented using the Python programming language. ``ws3`` is an aspatial wood supply model, which applies actions to development types, simulates growth, and tracks inventory area at each time step. Aspatial models output aspatial activity schedules---each line of the output schedule specifies the stratification variable values (which constitute a unique key into the list of development types), the time step, the action code, and the area treated.
 
-Because the model is aspatial, the area treated on a given line of the output schedule may not be spatially 
-contiguous (i.e., the area may be geographically dispersed throughout the landscape). Furthermore, in the common 
-case where only a subset of development type area is treated in a given time step, the aspatial model provides not 
-information regarding which subset of available area is treated (and, conversely, not treated). Some applications 
-(e.g., linking to spatially-explicit or highly--spatially-referenced models) require a spatially-explicit activity 
-schedule. ``ws3`` includes a *spatial disturbance allocator* sub-module, which contains functions that can map 
-aspatial multi-period action schedules onto a rasterized spatial representation of the forest.
+Because the model is aspatial, the area treated on a given line of the output schedule may not be spatially contiguous (i.e., the area may be geographically dispersed throughout the landscape). Furthermore, in the common case where only a subset of development type area is treated in a given time step, the aspatial model provides not information regarding which subset of available area is treated (and, conversely, not treated). Some applications (e.g., linking to spatially-explicit or highly--spatially-referenced models) require a spatially-explicit activity schedule. ``ws3`` includes a *spatial disturbance allocator* sub-module, which contains functions that can map aspatial multi-period action schedules onto a rasterized spatial representation of the forest.
 
 ``ws3`` uses a scripted Python interface to control the model, which provides maximum flexibility and makes it very
  easy to automate modelling workflows. This ensures reproducible methodologies, and makes it relatively easy to 
