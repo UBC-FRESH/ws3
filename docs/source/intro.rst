@@ -2,6 +2,9 @@
 Overview
 ****************************
 
+Introduction
+======================
+
 Wood Supply Simulation System (``ws3``) is an open-open-source Python software package that is designed to model *wood supply planning problems* (WSPP), in the context of  sustainable forest management. 
 
 A WSPP consists of determining the location, nature, and timing of forest management activities (i.e., *actions*) for a given forest, typically over multiple planning periods or rotations. The planning horizon often spans over 100 years or more. WSPP are intently complicated problems. In practice WSPP are supported by complex software models that that simulate different sequences of *actions* and *growth* for each time step, starting from and initial forest inventory. These software models are typically classified as wood supply models.
