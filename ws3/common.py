@@ -835,7 +835,7 @@ def harv_cost_rv(tv_mu, tv_sigma, N_mu, N_sigma, psr,
     """
     Returns harvest cost.
 
-    :param float piece_size: Piece size.
+    
     :param bool is_finalcut: Treatment type (final cut or not).
     :param bool is_toleranthw: Stand type (tolerant hardwood or not).
     :param bool partialcut_extracare: Partialcut "extra care" flag.

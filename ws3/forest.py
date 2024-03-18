@@ -1442,9 +1442,8 @@ class ForestModel:
 
     def resolve_replace(self, dtk, expr):
         """
-
-        :param tuple dtk: The development type key.
-        :param str expr: 
+        Enables the creation of new development types by replacing an existing attribute code with a new value for a specific theme, 
+        instead of directly coding the attribute change in transition.        
         """
         # HACK ####################################################################
         # Too lazy to implement all the use cases.
@@ -1464,6 +1463,9 @@ class ForestModel:
     # Too lazy to implement.
     # Not used in BFEC models (TO DO: confirm).
     def resolve_append(self, dtk, expr):
+        """
+        This method has not been implemented yet.
+        """
         assert False # brick wall (deal with this case later, as needed)
 
     def resolve_targetage(self, dtk, tyield, sage, tage, acode, verbose=False):
@@ -2109,10 +2111,8 @@ class ForestModel:
 
     def resolve_tappend(self, dt, tappend):
         """
-        :param dt: The development type for which the transition append operation is being resolved
-        :param tuple tappend:   
+        This feature has not been implemented yet.  
         """
-
         assert False # brick wall (not implemented yet)
 
     def resolve_tmask(self, dt, tmask, treplace, tappend):
