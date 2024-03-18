@@ -7,12 +7,15 @@ ws3 Package Documentation
 ===============================
 
 .. toctree::
+	:numbered:
   :maxdepth: 2
   :caption: Contents:
 
-  intro	    
-  modules
-  appendices 
+  intro
+  Chapt1
+  aboutws3
+  libCBM
+  SpaDES
 
 
  
