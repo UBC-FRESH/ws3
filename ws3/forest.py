@@ -51,7 +51,7 @@ except: # "__main__" case
     from ws3 import common
     from ws3 import core
     from ws3 import opt
-from ws3.common import timed
+from ws3.common import timed,  Tree
 
 from pdb import set_trace
     
