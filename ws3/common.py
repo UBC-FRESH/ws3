@@ -998,7 +998,11 @@ class Node:
             return self._data # if not self.is_root() else None
 
 #from graphviz import Digraph        
-class Tree:   
+class Tree:
+    """
+    Represents a tree object.
+    
+    """
     def __init__(self, period=1):
         self._period = period
         self._nodes = [Node(0)]
