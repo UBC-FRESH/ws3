@@ -457,15 +457,14 @@ class GreedyAreaSelector:
             print('GreedyAreaSelector.operate done (remaining target_area: %0.1f)' % target_area)
         return target_area
 
-
-
-
-
 ##########################################################
 # plot the results in 050_avoid_fire example
 ##########################################################
 
 def plot_resultsFuelMitigate_deter_stoch(df_deter_stoch):
+    """
+    Plots the results in 050_avoid_fire example
+    """
     df_plot = df_deter_stoch.melt(id_vars='Fuel_treatment', var_name='Scenario', value_name='Result')
     plt.figure(figsize=(6, 6))
     sns.lineplot(data=df_plot, x='Fuel_treatment', y='Result', hue='Scenario', marker='o')
@@ -478,10 +477,14 @@ def plot_resultsFuelMitigate_deter_stoch(df_deter_stoch):
 
 
 ##############################################################
-# Implement a simple function to run CBM from ws3 export data in case of fire
+# Implement a simple function to run CBM from ws3 export data in case of fire (050_dss_avoid_fire example)
 ##############################################################
 
 def run_cbm_fire(sit_config, sit_tables, n_steps, plot=True):
+    """
+    Implement a simple function to run CBM from ws3 export data in case of fire (050_dss_avoid_fire example)
+    
+    """
     from libcbm.input.sit import sit_reader
     from libcbm.input.sit import sit_cbm_factory 
     from libcbm.model.cbm.cbm_output import CBMOutput
@@ -581,11 +584,20 @@ def run_cbm_fire(sit_config, sit_tables, n_steps, plot=True):
     
     
     return annual_net_emission.groupby("Year").sum() 
+
+
+
+
 ##########################################################
-# resultsFuelMitigate_deter_stoch
+# Compares the net emisions difference between base and alternative scenario
+# under dterministic and stochastic scenario  (050_dss_avoid_fire example)
 ##########################################################
 
 def resultsFuelMitigate_deter_stoch(fm, intensity, n_rep, is_use_pickle = True):
+    """
+    Compares the net emisions difference between base and alternative scenario
+    under dterministic and stochastic scenario  (050_dss_avoid_fire example)
+    """
     cbm_output_rep_pickle_path = 'data/cbm_output_rep_pickle.pkl'
     disturbance_type_mapping = [ {'user_dist_type': 'fire', 'default_dist_type': 'Wildfire'}]
     for dtype_key in fm.dtypes:
