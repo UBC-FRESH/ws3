@@ -417,7 +417,6 @@ class ForestRaster:
 
     
     def grow(self):
-        """ Grows trees, only increment non-NA values"""
         self._p += 1
         # HACK! #############
         # only increment non-NA values
