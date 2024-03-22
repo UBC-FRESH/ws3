@@ -20,7 +20,6 @@ chardet==4.0.0
 click==8.1.7
 click-plugins==1.1.1
 cligj==0.7.2
-cloud-init==23.3.3
 cloudpickle==3.0.0
 colorama==0.4.4
 comm==0.2.0
