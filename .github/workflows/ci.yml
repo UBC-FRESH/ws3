@@ -43,7 +43,7 @@ jobs:
       - name: Calculate Coverage Percentage
         id: calculate_coverage
         run: |
-          coverage_percentage=$(pytest --cov-report=xml | python -c 'import xml.etree.ElementTree as ET; root = ET.parse("coverage.xml").getroot(); print(root.attrib["line-rate"])')
+          coverage_percentage=$(pytest --cov-report=xml | python -c 'import xml.etree.ElementTree as ET; root = ET.parse(".coverage").getroot(); print(root.attrib["line-rate"])')
           echo "::set-output name=coverage_percentage::$coverage_percentage"
 
       - name: Update README.md with Coverage Badge
