@@ -2,48 +2,52 @@ name: CI
 
 on:
   push:
-    branches: [ feature/pytest ]
+    branches: [feature/pytest]
   pull_request:
-    branches: [ feature/pytest ]
+    branches: [feature/pytest]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10.12'
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10.12'
 
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-        pip install --upgrade pip
-        pip install pytest pytest-cov
-        pip install coverage-badge
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+          pip install coverage-badge
 
-    - name: Run pytest with coverage
-      run: |
-        pytest --cov=tests/
+      - name: Run pytest with coverage
+        run: |
+          pytest --cov=tests/
 
-    - name: Generate Coverage Badge
-      run: |
-        coverage-badge -o coverage.svg
+      - name: Generate Coverage Badge
+        run: |
+          coverage-badge -o coverage.svg
 
-    - name: Extract Badge URL
-      run: |
-        # grep -oP "(?<=\[!\[Coverage\]\().*?(?=\))" coverage.svg > badge_url.txt
-        sed -n 's/.*xlink:href="\([^"]*\).*/\1/p' coverage.svg > badge_url.txt
+      - name: Extract Badge URL
+        run: |
+          sed -n 's/.*xlink:href="\([^"]*\).*/\1/p' coverage.svg > badge_url.txt
 
+      - name: Display Badge URL
+        run: cat badge_url.txt
 
-    - name: Display Badge URL
-      run: cat badge_url.txt
+      - name: Calculate Coverage Percentage
+        id: calculate_coverage
+        run: |
+          coverage_percentage=$(pytest --cov-report=xml | python -c 'import xml.etree.ElementTree as ET; root = ET.parse("coverage.xml").getroot(); print(root.attrib["line-rate"])')
+          echo "::set-output name=coverage_percentage::$coverage_percentage"
 
-    - name: Update README.md with Coverage Badge
-      run: |
-        badge_url=$(cat badge_url.txt)
-        echo "[![Coverage]($badge_url)]($badge_url)" >> README.md
+      - name: Update README.md with Coverage Badge
+        run: |
+          badge_url=$(cat badge_url.txt)
+          coverage_percentage="${{ steps.calculate_coverage.outputs.coverage_percentage }}"
+          echo "[![Coverage]($badge_url)]($badge_url) Coverage: $coverage_percentage%" >> README.md
