@@ -24,10 +24,26 @@ jobs:
       run: 
         pip install --upgrade
         pip install pytest
+        pip install pytest pytest-cov
         pip install -r requirements.txt
 
     - name: Run pytest
       run: pytest
 
-    # - name: Run tests with coverage
-    #   run: pytest --cov=tests
+    - name: Run tests with coverage
+      run: 
+        pytest --cov=tests/
+        coverage-badge -o coverage.svg
+
+    - name: Extract Coverage Badge URL
+      id: extract-badge-url
+      run: |
+        grep -oP "(?<=\[!\[Coverage\]\().*?(?=\))" coverage.svg > badge_url.txt
+
+    - name: Display Badge URL
+      run: cat badge_url.txt
+
+    - name: Update README.md with Coverage Badge
+      run: |
+        badge_url=$(cat badge_url.txt)
+        echo "[![Coverage]($badge_url)]($badge_url)" >> README.md
