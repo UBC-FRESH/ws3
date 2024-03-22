@@ -21,6 +21,7 @@ jobs:
 
     - name: Install dependencies
       run: |
+        pip install -r requirements.txt
         pip install --upgrade pip
         pip install pytest pytest-cov
         pip install coverage-badge
