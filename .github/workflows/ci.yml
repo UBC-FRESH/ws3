@@ -36,7 +36,9 @@ jobs:
 
     - name: Extract Badge URL
       run: |
-        grep -oP "(?<=\[!\[Coverage\]\().*?(?=\))" coverage.svg > badge_url.txt
+        # grep -oP "(?<=\[!\[Coverage\]\().*?(?=\))" coverage.svg > badge_url.txt
+        sed -n 's/.*xlink:href="\([^"]*\).*/\1/p' coverage.svg > badge_url.txt
+
 
     - name: Display Badge URL
       run: cat badge_url.txt
