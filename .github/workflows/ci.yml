@@ -4,8 +4,7 @@ on:
   push:
     branches: [ feature/pytest ]
   pull_request:
-    branches: [feature/pytest]
-
+    branches: [ feature/pytest ]
 
 jobs:
   build:
@@ -21,22 +20,20 @@ jobs:
         python-version: '3.10.12'
 
     - name: Install dependencies
-      run: 
-        pip install --upgrade
-        pip install pytest
+      run: |
+        pip install --upgrade pip
         pip install pytest pytest-cov
-        pip install -r requirements.txt
+        pip install coverage-badge
 
-    - name: Run pytest
-      run: pytest
-
-    - name: Run tests with coverage
-      run: 
+    - name: Run pytest with coverage
+      run: |
         pytest --cov=tests/
+
+    - name: Generate Coverage Badge
+      run: |
         coverage-badge -o coverage.svg
 
-    - name: Extract Coverage Badge URL
-      id: extract-badge-url
+    - name: Extract Badge URL
       run: |
         grep -oP "(?<=\[!\[Coverage\]\().*?(?=\))" coverage.svg > badge_url.txt
 
