@@ -1,4 +1,4 @@
-[![CI](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml/badge.svg?branch=feature%2Fpytest)](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml)
+[![CI](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml/badge.svg)](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml)
 
 # ws3 - Wood Supply Simulation System
 
