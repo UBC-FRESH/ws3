@@ -1,3 +1,5 @@
+[![CI](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml/badge.svg?branch=feature%2Fpytest)](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml)
+
 # ws3 - Wood Supply Simulation System
 
 **ws3** (Wood Supply Simulation System) is a Python package for modeling landscape-level wood supply planning problems.
