@@ -29,12 +29,17 @@ All of these different features will be combined into one layer or file, that wi
 Initial Forest Inventory
 ================
 
-Since WSM aim is to project a forested area through time, it is essential that there is an initial inventory. Initial inventories can have many different structures but, generally contain information about stand delineation or polygons, volume, and tree species.  
+Since WSM aim is to project a forested area through time, it is essential that there is an initial forest inventory. Initial inventories can have many different structures but, generally contain information about stand delineation, volume, and tree species.  
+
+All initial forest inventories need to have some initial grouping into stands or blocks. This can be presented spatially or aspatially. Spatial delineations of stands are polygons defined simply by being different from their neighbours. These spatial block or boundary delineations often use, tree species, volume, age, and terrain features (such as rivers, or streams) to determine where one areas starts and ends. These initial stand delineations often (but not always) are linked with stand origin. An area that had the same disturbance (either anthropomorphic or natural) and, the same regeneration (planted or natural), at the same time, in one spatially continuous extent, will often reflect one group or delineation. 
+Aspaital delineation is much the same as spatial except different groups do not have neighbours or defined polygon boundaries, instead 
 
 Stratifying the Forest 
 ================
 
-The forest inventory data is typically aggregated into a manageable number of *strata* (i.e., *development types*),  which simplifies the modelling. 
+The forest inventory data is typically aggregated into a manageable number of *strata* (i.e., *development types*, *analysis units*),  which simplifies the modelling, by reducing the number of individual growth and yield curves required. 
+
+
 
 Development Types
 ----------------
