@@ -12,15 +12,24 @@ All WSP require the identification of an Area of Interest (AOI). On a simple lev
 
 Defining AOI's
 ----------------
+For WSP defining an AOI is almost always the starting point. Generally, AOI's are defined in a spatially explicit way based on landscape features or landownership. If you are starting a WSP project and are tasked with delineating an AOI the first place to start is by having a discussion with the project stakeholders. The second step is finding the required corresponding spatial layers. Depending on where your geographically this step may be more or less difficult based on availability of geospatial databases.   
 
+Generally, an AOI will be a simple shapefile (or layer in a geodatabase), that is an outline where inside the boundaries is the area you want to project (grow) forward though time and outside the boundary is the area you are not projecting through time. All other spatial data being used as part of the project will be clipped to the extent of your AOI. Often multiple data layers will be used to define an AOI. For example, one side of an AOI might be defined by the presence of private landownership and other sides might be defined by the extent of the forest. 
 
 Landscape Classification
 ----------------
+In addition to defining an AOI, WSP typically require some initial landscape classification. This initial landscape classification is an essential part of WSM since features not defined are inevitably unmanageable. When starting an initial landscape classification, most WSP will start by ensuring that all legally required management objectives are included. For example in B.C. different riparian classes have different management requirements, including different 'no harvest' buffers. Collecting spatial data of different riparian features is required, and creating of legal sized buffers so it is possible to change the potential future harvesting activities that can take place on the land base. 
+
+Beyond identifying legally mandated management requirements this initial landscape classification will include delineation of the Timber Harvest Land Base (THLB) and the Non-Timber Harvest Land Base (NTHLB). The THLB includes all forested lands that the WSP will be able to harvest volume from for the duration of the planning horizon. The NTHLB includes all areas classified as not forested, and any forested stands that are excluded from harvesting for the duration of the planning horizon. THLB's and NTHLB's are often displayed in summary tables, outlining the different features and areas that are in each section of the AOI.  This is often a time consuming process and requires a strong understanding of regionally appropriate forest legislation, and input from multiple stakeholders. 
+
+The more care that is taken in this step the easier it will be to ensure that you create a WSP that is adaptable enough to capture the diversity of different scenarios you might want to build and model into the future. Optimally, a WSP for one area will have one set of input data, landscape classification schema, sometimes this is not possible and it might be required to build two concurrent models with two different classifications to see how this impacts future wood supply. An example of this might be delineating the THLB and NTHLB differently which would potentially require two landscape classifications.    
+
+All of these different features will be combined into one layer or file, that will be joined with initial forest inventory. 
 
 Initial Forest Inventory
 ================
 
-Since WSM aim to project a forested area through time, it is essential that there is an initial inventory. Initial inventories can have many different structures but, generally contain information about stand delineation or polygons, volume, tree species, 
+Since WSM aim is to project a forested area through time, it is essential that there is an initial inventory. Initial inventories can have many different structures but, generally contain information about stand delineation or polygons, volume, and tree species.  
 
 Stratifying the Forest 
 ================
