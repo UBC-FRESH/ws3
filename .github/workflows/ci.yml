@@ -47,8 +47,3 @@ jobs:
       run: |
         badge_url=$(cat badge_url.txt)
         echo "[![Coverage]($badge_url)]($badge_url)" >> README.md
-
-    - name: Get coverage badge for updating README.md
-      run:
-        mv coverage.svg https://github.com/UBC-FRESH/ws3/tree/feature/pytest/docs/coverage.svg
-        
