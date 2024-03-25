@@ -1,6 +1,6 @@
 [![CI](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml/badge.svg)](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml)
 
-[![Coverage](/home/runner/work/ws3/ws3/coverage.svg)](/home/runner/work/ws3/ws3/coverage.svg)
+[![Coverage](coverage.svg)](coverage.svg)
 
 
     
