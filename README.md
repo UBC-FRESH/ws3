@@ -1,6 +1,6 @@
 [![CI](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml/badge.svg)](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml)
 
-.. image:: /home/runner/work/ws3/ws3/coverage.svg
+.. image:: https://cdn.rawgit.com/dbrgn/coverage-badge/main/example.svg
     :alt: Example coverage badge
     
 # ws3 - Wood Supply Simulation System
