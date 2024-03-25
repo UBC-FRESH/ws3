@@ -1,6 +1,5 @@
 import sys
 sys.path.append('./ws3/')
-# import forest, common, core
 import pytest
 from forest import GreedyAreaSelector, Action, DevelopmentType
 

@@ -1,10 +1,8 @@
 import sys
 sys.path.append('./ws3/')
-
 import pytest
 from common import is_num
 
-@pytest.fixture
 
 def test_is_num():
     # Test with a valid numerical input
