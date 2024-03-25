@@ -1,5 +1,4 @@
 [![CI](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml/badge.svg)](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml)
-[![Coverage](https://github.com/UBC-FRESH/ws3/blob/feature/pytest/.coverage)](https://github.com/UBC-FRESH/ws3/blob/feature/pytest/.coverage)
 
     
 # ws3 - Wood Supply Simulation System
