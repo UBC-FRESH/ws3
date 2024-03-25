@@ -50,5 +50,5 @@ jobs:
 
     - name: Get coverage badge for updating README.md
       run:
-        mv coverage.svg ./docs/coverage.svg
+        mv coverage.svg https://github.com/UBC-FRESH/ws3/tree/feature/pytest/docs/coverage.svg
         
