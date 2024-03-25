@@ -2,9 +2,9 @@ name: tests
 
 on:
   push:
-    branches: [ feature/pytest ]
+    branches: [ dev ]
   pull_request:
-    branches: [ feature/pytest ]
+    branches: [ dev, main ]
 
 jobs:
   build:
