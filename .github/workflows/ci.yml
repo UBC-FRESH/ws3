@@ -2,7 +2,7 @@ name: tests
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ dev, feature/pytest ]
   pull_request:
     branches: [ dev, main ]
 
@@ -47,3 +47,8 @@ jobs:
       run: |
         badge_url=$(cat badge_url.txt)
         echo "[![Coverage]($badge_url)]($badge_url)" >> README.md
+
+    - name: Get coverage badge for updating README.md
+      run:
+        mv coverage.svg ./docs/coverage.svg
+        
