@@ -5,7 +5,7 @@
 
 **ws3** (Wood Supply Simulation System) is a Python package for modeling landscape-level wood supply planning problems.
 
-Read the tutorial [here](https://ws3-test-fresh.readthedocs.io/en/latest/l).
+Read the tutorial [here](https://ws3-test-fresh.readthedocs.io/en/latest/).
 
 ## Table of Contents
 
