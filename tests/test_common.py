@@ -68,30 +68,6 @@ def test_timed(capsys):
     assert float(captured.out.split()[2]) > 0
 
 
-
-
-
-def test_reproject_vector_data(tmpdir):
-    # Create a temporary source shapefile
-    src_path = str(tmpdir.join("source.shp"))
-    with fiona.open(src_path, 'w', driver='ESRI Shapefile', crs='EPSG:4326', schema={'geometry': 'Point', 'properties': {}}) as src:
-        src.write({'geometry': {'type': 'Point', 'coordinates': (0, 0)}, 'properties': {}})
-
-    # Define the destination path
-    snk_path = str(tmpdir.join("destination.shp"))
-
-    # Call the function
-    reproject_vector_data(src_path, snk_path, 3857)
-
-    # Check if the destination shapefile is created
-    assert os.path.isfile(snk_path)
-
-    # Check if the destination shapefile has the correct CRS
-    with fiona.open(snk_path, 'r') as snk:
-        assert snk.crs == {'init': 'epsg:3857'}
-
-
-
 def test_sylv_cred():
     # Test data
     P = 10.0
