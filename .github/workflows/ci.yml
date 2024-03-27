@@ -1,0 +1,49 @@
+name: tests
+
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ dev, main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10.12'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install --upgrade pip
+        pip install pytest pytest-cov
+        pip install coverage-badge
+
+    - name: Run pytest with coverage
+      run: |
+        pytest --cov=tests/
+
+    - name: Generate Coverage Badge
+      run: |
+        coverage-badge -o coverage.svg
+
+    - name: Extract Badge URL
+      run: |
+        # grep -oP "(?<=\[!\[Coverage\]\().*?(?=\))" coverage.svg > badge_url.txt
+        sed -n 's/.*xlink:href="\([^"]*\).*/\1/p' coverage.svg > badge_url.txt
+
+
+    - name: Display Badge URL
+      run: cat badge_url.txt
+
+    - name: Update README.md with Coverage Badge
+      run: |
+        badge_url=$(cat badge_url.txt)
+        echo "[![Coverage]($badge_url)]($badge_url)" >> README.md

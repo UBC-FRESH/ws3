@@ -50,6 +50,8 @@ class Variable:
     Encapsulates data describing a variable in an optimization problem. This includes a variable name (should be unique within a problem, although the user is responsible for enforcing this condition), a variable type (should be one of ``VTYPE_CONTINUOUS``, ``VTYPE_INTEGER``, or ``VTYPE_BINARY``), variable value bound (lower bound defaults to zero, upper bound defaults to positive infinity), and variable value (defaults to ``None``).
     """
     def __init__(self, name, vtype, lb=0., ub=VBNDS_INF, val=None):
+        if lb > ub:
+            raise ValueError("Lower bound cannot be greater than upper bound")
         self.name = name
         self.vtype = vtype
         self.lb = lb
@@ -61,6 +63,12 @@ class Constraint:
     Encapsulates data describing a constraint in an optimization problem. This includes a constraint name (should be unique within a problem, although the user is responsible for enforcing this condition), a vector of coefficient values (length of vector should match the number of variables in the problem, although the user is responsible for enforcing this condition), a sense (should be one of ``SENSE_EQ``, ``SENSE_GEQ``, or ``SENSE_LEQ``), and a right-hand-side value.
     """
     def __init__(self, name, coeffs, sense, rhs):
+        if not isinstance(coeffs, list) or len(coeffs) == 0:
+            raise ValueError("Coefficients must be a non-empty list")
+        if not all(isinstance(coeff, (int, float)) for coeff in coeffs):
+            raise ValueError("Coefficients must be integers or floats")
+        if not isinstance(sense, str) or sense not in {'=', '>', '<'}:
+            raise ValueError("Sense must be one of '=', '>', or '<'")
         self.name = name
         self.coeffs = coeffs
         self.sense = sense
