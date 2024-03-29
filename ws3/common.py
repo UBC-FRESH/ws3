@@ -223,7 +223,7 @@ def reproject_vector_data(src_path, snk_path, snk_epsg, driver='ESRI Shapefile')
 
                           
 def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_divisor=1., d=100.,
-                     dtype=rasterio.int32, compress='lzw', round_coords=True,
+                     dtype=rasterio.uint32, compress='lzw', round_coords=True,
                      value_func=lambda x: re.sub(r'(-| )+', '_', str(x).lower()), cap_age=None,
                      verbose=False):
     """
@@ -246,7 +246,7 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_di
     import fiona
     from rasterio.features import rasterize
     if verbose: print('rasterizing', shp_path)
-    if dtype == rasterio.int32: 
+    if dtype == rasterio.uint32: 
         nbytes = 4
     else:
         raise TypeError('Data type not implemented: %s' % dtype)
@@ -267,14 +267,15 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_di
             h = hash_dt(dt, dtype, nbytes)
             hdt[h] = dt
             try:
-                age = np.int32(math.ceil(fp[age_col]/float(age_divisor)))
+                #age = np.uint32(math.ceil(fp[age_col]/float(age_divisor)))
+                age = np.dtype(dtype).type(math.ceil(fp[age_col]/float(age_divisor)))
             except:
                 #######################################
                 # DEBUG
                 # print(i, fp)                
                 #######################################
                 if fp[age_col] == None: 
-                    age = np.int32(1)
+                    age = np.dtype(dtype).type(1)
                 else:
                     raise ValueError('Bad age value in record %i: %s' % (i, str(fp[age_col])))
             if cap_age and age > cap_age: age = cap_age
@@ -282,7 +283,7 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_di
                 assert age > 0
             except:
                 if fp[age_col] == 0:
-                    age = np.int32(1)
+                    age = np.dtype(dtype).type(1)
                 else:
                     print('bad age', age, fp[age_col], age_divisor)
                     raise
@@ -291,7 +292,9 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_di
             shapes[1].append((f['geometry'], age)) # age
             shapes[2].append((f['geometry'], blk)) # block identifier
     #rst_path = shp_path[:-4]+'.tif' if not rst_path else rst_path
-    nodata_value = -2147483648
+    nodata_value = 0
+    #nodata_value = np.iinfo(dtype).max
+    #nodata_value = -2147483648
     kwargs = {'out_shape':(m, n), 'transform':transform, 'dtype':dtype, 'fill':nodata_value}
     r = np.stack([rasterize(s, **kwargs) for s in shapes])
     kwargs = {'driver':'GTiff', 
@@ -313,7 +316,7 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_di
     return hdt
         
 
-def hash_dt(dt, dtype=rasterio.int32, nbytes=4):
+def hash_dt(dt, dtype=rasterio.uint32, nbytes=4):
     """
     The function hashes the development type and returns an integer value.
 
@@ -323,15 +326,17 @@ def hash_dt(dt, dtype=rasterio.int32, nbytes=4):
 
     """
     s = '.'.join(map(str, dt)).encode('utf-8')
-    d = hashlib.md5(s).digest() # first n bytes of md5 digest
-    return np.dtype(dtype).type(int(binascii.hexlify(d[:4]), 16))
+    #return int.from_bytes(hashlib.md5(s).digest()[:nbytes], 'little', signed=False)
+    return np.dtype(dtype).type(int.from_bytes(hashlib.md5(s).digest()[:nbytes], 'little', signed=False))
+    #d = hashlib.md5(s).digest() # first n bytes of md5 digest
+    #return np.dtype(dtype).type(int(binascii.hexlify(d[:4]), 16))
 
 
 def warp_raster(src, dst_path, dst_crs={'init':'EPSG:4326'}):
     """
     The function warpes a raster from its original CRS to a new CRS.
 
-    :param raserio.DatasetReader src: The source rasterio dataset to be warped.
+    :param rasterio.DatasetReader src: The source rasterio dataset to be warped.
     :param str dst_path: The path to save the warped raster
     :param dict dst_crs: The destination CRS in rasterio format (Default is init':'EPSG:4326')
     """

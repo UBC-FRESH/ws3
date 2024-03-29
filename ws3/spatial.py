@@ -75,8 +75,8 @@ class ForestRaster:
           returns a hash value. Must be the same function used to encode the 
           rasterized forest inventory (see documentation of the ``hdt_map`` 
           parameter, above).
-        :param str src_path: Filesystem path pointing to the input GeoTIFF file 
-          (i.e., the rasterized forest inventory). Note that this file will be
+        :param str src_path: Path or ULR to GeoTIFF dataset (or `rasterio.io.MemoryFile` handle) 
+          representing rasterized forest inventory. Note that this file will be
           used as a model for the output GeoTIFF files (i.e., pixel matrix 
           height and width, coordinate reference system, compression 
           parameters, etc.).
