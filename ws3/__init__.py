@@ -21,5 +21,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 ###################################################################################
+"""A docstring."""
 __version__ = '0.0.1-post3'
 __all__ = ['common', 'core', 'util', 'forest', 'spatial', 'opt']
