@@ -2620,7 +2620,7 @@ class ForestModel:
             # data['min_hardwood_age'].append(age)
             # data['max_hardwood_age'].append(age)
             #############################################################################
-            for c in columns[11:-6]: data[c].append(-1)
+            for c in columns[len(theme_cols)+6:-6]: data[c].append(-1)
             data['efficiency'].append(1)
             data['sort_type'].append(3) # oldest first (see Table 3-3 in the CBM-CFS3 user guide)
             data['target_type'].append('A') # area target
