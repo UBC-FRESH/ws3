@@ -11,6 +11,7 @@ import numpy as np
 import seaborn as sns
 import pickle 
 import os
+import ws3
 ##########################################################
 # Implement a priority queue heuristic harvest scheduler
 ##########################################################
@@ -187,7 +188,7 @@ def plot_scenario(df):
     return fig, ax
 
 
-def run_scenario(fm, scenario_name='base'):
+def run_scenario(fm, scenario_name='base', solver=ws3.opt.SOLVR_PULP):
     cflw_ha = {}
     cflw_hv = {}
     cgen_ha = {}
@@ -200,7 +201,7 @@ def run_scenario(fm, scenario_name='base'):
 
     if scenario_name == 'base': 
         # Base scenario
-        print('running bsae scenario')
+        print('running base scenario')
     elif scenario_name == 'base-cgen_ha': 
         # Base scenario, plus harvest area general constraints
         print('running base scenario plus harvest area constraints')
@@ -223,13 +224,14 @@ def run_scenario(fm, scenario_name='base'):
                      cgen_ha=cgen_ha,
                      cgen_hv=cgen_hv,
                      cgen_gs=cgen_gs)
+    p.solver(solver)
 
     fm.reset()
     m = p.solve()
 
-    if m.status != grb.GRB.OPTIMAL:
-        print('Model not optimal.')
-        sys.exit()
+    #if m.status != grb.GRB.OPTIMAL:
+    #    print('Model not optimal.')
+    #    sys.exit()
     sch = fm.compile_schedule(p)
     fm.apply_schedule(sch, 
                       force_integral_area=False, 
