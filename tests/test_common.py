@@ -1,11 +1,11 @@
 import sys
-sys.path.append('./ws3/')
-import pytest,time
+sys.path.append('../ws3/')
+import pytest, time
 import numpy as np
 import fiona
 import os
 import math
-from common import is_num, hash_dt, reproject, timed, reproject_vector_data, sylv_cred, sylv_cred_formula, piece_size_ratio, harv_cost
+from ws3.common import is_num, hash_dt, reproject, timed, reproject_vector_data, sylv_cred, sylv_cred_formula, piece_size_ratio, harv_cost
 
 
 def test_is_num():

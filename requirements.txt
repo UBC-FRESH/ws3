@@ -5,3 +5,4 @@ matplotlib
 rasterio
 fiona
 profilehooks
+pytest
