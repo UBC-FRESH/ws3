@@ -301,7 +301,7 @@ class Problem:
             SENSE_EQ:pulp.constants.LpConstraintEQ,
             SENSE_GEQ:pulp.constants.LpConstraintGE,
             SENSE_LEQ:pulp.constants.LpConstraintLE}
-        self._model = pulp.LpProblem(name=self._name, sense=pulp.constants.LpMaximize)
+        self._model = pulp.LpProblem(name=self._name, sense=const_map[self._sense])
         vars = pulp.LpVariable.dicts(name='',
                                      indices=self._vars.keys(),
                                      lowBound=0.,
