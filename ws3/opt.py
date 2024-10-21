@@ -42,9 +42,11 @@ VTYPE_INTEGER = 'I' # same as GRB.INTEGER
 VTYPE_BINARY = 'B' # same as GRB.BINARY
 VTYPE_CONTINUOUS = 'C' # same as GRB.CONTINUOUS
 VBNDS_INF = float('inf')
-SOLVR_GUROBI = 'gurobi'
-SOLVR_PULP = 'pulp'
-
+SOLVER_GUROBI = 'gurobi'
+SOLVER_PULP = 'pulp'
+STATUS_OPTIMAL = 'optimal'
+STATUS_INFEASIBLE = 'infeasible'
+STATUS_UNBOUNDED = 'unbounded'
 
 class Variable:
     """
@@ -79,7 +81,7 @@ class Problem:
     """
     This is the main class of the ``opt`` module---it encapsulates optimization problem data (i.e., variables, constraints, objective function, optimal solution, and choice of solver), as well as methods to operate on this data (i.e., methods to build and solve the problem, and report on the optimal solution).
     """
-    def __init__(self, name, sense=SENSE_MAXIMIZE, solver=SOLVR_GUROBI):
+    def __init__(self, name, sense=SENSE_MAXIMIZE, solver=SOLVER_PULP):
         self._name = name
         self._vars = {}
         self._z = {}
@@ -88,7 +90,8 @@ class Problem:
         self._sense = sense
         self._solver = solver
         self._solver_backend = None
-        self._dispatch_map = {SOLVR_GUROBI:self._solve_gurobi, SOLVR_PULP:self._solve_pulp}
+        self._dispatch_map = {SOLVER_PULP:self._solve_pulp, 
+                              SOLVER_GUROBI:self._solve_gurobi}
 
     def add_var(self, name, vtype, lb=0., ub=VBNDS_INF):
         """
@@ -180,7 +183,9 @@ class Problem:
 
     def solver(self, val):
         """
-        Sets the solver (defaults to ```SOLVR_GUROBI``` in the class constructor). Note that only Gurobi solver bindings are implemented at this time.
+        Sets the solver backend (defaults to ``SOLVER_PULP`` in the class constructor). 
+        
+        Use ``SOLVER_GUROBI`` to use Gurobi solver bindings.
         """
         if val:
             self._solver = val
@@ -191,8 +196,8 @@ class Problem:
         """
         Returns a ``dict`` of variable values, keyed on variable names.
         """
-        #return self._solution
-        return {x:self._vars[x].val for x in self._vars}
+        return self._solution
+        #return {x:self._vars[x].val for x in self._vars}
 
     def solve(self, validate=False):
         """
@@ -200,11 +205,49 @@ class Problem:
         """
         if validate:
             assert False # not implemented yet, but later check that all systems are GO before launching...
-        return self._dispatch_map[self._solver].__get__(self, type(self))()
+        self._dispatch_map[self._solver].__get__(self, type(self))()
+        if self.status() == STATUS_OPTIMAL:
+            self._solution = {x:self._vars[x].val for x in self._vars}
+
+    def status(self):
+        """
+        Checks whether the current solution is infeasible (i.e., not feasible).
+        """
+        import ws3.opt
+        import gurobipy
+        import pulp
+        match self._solver:
+            case ws3.opt.SOLVER_PULP:
+                match self._model.status:
+                    case pulp.constants.LpStatusInfeasible:
+                        return STATUS_INFEASIBLE
+                    case pulp.constants.LpStatusUnbounded:
+                        return STATUS_UNBOUNDED
+                    case pulp.constants.LpStatusOptimal:
+                        return STATUS_OPTIMAL
+            case ws3.opt.SOLVER_GUROBI:
+                match self._model.status:
+                    case gurobipy.GRB.INFEASIBLE:
+                        return STATUS_INFEASIBLE
+                    case gurobipy.GRB.UNBOUNDED:
+                        return STATUS_UNBOUNDED
+                    case gurobipy.GRB.OPTIMAL:
+                        return STATUS_OPTIMAL
+            # add last case to return None if no match
+            case _:
+                return None
+
 
     def _solve_gurobi(self, allow_feasrelax=True):
+        """
+        Solve the LP optimization problem using Gurobi.
+
+        Returns
+        -------
+        None
+        """
         import gurobipy as grb
-        GUROBI_MAP = {
+        const_map = {
             SENSE_MINIMIZE:grb.GRB.MINIMIZE,
             SENSE_MAXIMIZE:grb.GRB.MAXIMIZE,
             VTYPE_INTEGER:grb.GRB.INTEGER,
@@ -214,51 +257,42 @@ class Problem:
             SENSE_GEQ:grb.GRB.GREATER_EQUAL,
             SENSE_LEQ:grb.GRB.LESS_EQUAL}
         GUROBI_IU = grb.GRB.status.INF_OR_UNBD, grb.GRB.status.INFEASIBLE, grb.GRB.status.UNBOUNDED
-        self._m = m = grb.Model(self._name)
-        vars = {v.name:m.addVar(name=v.name, vtype=v.vtype) for v in list(self._vars.values())}
-        m.update()
+        self._model = grb.Model(self._name)
+        vars = {v.name:self._model.addVar(name=v.name, vtype=v.vtype) for v in list(self._vars.values())}
+        self._model.update()
         z = grb.LinExpr()
         for v in vars:
             z += self._z[v] * vars[v]
-        m.setObjective(expr=z, sense=GUROBI_MAP[self._sense])
+        self._model.setObjective(expr=z, sense=const_map[self._sense])
         for name, constraint in list(self._constraints.items()):
             lhs = grb.LinExpr()
             for x in constraint.coeffs:
                 lhs += constraint.coeffs[x] * vars[x]
-            m.addConstr(lhs=lhs,
-                        sense=GUROBI_MAP[constraint.sense],
+            self._model.addConstr(lhs=lhs,
+                        sense=const_map[constraint.sense],
                         rhs=constraint.rhs,
                         name=name)
-        m.optimize()
-        if allow_feasrelax and m.status in GUROBI_IU: # infeasible or unbounded model
+        self._model.optimize()
+        if allow_feasrelax and self._model.status in GUROBI_IU: # infeasible or unbounded model
             print('ws3.opt._solve_gurobi: Model infeasible, enabling feasRelaxS mode.')
-            m.feasRelaxS(1, False, False, True)
-            m.optimize()
-        if m.status == grb.GRB.OPTIMAL:
+            self._model.feasRelaxS(1, False, False, True)
+            self._model.optimize()
+        if self._model.status == grb.GRB.OPTIMAL:
             for k, v in list(self._vars.items()):
-                _v = m.getVarByName(k)
+                _v = self._model.getVarByName(k)
                 v._solver_var = _v # might want to poke around this later...
                 v.val = _v.X
-        return m
-
 
     def _solve_pulp(self):
-        """Solve the LP optimization problem using PuLP.
-
-        This method provides an alternative solver to Gurobi.
-        
-        Note: You may need to install PuLP first with pip:
-        ```
-        $ pip install pulp
-        ```
+        """
+        Solve the LP problem using the pulp solver.
 
         Returns
         -------
         None
         """
         import pulp
-
-        PULP_MAP = {
+        const_map = {
             SENSE_MINIMIZE:pulp.constants.LpMinimize,
             SENSE_MAXIMIZE:pulp.constants.LpMaximize,
             VTYPE_INTEGER:pulp.constants.LpInteger,
@@ -267,43 +301,26 @@ class Problem:
             SENSE_EQ:pulp.constants.LpConstraintEQ,
             SENSE_GEQ:pulp.constants.LpConstraintGE,
             SENSE_LEQ:pulp.constants.LpConstraintLE}
-
-
-        # Create a PuLP LpProblem instance
-        prob = pulp.LpProblem(name=self._name, sense=pulp.constants.LpMaximize)
-
-        # Add variables to the problem
+        self._model = pulp.LpProblem(name=self._name, sense=pulp.constants.LpMaximize)
         vars = pulp.LpVariable.dicts(name='',
                                      indices=self._vars.keys(),
                                      lowBound=0.,
                                      upBound=1.,
-                                     cat=PULP_MAP[VTYPE_CONTINUOUS])
-
-        # Define the objective function (equivalent to z in Gurobi)
+                                     cat=const_map[VTYPE_CONTINUOUS])
         obj = pulp.lpSum([self._z[v] * vars[v] for v in self._vars])
-
-        # Set the objective
-        prob += obj, 'objective'
-
-        # Add constraints to the problem
+        self._model += obj, 'objective'
         for name, constraint in list(self._constraints.items()):
             lhs = pulp.lpSum([constraint.coeffs[v] * vars[v] for v in constraint.coeffs])
-
             if constraint.sense == SENSE_EQ:
-                prob += lhs == constraint.rhs, name
+                self._model += lhs == constraint.rhs, name
             elif constraint.sense == SENSE_GEQ:
-                prob += lhs >= constraint.rhs, name
+                self._model += lhs >= constraint.rhs, name
             elif constraint.sense == SENSE_LEQ:
-                prob += lhs <= constraint.rhs, name
-
-        # Solve the problem
-        prob.solve(solver=pulp.LpSolverDefault) # use default LP solver for now, but expland later to allow other backends
-
-        if pulp.LpStatus[prob.status] in ["INFEASIBLE", "UNBOUNDED"]:
-            print(f"ws3.opt._solve_pulp: Model {pulp.LpStatus[prob.status]}")
+                self._model += lhs <= constraint.rhs, name
+        self._model.solve(solver=pulp.LpSolverDefault) # use default LP solver for now, but expland later to allow other backends
+        if pulp.LpStatus[self._model.status] in [pulp.constants.LpStatusInfeasible, pulp.constants.LpStatusUnbounded]:
+            print(f"ws3.opt._solve_pulp: Model {pulp.LpStatus[self._model.status]}")
         else:
             for k, v in list(self._vars.items()):
                 self._vars[k].val = vars[k].varValue
-
-        return prob
 

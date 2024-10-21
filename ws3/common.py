@@ -79,6 +79,14 @@ import fiona
 from fiona.transform import transform_geom
 from fiona.crs import from_epsg
 
+def hex_id(object, digest_size=10):
+    """
+    This function converts an object to a hexadecimal string.
+    
+    """
+    #return binascii.hexlify(hashlib.sha1(pickle.dumps(object)).digest(10))
+    return hashlib.sha1(pickle.dumps(object)).hexdigest()
+   
 def is_num(s):
     """
     This function checks if a given input has a numerical value.
