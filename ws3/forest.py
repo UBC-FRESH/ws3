@@ -904,7 +904,7 @@ class ForestModel:
         pass
 
     def add_problem(self, name, coeff_funcs, cflw_e=None, cgen_data=None,
-                    solver=opt.SOLVER_GUROBI, formulation=1, z_coeff_key='z', acodes=None,
+                    solver=opt.SOLVER_PULP, formulation=1, z_coeff_key='z', acodes=None,
                     sense=opt.SENSE_MAXIMIZE, mask=None):
         """
         Add an optimization problem to the model.
