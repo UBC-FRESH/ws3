@@ -21,5 +21,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 ###################################################################################
+"""
+This is the __init__.py module for a Python package. It's an empty module that serves as a placeholder to indicate that this directory should be treated as a package.
+"""
+
 __version__ = '0.0.1-post3'
 __all__ = ['common', 'core', 'util', 'forest', 'spatial', 'opt']

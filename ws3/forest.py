@@ -182,7 +182,6 @@ class DevelopmentType:
             return None
         if acode not in self.operability: # action not compiled yet...
             if self.compile_action(acode) == -1: return None # never operable
-        #print ' '.join(self.key), acode, period, self.operability, self.oper_expr
         if period not in self.operability[acode]:
             return None
         else:
@@ -232,29 +231,18 @@ class DevelopmentType:
             if self.compile_action(acode) == -1: return 0. # never operable
         if age is None: # return total operable area
             return sum(self.operable_area(acode, period, a) for a in list(self._areas[period].keys()))
-        if age not in self._areas[period]:
-            # age class not in inventory
+        if age not in self._areas[period]: # age class not in inventory
             return 0.
-        elif abs(self._areas[period][age]) < self.parent.area_epsilon:
-            # negligible area
-            #print 'no area', acode, period, age, self._areas[period][age]
-            #print ' '.join(self.key)
-            #print self._areas[period].keys()
+        elif abs(self._areas[period][age]) < self.parent.area_epsilon: # negligible area
             if cleanup: # remove ageclass from dict (frees up memory)
                 del self._areas[period][age]
             return 0.
         elif self.is_operable(acode, period, age):
-            #print 'operable', acode, period, age #, self.operability[acode]
             return self._areas[period][age]
         else:
             return 0.
         assert False
 
-
-    #def reset_areas(self, period):
-    #    for age in self._areas[period].keys():
-    #        self._areas[period][age] = 0.
-            
         
     def area(self, period, age=None, area=None, delta=True):
         """
@@ -267,9 +255,6 @@ class DevelopmentType:
         :param bool delta:  If True (default), interprets the area value as an increment on the current inventory. 
                             If False, sets the area value directly.       
         """
-        #if area is not None:
-        #    print area
-        #    assert area > 0
         if area is None: # return area for period and age
             if age is not None:
                 try:
@@ -349,10 +334,8 @@ class DevelopmentType:
         return args[0].type if not args[0].is_special else args[1].type, self._rc(args[0] / args[1])
         
     def _resolver_sum(self, yname, d):
-        #print 'resolving SUM', yname, d
         args = [self._o(s.lower()) for s in re.split('\s?,\s?', re.search('(?<=\().*(?=\))', d).group(0))] 
         ytype_set = set(a.type for a in args if isinstance(a, core.Curve))
-        #print [a.label, a.type for a in args if isinstance(a, core.Curve)]
         return ytype_set.pop() if len(ytype_set) == 1 else 'c', self._rc(reduce(lambda x, y: x+y, [a for a in args]))
         
     def _resolver_cai(self, yname, d):
@@ -371,19 +354,16 @@ class DevelopmentType:
         args = [self._o(s.lower()) for s in re.split('\s?,\s?', re.search('(?<=\().*(?=\))', d).group(0))] 
         arg_triplets = [args[i:i+3] for i in range(0, len(args), 3)]
         range_curve = self._rc(reduce(lambda x, y: x*y, [t[0].range(t[1], t[2]) for t in arg_triplets]))
-        #print ' '.join(self.key), yname, range_curve.points()
         return args[0].type, self._rc(reduce(lambda x, y: x*y, [t[0].range(t[1], t[2]) for t in arg_triplets]))
 
     def _compile_complex_ycomp(self, yname):
         expression = self._complex_ycomps[yname]
         keyword = re.search('(?<=_)[A-Z]+(?=\()', expression).group(0)
-        #print('compiling complex', yname, keyword, expression)
         try:
             ytype, ycomp = self._resolvers[keyword](yname, expression)
             ycomp.label = yname
             ycomp.type = ytype
             self._ycomps[yname] = ycomp
-            #assert False
         except KeyError:
                 raise ValueError('Problem compiling complex yield: %s, %s' % (yname, expression))
             
@@ -413,7 +393,6 @@ class DevelopmentType:
         is_operable = False
         for p in self.operability[acode]:
             if self.operability[acode][p] is not None:
-                #print 'compile_action', expr, acode, p, self.operability[acode][p]
                 is_operable = True
         if not is_operable:
             if verbose: print('not operable (deleting):', acode)
@@ -440,7 +419,6 @@ class DevelopmentType:
         _plo, _phi, _alo, _ahi = None, None, None, None
         for i, o in enumerate(lhs):
             if o == '_cp':
-                #print 'rhs', rhs
                 period = int(rhs[i])
                 assert period <= self.parent.horizon # sanity check
                 #################################################################
@@ -472,28 +450,21 @@ class DevelopmentType:
                 if rel_operators[i] == '=':
                     _alo = _ahi = ycomp.lookup(rhs[i])
                 elif rel_operators[i] == '>=':
-                    #print ' ge', o, ycomp[45], ycomp.lookup(0)  
                     _alo = ycomp.lookup(rhs[i])
                 elif rel_operators[i] == '<=':
-                    #print ' le', o 
                     _ahi = ycomp.lookup(rhs[i])
                 else:
                     raise ValueError('Bad relational operator.')
-                #print ' ', o, (alo, _alo), (ahi, _ahi)
         if oper == 'and' or not oper:
             if _alo is not None: alo = max(_alo, alo)
             if _ahi is not None: ahi = min(_ahi, ahi)
         else: # or
             if _alo is not None: alo = min(_alo, alo)
             if _ahi is not None: ahi = max(_ahi, ahi)
-        #if plo >= phi:
-        #    print(plo, phi)
         assert plo <= phi # should never explicitly declare infeasible period range...
         for p in range(plo, phi+1):
             assert alo <= ahi
-            #print self.key, acode, p, alo, ahi
             self.operability[acode][p] = (alo, ahi) if alo <= ahi else None
-            #print acode, p, (alo, ahi), expr
             
                 
     def add_ycomp(self, ytype, yname, ycomp, first_match=True):
@@ -915,9 +886,10 @@ class ForestModel:
     def _cmp_sch_m1(self, problem, skip_null):
         _sch = [[] for t in self.periods]
         sln = problem.solution()
+        if not sln: return None
         for i, tree in list(problem.trees.items()):
             for path in tree.paths():
-                x = 'x_%i' % hash((i, tuple(n.data('acode') for n in path)))
+                x = 'x_%s' % common.hex_id((i, tuple(n.data('acode') for n in path)))
                 if not sln[x]: continue
                 for t, n in enumerate(path):
                     d = n.data()
@@ -932,7 +904,7 @@ class ForestModel:
         pass
 
     def add_problem(self, name, coeff_funcs, cflw_e=None, cgen_data=None,
-                    solver=opt.SOLVR_GUROBI, formulation=1, z_coeff_key='z', acodes=None,
+                    solver=opt.SOLVER_PULP, formulation=1, z_coeff_key='z', acodes=None,
                     sense=opt.SENSE_MAXIMIZE, mask=None):
         """
         Add an optimization problem to the model.
@@ -1006,12 +978,12 @@ class ForestModel:
         self._problems[name] = p
         p.trees, p._vars = self._gen_vars_m1(coeff_funcs, acodes=acodes, mask=mask)
         for i, tree in list(p.trees.items()):
-            cname = 'cov_%i' % hash(i)
-            coeffs = {'x_%i' % hash((i, tuple(n.data('acode') for n in path))):1. for path in tree.paths()}
+            cname = 'cov_%s' % common.hex_id(i)
+            coeffs = {'x_%s' % common.hex_id((i, tuple(n.data('acode') for n in path))):1. for path in tree.paths()}
             p.add_constraint(name=cname, coeffs=coeffs, sense=opt.SENSE_EQ, rhs=1.)
             for path in tree.paths():
                 try:
-                    p._z['x_%i' % hash((i, tuple(n.data('acode') for n in path)))] = path[-1].data(z_coeff_key)
+                    p._z['x_%s' % common.hex_id((i, tuple(n.data('acode') for n in path)))] = path[-1].data(z_coeff_key)
                 except Exception as e:
                     print('error processing tree', i)
                     print(e)
@@ -1033,7 +1005,7 @@ class ForestModel:
                         mu[t][o][i, j] = _mu[t] if t in _mu else 0. 
         for o, b in list(cgen_data.items()):
             for t in self.periods:
-                _mu = {'x_%i' % hash((i, j)):mu[t][o][i, j] for i, j in mu[t][o]}
+                _mu = {'x_%s' % common.hex_id((i, j)):mu[t][o][i, j] for i, j in mu[t][o]}
                 if b['lb'] is not None and t in b['lb']:
                     problem.add_constraint(name='gen-lb_%03d_%s' % (t, o), coeffs=_mu, sense=opt.SENSE_GEQ, rhs=b['lb'][t])
                 if b['ub'] is not None and t in b['ub']:
@@ -1061,8 +1033,8 @@ class ForestModel:
         for t in self.periods:
             for o, e in list(cflw_e.items()):
                 if t in e[0]:
-                    mu_lb = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 - e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
-                    mu_ub = {'x_%i' % hash((i, j)):(mu[t][o][i, j] - (1 + e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
+                    mu_lb = {'x_%s' % common.hex_id((i, j)):(mu[t][o][i, j] - (1 - e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
+                    mu_ub = {'x_%s' % common.hex_id((i, j)):(mu[t][o][i, j] - (1 + e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
                     problem.add_constraint(name='flw-lb_%03d_%s' % (t, o), coeffs=mu_lb, sense=opt.SENSE_GEQ, rhs=0.)
                     problem.add_constraint(name='flw-ub_%03d_%s' % (t, o), coeffs=mu_ub, sense=opt.SENSE_LEQ, rhs=0.)
 
@@ -1118,7 +1090,7 @@ class ForestModel:
                 t = trees[i] = self._bld_tree_m1(dt.area(1, age), dt.key, age, coeff_funcs, acodes=acodes)
                 for path in t.paths():
                     j = tuple(n.data('acode') for n in path)
-                    vname = 'x_%i' % hash((i, j))
+                    vname = 'x_%s' % common.hex_id((i, j))
                     vtype = opt.VTYPE_CONTINUOUS
                     lb, ub = 0., 1.
                     vars[vname] = opt.Variable(vname, vtype, lb, ub)
@@ -1259,7 +1231,7 @@ class ForestModel:
         """
         Add curve to global curve hash map (uses result of Curve.points() to construct hash key). 
         """
-        key = tuple(curve.points())
+        key = tuple(curve.points()) # TO DO: use builtin common.hex_id() function to convert curves to hashed valued?
         if key not in self.curves:
             # new curve (lock and register)
             curve.is_locked = True # points list must not change, else not valid key

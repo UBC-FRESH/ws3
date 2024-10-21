@@ -79,6 +79,14 @@ import fiona
 from fiona.transform import transform_geom
 from fiona.crs import from_epsg
 
+def hex_id(object, digest_size=10):
+    """
+    This function converts an object to a hexadecimal string.
+    
+    """
+    #return binascii.hexlify(hashlib.sha1(pickle.dumps(object)).digest(10))
+    return hashlib.sha1(pickle.dumps(object)).hexdigest()
+   
 def is_num(s):
     """
     This function checks if a given input has a numerical value.
@@ -322,10 +330,11 @@ def hash_dt(dt, dtype=rasterio.int32, nbytes=4):
     :param int nbytes: The number of bytes to consider from the hash (The default value is 4).
 
     """
+    import struct
     s = '.'.join(map(str, dt)).encode('utf-8')
     d = hashlib.md5(s).digest() # first n bytes of md5 digest
-    return np.dtype(dtype).type(int(binascii.hexlify(d[:4]), 16))
-
+    #return np.dtype(dtype).type(int(binascii.hexlify(d[:4]), 16))
+    return np.dtype(dtype).type(struct.unpack('<i', d[:4])[0])
 
 def warp_raster(src, dst_path, dst_crs={'init':'EPSG:4326'}):
     """

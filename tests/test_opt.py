@@ -1,6 +1,6 @@
 import sys
-sys.path.append('./ws3/')
-from opt import Variable, Constraint, Problem
+sys.path.append('../ws3/')
+from ws3.opt import Variable, Constraint, Problem
 import pytest
 
 
@@ -62,7 +62,7 @@ def test_variable_with_invalid_bound():
 # test class Constraint
 def test_constraint_initialization():
     name = "constraint1"
-    coeffs = [1, 2, 3]
+    coeffs = {'x_1':1, 'x_2':2, 'x_3':3}
     sense = SENSE_EQ
     rhs = 10
 
@@ -91,5 +91,5 @@ def test_constraint_invalid_sense():
     with pytest.raises(ValueError):
         Constraint(name, coeffs, sense, rhs)
 
-if __name__ == "__main__":
-    pytest.main()
+#if __name__ == "__main__":
+#    pytest.main()

@@ -1,7 +1,7 @@
 import sys
-sys.path.append('./ws3/')
+sys.path.append('../ws3/')
 import pytest
-from forest import GreedyAreaSelector, Action, DevelopmentType
+from ws3.forest import GreedyAreaSelector, Action, DevelopmentType
 
 @pytest.fixture
 
