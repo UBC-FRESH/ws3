@@ -68,7 +68,7 @@ Overview of Main Classes and Functions
 This section describes some of the main classes and functions that make up the ``ws3`` 
 pacakge.
 
-:py:class:`~ws3.model.ForestModel`
+:py:class:`~ws3.model.ForestModel` test.
 
 The ``ForestModel`` class is the core class in the package. This class 
 encapsulates all the information used to simulate scenarios from a given dataset 
