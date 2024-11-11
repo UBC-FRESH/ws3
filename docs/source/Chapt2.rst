@@ -1,6 +1,6 @@
-**************************
+*******************************
 About the :py:mod:`ws3` Package
-**************************
+*******************************
 
 The :py:mod:`ws3` package is implemented using the Python programming language. 
 :py:mod:`ws3` is an aspatial wood supply model, which applies actions (and matching

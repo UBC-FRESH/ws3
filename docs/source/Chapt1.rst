@@ -1,6 +1,6 @@
-****************************
+******************
 Wood Supply Models
-****************************
+******************
 
 Wood supply models (WSM) are software packages that simulate forest activities 
 to assist in the development of forest plans, wood supply analysis and sustainable 
@@ -27,7 +27,8 @@ In other instances AOI's are not predefined and require defining at the start of
 project. 
 
 Defining AOI
-----------------
+------------
+
 Defining an AOI is typically the starting point for a WSPP. Generally, an AOI is 
 defined in a spatially explicit way based on landscape features or landownership. If 
 you are starting a WSP project and are tasked with delineating an AOI, the first place 
@@ -45,8 +46,8 @@ by the presence of private landownership and another aspect might be defined by 
 extent of the forest. 
 
 Landscape Classification
+------------------------
 
-----------------
 In addition to defining an AOI, WSP typically require some initial landscape 
 classification. This initial landscape classification is an essential part of WSM 
 since features not defined are inevitably unmanageable. When starting an initial 
@@ -83,7 +84,7 @@ Ultimately, all of these different features will be combined into one layer or f
 be joined with initial forest inventory. 
 
 Initial Forest Inventory
-================
+========================
 
 Given that the primary purpose of a WSM is to project the state of a forested 
 area through time under various patterns of management activities (and possibly 
@@ -107,7 +108,7 @@ Aspaital delineation is much the same as spatial except different groups do not
 have neighbours or defined polygon boundaries. 
 
 Stratifying the Forest 
-================
+======================
 
 The forest inventory data is typically aggregated into a manageable number of 
 *development types* (i.e., *strata* or *analysis units*),  which simplifies the 
@@ -151,7 +152,7 @@ be used to define *transitions*, which are transitions between development types
 result of actions being applied at specific ages.
 
 Yield Curves
-================
+============
 
 Growth and yield functions are one of the major inputs to WSM. These will be used to 
 predict and project stand attributes over time, as a function of stand age (e.g., 
@@ -163,7 +164,7 @@ derived from expert knowledge, or from output from various simulation or statist
 regression models. 
 
 Actions 
-================
+=======
 
 Actions are used to apply management actions at specific ages in WSM. Actions are typically used
 simulate various silviculture treatments (e.g., site preparation, planting, pre-commercial thinning,
@@ -197,7 +198,7 @@ There are two basic approached that can be used (independently, or in combinatio
 the dynamic activity schedules for each scenario.
 
 Heuristics
-----------------
+----------
 
 The simplest approach, which we call the *heuristic* activity scheduling method, involves defining 
 period-wise targets for a single key output (e.g., total harvest volume) along with a set of rules 
@@ -207,7 +208,7 @@ met, or it runs out of eligible area. At this point, the model simulates one tim
 growth, and the process repeats until the end of the planning horizon.
 
 Optimization
-----------------
+------------
 
 A slightly more complex approach, which we call the *optimization* activity scheduling method, 
 involves defining an  optimization problem (i.e., an objective function and constraints), and solving 
