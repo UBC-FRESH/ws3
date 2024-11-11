@@ -2,22 +2,80 @@
 About the ``ws3`` Package
 **************************
 
-The ``ws3`` package is implemented using the Python programming language. ``ws3`` is an aspatial wood supply model, which applies actions to development types, simulates growth, and tracks inventory area at each time step. Aspatial models output aspatial activity schedules---each line of the output schedule specifies the stratification variable values (which constitute a unique key into the list of development types), the time step, the action code, and the area treated.
+The ``ws3`` package is implemented using the Python programming language. 
+``ws3`` is an aspatial wood supply model, which applies actions (and matching
+transitions) to development types, simulates growth, and tracks inventory 
+area (by development type and by age class) at each time step. Aspatial 
+models output aspatial activity schedules---each line of the output schedule 
+specifies the stratification variable values (which constitute a unique key 
+into the list of development types), the age class, the time step, the action 
+code, and the area treated.
 
-Because the model is aspatial, the area treated on a given line of the output schedule may not be spatially contiguous (i.e., the area may be geographically dispersed throughout the landscape). Furthermore, in the common case where only a subset of development type area is treated in a given time step, the aspatial model provides not information regarding which subset of available area is treated (and, conversely, not treated). Some applications (e.g., linking to spatially-explicit or highly--spatially-referenced models) require a spatially-explicit activity schedule. ``ws3`` includes a *spatial disturbance allocator* sub-module, which contains functions that can map aspatial multi-period action schedules onto a rasterized spatial representation of the forest.
+Because the model is aspatial, the area treated on a given line of the output 
+schedule may not be spatially contiguous (i.e., the area may be geographically 
+dispersed throughout the landscape). Furthermore, in the common case where only 
+a subset of available area in a given development type and age class combination
+is treated in a given time step, an aspatial model provides no information 
+regarding which spatial subset of available area is treated (and, conversely, 
+not treated). 
 
-``ws3`` uses a scripted Python interface to control the model, which provides maximum flexibility and makes it very  easy to automate modelling workflows. This ensures reproducible methodologies, and makes it relatively easy to link ``ws3`` models to other software packages to form complex modelling pipelines. The scripted interface also makes it relatively easy to implement custom data-importing functions, which makes it easier to import existing data from a variety of ad-hoc sources without the need to recompile the data into a standard ``ws3``-specific format (i.e., importing functions can be implemented such that the conversion process is fully automated and applied to raw input data *on the fly*). Similarly, users can easily implement custom functions to re-format ``ws3``  output data *on the fly* (either for static serialization to disk, or to be piped live into another process). 
+Some applications (e.g., linking to spatially-explicit 
+or highly--spatially-referenced models) require a spatially-explicit activity 
+schedule. ``ws3`` includes a *spatial disturbance allocator* sub-module, which 
+contains functions that can map aspatial multi-period action schedules onto a 
+rasterized spatial representation of the forest. The spatial disturbance allocator 
+is implemented using the ``rasterio`` package and is available as part of the 
+``ws3.spatial`` module. The area-based forest inventory input data for a ``ws3``
+model is typically compiled by *aggregating* stands in a spatially explicity 
+forest inventory data layer (i.e., by combining spatially discontiguous stands
+into area bins, grouping by stratum and age class). The spatial disturbance 
+allocation functions are effectively *disaggregating* the aspatial disturbance
+schedule, restoring the spatial dimensionality of the forest inventory data layer.
+These same functions are also capable of *disaggregating* ``ws3`` output schedules 
+from multi-year simulation periods into annual time steps (which is useful if you 
+plan to pipe ``ws3`` output to a downstream spatially-explicit model that also
+operates on a smaller simulation time step than your source ``ws3`` model). 
+Note that this disaggregation operation is always going to be somewhat 
+problematic, because we are essentially fabricating details that are not 
+represented in the source data.
 
-Although we recommend using Jupyter Notebooks as an interactive interface to ``ws3`` (the package was specifically designed with an interactive notebook interface in mind), ``ws3`` functions can also be imported and run in fully scripted workflow (e.g., non-interactive batch processes can be run in a massively-paralleled workflow on high-performance--computing resources, if available). The ability to mix interactive and massively-paralleled non-interactive workflows is a unique feature of ``ws3``.
+``ws3`` uses a scripted Python interface to control the model, which provides maximum 
+flexibility and makes it easy to automate modelling workflows. This ensures 
+reproducible methodologies, and enables linking ``ws3`` input or outout to other 
+software packages to form complex modelling pipelines. The scripted interface also 
+makes it relatively easy to implement custom data-importing functions, which makes 
+it easier to import existing data from a variety of ad-hoc sources without the 
+need to recompile the data into a standard ``ws3``-specific format (i.e., importing 
+functions can be implemented such that the conversion process is fully automated 
+and applied to raw input data *on the fly*). Similarly, users can easily implement 
+custom functions to re-format ``ws3`` output data *on the fly* (either for static 
+serialization to disk, or to be piped live into another process). 
 
-``ws3`` is a complex and flexible collection of functional software units. The following sections describe some of the main classes and functions in the package, and describe some common use cases, and link to sample notebooks that implement these use cases.
+Although we recommend using Jupyter Notebooks as an interactive interface to ``ws3`` 
+(the package was specifically designed with an interactive notebook interface in mind), 
+``ws3`` functions can also be imported and run in fully scripted workflow 
+(e.g., non-interactive batch processes can be run in a massively-paralleled workflow 
+on high-performance--computing resources, if available). The ability to mix interactive 
+and massively-paralleled non-interactive workflows is a unique feature of ``ws3``.
+
+``ws3`` is a complex and flexible collection of functional software units. The following 
+sections describe some of the main classes and functions in the package, and describe 
+some common use cases, and link to sample notebooks that implement these use cases.
 
 Overview of Main Classes and Functions
 =========================
 
-This section describes some of the main classes and functions that make up.
+This section describes some of the main classes and functions that make up the ``ws3`` 
+pacakge.
 
-The ``ForestModel`` class is the core class in the package. This class encapsulates all the information used to simulate scenarios from a given dataset (i.e., stratified initial inventory, growth and yield functions, action eligibility, transition matrix, action schedule, etc.), as well as a large collection of functions to import and export data, generate activity schedules, and simulate application of these schedules  (i.e., run scenarios).
+:py:class:`~ws3.model.ForestModel`
+
+The ``ForestModel`` class is the core class in the package. This class 
+encapsulates all the information used to simulate scenarios from a given dataset 
+(i.e., stratified initial inventory, growth and yield functions, action eligibility, 
+transition matrix, action schedule, etc.), as well as a collection of functions 
+to import and export data, generate activity schedules, and simulate application of 
+these schedules (i.e., run scenarios).
 
 At the heart of the ``ForestModel`` class is a list of ``DevelopentType`` instances. Each ``DevelopmentType`` instance encapsulates information about one development type (i.e., a forest stratum, which is an aggregate of smaller *stands* that make up the raw forest inventory input data). The ``DevelopmentType`` class also stores a list of operable *actions*, maps *state variable transitions* to these actions, stores growth and yield functions, and knows how to *grow itself* when time is incremented during a simulation.
 
