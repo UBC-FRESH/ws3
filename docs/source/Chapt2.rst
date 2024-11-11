@@ -151,4 +151,3 @@ supply model formulations, see Chapter 16 of the
 .. [#] :py:mod:`ws3` currently defaults to the open source `PuLP <https://coin-or.github.io/pulp/>`_ solver
 to solve linear programs, and also includes `Gurobi <http://www.gurobi.com/>`_ solver bindings. 
 :py:mod:`ws3` may eventually provide a pluggable interface to other solvers (e.g., CPLEX, GLPK, etc.).
-
