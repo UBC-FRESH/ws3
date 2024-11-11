@@ -63,7 +63,7 @@ sections describe some of the main classes and functions in the package, and des
 some common use cases, and link to sample notebooks that implement these use cases.
 
 Overview of Main Classes and Functions
-=========================
+======================================
 
 This section describes some of the main classes and functions that make up the ``ws3`` 
 pacakge.
@@ -87,7 +87,7 @@ when time is incremented during a simulation.
 .. To Do: Finish documenting main stuff here.
  
 Common Use Case and Sample Notebooks
-===========================
+====================================
 
 In this section, we assume an interactive Jupyter Notebook environment is used to 
 interface with :py:mod:`ws3`.
@@ -136,18 +136,18 @@ inventory constraints, periodic minimum late-seral-stage area constraints)
 [#]_, build the optimization model matrix, solve the model to optimality [#]_. 
 
 .. [#] *Woodstock* is part of suite of 
-`Forestry Planning and Scheduling <https://remsoft.com/forestry-planning-and-scheduling/>`_
-software tools offered by Remsoft. 
+   `Forestry Planning and Scheduling <https://remsoft.com/forestry-planning-and-scheduling/>`_
+   software tools offered by Remsoft. 
 
 .. [#] :py:mod:`ws3` currently implements functions to formulate and solve *Model I* 
-wood supply optimization problems---however, the package was deliberately designed 
-to make it easy to transparently switch between *Model I* ,  *Model II* and *Model III* 
-formulations without affecting the rest of the modelling workflow. ``ws3`` currently 
-has placeholder function stubs for *Model II* and *Model III* formulations, which will 
-be implemented in later versions as the need arises. For more information on wood 
-supply model formulations, see Chapter 16 of the 
-`Handbook of Operations Research in Natural Resources <http://www.springer.com/gp/book/9780387718149>`_.
+   wood supply optimization problems---however, the package was deliberately designed 
+   to make it easy to transparently switch between *Model I* ,  *Model II* and *Model III* 
+   formulations without affecting the rest of the modelling workflow. ``ws3`` currently 
+   has placeholder function stubs for *Model II* and *Model III* formulations, which will 
+   be implemented in later versions as the need arises. For more information on wood 
+   supply model formulations, see Chapter 16 of the 
+   `Handbook of Operations Research in Natural Resources <http://www.springer.com/gp/book/9780387718149>`_.
 
 .. [#] :py:mod:`ws3` currently defaults to the open source `PuLP <https://coin-or.github.io/pulp/>`_ solver
-to solve linear programs, and also includes `Gurobi <http://www.gurobi.com/>`_ solver bindings. 
-:py:mod:`ws3` may eventually provide a pluggable interface to other solvers (e.g., CPLEX, GLPK, etc.).
+   to solve linear programs, and also includes `Gurobi <http://www.gurobi.com/>`_ solver bindings. 
+   :py:mod:`ws3` may eventually provide a pluggable interface to other solvers (e.g., CPLEX, GLPK, etc.).
