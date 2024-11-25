@@ -1,5 +1,5 @@
-opt module
-==========
+``opt`` module
+==============
 
 .. automodule:: opt
     :members:

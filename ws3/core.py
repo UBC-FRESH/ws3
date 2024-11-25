@@ -1,30 +1,10 @@
+"""
+This module defines some core classes used elsewhere in the package.
+These include classes to represent yield curves and dynamcic programming
+state trees.
+"""
 
-###################################################################################
-# MIT License
 
-# Copyright (c) 2015-2017 Gregory Paradis
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-###################################################################################
-
-#from numpy import argmax, array, logical_and
-#from scipy.interpolate import interp1d
 from bisect import bisect_left
 from itertools import repeat
 import copy
@@ -32,22 +12,22 @@ import math
 
 from ws3 import common
 
-"""
-Used by ``Curve`` class to interpolate between real data points.
-"""
 class Interpolator(object):
     """
     Interpolates x and y values from sparse curve point list.
+
+    Used by the :py:class:`ws3.core.Curve` class to interpolate between real data points.
+
     """
     def __init__(self, points):
-        #if any([_y - _x <= 0 for _x, _y in zip(x, x[1:])]):
-        #    raise ValueError("x_list must be in strictly ascending order!")
+        """
+        :param list points: A list of (x,y) coordinate pairs.
+        """
         x, y = list(zip(*points))
         self.x = list(map(float, x))
         self.y = list(map(float, y))
         self.n = len(x)
         intervals = list(zip(self.x, self.x[1:], self.y, self.y[1:]))
-        #print intervals
         try:
             self.m = [(y2 - y1)/(x2 - x1) for x1, x2, y1, y2 in intervals]
         except:
@@ -57,51 +37,31 @@ class Interpolator(object):
     def points(self):
         """
         Returns the points as a list of tuples representing the points.
-        
+
+        :return list: A list of (x, y) coordinate pairs.
         """
-        #print('foo')
-        #print(self.x)
-        #print(list(map(int, self.x)), self.y)
         return list(zip(list(map(int, self.x)), self.y))
         
     def __call__(self, x):
+        """
+        Interpolates the value of y at a given x.
+
+        :param x: The x coordinate to interpolate.
+        :return float: The y value at the given x.
+        """
         if x == 0: return self.y[0]
         i = bisect_left(self.x, x) - 1
-        #print x, self.m[i]
         return self.y[i] + self.m[i] * (x - self.x[i])          
-        # try:
-        #     return self.y_list[i] + self.slopes[i] * (x - self.x_list[i])    
-        # except IndexError:
-        #     print 'i', i
-        #     print 'x', x
-        #     print 'y_list[i]', self.y_list[i]
-        #     print 'slopes[i]', self.slopes[i]
-        #     print 'x_list[i]', self.x_list[i]
-        #     assert False
 
     def lookup(self, y, from_right=False):
         """
         Looks up the x-coordinate corresponding to the given y-coordinate.
 
         :param float y: The y-coordinate to look up.
-        :param bool from_right: Flag indicating whether to search from the right. Defaults to False.
+        :param bool from_right: Flag indicating whether to search from the right. Defaults to `False`.
+        :return int: The x-coordinate corresponding to the given y-coordinate.
         """
-        ##########################################################################
-        # NOTE: This seemed to work fine at first, but breaks badly if y-values
-        #       are not monotonically increasing from left to right...
-        # if not from_right:
-        #     i = bisect_left(self.y, y)
-        #     if i == 0: return self.x[0]
-        #     i -= 1
-        #     if i == self.n - 1: return self.x[-1]
-        #     try:
-        #         return self.x[i] + (y - self.y[i])/self.m[i] if self.m[i] else self.x[i]
-        #     except:
-        #         print i, self.n, self.x, self.y
-        #         raise
-        ##########################################################################
         if not from_right:
-            #_x = self.x[0]
             for i, x in enumerate(self.x):
                 if self.y[i] > y: break
             i -= 1
@@ -118,7 +78,7 @@ class Interpolator(object):
             
 class Curve:
     """
-    Describes change in state over time (between treatments)
+    Describes change in state over time (between treatments).
     """
     _type_default = 'a'
     
@@ -134,6 +94,20 @@ class Curve:
                  xmax=common.MAX_AGE_DEFAULT,
                  epsilon=common.CURVE_EPSILON_DEFAULT,
                  simplify=True):
+        """
+        :param str label: A label for the curve.
+        :param str id: An ID for the curve.
+        :param bool is_volume: Flag indicating whether the curve tracks volume. Defaults to ``False``.
+        :param list points: A list of (x,y) pairs defining the curve.
+        :param str type: A string indicating the type of curve. Defaults to ``'a'``.
+        :param bool is_special: Flag indicating whether the curve is special. Defaults to ``False``.
+            Special curves are immune to simplification.
+        :param float period_length: The length of the period. Defaults to :py:attr:`ws3.common.PERIOD_LENGTH_DEFAULT`.
+        :param float xmin: The minimum age. Defaults to :py:attr:`ws3.common.MIN_AGE_DEFAULT`.
+        :param float xmax: The maximum age. Defaults to :py:attr:`ws3.common.MAX_AGE_DEFAULT`.
+        :param float epsilon: The tolerance for simplifying the curve. Defaults to :py:attr:`ws3.common.CURVE_EPSILON_DEFAULT`.
+        :param bool simplify: Flag indicating whether to simplify the curve. Defaults to ``True``.
+        """
         self.label = label
         self.id = id
         self.is_volume = is_volume
@@ -183,9 +157,9 @@ class Curve:
             error = abs(sum(self) - ysum) / ysum
             print('after final simplify', n, len(self.points()), float(n)/float(len(self.points())), error, ysum, sentinel) #, e, abs(sum(self) - ysum) / ysum
 
-        
     def _simplify(self, e, compile_y=False):
         """
+        Simplify the curve using a linear interpolation. Internal method, called from ``self.simplify()``.
         .. note:: 
            Implementation was modified so that point list is stored only once (in interp).
         """
@@ -204,18 +178,16 @@ class Curve:
             
     def add_points(self, points, simplify=True, compile_y=False):
         """
-        Adds points to the curve and optionally simplifies it.
+        Adds points to the curve and optionally simplifies point geometry.
     
         :param list of tuples points: The points to add to the curve.
-        :param bool simplify: Flag indicating whether to simplify the curve after adding points. Defaults to True.
-        :param bool compile_y: Flag indicating whether to compile the y-component after adding points. Defaults to False.
+        :param bool simplify: Flag indicating whether to simplify the curve after adding points. Defaults to ``True``.
+        :param bool compile_y: Flag indicating whether to compile the y-component after adding points. Defaults to ``False``.
         """
         assert not self.is_locked
         x, y = list(zip(*points)) # assume sorted ascending x
         x = list(x)
         y = [float(_y) for _y in y]
-        # seems ok... (never tripped the assertion so far)
-        # assert x[0] >= 0 and x[-1] <= self.xmax
         x_min = x[0]
         if x_min > 0:
             if x_min>1:
@@ -234,34 +206,19 @@ class Curve:
             if compile_y: self._compile_y()
 
     def points(self):
+        """
+        :return list: list of curve points
+        """
         return self.interp.points()
 
-    ##########################################################################################
-    # NOTE: This is confirmed to work!... but has two (minor) problems:
-    #       * evaluates more points than necessary
-    #       * instantiate a new Curve with shitloads of points
-    #         (although can be compressed with Curve.simplify(), it is more work to compress.
-    #       * can return a double-range (would rather return a single window, searching L to R)
-    #       
-    # def range(self, lo=None, hi=None, verbose=False):
-    #     y = [0. if ((lo is not None and y < lo) or (hi is not None and y > hi)) else 1. for y in self.y()]
-    #     if verbose:
-    #         for i, j in enumerate(self.y()):
-    #             print i, j, lo, hi, y[i], (hi is not None), (j > hi)
-    #     if verbose:
-    #         print 'range', lo, hi
-    #         print 'range', y
-    #         print 'range', self._y
-    #     return Curve(points=zip(self.x, y))
-
     def lookup(self, y, from_right=False, roundx=False):
-
         """
         Looks up the x-coordinate corresponding to the given y-coordinate.
     
         :param float y: The y-coordinate to look up.
-        :param bool from_right: Flag indicating whether to search from the right. Defaults to False.
-        :param bool roundx: Flag indicating whether to round the x-coordinate to the nearest integer. Defaults to False.
+        :param bool from_right: Flag indicating whether to search from the right. Defaults to ``False``.
+        :param bool roundx: Flag indicating whether to round the x-coordinate to the nearest integer. Defaults to ``False``.
+        :return float: The x-coordinate corresponding to the given y-coordinate.
         """
         x = self.interp.lookup(y, from_right)
         if roundx:
@@ -275,13 +232,17 @@ class Curve:
 
         :param float lo: The lower bound of the range. Defaults to None.
         :param float hi: The upper bound of the range. Defaults to None.
-        :param bool as_bounds: Flag indicating whether to return the range as a tuple of bounds. Defaults to False.
-        :param bool left_range: Flag indicating whether to look up the upper bound from the left (default) or from the right (widest possible range).
+        :param bool as_bounds: Flag indicating whether to return the range as a 
+            tuple of bounds. Defaults to ``False``.
+        :param bool left_range: Flag indicating whether to look up the upper bound 
+            from the left (default) or from the right (widest possible range).
+        :return: Returns either curve representing 
+          the range within the specified bounds, or a tuple representing lower- and upper-bound 
+          values (if ``as_bounds`` set to ``True``).
+        :rtype: :py:class:`ws3.core.Curve` or tuple
         """
         lb = int(round(self.interp.lookup(lo))) if lo is not None else 0
         ub = int(round(self.interp.lookup(hi, from_right=not left_range))) if hi is not None else self.xmax
-        #print self.label, 'lo', lo, 'hi', hi, 'lb', lb, 'ub', ub
-        #print self.points()
         points = [(lb, 1), (ub, 1)] if ub > lb else [(lb, 1)]
         if lb > 0:
             if lb > 1:
@@ -294,54 +255,59 @@ class Curve:
         if as_bounds: 
             return lb, ub
         else:
-            #print points
             return Curve(points=points)
         
     def cai(self):
         """
-        Calculates the current annual increment (CAI) as a curve.
+        Calculates a current annual increment (CAI) curve.
+
+        :return: A curve representing the current annual increment.
+        :rtype: :py:class:`ws3.core.Curve`
         """
-        #points = list(zip(self.interp.x, self.interp.m))
         X = list(range(1, self.xmax))
         Y = [self[x] - self[x-1] for x in X]
         points = list(zip(X, Y))
-        #print(points)
         return Curve(points=points)
-        #return Curve(points=list(zip(x, (y[1:]-y[:-1])/self.period_length)))
             
     def mai(self):
         """
-        Calculates the mean annual increment (MAI) as a curve.
-        
+        Calculates a mean annual increment (MAI) curve.
+
+        :return: A curve representing the mean annual increment.
+        :rtype: :py:class:`ws3.core.Curve`
         """
         X = range(1, self.xmax)
-        Y = [self[x] / x for x in X[1:]] 
+        Y = [self[x] / x for x in X[1:]]
+        points = list(zip(X, Y)) 
+        return Curve(points=points)
 
-        return Curve(points=list(zip(X, Y)))
-
-        
-        #try:
-        #    p = [(0, 0.)] + [(x, self[x]/(float(x)*self.period_length)) for x in range(1, self.xmax+1)]
-        #except:
-        #    print(self.x) #[1:]
-        #return Curve(points=p)
-            
     def ytp(self):
         """
-        Returns the yield-to-point (YTP) curve.
+        Returns a years-to-peak (YTP) curve. This curve is a measure of how many years 
+        it takes for the curve to reach its peak (positive values to the left of the peak,
+        and negative values to the right of the peak).
+        :return: A curve representing the years to peak.
+        :rtype: :py:class:`ws3.core.Curve`
         """
         y = self.y()
         argmax = y.index(max(y))
         return Curve(points=[(x, argmax-x) for x in self.x])
 
     def _compile_y(self):
+        """
+        Compiles the y values from the x values stored in ``self.x``, 
+        and stores them in ``self._y``.
+        """
         self._y = [self.interp(x) for x in self.x]
     
     def y(self, compile_y=False):
         """
-        Calculates the y-values of the curve.
+        Returns the y-values of the curve stored in ``self._y`` (will first compile them if ``compile_y`` is set 
+        to ``True`` and ``self._y`` is empty), else will interpolate a list of y values 
+        for each x value in ``self.x``.
 
-        :param bool compile_y: Flag indicating whether to compile the y-component of the curve. Defaults to False.
+        :param bool compile_y: Flag indicating whether to compile the y-component of the curve. Defaults to ``False``.
+        :return list: A list of y values.
         """
         if compile_y and not self._y:
             self._compile_y()
@@ -350,108 +316,284 @@ class Curve:
             return [self.interp(x) for x in self.x]
         
     def __iter__(self):
+        """
+        Returns an iterator that iterates through the y values of this curve.
+        """
         for y in self.y(): yield y
            
     def __getitem__(self, x):
+        """
+        Returns the y value of this curve at a given x-value ``x``.
+        """
         return self._y[x] if self._y else self.interp(x)
 
     def __and__(self, other):
-        y = [self[x] and other[x] for x in self.x] 
-        return Curve(points=list(zip(self.x, y)))  
+        """
+        Returns a new curve that is the intersection of this curve with another curve ``other``.
+        :param :py:class:`ws3.core.Curve` other: The curve to intersect with this curve.
+        :return: A new curve that is the intersection of this curve with another curve ``other``.
+        :rtype: :py:class:`ws3.core.Curve`
+        """
+        y = [self[x] and other[x] for x in self.x]
+        points = list(zip(self.x, y)) 
+        return Curve(points=points)  
     
     def __or__(self, other):
-        y = [self[x] or other[x] for x in self.x] 
-        return Curve(points=list(zip(self.x, y)))  
+        """
+        Returns a new curve that is the union of this curve with another curve ``other``.
+        :param :py:class:`ws3.core.Curve` other: The curve to union with this curve.
+        :return: A new curve that is the union of this curve with another curve ``other``.
+        :rtype: :py:class:`ws3.core.Curve`
+        """
+        y = [self[x] or other[x] for x in self.x]
+        point = list(zip(self.x, y)) 
+        return Curve(points=points)  
     
     def __mul__(self, other):
+        """
+        Returns a new curve that is the product of this curve with another curve ``other`` or a constant value.
+        :param :py:class:`ws3.core.Curve` other: The curve to multiply with this curve or the constant value ``other``.
+        :return: A new curve that is the product of this curve with another curve ``other`` or a constant value.
+        :rtype: :py:class:`ws3.core.Curve`
+        """
         y = [_y*other for _y in self.y()] if isinstance(other, float) else [a*b for a,b in zip(self.y(), other.y())]
-        return Curve(points=list(zip(self.x, y)))  
+        points = list(zip(self.x, y))
+        return Curve(points=points)  
     
     def __div__(self, other):
+        """
+        Returns a new curve that is the quotient of this curve with another curve ``other`` or a constant value.
+        :param  :py:class:`ws3.core.Curve` other: The curve to divide with this curve or the constant value ``other``.
+        :return: A new curve that is the quotient of this curve with another curve ``other`` or a constant value.
+        :rtype: :py:class:`ws3.core.Curve`
+        """
         y = [a/b for a, b in zip(self.y(), [1. if not y else y for y in other.y()])]
-        return Curve(points=list(zip(self.x, y)))
+        points = list(zip(self.x, y))
+        return Curve(points=points)
         
     def __add__(self, other):
+        """
+        Returns a new curve that is the sum of this curve with another curve ``other`` or a constant value.
+        :param  :py:class:`ws3.core.Curve` other: The curve to add with this curve or the constant value ``other``
+        :return: A new curve that is the sum of this curve with another curve ``other`` or a constant value.
+        :rtype: :py:class:`ws3.core.Curve`
+        """
         y = [_y+other for _y in self.y()] if isinstance(other, float) else [a+b for a,b in zip(self.y(), other.y())]
-        return Curve(points=list(zip(self.x, y)))  
+        points = list(zip(self.x, y))
+        return Curve(points=points)  
 
     def __sub__(self, other):
+        """
+        Returns a new curve that is the difference of this curve with another curve ``other`` or a constant value.
+        :param  :py:class:`ws3.core.Curve` other: The curve to subtract with this curve or the constant value ``other``
+        :return: A new curve that is the difference of this curve with another curve ``other`` or a constant value.
+        :rtype: :py:class:`ws3.core.Curve`
+        """
         y = [_y-other for _y in self.y()] if isinstance(other, float) else [a-b for a,b in zip(self.y(), other.y())]
-        return Curve(points=list(zip(self.x, y)))
+        points = list(zip(self.x, y))
+        return Curve(points=points)
     
     __rmul__ = __mul__
     __radd__ = __add__
     __rsub__ = __sub__
     
+
+class Node:
+    """
+    A node class representing a state in a dynamic programming state tree.
+    """
+
+    def __init__(self, nid, data=None, parent=None):
+        """
+        The constructor for a node class.
+
+        :param nid: The unique ID of this node
+        :param data: The data stored in this node
+        :param parent: The parent of this node
+        """
+        self.nid = nid
+        self._data = data
+        self._parent = parent
+        self._children = []
+
+    def is_root(self):
+        """
+        Check if the current object is the root node.
+        
+        :return: ``True`` if the object is the root node, ``False`` otherwise.
+        :rtype: bool
+        """
+        return self._parent is None
+
+    def is_leaf(self):
+        """
+        Checks if the current object is a leaf node (i.e., node has no children).
+        
+        :return: ``True`` if the object is a leaf node, ``False`` otherwise.
+        :rtype: bool
+        """
+        return not self._children
+
+    def add_child(self, child):
+        """
+        The function adds a child node to the current object.
+        
+        :param :py:class:`ws3.tree.Node` child: The child node to be added.
+        """
+        self._children.append(child)
+
+    def parent(self):
+        """
+        The function gets the parent node of the current object.
+       
+        :return: The parent node.
+        :rtype:  :py:class:`ws3.tree.Node`
+        """
+        return self._parent
+
+    def children(self):
+        """
+        The function gets the list of child nodes of the current object.
+        
+        :return: List of child nodes.
+        :rtype: list of :py:class:`ws3.tree.Node` objects.
+        """ 
+        return self._children
     
-if __name__ in '__main__':
-    c1 = Curve('foo', points=[(1, 1.), (2, 2.), (3, 3.)])
-    c2 = Curve('bar', points=[(1, 11.), (2, 22.), (3, 33.)])
-    c3 = Curve('qux', points=[(1, 111.), (2, 222.), (3, 333.)])
-
-    #c1 = Curve('foo', points=[(22, 2.), (33, 3.)])
-    #c2 = Curve('bar', points=[(22, 22.), (33, 33.)])
-    #c3 = Curve('qux', points=[(22, 222.), (33, 333.)])
-
-    print('c1')
-    for x in range(10): print(x, c1[x])
-    print('c2')
-    for x in range(10): print(x, c2[x])
-    print('c3')
-    for x in range(10): print(x, c3[x])
-
+    def data(self, key=None):
+        """
+        The function gets the data associated with the current object.
+        If a specific key is provided, return the corresponding value.
+        If no key is provided, return the entire data dictionary.
         
-    print()
-    print()
-    print('test __mul__')
-    print()
-    c4 = c1 * c2
-    for x in range(10): print(x, c4[x])
-    print()
-    c4 = c1 * 2.
-    for x in range(10): print(x, c4[x])
-    print()
-    #c4 = 3. * c1
-    #for x in range(10): print x, c4.y[x]
-    print()
-    print()
-    print('test __div__')
-    print()
-    c4 = c1 / c2
-    for x in range(10): print(x, c1[x], c2[x], c4[x])
-          
-    print()
-    print()
-    print('test __add__')
-    c4 = c1 + c2
-    for x in range(10): print(x, c4[x])
-    print()
-    c4 = c1 + 2.
-    for x in range(10): print(x, c4[x])
-    print()
-    c4 = c1 + c2 + c3
-    for x in range(10): print(x, c4[x])
+        :param key: The key to retrieve a specific value (default is None).   
+        :return: The data associated with the ``key`` if a key is specified 
+            (or the entire data dictionary if a key is not specified).
+        """
+        if key:
+            return self._data[key]
+        else:
+            return self._data
+
+
+class Tree:
+    """
+    Represents a tree object.
+    """
+    def __init__(self, period=1):
+        self._period = period
+        self._nodes = [Node(0)]
+        self._path = [self._nodes[0]]
+
+    def children(self, nid):
+        """
+        The function gets the child nodes of the node with the specified ID.
         
-    print()
-    print('test __sub__')
-    c4 = c1 - c2
-    for x in range(10): print(x, c4[x])
-    print()
-    c4 = c1 - 2.
-    for x in range(10): print(x, c4[x])
-
-    #assert False
-
-
-    c5 = Curve('baz', points=[(10, 20.), (50, 100.), (60, 101.), (80, 100.), (100, 50.)])
-
-    c5_mai = c5.mai()
-    c5_mai_ytp = c5_mai.ytp()
-    c5_range1 = c5.range(22., 38.)
-    c5_range2 = c5.range(36., 38.)
-    #for x in range(10, 50, 1):
-    #    #print x, c5_mai[x], c5_mai_ytp[x]
-    #    print x,  c5[x], int(c5_range1[x]), int(c5_range2[x]),(c5_range1*c5_range2)[x]
-
-    #for x, y in enumerate(c5): print x, y
+        :param nid: The ID of the node for which to retrieve children.
+        :return: List of child nodes.
+        :rtype: list of :py:class:`ws3.tree.Node` objects.
+        """
+        return [self._nodes[cid] for cid in self._nodes[nid].children()]
         
+    def nodes(self):
+        """
+        Returns all nodes in the tree.
+        :returns: List of all nodes in the tree.
+        :rtype: list of :py:class:`ws3.tree.Node` objects.
+        """
+        return self._nodes
+
+    def node(self, nid):
+        """
+        Returns a node with the specified ID.
+        
+        :param nid: The unique identifier of the node to be retrieved.
+        :return: The node object corresponding to the specified ID.
+        :rtype: :py:class:`ws3.tree.Node`
+        """
+        return self._nodes[nid]
+    
+    def add_node(self, data, parent=None):
+        """
+        Adds a new node to the tree.
+        
+        :param data: The data associated with the new node.
+        :param parent: The parent node to which the new node will be attached.    
+        :return: The newly created node.
+        :rtype: :py:class:`ws3.tree.Node`
+        """
+        n = Node(len(self._nodes), data, parent)
+        self._nodes.append(n)
+        return n
+
+    def grow(self, data):
+        """
+        Expands the current path by adding a new child node.
+        The new node is added as a child of the last node in the current path.
+        The current path used by the optimization problem formulation functions
+        to iterate over all possible states (in a depth-first-search pattern).
+        
+        :param data: The data associated with the new node.
+        :return: The newly created node.
+        :rtype: :py:class:`ws3.tree.Node`
+        """
+        parent = self._path[-1]
+        child = self.add_node(data, parent=parent.nid)
+        parent.add_child(child.nid)
+        self._path.append(child)
+        return child
+        
+    def ungrow(self):
+        """
+        Reduces the current path by removing the last node.
+        """
+        self._path.pop()
+        
+    def leaves(self):
+        """
+        Returns all leaf nodes.
+
+        :return: A list of all leaf nodes.
+        :rtype: list of :py:class:`ws3.tree.Node` objects
+        """
+        return [n for n in self._nodes if n.is_leaf()]
+    
+    def root(self):
+        """
+        Returns the root node.
+
+        :return: The root node.
+        :rtype: :py:class:`ws3.tree.Node`
+        """
+        return self._nodes[0]
+    
+    def path(self, leaf=None):
+        """
+        Retrieves the path from the root to a specific leaf node or to the current path.
+        
+        :param leaf: The leaf node for which the path is to be retrieved. 
+            Default is ``None`` (which returns the current path).
+        :return: a path
+        :rtype: tuple of :py:class:`ws3.tree.Node` objects
+        """
+        if not leaf: return self._path[1:]
+        path = []
+        n = leaf
+        while not (n.is_root()):
+            path.append(n)
+            parent = self.node(n.parent())
+            n=parent
+        path.reverse()
+        return tuple(path)
+    
+    def paths(self):
+        """
+        Retrieves paths from the root to all leaf nodes.
+
+        :return: A list of paths from the root to all leaf nodes.
+        :rtype: list of tuples of :py:class:`ws3.tree.Node` objects
+        """
+        return [self.path(leaf) for leaf in self.leaves()]
+
+
+

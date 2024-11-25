@@ -127,7 +127,12 @@ class Problem:
         
     def var(self, name):
         """
-        Returns a ``Variable`` instance, given a variable name.
+        Returns a :py:class:`ws3.opt.Variable` object, given a variable name.
+
+        :param name: Variable name.
+        :return: Variable object
+        :rtype: :py:class:`ws3.opt.Variable`
+
         """
         return self._vars[name]
 

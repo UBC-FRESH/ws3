@@ -1,5 +1,5 @@
 ``spatial`` module
-==========
+==================
 
 .. automodule:: spatial
     :members:

@@ -8,5 +8,6 @@
    common
    core
    forest
+   financial
    opt
    spatial
