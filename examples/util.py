@@ -11,6 +11,7 @@ import numpy as np
 import seaborn as sns
 import pickle 
 import os
+import ws3.opt
 ##########################################################
 # Implement a priority queue heuristic harvest scheduler
 ##########################################################
@@ -186,8 +187,8 @@ def plot_scenario(df):
     ax[2].set_title('Growing Stock (m3)')
     return fig, ax
 
-
-def run_scenario(fm, scenario_name='base'):
+def run_scenario(fm, scenario_name='base', solver=ws3.opt.SOLVER_PULP):
+    import sys
     cflw_ha = {}
     cflw_hv = {}
     cgen_ha = {}
@@ -200,19 +201,19 @@ def run_scenario(fm, scenario_name='base'):
 
     if scenario_name == 'base': 
         # Base scenario
-        print('running bsae scenario')
+        print('running base scenario')
     elif scenario_name == 'base-cgen_ha': 
         # Base scenario, plus harvest area general constraints
         print('running base scenario plus harvest area constraints')
-        cgen_ha = {'lb':{1:100.}, 'ub':{1:101.}}    
+        cgen_ha = {'lb':{1:0.}, 'ub':{1:100.}}    
     elif scenario_name == 'base-cgen_hv': 
         # Base scenario, plus harvest volume general constraints
         print('running base scenario plus harvest volume constraints')
-        cgen_hv = {'lb':{1:1000.}, 'ub':{1:1001.}}    
+        cgen_hv = {'lb':{1:0.}, 'ub':{1:10000.}}    
     elif scenario_name == 'base-cgen_gs': 
         # Base scenario, plus growing stock general constraints
         print('running base scenario plus growing stock constraints')
-        cgen_gs = {'lb':{10:100000.}, 'ub':{10:100001.}}
+        cgen_gs = {'lb':{10:120000.}, 'ub':{10:1000000.}}
     else:
         assert False # bad scenario name
 
@@ -223,23 +224,25 @@ def run_scenario(fm, scenario_name='base'):
                      cgen_ha=cgen_ha,
                      cgen_hv=cgen_hv,
                      cgen_gs=cgen_gs)
+    p.solver(solver)
 
     fm.reset()
-    m = p.solve()
+    p.solve()
 
-    if m.status != grb.GRB.OPTIMAL:
+    if p.status() != ws3.opt.STATUS_OPTIMAL:
         print('Model not optimal.')
-        sys.exit()
-    sch = fm.compile_schedule(p)
-    fm.apply_schedule(sch, 
-                      force_integral_area=False, 
-                      override_operability=False,
-                      fuzzy_age=False,
-                      recourse_enabled=False,
-                      verbose=False,
-                      compile_c_ycomps=True)
-    df = compile_scenario(fm)
-    fig, ax = plot_scenario(df)
+        df = None   
+    else:
+        sch = fm.compile_schedule(p)
+        fm.apply_schedule(sch, 
+                        force_integral_area=False, 
+                        override_operability=False,
+                        fuzzy_age=False,
+                        recourse_enabled=False,
+                        verbose=False,
+                        compile_c_ycomps=True)
+        df = compile_scenario(fm)
+        fig, ax = plot_scenario(df)
     return fig, df, p
 
 

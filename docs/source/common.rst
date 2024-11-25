@@ -1,5 +1,5 @@
-common module
-=============
+``common`` module
+=================
 
 .. automodule:: common
     :members:

@@ -1,5 +1,5 @@
-forest module
-=============
+``forest`` module
+=================
 
 .. automodule:: forest
     :members:
