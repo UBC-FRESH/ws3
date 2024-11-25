@@ -1,4 +1,5 @@
 [![tests](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml/badge.svg)](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml)
+[![Documentation Status](https://readthedocs.org/projects/ws3/badge/?version=dev)](https://ws3.readthedocs.io/en/dev/?badge=dev)
 
     
 # ws3 - Wood Supply Simulation System
