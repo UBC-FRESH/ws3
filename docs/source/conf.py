@@ -54,7 +54,9 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.todo',
     'sphinx.ext.mathjax',
-    'sphinx.ext.viewcode']
+    'sphinx.ext.viewcode',
+    'nbsphinx',
+    'sphinx_rtd_theme']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -78,7 +80,7 @@ author = 'Gregory Paradis'
 # built documents.
 #
 # The short X.Y version.
-version = '1.0.0'
+version = '1.0'
 # The full version, including alpha/beta/rc tags.
 release = '1.0.0'
 
@@ -198,7 +200,7 @@ texinfo_documents = [
     'ws3 Documentation',
      author, 
      'ws3', 
-     'One line description of project.',
+     'Wood Supply Simulation System (ws3) is an open source forest estate modelling package',
      'Miscellaneous'),
 ]
 

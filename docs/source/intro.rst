@@ -1,13 +1,14 @@
-****************************
+********
 Overview
-****************************
+********
 
 Introduction
 ============
 
-*Wood Supply Simulation System* (``ws3``) is an open-source Python software package 
-that is designed to model *wood supply planning problems* (WSPP), in the context of  
-sustainable forest management.
+The *Wood Supply Simulation System* (:py:mod:`ws3`) is an open-source Python software 
+package that is designed to model *wood supply planning problems* (WSPP) (i.e., a 
+forest estate model), in the context of forest resource analysis in support of 
+sustainable forest management planning.
 
 A WSPP consists of determining the location, nature, and timing of forest management 
 activities (i.e., *actions*) for a given forest, typically over multiple planning 
@@ -30,26 +31,26 @@ Given a set of static inputs, a given WSM can be used to simulate a number of
 schedule that is simulated. Comparing output from several scenarios is the basic 
 mechanism by which forest managers derive insight from wood supply models.
 
-``ws3`` is backed by a well documented application programming interface (API), which 
-can be customized to control the way ``ws3`` behaves. 
+:py:mod:`ws3` is backed by a well documented application programming interface (API), which 
+can be customized to control the way :py:mod:`ws3` behaves. 
 
 About this User Guide
 =====================
 
 This guide is divided into four main sections. The first section describes general 
-concepts about WSM with specific linkages to the ``ws3`` requirements. This section 
+concepts about WSM with specific linkages to the :py:mod:`ws3` requirements. This section 
 covers ideas and requirements that are consistent across most WSM and is designed to 
 ensure proper language use and highlight commonalities. Users who are familiar with 
 WSM will likely find this section a review but, it will help ensure clarity for 
 successive sections in this guide. 
 
-The second section provides specific and detailed information about ``ws3`` and provides 
+The second section provides specific and detailed information about :py:mod:`ws3` and provides 
 guidance on data preparation and running a wood supply simulation. 
 
-The third section provides information for connecting ``ws3`` to libCMB, allowing for 
+The third section provides information for connecting :py:mod:`ws3` to libCMB, allowing for 
 carbon accounting to be included as a dynamic value within the WSM. 
 
-The fourth section provides information on connecting ``ws3`` to SpaDES. SpaDES is a **SPA**\ 
+The fourth section provides information on connecting :py:mod:`ws3` to SpaDES. SpaDES is a **SPA**\ 
 tially explicit **D**\ iscrete **E**\ vent **S**\ imulation used for disturbance modelling.  
 
 About FRESH
@@ -61,19 +62,21 @@ wood supply analysis, optimization research and supply chain analysis.
 
 One of the primary focuses of the research group is to develop open sourced information and 
 software packages that increase the accessibility of higher level forest modelling including 
-tools used in WSPP and WSM. The ``ws3`` package, this user guide and the API all aim to help 
+tools used in WSPP and WSM. The :py:mod:`ws3` package, this user guide and the API all aim to help 
 meet this goal. 
 
 Contact information
 ===================
 
-If you have any questions about this guide or want to ask questions about ``ws3``, WSM or WSPP 
-please reach out.
-	
-|		**Email**
-|			gregory.paradis@ubc.ca
-	
-|		**Phone**
-|			(604) 822-1890
+If you have any questions about this guide or want to ask questions about :py:mod:`ws3`, WSM or WSPP 
+please reach out to Gregory Paradis (see contact information below).
+
+| Gregory Paradis, PhD
+| Assistant Professor
+| Department of Forest Resources Management
+| Faculty of Forestry
+| The University of British Columbia
+| gregory.paradis@ubc.ca
+| (604) 822-1890
 	
  

@@ -17,6 +17,7 @@ def test_operate(area_selector):
 
     assert isinstance(remaining_area, float)  # for example, asserting the type of the return value
 
+
 def test_action_initialization():
     code = "some_code"
     targetage = None

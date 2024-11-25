@@ -1,6 +1,6 @@
-****************************
-ws3 Package and Data Preparation
-****************************
+******************************************
+:py:mod:`ws3` Package and Data Preparation
+******************************************
 
 .. toctree::
    :maxdepth: 5
@@ -9,5 +9,6 @@ ws3 Package and Data Preparation
    common
    core
    forest
+   financial
    opt
    spatial

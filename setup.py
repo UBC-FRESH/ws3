@@ -5,13 +5,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='ws3',
-    version='0.0.1-post3',
+    version='1.0.0',
     author='Gregory Paradis',
-    author_email='0@01101.io',
-    description='Wood Supply Simulation System',
+    author_email='gregory.paradis@ubc.ca',
+    description='Wood Supply Simulation System (ws3)',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url='http://github.com/gparadis/ws3',
+    url='http://github.com/UBC-FRESH/ws3',
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -19,6 +19,14 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    install_requires=['scipy', 'pandas', 'numpy', 'matplotlib', 'rasterio', 'fiona', 'profilehooks']
+    install_requires=[
+        'scipy', 
+        'pandas', 
+        'numpy', 
+        'matplotlib', 
+        'rasterio', 
+        'fiona', 
+        'profilehooks',
+        'libcbm']
 )
  

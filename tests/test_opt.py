@@ -9,6 +9,7 @@ SENSE_EQ = '=' # same as GRB.EQUAL
 SENSE_GEQ = '>' # same as GRB.GREATER_EQUAL
 SENSE_LEQ = '<' # same as GRB.LESS_EQUAL
 
+
 # test class Variable
 def test_variable_initialization():
     name = "x"
@@ -25,6 +26,7 @@ def test_variable_initialization():
     assert var.ub == ub
     assert var.val == val
 
+
 def test_variable_defaults():
     name = "x"
     vtype = "continuous"
@@ -36,6 +38,7 @@ def test_variable_defaults():
     assert var.lb == 0.0
     assert var.ub == VBNDS_INF
     assert var.val == None
+
 
 def test_variable_with_value():
     name = "x"
@@ -50,6 +53,7 @@ def test_variable_with_value():
     assert var.ub == VBNDS_INF
     assert var.val == val
 
+
 def test_variable_with_invalid_bound():
     name = "x"
     vtype = "continuous"
@@ -58,6 +62,7 @@ def test_variable_with_invalid_bound():
 
     with pytest.raises(ValueError):
         Variable(name, vtype, lb, ub)
+
 
 # test class Constraint
 def test_constraint_initialization():
@@ -73,6 +78,7 @@ def test_constraint_initialization():
     assert constraint.sense == sense
     assert constraint.rhs == rhs
 
+
 def test_constraint_invalid_coefficients():
     name = "constraint2"
     coeffs = []  # Invalid coefficients
@@ -81,6 +87,7 @@ def test_constraint_invalid_coefficients():
 
     with pytest.raises(ValueError):
         Constraint(name, coeffs, sense, rhs)
+
 
 def test_constraint_invalid_sense():
     name = "constraint3"

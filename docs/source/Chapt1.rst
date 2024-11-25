@@ -152,7 +152,7 @@ be used to define *transitions*, which are transitions between development types
 result of actions being applied at specific ages.
 
 Yield Curves
-============
+------------
 
 Growth and yield functions are one of the major inputs to WSM. These will be used to 
 predict and project stand attributes over time, as a function of stand age (e.g., 
@@ -164,7 +164,7 @@ derived from expert knowledge, or from output from various simulation or statist
 regression models. 
 
 Actions 
-=======
+-------
 
 Actions are used to apply management actions at specific ages in WSM. Actions are typically used
 simulate various silviculture treatments (e.g., site preparation, planting, pre-commercial thinning,

@@ -1,5 +1,5 @@
-core module
-===========
+``core`` module
+===============
 
 .. automodule:: core
     :members:

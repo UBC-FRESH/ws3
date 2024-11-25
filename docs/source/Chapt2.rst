@@ -65,7 +65,7 @@ some common use cases, and link to sample notebooks that implement these use cas
 Overview of Main Classes and Functions
 ======================================
 
-This section describes some of the main classes and functions that make up the ``ws3`` 
+This section describes some of the main classes and functions that make up the :py:mod:`ws3` 
 pacakge.
 
 The :py:class:`ws3.forest.ForestModel` class is the core class in the package. This class 
@@ -108,25 +108,33 @@ the :py:class:`~ws3.forest.ForestModel` instance using standard methods. For exa
 rasterize vector stand inventory data.
 
 For example, one might define the following custom Python function in a Jupyter Notebook, 
-to import data formatted for Woodstock.::
+to import data formatted for Woodstock.
+
+.. code-block:: python
+
+   from ws3.forest import ForestModel
 	
-	def instantiate_forestmodel(model_name, model_path, horizon,
-                                period_length, max_age, add_null_action=True):
-        fm = ForestModel(model_name=model_name, 
-				 		 model_path=model_path, 
-			 			 horizon=horizon,     
-		 				 period_length=period_length,
-						 max_age=max_age)
-		fm.import_landscape_section()
-		fm.import_areas_section()
-		fm.import_yields_section()
-		fm.import_actions_section()
-		fm.add_null_action()
-		fm.import_transitions_section()
-		fm.reset_actions()
-		fm.initialize_areas()
-		fm.grow()
-		return fm
+   def instantiate_forestmodel(model_name,
+                               model_path, 
+                               horizon,
+                               period_length,
+                               max_age, 
+                               add_null_action=True):
+      fm = ForestModel(model_name=model_name, 
+                       model_path=model_path, 
+                       horizon=horizon,     
+                       period_length=period_length,
+                       max_age=max_age)
+      fm.import_landscape_section()
+      fm.import_areas_section()
+      fm.import_yields_section()
+      fm.import_actions_section()
+      fm.add_null_action()
+      fm.import_transitions_section()
+      fm.reset_actions()
+      fm.initialize_areas()
+      fm.grow()
+      return fm
 
 The next step in a typical workflow is to define one or more scenarios. Assuming 
 that we are using an optimization approach to harvest scheduling, we need to 
