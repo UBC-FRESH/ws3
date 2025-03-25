@@ -127,12 +127,7 @@ class Problem:
         
     def var(self, name):
         """
-        Returns a :py:class:`ws3.opt.Variable` object, given a variable name.
-
-        :param name: Variable name.
-        :return: Variable object
-        :rtype: :py:class:`ws3.opt.Variable`
-
+        Returns a ``Variable`` instance, given a variable name.
         """
         return self._vars[name]
 
@@ -219,7 +214,7 @@ class Problem:
         Checks whether the current solution is infeasible (i.e., not feasible).
         """
         import ws3.opt
-        import gurobipy
+        # import gurobipy
         import pulp
         match self._solver:
             case ws3.opt.SOLVER_PULP:
@@ -322,10 +317,37 @@ class Problem:
                 self._model += lhs >= constraint.rhs, name
             elif constraint.sense == SENSE_LEQ:
                 self._model += lhs <= constraint.rhs, name
-        self._model.solve(solver=pulp.LpSolverDefault) # use default LP solver for now, but expland later to allow other backends
+        # self._model.solve(solver=pulp.LpSolverDefault) # use default LP solver for now, but expland later to allow other backends
+        self._model.solve(solver=pulp.PULP_CBC_CMD(msg=False)) # use default LP solver for now, but expland later to allow other backends
         if pulp.LpStatus[self._model.status] in [pulp.constants.LpStatusInfeasible, pulp.constants.LpStatusUnbounded]:
             print(f"ws3.opt._solve_pulp: Model {pulp.LpStatus[self._model.status]}")
         else:
             for k, v in list(self._vars.items()):
                 self._vars[k].val = vars[k].varValue
+
+
+    
+    def get_all_constraints_lhs_values(self):
+        """
+        Returns the left-hand side (LHS) values for all constraints in the problem after solving.
+        
+        :return: A dictionary where keys are constraint names and values are the LHS values.
+        """
+        if not self.solved():
+            raise ValueError("The problem has not been solved yet.")           
+        lhs_values = {}
+        if self._solver == SOLVER_PULP:
+            import pulp
+            for constraint_name, constraint in self._constraints.items():
+                lhs_value = sum(constraint.coeffs[v] * self._vars[v].val for v in constraint.coeffs)
+                lhs_values[constraint_name] = lhs_value
+        elif self._solver == SOLVER_GUROBI:
+            for constraint_name, constraint in self._constraints.items():
+                lhs_value = sum(constraint.coeffs[v] * self._vars[v].val for v in constraint.coeffs)
+                lhs_values[constraint_name] = lhs_value
+        else:
+            raise ValueError("Unsupported solver backend.")      
+        return lhs_values
+
+        
 
