@@ -72,7 +72,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'ws3'
-copyright = '2015--2024, Gregory Paradis'
+copyright = '2015--2025, Gregory Paradis'
 author = 'Gregory Paradis'
 
 # The version info for the project you're documenting, acts as replacement for

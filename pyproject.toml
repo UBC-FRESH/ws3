@@ -1,8 +1,50 @@
 [build-system]
-requires = ["flit_core >=3.2,<4"]
-build-backend = "flit_core.buildapi"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "ws3"
-authors = [{name = "Gregory Paradis", email = "gregory.paradis@ubc.ca"}]
-dynamic = ["version", "description"]
+dynamic=["version"]
+description = "A Python framework for forest estate modeling and wood supply simulation"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+dependencies = [
+  "numpy>=1.21",
+  "pandas>=1.3",
+  "scipy>=1.7",
+  "matplotlib",
+  "rasterio",
+  "fiona",
+  "profilehooks",
+  "libcbm",
+  "pulp"
+]
+authors = [
+  {name = "Gregory Paradis", email = "gregory.paradis@ubc.ca"}
+]
+maintainers = [
+  {name = "Kathleen Coupland", email = "kathleen.coupland@ubc.ca"},
+  {name = "Elaheh Ghasemi", email = "elaheh.ghasemi@ubc.ca"},
+  {name = "Salar Ghotb", email = "salar.ghotb@ubc.ca"}
+]
+
+[tool.hatch.version]
+source = "code"
+path = "ws3/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ws3"]
+
+[tool.hatch.build]
+include = [
+  "ws3",
+  "README.md",
+  "LICENSE"
+]
+
+[tool.hatch.publish.index.test]
+url = "https://test.pypi.org/legacy/"
+
+[tool.hatch.envs.default.scripts]
+clean = "rm -rf dist/ build/ *.egg-info"
