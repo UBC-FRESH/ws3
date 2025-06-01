@@ -1,0 +1,22 @@
+# requirements-dev.txt
+
+# Hatch-based Python packaging
+hatch>=1.9
+hatchling>=1.18
+
+# Linting and formatting (optional)
+black
+ruff
+
+# Building and publishing
+build>=1.2
+twine>=5.0
+packaging>=25.0
+
+# Testing tools (optional)
+pytest
+coverage
+
+# Docs (optional)
+sphinx
+# furo
