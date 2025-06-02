@@ -9,10 +9,10 @@ tags:
   - Python
 authors:
   - name: Gregory Paradis
-    orcid: 0000-0002-XXXX-XXXX
+    orcid: 0000-0001-9618-8797
     affiliation: 1
 affiliations:
-  - name: Faculty of Forestry, University of British Columbia
+  - name: Department of Forest Resources Management, Faculty of Forestry, University of British Columbia
     index: 1
 date: 2025-05-10
 bibliography: paper.bib
