@@ -8,5 +8,5 @@ title: "ws3: a Wood Supply Simulation System"
 version: 1.0.0.post1
 date-released: 2025-06-07
 license: MIT
-repository-code: https://github.com/UBC-FRESH/ws3
-doi: https://doi.org/10.5281/zenodo.15616189
+url: https://github.com/UBC-FRESH/ws3
+doi: 10.5281/zenodo.15616189
