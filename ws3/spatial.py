@@ -207,12 +207,11 @@ class ForestRaster:
             if verbose > 0: print('processing schedule for period %i' % p)
             for acode in self._forestmodel.applied_actions[p]:
                 for dtk in self._forestmodel.applied_actions[p][acode]:
-                    #print('dtk', dtk)
                     if mask:
                         if dtk not in dtype_keys: continue
                     for from_age in self._forestmodel.applied_actions[p][acode][dtk]:
                         area = self._forestmodel.applied_actions[p][acode][dtk][from_age][0]
-                        print('processing case', p, acode, dtk, from_age, area) # DEBUG
+                        #print('processing case', p, acode, dtk, from_age, area) # DEBUG
                         if not area: continue
                         from_dtk = list(dtk) 
                         trn = self._forestmodel.dtypes[dtk].transitions[acode, from_age][0]
@@ -227,7 +226,7 @@ class ForestRaster:
                         DY = list(range(0, self._period_length, self._time_step))
                         #random.shuffle(DY)
                         for dy in DY:
-                            print('dy', dy)
+                            #print('dy', dy)
                             _tr = self._period_length / self._time_step # target ratio
                             if area < (_tr * self._pixel_area): # less than one pixel per year
                                 if _target_area > self._pixel_area * 0.5:
@@ -330,11 +329,11 @@ class ForestRaster:
         xn = len(x[0])
         xa = float(xn * self._pixel_area)
         c = tarea / xa if xa else np.inf
-        print(xn, xa, c, tarea)
+        #print(xn, xa, c, tarea)
         if c > 1. and verbose > 1: print('missing area:', acode, dy, tarea - xa, from_dtk)
         c = min(c, 1.)
         n = int(round(xa * c / self._pixel_area))
-        print('n', n, 'tarea', tarea)
+        #print('n', n, 'tarea', tarea)
         if not n: return # found nothing to transition
         if mode == 'randpxl' or n <= nthresh:
             missing_area = self._transition_cells_randpxl(x, xn, n, th, to_age, acode, dy, tarea, xa)
