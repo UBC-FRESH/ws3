@@ -1,7 +1,7 @@
 ###################################################################################
 # MIT License
 
-# Copyright (c) 2015-2017 Gregory Paradis
+# Copyright (c) 2015-2025 Gregory Paradis
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -285,6 +285,30 @@ class Problem:
             # --- Fallback ---
             case _:
                 return None
+    
+    
+    def get_all_constraints_lhs_values(self):
+        """
+        Returns the left-hand side (LHS) values for all constraints in the problem after solving.
+        
+        :return: A dictionary where keys are constraint names and values are the LHS values.
+        """
+        if not self.solved():
+            raise ValueError("The problem has not been solved yet.")           
+        lhs_values = {}
+        if self._solver == SOLVER_PULP:
+            import pulp
+            for constraint_name, constraint in self._constraints.items():
+                lhs_value = sum(constraint.coeffs[v] * self._vars[v].val for v in constraint.coeffs)
+                lhs_values[constraint_name] = lhs_value
+        elif self._solver == SOLVER_GUROBI:
+            for constraint_name, constraint in self._constraints.items():
+                lhs_value = sum(constraint.coeffs[v] * self._vars[v].val for v in constraint.coeffs)
+                lhs_values[constraint_name] = lhs_value
+        else:
+            raise ValueError("Unsupported solver backend.")      
+        return lhs_values
+
 
     def _solve_gurobi(self, allow_feasrelax=True):
         """
@@ -331,6 +355,7 @@ class Problem:
                 v._solver_var = _v # might want to poke around this later...
                 v.val = _v.X
 
+
     def _solve_pulp(self):
         """
         Solve the LP problem using the pulp solver.
@@ -365,7 +390,7 @@ class Problem:
                 self._model += lhs >= constraint.rhs, name
             elif constraint.sense == SENSE_LEQ:
                 self._model += lhs <= constraint.rhs, name
-        # self._model.solve(solver=pulp.LpSolverDefault) # use default LP solver for now, but expland later to allow other backends
+        #self._model.solve(solver=pulp.LpSolverDefault) # use default LP solver for now, but expland later to allow other backends
         #self._model.solve(solver=pulp.PULP_CBC_CMD(msg=False, threads=64)) # use default LP solver for now, but expland later to allow other backends
         #self._model.solve(solver=pulp.HiGHS(msg=True, threads=64, solver="pdlp")) # use default LP solver for now, but expland later to allow other backends
         self._model.solve(solver=pulp.HiGHS(msg=True, 
@@ -380,258 +405,6 @@ class Problem:
             for k, v in list(self._vars.items()):
                 self._vars[k].val = vars[k].varValue
 
-
-    
-    def get_all_constraints_lhs_values(self):
-        """
-        Returns the left-hand side (LHS) values for all constraints in the problem after solving.
-        
-        :return: A dictionary where keys are constraint names and values are the LHS values.
-        """
-        if not self.solved():
-            raise ValueError("The problem has not been solved yet.")           
-        lhs_values = {}
-        if self._solver == SOLVER_PULP:
-            import pulp
-            for constraint_name, constraint in self._constraints.items():
-                lhs_value = sum(constraint.coeffs[v] * self._vars[v].val for v in constraint.coeffs)
-                lhs_values[constraint_name] = lhs_value
-        elif self._solver == SOLVER_GUROBI:
-            for constraint_name, constraint in self._constraints.items():
-                lhs_value = sum(constraint.coeffs[v] * self._vars[v].val for v in constraint.coeffs)
-                lhs_values[constraint_name] = lhs_value
-        else:
-            raise ValueError("Unsupported solver backend.")      
-        return lhs_values
-
-    def ___solve_highs(self):
-        """
-        Solve the current LP using highspy (continuous variables only, no integers).
-        Automatically merges duplicate variable entries in constraints to match PuLP behavior.
-        """
-        import numpy as np
-        import highspy
-        from collections import defaultdict
-
-        highs = highspy.Highs()
-
-        # ----------------------------
-        # 1. Prepare variable arrays
-        # ----------------------------
-        var_names = list(self._vars.keys())
-        var_index = {name: i for i, name in enumerate(var_names)}
-        num_vars = len(var_names)
-
-        # Bounds and objective
-        lb = np.array([v.lb for v in self._vars.values()], dtype=np.float64)
-        ub = np.array([v.ub for v in self._vars.values()], dtype=np.float64)
-        obj = np.array([self._z[v.name] for v in self._vars.values()], dtype=np.float64)
-
-        # Add variables and objective
-        highs.addVars(num_vars, lb, ub)
-        highs.changeColsCost(num_vars, np.arange(num_vars, dtype=np.int32), obj)
-
-        # ----------------------------
-        # 2. Prepare constraints (deduplicated)
-        # ----------------------------
-        num_constraints = len(self._constraints)
-        if num_constraints > 0:
-            row_lower = np.empty(num_constraints, dtype=np.float64)
-            row_upper = np.empty(num_constraints, dtype=np.float64)
-
-            row_idx = []
-            col_idx = []
-            data = []
-
-            for i, cname in enumerate(self._constraints):
-                con = self._constraints[cname]
-                sense = con.sense
-                rhs = con.rhs
-
-                # Row bounds
-                if sense == SENSE_EQ:
-                    row_lower[i] = rhs
-                    row_upper[i] = rhs
-                elif sense == SENSE_LEQ:
-                    row_lower[i] = -highspy.kHighsInf
-                    row_upper[i] = rhs
-                elif sense == SENSE_GEQ:
-                    row_lower[i] = rhs
-                    row_upper[i] = highspy.kHighsInf
-                else:
-                    raise ValueError(f"Unknown sense {sense}")
-
-                # Merge duplicate variable entries in this constraint
-                coeff_accum = defaultdict(float)
-                for vname, coef in con.coeffs.items():
-                    j = var_index[vname]
-                    coeff_accum[j] += coef
-
-                # Add merged entries to matrix
-                for j, coef in coeff_accum.items():
-                    row_idx.append(i)
-                    col_idx.append(j)
-                    data.append(coef)
-
-            # Debug: print matrix dimensions
-            print(f"Adding {num_constraints} rows and {len(data)} nonzeros to HiGHS")
-
-            highs.addRows(num_constraints,
-                        row_lower, row_upper,
-                        len(data),
-                        np.array(row_idx, dtype=np.int32),
-                        np.array(col_idx, dtype=np.int32),
-                        np.array(data, dtype=np.float64))
-
-        # ----------------------------
-        # 3. Set objective sense (use correct enum)
-        # ----------------------------
-        if self._sense == SENSE_MINIMIZE:
-            highs.changeObjectiveSense(highspy.ObjSense.kMinimize)
-        else:
-            highs.changeObjectiveSense(highspy.ObjSense.kMaximize)
-
-        # ----------------------------
-        # 4. Solve
-        # ----------------------------
-        status = highs.run()
-        self._model = highs  # for status()
-
-        # ----------------------------
-        # 5. Store results
-        # ----------------------------
-        if status == highspy.HighsStatus.kOk:
-            sol = highs.getSolution()
-            self._solution = {}
-            for i, (vname, var) in enumerate(self._vars.items()):
-                var.val = sol.col_value[i]
-                self._vars[vname].val = varsol.col_value[i]
-        else:
-            print(f"ws3.opt._solve_highs: not OK")
-
-        return status
-
-    def __solve_highs(self, debug_limit=10_000_000):
-        """
-        Solve the current LP using the real Highs Python class.
-        Processes constraints incrementally to avoid large upfront allocations.
-        Continuous variables only.
-        """
-        import numpy as np
-        import highspy
-        from collections import defaultdict
-
-        highs = highspy.Highs()
-
-        # ----------------------------
-        # 1. Variables
-        # ----------------------------
-        var_names = list(self._vars.keys())
-        num_vars = len(var_names)
-        print(f"Number of variables: {num_vars}")
-
-        col_costs = [self._z[v.name] for v in self._vars.values()]
-        col_lower = [v.lb for v in self._vars.values()]
-        col_upper = [v.ub for v in self._vars.values()]
-        print()
-        highs.addVariables(col_lower, col_upper, col_costs, var_names)
-        print('vars done')
-
-        # ----------------------------
-        # 2. Incremental constraint assembly
-        # ----------------------------
-        row_lower = []
-        row_upper = []
-        starts = [0]
-        all_vars = []
-        all_coeffs = []
-
-        var_index = {name: i for i, name in enumerate(var_names)}
-
-        for idx, (cname, con) in enumerate(self._constraints.items()):
-            # Row bounds
-            if con.sense == SENSE_EQ:
-                row_lower.append(con.rhs)
-                row_upper.append(con.rhs)
-            elif con.sense == SENSE_LEQ:
-                row_lower.append(-highspy.inf())
-                row_upper.append(con.rhs)
-            elif con.sense == SENSE_GEQ:
-                row_lower.append(con.rhs)
-                row_upper.append(highspy.inf())
-            else:
-                raise ValueError(f"Unknown sense {con.sense}")
-            print('con rhs defined', cname)
-
-            # Deduplicate coefficients per row
-            coeff_accum = defaultdict(float)
-            for vname, coef in con.coeffs.items():
-                coeff_accum[var_index[vname]] += coef
-            print('coeff accum done')
-
-            # Append to CSR arrays
-            for j, coef in coeff_accum.items():
-                all_vars.append(j)
-                all_coeffs.append(coef)
-
-            starts.append(len(all_vars))
-
-            # ---- Incremental debug ----
-            if idx % 100 == 0:
-                print(f"Constraint {idx}, row_nnz={len(coeff_accum)}, total_nnz={len(all_vars)}")
-            if len(all_vars) > debug_limit:
-                print(f"ABORT: Nonzeros exceeded {debug_limit}, stopping early.")
-                return None
-
-        num_constraints = len(row_lower)
-        nnz = len(all_coeffs)
-        print(f"Assembly complete: rows={num_constraints}, cols={num_vars}, nnz={nnz}")
-
-        # ----------------------------
-        # 3. Convert to NumPy arrays
-        # ----------------------------
-        starts = np.array(starts, dtype=np.int32)
-        all_vars = np.array(all_vars, dtype=np.int32)
-        all_coeffs = np.array(all_coeffs, dtype=np.float64)
-        row_lower = np.array(row_lower, dtype=np.float64)
-        row_upper = np.array(row_upper, dtype=np.float64)
-
-        # CSR integrity check
-        if starts[-1] != nnz:
-            raise RuntimeError(f"CSR structure invalid: starts[-1]={starts[-1]} != nnz={nnz}")
-
-        # ----------------------------
-        # 4. Pass constraints
-        # ----------------------------
-        highs.addConstrs(row_lower, row_upper, starts, all_vars, all_coeffs)
-
-        # ----------------------------
-        # 5. Objective sense
-        # ----------------------------
-        if self._sense == SENSE_MINIMIZE:
-            highs.setMinimize()
-        else:
-            highs.setMaximize()
-
-        # ----------------------------
-        # 6. Solve
-        # ----------------------------
-        status = highs.solve()
-        self._model = highs
-
-        # ----------------------------
-        # 7. Store results
-        # ----------------------------
-        if status == highspy.HighsStatus.kOk:
-            sol = highs.getSolution()
-            self._solution = {}
-            for i, (vname, var) in enumerate(self._vars.items()):
-                var.val = sol.col_value[i]
-                self._solution[vname] = sol.col_value[i]
-        else:
-            self._solution = {vname: None for vname in self._vars}
-
-        return status
 
     def _solve_highs(self):
         """
