@@ -314,6 +314,30 @@ def worker_cmp_cflw_batch(args):
                     results.append((t, o, i, j, _mu.get(t, 0.0)))
     return results
 
+def worker_cmp_cflw_phase3(args):
+    """
+    Worker to compute (name, coeffs, sense, rhs) tuples for flow constraints Phase 3.
+    """
+    t, o, mu_t_o, mu_ref_o, eps, xnames = args
+    results = []
+
+    keys = list(mu_t_o.keys())
+    x_keys = [xnames[k] for k in keys]
+    mu_vals = [mu_t_o[k] for k in keys]
+    mu_ref = [mu_ref_o[k] for k in keys]
+
+    # Lower bound row
+    mu_lb_vals = [v - (1 - eps) * r for v, r in zip(mu_vals, mu_ref)]
+    mu_lb = dict(zip(x_keys, mu_lb_vals))
+    results.append((f'flw-lb_{t:03d}_{o}', mu_lb, opt.SENSE_GEQ, 0.0))
+
+    # Upper bound row
+    mu_ub_vals = [v - (1 + eps) * r for v, r in zip(mu_vals, mu_ref)]
+    mu_ub = dict(zip(x_keys, mu_ub_vals))
+    results.append((f'flw-ub_{t:03d}_{o}', mu_ub, opt.SENSE_LEQ, 0.0))
+
+    return results
+
 # ----------------------------
 # Globals for _cmp_cgen_m1 parallel execution
 # ----------------------------
@@ -337,6 +361,45 @@ def worker_cmp_cgen_batch(args):
                     results.append((t, o, i, j, _mu.get(t, 0.0)))
     return results
 
+def worker_cmp_cgen_phase3(args):
+    """
+    Worker to compute (name, coeffs, sense, rhs) tuples for general constraints Phase 3.
+    """
+    t, o, mu_t_o, lb, ub, xnames = args
+    results = []
+
+    keys = list(mu_t_o.keys())
+    x_keys = [xnames[k] for k in keys]
+    mu_vals = [mu_t_o[k] for k in keys]
+
+    # Lower bound row
+    if lb is not None and t in lb:
+        mu_lb = dict(zip(x_keys, mu_vals))
+        results.append((f'gen-lb_{t:03d}_{o}', mu_lb, opt.SENSE_GEQ, lb[t]))
+
+    # Upper bound row
+    if ub is not None and t in ub:
+        mu_ub = dict(zip(x_keys, mu_vals))
+        results.append((f'gen-ub_{t:03d}_{o}', mu_ub, opt.SENSE_LEQ, ub[t]))
+
+    return results
+
+def _build_problem_for_unit(model, name, coeff_funcs, cflw_e, cgen_data,
+                            solver, formulation, z_coeff_key, acodes, sense,
+                            mask, workers):
+    return model.add_problem(
+        name=f"{name}_{mask[0]}",
+        coeff_funcs=coeff_funcs,
+        cflw_e=cflw_e,
+        cgen_data=cgen_data,
+        solver=solver,
+        formulation=formulation,
+        z_coeff_key=z_coeff_key,
+        acodes=acodes,
+        sense=sense,
+        mask=mask,
+        workers=workers
+    )
 
 class PersistentWorkerPool:
     """
@@ -925,12 +988,6 @@ class Output:
         if not (t[0] == '@' or t[0] == '_' or t[0] in self.parent.actions):
             mask = tuple(t[:self.parent.nthemes()])
             t = t[self.parent.nthemes():] # pop
-        #try:
-        #print expression
-        #self._dtype_keys = self.parent.unmask(mask) if mask else self.parent.dtypes.keys()
-        #except:
-        #    print expression
-        #    assert False
         # extract @AGE or @YLD condition, if present
         self._ages = None
         self._condition = None
@@ -1078,15 +1135,9 @@ class ForestModel:
                  base_year,
                  horizon=common.HORIZON_DEFAULT,
                  period_length=common.PERIOD_LENGTH_DEFAULT,
-                 #aggr_period_length=common.PERIOD_LENGTH_DEFAULT,
                  max_age=common.MAX_AGE_DEFAULT,
-                 #species_groups=common.SPECIES_GROUPS_FOREST_QC, # not used (DELETE) [commenting out]
                  area_epsilon=common.AREA_EPSILON_DEFAULT,
                  curve_epsilon=common.CURVE_EPSILON_DEFAULT):
-                 #vp_ratio=_vp_ratio_default,
-                 #piece_size_yname=_piece_size_yname_default,
-                 #piece_size_factor=_piece_size_factor_default,
-                 #total_volume_yname=_total_volume_yname_default):
         """
          Initializes the ForestModel with the provided parameters.
 
@@ -1105,12 +1156,8 @@ class ForestModel:
         self.base_year = base_year
         self.set_horizon(horizon)
         self.period_length = period_length
-        #self.aggr_period_length = aggr_period_length
-        #self._period_coeff = float(period_length) / float(aggr_period_length)
-        #assert self._period_coeff <= 1.
         self.max_age = max_age
         self.ages = list(range(max_age+1))
-        #self._species_groups = species_groups # Not used (DELETE) [commenting out]
         self.yields = []
         self.ynames = set()
         self.actions = {}
@@ -1232,11 +1279,13 @@ class ForestModel:
         :param tuple mask: Tuple of strings constituting a valid mask for your `ForestModel` instance. Can be `None` if you do not want
             to filter `DevelopmentType` instances.
 
+        :param int workers: Number of worker threads to use for parallel processing.
+
         :return: ws3.opt.Problem. Reference to a new Problem instance that was created. Also stored in the ForestModel instance (problems attribute,
             keyed on problem name). 
             
         """
-        # --- Prepare for parallel execution if workers > 1 ---
+        # --- Prepare serialization for parallel execution ---
         if workers > 1:
             problems_backup = self.problems
             self.problems = None
@@ -1247,12 +1296,17 @@ class ForestModel:
         else:
             blob_bytes = None
             serialized_funcs = None
+
+        # --- Reset model state for problem creation ---
         self.reset()
+
+        # --- Dispatch maps for formulation type ---
         bld_p_dsp = {1: self._bld_p_m1, 2: self._bld_p_m2}
         cmp_cflw_dsp = {1: self._cmp_cflw_m1, 2: self._cmp_cflw_m2}
         cmp_cgen_dsp = {1: self._cmp_cgen_m1, 2: self._cmp_cgen_m2}
         assert formulation == 1, "Only Model I supported for now"
-        # --- Persistent pool context (executor will be None for workers=1) ---
+
+        # --- Persistent worker pool (None if workers=1) ---
         with PersistentWorkerPool(workers, blob_bytes, serialized_funcs) as executor:
             print('add_problem: build problem')
             p = bld_p_dsp[formulation](
@@ -1267,17 +1321,10 @@ class ForestModel:
                 executor,  # None if serial
             )
             print('add_problem: compile flow constraints')
-            cmp_cflw_dsp[formulation](
-                p, cflw_e,
-                workers=workers,
-                executor=executor,
-            )
+            cmp_cflw_dsp[formulation](p, cflw_e, workers=workers, executor=executor)
             print('add_problem: compile general constraints')
-            cmp_cgen_dsp[formulation](
-                p, cgen_data,
-                workers=workers,
-                executor=executor,
-            )
+            cmp_cgen_dsp[formulation](p, cgen_data, workers=workers, executor=executor)
+
         # --- Save and return the problem ---
         self.problems[name] = p
         return p
@@ -1516,25 +1563,49 @@ class ForestModel:
         for t, o, i, j, val in results:
             mu[t][o][(i, j)] = val
 
-        # Phase 3: Add constraints
+        # Phase 3: Build constraints (parallel)
         print("_cmp_cflw_m1: phase 3")
+
+        leaf_ids = problem._leaf_ids
+        xnames = {k: f"x_{v}" for k, v in leaf_ids.items()}
+        add_constraint = problem.add_constraint
+
+        # Collect tasks for (t, o) combinations
+        tasks = []
         for t in periods:
             for o, e in cflw_e.items():
-                if t in e[0]:
-                    mu_t_o = mu[t][o]
-                    mu_e1_o = mu[e[1]][o]
-                    mu_lb = {
-                        f"x_{problem._leaf_ids[(i, j)]}":
-                            mu_t_o[(i, j)] - (1 - e[0][t]) * mu_e1_o[(i, j)]
-                        for i, j in mu_t_o
-                    }
-                    mu_ub = {
-                        f"x_{problem._leaf_ids[(i, j)]}":
-                            mu_t_o[(i, j)] - (1 + e[0][t]) * mu_e1_o[(i, j)]
-                        for i, j in mu_t_o
-                    }
-                    problem.add_constraint(f'flw-lb_{t:03d}_{o}', mu_lb, opt.SENSE_GEQ, 0.0)
-                    problem.add_constraint(f'flw-ub_{t:03d}_{o}', mu_ub, opt.SENSE_LEQ, 0.0)
+                eps_dict, ref_period = e
+                if t not in eps_dict:
+                    continue
+                mu_t_o = mu[t][o]
+                mu_ref_o = mu[ref_period][o]
+                eps = eps_dict[t]
+                tasks.append((t, o, mu_t_o, mu_ref_o, eps, xnames))
+
+        results = []
+        if workers == 1:
+            # Serial processing
+            for task in tasks:
+                results.extend(worker_cmp_cflw_phase3(task))
+        else:
+            # Parallel processing
+            if not executor:
+                with ProcessPoolExecutor(
+                    max_workers=workers,
+                    mp_context=get_context("spawn"),
+                ) as pool:
+                    futures = [pool.submit(worker_cmp_cflw_phase3, task) for task in tasks]
+                    for f in as_completed(futures):
+                        results.extend(f.result())
+            else:
+                futures = [executor.submit(worker_cmp_cflw_phase3, task) for task in tasks]
+                for f in as_completed(futures):
+                    results.extend(f.result())
+
+        # Add constraints sequentially to the problem
+        for name, coeffs, sense, rhs in results:
+            add_constraint(name=name, coeffs=coeffs, sense=sense, rhs=rhs)
+
 
     def _cmp_cflw_m2(self):
         pass # not implemented
@@ -1572,17 +1643,38 @@ class ForestModel:
         for t, o, i, j, val in results:
             mu[t][o][(i, j)] = val
 
-        # Phase 3: Add constraints
+        # Phase 3: Build constraints (parallel)
         print("_cmp_cgen_m1: phase 3")
-        for o, b in cgen_data.items():
+
+        leaf_ids = problem._leaf_ids
+        xnames = {k: f"x_{v}" for k, v in leaf_ids.items()}
+        add_constraint = problem.add_constraint
+
+        tasks = []
+        for o, bounds in cgen_data.items():
+            lb, ub = bounds['lb'], bounds['ub']
             for t in periods:
                 mu_t_o = mu[t][o]
-                _mu = {f"x_{problem._leaf_ids[(i, j)]}": mu_t_o[(i, j)] for i, j in mu_t_o}
+                tasks.append((t, o, mu_t_o, lb, ub, xnames))
 
-                if b['lb'] is not None and t in b['lb']:
-                    problem.add_constraint(f'gen-lb_{t:03d}_{o}', _mu, opt.SENSE_GEQ, b['lb'][t])
-                if b['ub'] is not None and t in b['ub']:
-                    problem.add_constraint(f'gen-ub_{t:03d}_{o}', _mu, opt.SENSE_LEQ, b['ub'][t])
+        results = []
+        if workers == 1:
+            for task in tasks:
+                results.extend(worker_cmp_cgen_phase3(task))
+        else:
+            if not executor:
+                with ProcessPoolExecutor(max_workers=workers, mp_context=get_context("spawn")) as pool:
+                    futures = [pool.submit(worker_cmp_cgen_phase3, task) for task in tasks]
+                    for f in as_completed(futures):
+                        results.extend(f.result())
+            else:
+                futures = [executor.submit(worker_cmp_cgen_phase3, task) for task in tasks]
+                for f in as_completed(futures):
+                    results.extend(f.result())
+
+        # Add constraints to problem
+        for name, coeffs, sense, rhs in results:
+            add_constraint(name=name, coeffs=coeffs, sense=sense, rhs=rhs)
 
     def _cmp_cgen_m2(self):
         pass # not implemented
@@ -1621,8 +1713,6 @@ class ForestModel:
         for dtk in self.dtypes:
             self.dtypes[dtk].oper_expr[acode] = [oe]
             self.dtypes[dtk].transitions[acode, -1] = target
-            #for age in range(self.dtypes[dtk]._max_age):
-            #    self.dtypes[dtk].transitions[acode, age] = target
         for p in self.applied_actions:
             self.applied_actions[p][acode] = {}
     
@@ -1695,14 +1785,10 @@ class ForestModel:
             _dtype_keys = dtype_keys
         else:
             _dtype_keys = list(self.dtypes.keys())
-        #print len(_dtype_keys)
         for dtk in _dtype_keys:
             dt = self.dtypes[dtk]
             ycomp = dt.ycomp(yname) if yname else {a:1. for a in dt._areas[period]}
             if age is not None:
-                #print dtk
-                #print dt._areas[period]
-                #print age, yname, ycomp
                 result += dt.area(period, age) * ycomp[age] if age in dt._areas[period] else 0. 
             else:
                 result += sum(dt.area(period, a) * ycomp[a] for a in dt._areas[period]) if ycomp else 0.
@@ -1726,7 +1812,6 @@ class ForestModel:
         Copies areas from period 0 to period 1.
         """
         if reset_areas: self.reset_areas()
-        #for dt in list(self.dtypes.values()): dt.initialize_areas()
         for dtk in self.dtypes: self.dtypes[dtk].initialize_areas()
         
     def reset_areas(self, period=None):
@@ -1746,12 +1831,6 @@ class ForestModel:
             self.curves[key] = curve
         return self.curves[key]
             
-    # def _rdd(self):
-    #     """
-    #     Recursive defaultdict (i.e., tree)
-    #     """
-    #     return dd(self._rdd)   
-    
     def reset_actions(self, period=None, acode=None, override_sticky=False):
         """
         Resets actions.
@@ -1783,30 +1862,19 @@ class ForestModel:
         aa = self.applied_actions
         if acode is None:
             acodes = list(self.actions.keys())
-        #elif type(acode) == list: # assume list of acode strings
-        #    pass
         else:# elif type(acode) == str: 
             acodes = [acode] if not self.actions[acode].components else self.actions[acode].components
         tokens = expr.split(' ')
         result = 0.
         for _acode in acodes:
-            #if not aa[period][_acode]: continue # acode not in solution
             if _acode not in list(aa[period].keys()): continue # acode not in solution
             _dtype_keys = list(aa[period][_acode].keys()) if dtype_keys is None else dtype_keys
-            #print 'compile_product len(dtype_keys)', len(dtype_keys)
-            #keep = 0
-            #skip = 0
             for dtk in _dtype_keys:
-                #print dtk
                 if dtk not in list(aa[period][_acode].keys()):
-                    #skip += 1
-                    #if verbose: print len(aa[period][_acode].keys()), dtk 
                     continue
-                #keep += 1
                 ages = list(aa[period][_acode][dtk].keys()) if age is None else [age]
                 for _age in ages:
                     aaa = aa[period][_acode][dtk][_age]
-                    #print aaa
                     _tokens = []
                     for token in tokens:
                         if token in self.ynames: # found reference to ycomp
@@ -1826,8 +1894,6 @@ class ForestModel:
                         print(("Unexpected error:", sys.exc_info()[0]))
                         print("evaluating expression '%s' for case:" % ' '.join(_tokens), period, [' '.join(dtk)], _acode, _age)
                         raise
-
-            #print _acode, 'keep', keep, 'skip', skip
         return result
         
     def operated_area(self, acode, period, dtype_key=None, age=None):
@@ -2005,9 +2071,6 @@ class ForestModel:
         if verbose > 1:
             print('applying action', [' '.join(dtype_key)], acode, period, age, area)
         dt = self.dtypes[dtype_key]
-        ############################################
-        # TO DO: better error handling... ##########
-        #print dt.oper_expr
         if acode not in dt.oper_expr:
             print('requested action not defined for development type...')
             print(' ', [' '.join(dtype_key)], acode, period, age, area)
@@ -2021,19 +2084,15 @@ class ForestModel:
             print('not operable')
             print(' '.join(dt.key), acode, period, age)
             print(dt.operability[acode][period])
-            #assert False # dt.is_operable(acode, period, age)
             return 4, None, None
         if not any((acode, __age) in dt.transitions for __age in (age, -1)): # sanity check...
             print('transitions not defined...')
             print(' ', [' '.join(dtype_key)], acode, period, age, area)
             print(dt.oper_expr)
             print(dt.operability)
-            #print dt.transitions
-            #assert False 
             return 5, None, None
         if dt.area(period, age) - area < self.area_epsilon:
             # tweak area if slightly over or under, so we don't get any accounting drift...
-            #print 'foobar', dt.key, period, age, dt.area(period, age), area
             area = dt.area(period, age)
         missing_area = 0.
         if dt.area(period, age) < area:
@@ -2061,7 +2120,6 @@ class ForestModel:
                 if missing_area < self.area_epsilon:
                     missing_area = 0.
         action = self.actions[acode]
-        #if not dt.actions[acode].is_compiled: dt.compile_action(acode)
         ###########################################################################
         dt.area(period, age, -area)
         target_dt = []
@@ -2136,8 +2194,6 @@ class ForestModel:
         assert key not in self.dtypes # should not be creating new dtypes from existing key
         dt = DevelopmentType(key, self)
         self.dtypes[key] = dt
-        # breakpoint()
-        # assign yields
         for mask, t, ycomps in self.yields:
             if self.match_mask(mask, key):
                 for yname, ycomp in ycomps:
@@ -2274,7 +2330,6 @@ class ForestModel:
         for c in aggs:            
             self._themes[-1][c] = aggs[c]
         
-    #@timed
     def import_landscape_section(self, filename_suffix='lan', ti_offset=0):
         """
         Imports LANDSCAPE section from a Forest model.
@@ -2302,16 +2357,13 @@ class ForestModel:
                 else: # line defines aggregate values (parse out multiple values before comment)
                     _tacs = [_tac.lower() for _tac in re.split(r'\s+', l.strip().partition(';')[0].strip())]
                     self._themes[ti][tac].extend(_tacs)
-        #self.nthemes = len(self._themes)
 
     def theme_basecodes(self, theme_index):
         """
         Return list of base codes, given theme index.
         """
         return self._theme_basecodes[theme_index]
-        #return self._themes[theme_index]
         
-    #@timed    
     def import_areas_section(self, model_path=None, model_name=None, filename_suffix='are', import_empty=False):
         """
         Imports AREAS section from a Forest model.
@@ -2358,7 +2410,6 @@ class ForestModel:
         """
         Returns True if key matches mask.
         """
-        #dt = self.dtypes[key]
         for ti, tac in enumerate(mask):
             if tac == '?': continue # wildcard matches all keys
             tacs = self._expand_theme(self._themes[ti], tac)
@@ -2386,7 +2437,6 @@ class ForestModel:
             dtype_keys = [dtk for dtk in dtype_keys if dtk[ti] in tacs] # exclude bad matches
         return dtype_keys
 
-    #@timed                            
     def import_constants_section(self, filename_suffix='con'):
         """
         Imports CONSTANTS section from a Forest model.
@@ -2404,7 +2454,6 @@ class ForestModel:
                 t = re.split(r'\s+', l)
                 self.constants[t[0].lower()] = float(t[1])
 
-    #@timed        
     def import_yields_section(self, filename_suffix='yld', mask_func=None, verbose=False):
         """
         Imports YIELDS section from a Forest model.
@@ -2494,10 +2543,7 @@ class ForestModel:
                         ynames.append(yname)
                         data[yname] = ' '.join(t[1:]) # complex yield (defer interpretation)
         flush_ycomps(ytype, mask, ynames, data)
-
-                    
-            
-    #@timed        
+        
     def import_actions_section(self, filename_suffix='act', mask_func=None, nthemes=None):
         """
         Imports ACTIONS section from a Forest model.
@@ -2512,7 +2558,6 @@ class ForestModel:
         """
         nthemes = nthemes if nthemes else self.nthemes()
         actions = {}
-        #oper = {}
         aggregates = {}
         partials = {}
         keyword = ''
@@ -2605,38 +2650,24 @@ class ForestModel:
             return list(range(lo_age, hi_age+1))
             #return self.dtypes[dtype_key].resolve_condition(yname, hi, lo)
         
-    #@timed                        
     def import_transitions_section(self, filename_suffix='trn', mask_func=None, nthemes=None):
         """
         Imports TRANSITIONS section from a Forest model.
         """
         nthemes = nthemes if nthemes else self.nthemes()
-        # local utility function ####################################
         def flush_transitions(acode, sources):
             if not acode: return # nothing to flush on first loop
             self.transitions[acode] = {}
             for smask, scond in sources:
-                #if acode in ['acp']:
-                #    print [' '.join(smask)], scond, sources[smask, scond]
                 # store transition data for future dtypes creation 
                 if smask not in self.transitions[acode]:
                     self.transitions[acode][smask] = {}
-                #if scond not in self.transitions[acode][smask]:
-                #    self.transitions[acode][smask][scond] = []
                 self.transitions[acode][smask][scond] = sources[smask, scond]
                 # assign transitions to existing dtypes
                 for k in self.unmask(smask):
                     dt = self.dtypes[k]
                     for x in self.resolve_condition(scond, k): # store targets
                         dt.transitions[acode, x] = sources[smask, scond] 
-        # def flush_transitions(acode, sources):
-        #     if not acode: return # nothing to flush on first loop
-        #     for smask, scond in sources:
-        #         for k in self.unmask(smask):
-        #             dt = self.dtypes[k]
-        #             for x in self.resolve_condition(scond, k): # store targets
-        #                 dt.transitions[acode, x] = sources[smask, scond] 
-        #############################################################                    
         acode = None
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             s = f.read()
@@ -2685,7 +2716,6 @@ class ForestModel:
                 sources[(smask, scond)].append((tmask, tprop, tyield, tage, tlock, treplace, tappend))
         flush_transitions(acode, sources)
 
-    
     def import_optimize_section(self, filename_suffix='opt'):
         """
         Imports OPTIMIZE section from a Forest model.
@@ -2715,7 +2745,6 @@ class ForestModel:
         """
         pass
 
-
     def import_schedule_section(self, filename_suffix='seq', replace_commas=True, filename_prefix=None):
         """
         Imports SCHEDULE section from a Forest model.
@@ -2738,7 +2767,6 @@ class ForestModel:
                 schedule.append((dtype_key, age, area, acode, period, etype))
                 if area <= 0: print('area <= 0', l)
         return schedule
-
     
     def compile_schedule(self, problem=None):
         """
@@ -2751,7 +2779,6 @@ class ForestModel:
         else: # use data in self.applied_actions
             return self._compile_schedule_from_actions()
 
-        
     def _compile_schedule_from_actions(self):
         result = []
         for period in self.periods:
@@ -2764,7 +2791,6 @@ class ForestModel:
                         result.append((dtk, age, area, acode, period, etype))
         return result
            
-    
     def apply_schedule(self, schedule, max_period=None, verbose=False,
                        fail_on_missingarea=False, force_integral_area=False,
                        override_operability=False, fuzzy_age=True,
@@ -2792,9 +2818,7 @@ class ForestModel:
         :param scale_area: The scaling factor to apply to the area. Default is None. 
         :param bool reset: If True, resets the model before applying the schedule. Default is True.
 
-
         :return: The missing area (float) after applying the schedule. 
-        
         """
         if max_period is None: max_period = self.horizon
         if reset: self.reset()
@@ -3223,10 +3247,6 @@ class ForestModel:
                       'sit_transitions':self._cbm_sit_transitions()}
         return sit_config, sit_tables
 
-                      
-        
-                
-        
         
 if __name__ == '__main__':
     pass
