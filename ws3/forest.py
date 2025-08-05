@@ -2308,7 +2308,6 @@ class ForestModel:
     def add_theme(self, name, basecodes=[], aggs={}, description=''):
         """
         Adds a theme to the model.
-
         
         :param str name: The name of theme.
         :param list basecodes: List of base codes for the theme.
