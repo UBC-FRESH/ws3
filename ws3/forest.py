@@ -67,15 +67,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 MP_CONTEXT = "fork"
 
-def batched(iterable, batch_size):
-    """Yield successive batches (lists) from any iterable."""
-    it = iter(iterable)
-    while True:
-        batch = list(islice(it, batch_size))
-        if not batch:
-            break
-        yield batch
-
 def choose_max_batch_factor(workers: int) -> int:
     """
     Adaptive max_batch_factor for auto_batch based on number of workers.
@@ -90,20 +81,6 @@ def choose_max_batch_factor(workers: int) -> int:
         return 8
     else:
         return 16
-
-def _worker_cmp_cflw_phase3_batch(batch):
-    """Worker that handles a batch of phase3 tasks."""
-    batch_results = []
-    for task in batch:
-        batch_results.extend(worker_cmp_cflw_phase3(task))
-    return batch_results
-
-def _worker_cmp_cgen_phase3_batch(batch):
-    """Worker that handles a batch of phase3 tasks."""
-    batch_results = []
-    for task in batch:
-        batch_results.extend(worker_cmp_cgen_phase3(task))
-    return batch_results
 
 def auto_batch(tasks, workers, max_batch_factor=None, size_fn=None):
     """
@@ -160,85 +137,6 @@ def auto_batch(tasks, workers, max_batch_factor=None, size_fn=None):
 
     return final_batches
 
-def ___auto_batch(tasks, workers, max_batch_factor=None):
-    """
-    Split tasks into batches based on workers and an adaptive max_batch_factor.
-    Returns a list of batches (list of lists).
-    """
-    if not tasks:
-        return []
-
-    if max_batch_factor is None:
-        max_batch_factor = choose_max_batch_factor(workers)
-
-    target_batches = max(1, workers * max_batch_factor)
-    batch_size = max(1, len(tasks) // target_batches)
-
-    return [tasks[i:i + batch_size] for i in range(0, len(tasks), batch_size)]
-
-def __auto_batch(tasks, workers, max_batch_factor=2):
-    """
-    Split tasks into batches for multiprocessing.
-
-    Larger max_batch_factor => fewer, bigger batches.
-    """
-    n = len(tasks)
-    if n == 0:
-        return []
-
-    # Compute target_batches inversely to factor
-    # Example: workers=32, max_batch_factor=2 -> 32//8 = 4 target batches
-    target_batches = max(1, workers // max_batch_factor)
-
-    # Ensure at least 1 batch
-    batch_size = max(1, (n + target_batches - 1) // target_batches)
-
-    # Build batches
-    batches = [tasks[i:i + batch_size] for i in range(0, n, batch_size)]
-    return batches
-
-def _auto_batch(tasks, workers, max_batch_factor=2, size_fn=None):
-    """
-    Automatically batch tasks for parallel processing.
-
-    Args:
-        tasks: List of items to batch (e.g., (i, tree) pairs).
-        workers: Number of process pool workers.
-        max_batch_factor: Controls total number of batches (≈ workers * factor).
-        size_fn: Optional function to measure 'work size' for a task. 
-                 Defaults to 1 for all tasks.
-
-    Returns:
-        List of task batches (list of lists).
-    """
-    if workers <= 1 or len(tasks) <= workers:
-        return [tasks]  # single batch if trivial
-
-    # Estimate batch count: ~2×workers by default
-    target_batches = max(1, workers * max_batch_factor)
-    batch_size = max(1, len(tasks) // target_batches)
-
-    # Optionally weight tasks by 'size'
-    if size_fn is None:
-        size_fn = lambda x: 1  # equal cost
-
-    # Sort tasks by size (descending) for greedy packing
-    sized_tasks = sorted(tasks, key=size_fn, reverse=True)
-
-    batches = [[] for _ in range(target_batches)]
-    batch_loads = [0] * target_batches
-
-    for task in sized_tasks:
-        # Greedy: put the task in the batch with the lowest current load
-        idx = batch_loads.index(min(batch_loads))
-        batches[idx].append(task)
-        batch_loads[idx] += size_fn(task)
-
-    # Remove any empty batches (can happen if tasks << batches)
-    batches = [b for b in batches if b]
-
-    return batches
-
 def worker_summarize_tree_batch(args):
     """
     Summarize a batch of trees into coverage constraints and leaf outputs.
@@ -277,74 +175,6 @@ def sanitize_func(f):
 
 
 # ----------------------------
-# Globals for _bld_p_m1 parallel processing
-# ----------------------------
-_global_z_coeff_key = None
-
-def init_worker_bld_p_m1(z_coeff_key):
-    """
-    Initializer for _bld_p_m1 workers to store the z_coeff_key.
-    """
-    global _global_z_coeff_key
-    _global_z_coeff_key = z_coeff_key
-
-def worker_bld_p_m1(args):
-    """
-    Worker to process a single tree into (constraint_name, coeffs, z_coeffs).
-    Returns (cname, coeffs_dict, z_coeffs_dict).
-    """
-    i, tree_bytes = args
-    tree = dill.loads(tree_bytes)
-    z_coeff_key = _global_z_coeff_key
-
-    try:
-        cname = f'cov_{common.hex_id(i)}'
-        coeffs = {}
-        z_coeffs = {}
-        for path in tree.paths():
-            j = tuple(n.data('acode') for n in path)
-            leaf_id = path[-1].data('leaf_id')
-            vname = f"x_{leaf_id}"
-            coeffs[vname] = 1.0
-            z_coeffs[vname] = path[-1].data(z_coeff_key)
-        return (cname, coeffs, z_coeffs)
-    except Exception as e:
-        print(f'Error processing tree {i}: {e}')
-        raise
-
-def worker_bld_p_m1_batch(args):
-    """
-    Batch worker for processing trees into coverage constraints.
-    Passes z_coeff_key directly to avoid relying on global init.
-    Args: (batch, z_coeff_key)
-    Returns: list of (cname, coeffs, z_coeffs)
-    """
-    batch, z_coeff_key = args
-    results = []
-    for i, tree in batch:
-        try:
-            cname = f'cov_{common.hex_id(i)}'
-            coeffs = {}
-            z_coeffs = {}
-
-            for path in tree.paths():
-                j = tuple(n.data('acode') for n in path)
-                leaf_id = path[-1].data('leaf_id')
-                vname = f"x_{leaf_id}"
-
-                # Objective coefficient
-                val = path[-1].data(z_coeff_key)
-                if isinstance(val, dict):
-                    val = sum(val.values())
-                z_coeffs[vname] = float(val)
-                coeffs[vname] = 1.0
-
-            results.append((cname, coeffs, z_coeffs))
-        except Exception as e:
-            raise RuntimeError(f"Error processing tree {i}: {e}")
-    return results
-
-# ----------------------------
 # Globals for _gen_vars_m1 parallel execution
 # ----------------------------
 _global_model_gen_vars = None
@@ -381,40 +211,6 @@ def worker_gen_vars(tasks, acodes_local):
             acodes=acodes_eff, compile_c_ycomps=True)
         results.append((dtk, age, tree))
     return results
-
-# ----------------------------
-# Globals for _bld_tree_m1 parallel leaf computation
-# ----------------------------
-_global_coeff_funcs_tree = None
-_global_model_tree = None  # optional if needed
-
-def init_worker_tree_coeffs(serialized_coeff_funcs):
-    """
-    Initializer for _bld_tree_m1 parallel leaf coefficient computation.
-    Loads coefficient functions once per worker.
-    """
-    global _global_coeff_funcs_tree
-    import dill
-    _global_coeff_funcs_tree = {
-        k: dill.loads(f_bytes) for k, f_bytes in serialized_coeff_funcs.items()
-    }
-
-def worker_compute_leaf_coeffs(leaf_bytes):
-    """
-    Worker: Compute leaf coefficients for a single leaf (pickled TreeNode).
-    Returns (leaf_id, coeff_data_dict).
-    """
-    import dill
-    leaf = dill.loads(leaf_bytes)
-    coeff_funcs = _global_coeff_funcs_tree
-
-    path = leaf.path()
-    coeff_data = {k: coeff_funcs[k](_global_model_tree, path) for k in coeff_funcs}
-    i = (path[0].data('dtk'), path[0].data('age'))
-    j = tuple(node.data('acode') for node in path)
-    coeff_data['leaf_id'] = common.hex_id((i, j))
-
-    return (leaf_bytes, coeff_data)  # Return pickled leaf reference for mapping
 
 # ----------------------------
 # Globals for _cmp_cflw_m1 parallel execution
@@ -462,6 +258,13 @@ def worker_cmp_cflw_phase3(args):
 
     return results
 
+def _worker_cmp_cflw_phase3_batch(batch):
+    """Worker that handles a batch of phase3 tasks."""
+    batch_results = []
+    for task in batch:
+        batch_results.extend(worker_cmp_cflw_phase3(task))
+    return batch_results
+
 # ----------------------------
 # Globals for _cmp_cgen_m1 parallel execution
 # ----------------------------
@@ -508,22 +311,12 @@ def worker_cmp_cgen_phase3(args):
 
     return results
 
-def _build_problem_for_unit(model, name, coeff_funcs, cflw_e, cgen_data,
-                            solver, formulation, z_coeff_key, acodes, sense,
-                            mask, workers):
-    return model.add_problem(
-        name=f"{name}_{mask[0]}",
-        coeff_funcs=coeff_funcs,
-        cflw_e=cflw_e,
-        cgen_data=cgen_data,
-        solver=solver,
-        formulation=formulation,
-        z_coeff_key=z_coeff_key,
-        acodes=acodes,
-        sense=sense,
-        mask=mask,
-        workers=workers
-    )
+    def _worker_cmp_cgen_phase3_batch(batch):
+    """Worker that handles a batch of phase3 tasks."""
+    batch_results = []
+    for task in batch:
+        batch_results.extend(worker_cmp_cgen_phase3(task))
+    return batch_results
 
 class PersistentWorkerPool:
     """
@@ -551,9 +344,6 @@ class PersistentWorkerPool:
     def __exit__(self, exc_type, exc_value, traceback):
         if self.executor is not None:
             self.executor.shutdown()
-
-
-
 
 class GreedyAreaSelector:
     """
@@ -1247,12 +1037,7 @@ class ForestModel:
     """
     _ytypes = {'*Y':'a', '*YT':'t', '*YC':'c'}
     tree = (lambda f: f(f))(lambda a: (lambda: dd(a(a))))
-    #_vp_ratio_default = 1.
-    #_piece_size_yname_default = 'yd3s'
-    #_piece_size_factor_default = 0.001 # convert cubic decimeters to cubic meters
-    #_total_volume_yname_default = 'yv_s'
 
-            
     def __init__(self,
                  model_name,
                  model_path,
@@ -1539,9 +1324,6 @@ class ForestModel:
             init_worker_gen_vars(blob_bytes, serialized_funcs, workers=1)
             results = worker_gen_vars(tract_tasks, acodes)
         else:
-            # Batch size can be tuned for IPC vs load balance
-            # batch_size = 256
-            # task_batches = [tract_tasks[i:i + batch_size] for i in range(0, len(tract_tasks), batch_size)]
             task_batches = auto_batch(tract_tasks, workers, max_batch_factor=4)
             if not executor:
                 # prepare serialized model and coeff_funcs
@@ -1668,8 +1450,6 @@ class ForestModel:
 
         # Phase 1: Compute mu values in parallel
         tree_items = list(problem.trees.items())
-        # Larger batch_factor reduces executor overhead
-        # batches = list(auto_batch(tree_items, workers))
         batches = auto_batch(
             tree_items, 
             workers, 
@@ -1739,237 +1519,9 @@ class ForestModel:
         for name, coeffs, sense, rhs in results:
             add_constraint(name=name, coeffs=coeffs, sense=sense, rhs=rhs)
 
-    # def _cmp_cflw_m1(self, problem, cflw_e, workers=1, executor=None):
-    #     """
-    #     Compile flow (even-flow) constraints in parallel using batched workers.
-    #     Phase 1/2: same as current code.
-    #     Phase 3: Uses threads instead of processes to reduce IPC overhead.
-    #     """
-    #     if not cflw_e:
-    #         return
-
-    #     periods = self.periods
-    #     cflw_keys = list(cflw_e.keys())
-    #     print("_cmp_cflw_m1: phase 1")
-
-    #     # --- Phase 1: Compute mu values (unchanged) ---
-    #     tree_items = list(problem.trees.items())
-    #     batches = auto_batch(tree_items, workers, max_batch_factor=4)
-    #     tasks = [(batch, cflw_keys, periods) for batch in batches]
-
-    #     results = []
-    #     if workers == 1:
-    #         for task in tasks:
-    #             results.extend(worker_cmp_cflw_batch(task))
-    #     else:
-    #         exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
-    #         futures = [exec_ctx.submit(worker_cmp_cflw_batch, task) for task in tasks]
-    #         for f in as_completed(futures):
-    #             results.extend(f.result())
-    #         if executor is None:
-    #             exec_ctx.shutdown()
-
-    #     # --- Phase 2: Merge into mu dict ---
-    #     print("_cmp_cflw_m1: phase 2")
-    #     mu = {t: {o: {} for o in cflw_keys} for t in periods}
-    #     for t, o, i, j, val in results:
-    #         mu[t][o][(i, j)] = val
-
-    #     # --- Phase 3: Build constraints ---
-    #     print("_cmp_cflw_m1: phase 3 (threaded)")
-
-    #     leaf_ids = problem._leaf_ids
-    #     xnames = {k: f"x_{v}" for k, v in leaf_ids.items()}
-    #     add_constraint = problem.add_constraint
-
-    #     tasks = []
-    #     for t in periods:
-    #         for o, e in cflw_e.items():
-    #             eps_dict, ref_period = e
-    #             if t not in eps_dict:
-    #                 continue
-    #             mu_t_o = mu[t][o]
-    #             mu_ref_o = mu[ref_period][o]
-    #             eps = eps_dict[t]
-    #             tasks.append((t, o, mu_t_o, mu_ref_o, eps, xnames))
-
-    #     # --- Parallel constraint building with threads ---
-    #     results = []
-    #     if workers == 1:
-    #         for task in tasks:
-    #             results.extend(worker_cmp_cflw_phase3(task))
-    #     else:
-    #         # Thread pool (shared memory, no serialization)
-    #         exec_ctx = executor or ThreadPoolExecutor(max_workers=workers)
-    #         futures = [exec_ctx.submit(worker_cmp_cflw_phase3, task) for task in tasks]
-    #         for f in as_completed(futures):
-    #             results.extend(f.result())
-    #         if executor is None:
-    #             exec_ctx.shutdown()
-
-    #     # --- Add constraints sequentially ---
-    #     for name, coeffs, sense, rhs in results:
-    #         add_constraint(name=name, coeffs=coeffs, sense=sense, rhs=rhs)            
-            
-    def __cmp_cflw_m1(self, problem, cflw_e, workers=1, executor=None):
-        """
-        Compile flow (even-flow) constraints in parallel using batched workers.
-        """
-        if not cflw_e:
-            return
-
-        periods = self.periods
-        cflw_keys = list(cflw_e.keys())
-        print("_cmp_cflw_m1: phase 1")
-
-        tree_items = list(problem.trees.items())
-        batches = list(auto_batch(tree_items, workers))
-        tasks = [(batch, cflw_keys, periods) for batch in batches]
-
-        results = []
-        if workers == 1:
-            for task in tasks:
-                results.extend(worker_cmp_cflw_batch(task))
-        else:
-            exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
-            futures = [exec_ctx.submit(worker_cmp_cflw_batch, task) for task in tasks]
-            for f in as_completed(futures):
-                results.extend(f.result())
-            if executor is None:
-                exec_ctx.shutdown()
-
-        # Phase 2: Merge into mu dict
-        print("_cmp_cflw_m1: phase 2")
-        mu = {t: {o: {} for o in cflw_keys} for t in periods}
-        for t, o, i, j, val in results:
-            mu[t][o][(i, j)] = val
-
-        # Phase 3: Build constraints (parallel)
-        print("_cmp_cflw_m1: phase 3")
-
-        leaf_ids = problem._leaf_ids
-        xnames = {k: f"x_{v}" for k, v in leaf_ids.items()}
-        add_constraint = problem.add_constraint
-
-        # Collect tasks for (t, o) combinations
-        tasks = []
-        for t in periods:
-            for o, e in cflw_e.items():
-                eps_dict, ref_period = e
-                if t not in eps_dict:
-                    continue
-                mu_t_o = mu[t][o]
-                mu_ref_o = mu[ref_period][o]
-                eps = eps_dict[t]
-                tasks.append((t, o, mu_t_o, mu_ref_o, eps, xnames))
-
-        results = []
-        if workers == 1:
-            # Serial processing
-            for task in tasks:
-                results.extend(worker_cmp_cflw_phase3(task))
-        else:
-            # Parallel processing
-            if not executor:
-                with ProcessPoolExecutor(
-                    max_workers=workers,
-                    mp_context=get_context(MP_CONTEXT),
-                ) as pool:
-                    futures = [pool.submit(worker_cmp_cflw_phase3, task) for task in tasks]
-                    for f in as_completed(futures):
-                        results.extend(f.result())
-            else:
-                futures = [executor.submit(worker_cmp_cflw_phase3, task) for task in tasks]
-                for f in as_completed(futures):
-                    results.extend(f.result())
-
-        # Add constraints sequentially to the problem
-        for name, coeffs, sense, rhs in results:
-            add_constraint(name=name, coeffs=coeffs, sense=sense, rhs=rhs)
-
-
     def _cmp_cflw_m2(self):
         pass # not implemented
 
-    def ___cmp_cgen_m1(self, problem, cgen_e, workers=1, executor=None):
-        """
-        Compile general constraints in three phases, modeled after _cmp_cflw_m1.
-        """
-        if not cgen_e:
-            return
-
-        periods = self.periods
-        tree_items = list(problem.trees.items())
-        cgen_keys = list(cgen_e.keys())
-        print("_cmp_cgen_m1: phase 1")
-
-        # --- Phase 1: Per-tree contributions ---
-        batches = auto_batch(
-            tree_items,
-            workers,
-            size_fn=lambda kv: len(kv[1].nodes())
-        )
-        tasks = [(batch, cgen_keys, periods) for batch in batches]
-
-        results = []
-        if workers == 1:
-            for task in tasks:
-                results.extend(worker_cmp_cgen_batch(task))
-        else:
-            exec_ctx = executor or ProcessPoolExecutor(
-                max_workers=workers,
-                mp_context=get_context("fork"),
-            )
-            futures = [exec_ctx.submit(worker_cmp_cgen_batch, task) for task in tasks]
-            for f in as_completed(futures):
-                results.extend(f.result())
-            if executor is None:
-                exec_ctx.shutdown()
-
-        # --- Phase 2: Merge results into mu dict ---
-        print("_cmp_cgen_m1: phase 2")
-        mu = {t: {o: {} for o in cgen_keys} for t in periods}
-        for t, o, i, j, val in results:
-            mu[t][o][(i, j)] = val
-
-        # --- Phase 3: Build constraints ---
-        print("_cmp_cgen_m1: phase 3")
-        leaf_ids = problem._leaf_ids
-        xnames = {k: f"x_{v}" for k, v in leaf_ids.items()}
-        add_constraint = problem.add_constraint
-
-        # Prepare tasks for (t, o) pairs
-        tasks = []
-        for t in periods:
-            for o, e in cgen_e.items():
-                eps_dict, ref_period = e
-                if t not in eps_dict:
-                    continue
-                mu_t_o = mu[t][o]
-                mu_ref_o = mu[ref_period][o]
-                eps = eps_dict[t]
-                tasks.append((t, o, mu_t_o, mu_ref_o, eps, xnames))
-
-        results = []
-        if workers == 1:
-            for task in tasks:
-                results.extend(worker_cmp_cgen_phase3(task))
-        else:
-            exec_ctx = executor or ProcessPoolExecutor(
-                max_workers=workers,
-                mp_context=get_context("fork"),
-            )
-            futures = [exec_ctx.submit(worker_cmp_cgen_phase3, task) for task in tasks]
-            for f in as_completed(futures):
-                results.extend(f.result())
-            if executor is None:
-                exec_ctx.shutdown()
-
-        # --- Add constraints sequentially ---
-        for name, coeffs, sense, rhs in results:
-            add_constraint(name=name, coeffs=coeffs, sense=sense, rhs=rhs)
-
-    # original working but with a few tweaks (see commented out bits)
     def _cmp_cgen_m1(self, problem, cgen_data, workers=1, executor=None):
         """
         Compile general output constraints in parallel using batched workers.
@@ -1982,9 +1534,8 @@ class ForestModel:
         print("_cmp_cgen_m1: phase 1")
 
         tree_items = list(problem.trees.items())
-        # batches = list(auto_batch(tree_items, workers))
-        # tasks = [(batch, cgen_keys, periods) for batch in batches]
-        # --- Phase 1: Per-tree contributions ---
+
+        # Phase 1: Per-tree contributions
         batches = auto_batch(
             tree_items,
             workers,
@@ -2541,7 +2092,6 @@ class ForestModel:
                 aa[dtype_key][age][1][yname] = value
         return 0, missing_area, target_dt
 
-    
     def sylv_cred_formula(self, treatment_type, cover_type):
         """
         Calculate Sylviculture Credits based on treatment type and cover type.
@@ -2554,7 +2104,6 @@ class ForestModel:
             return 7 if cover_type.lower() in ['r', 'm'] else 4        
         return 0
 
-            
     def create_dtype_fromkey(self, key):
         """
         Creates a new development type, given a key (checks for existing, auto-assigns yield compompontents, 
@@ -2665,7 +2214,6 @@ class ForestModel:
                 expression += ' '
                 expression += l       
         
-    #@timed
     def import_outputs_section(self, filename_suffix='out'):
         """
         Imports OUTPUTS section from a Forest model.
@@ -2682,11 +2230,7 @@ class ForestModel:
         :param list basecodes: List of base codes for the theme.
         :param dict aggs: Dictionary containing aggregated values for the theme.
         :param str description: Description of the theme.       
-        """
-
-
-
-        
+        """        
         self._themes.append({})
         #self.nthemes +- 1
         self._themes[-1]['__name__'] = name
@@ -2761,7 +2305,6 @@ class ForestModel:
                     print('Failed AREAS import on line: \n%s' % l)
                     return 1
         return 0
-
                     
     def _expand_action(self, c):
         self._actions = t
@@ -2773,7 +2316,6 @@ class ForestModel:
             print(c)
         return [c] if t[c] == c else list(_cfi(self._expand_theme(t, c) for c in t[c]))
 
-                
     def match_mask(self, mask, key):
         """
         Returns True if key matches mask.
@@ -2826,8 +2368,6 @@ class ForestModel:
         """
         Imports YIELDS section from a Forest model.
         """
-        ###################################################
-        # local utility functions #########################
         def flush_ycomps(t, m, n, c):
             if t == 'a': # age-based ycomps
                 _c = lambda y: self.register_curve(core.Curve(y,
@@ -2849,7 +2389,7 @@ class ForestModel:
             for k in self.unmask(m):
                 for yname, ycomp in ycomps:
                     self.dtypes[k].add_ycomp(t, yname, ycomp)
-        ###################################################
+
         n = self.nthemes()
         ytype = ''
         mask = ('?',) * self.nthemes()
@@ -3313,6 +2853,7 @@ class ForestModel:
             tvol_curve = svol_curve + hvol_curve
             x_cmai = tvol_curve.mai().ytp().lookup(0)
             return 'softwood' if svol_curve[x_cmai] > hvol_curve[x_cmai] else 'hardwood'
+
         def landclass(r):
             """
             The landclass column values should contain an integer in the range [0, 22], which CBM 
@@ -3324,7 +2865,8 @@ class ForestModel:
             if hasattr(dt, 'landclass'):
                 return dt.landclass
             else:
-                return '0'            
+                return '0'
+
         def last_pass_disturbance(r):
             """
             We use the value of the 'last_pass_disturbance' attribute of the corresponding development 
@@ -3336,6 +2878,7 @@ class ForestModel:
                 return dt.last_pass_disturbance
             else:
                 return default_last_pass_disturbance
+
         theme_cols = [theme['__name__'] for theme in self._themes]
         other_cols = ['species',
                       'using_age_class', 
@@ -3345,7 +2888,6 @@ class ForestModel:
                       'landclass', 
                       'historic_disturbance', 
                       'last_pass_disturbance']
-
         data = {**{c:[] for c in theme_cols}, **{c:[] for c in ['age', 'area']}}
         for dtype_key in self.dtypes:
             dt = self.dtypes[dtype_key]
@@ -3401,6 +2943,7 @@ class ForestModel:
             tvol_curve = svol_curve + hvol_curve
             x_cmai = tvol_curve.mai().ytp().lookup(0)
             return 'softwood' if svol_curve[x_cmai] > hvol_curve[x_cmai] else 'hardwood'
+
         schedule = self.compile_schedule()
         p = self.add_problem('__cbm_sit_bogus', {'z':(lambda forestmodel, path: 0.)})
         theme_cols = [theme['__name__'] for theme in self._themes]
@@ -3492,6 +3035,7 @@ class ForestModel:
             dtk = tuple(dtk)
             targetage = self.resolve_targetage(dtk, tyield, sage, tage, acode)
             return dtk, targetage
+
         theme_cols = colunmns = [theme['__name__'] for theme in self._themes]
         columns = theme_cols.copy()
         columns += ['species',
@@ -3541,25 +3085,26 @@ class ForestModel:
         result = pd.DataFrame(data)
         return result
 
-        for acode in fm.transitions:
-            if acode == null_acode: continue
-            for smask in self.transitions[acode]:
-                tmask, tprop, _, _, _, _, _ = self.transitions[acode][smask][''][0]
-                for i, c in enumerate(theme_cols): data[c].append(smask[i])
-                data['species'].append('softwood' if au_table1.loc[int(smask[2])].canfi_species < 1200 else 'hardwood')
-                data['using_age_class'].append('FALSE')
-                data['min_softwood_age'].append(1)
-                data['max_softwood_age'].append(999)
-                data['min_hardwood_age'].append(1)
-                data['max_hardwood_age'].append(999)
-                data['disturbance_type'].append('harvest')
-                for i in range(len(theme_cols)): data['to_theme%i' % i].append(tmask[i])
-                data['to_%s' % species_classifier_colname].append('softwood' if au_table2.loc[int(tmask[4])].canfi_species < 1200 else 'hardwood')
-                data['regen_delay'].append(0)
-                data['reset_age'].append(0)
-                data['percent'].append(100)
-        result = pd.DataFrame(data)
-        return result
+        # --- orphaneed code? delete? ---
+        # for acode in fm.transitions:
+        #     if acode == null_acode: continue
+        #     for smask in self.transitions[acode]:
+        #         tmask, tprop, _, _, _, _, _ = self.transitions[acode][smask][''][0]
+        #         for i, c in enumerate(theme_cols): data[c].append(smask[i])
+        #         data['species'].append('softwood' if au_table1.loc[int(smask[2])].canfi_species < 1200 else 'hardwood')
+        #         data['using_age_class'].append('FALSE')
+        #         data['min_softwood_age'].append(1)
+        #         data['max_softwood_age'].append(999)
+        #         data['min_hardwood_age'].append(1)
+        #         data['max_hardwood_age'].append(999)
+        #         data['disturbance_type'].append('harvest')
+        #         for i in range(len(theme_cols)): data['to_theme%i' % i].append(tmask[i])
+        #         data['to_%s' % species_classifier_colname].append('softwood' if au_table2.loc[int(tmask[4])].canfi_species < 1200 else 'hardwood')
+        #         data['regen_delay'].append(0)
+        #         data['reset_age'].append(0)
+        #         data['percent'].append(100)
+        # result = pd.DataFrame(data)
+        # return result
         
     def to_cbm_sit(self, softwood_volume_yname, hardwood_volume_yname, admin_boundary, eco_boundary, 
                    disturbance_type_mapping, 
