@@ -7,3 +7,4 @@ fiona
 profilehooks
 pytest
 numba
+dill
