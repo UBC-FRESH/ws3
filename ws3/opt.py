@@ -490,7 +490,7 @@ class Problem:
         # ----------------------------
         if getattr(self, "_warm_start", None) is not None:
             print('ws3.opt.Proble._solve_highs: detected _warm_start solution')
-            highs.setOptionValue("run_crossover", 0)  # Ensure dual simplex accepts hot start
+            highs.setOptionValue("run_crossover", "choose")  # let HiGHS auto-decide            
             warm_start = self._warm_start
             ncols = len(warm_start)
             idx = np.arange(ncols, dtype=np.int32)

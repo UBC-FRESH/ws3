@@ -42,7 +42,7 @@ _cfi = chain.from_iterable
 from collections import defaultdict as dd
 import pandas as pd
 from numba import njit
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 from multiprocessing import get_context
 import dill
 from collections import defaultdict
@@ -63,6 +63,9 @@ import types
 import functools
 from itertools import islice
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+MP_CONTEXT = "fork"
 
 def batched(iterable, batch_size):
     """Yield successive batches (lists) from any iterable."""
@@ -73,7 +76,128 @@ def batched(iterable, batch_size):
             break
         yield batch
 
-def auto_batch(tasks, workers, max_batch_factor=1, size_fn=None):
+def choose_max_batch_factor(workers: int) -> int:
+    """
+    Adaptive max_batch_factor for auto_batch based on number of workers.
+    Keeps IPC overhead low for small core counts while ensuring enough batches
+    for parallel saturation on large core counts.
+    """
+    if workers <= 2:
+        return 2
+    elif workers <= 8:
+        return 4
+    elif workers <= 16:
+        return 8
+    else:
+        return 16
+
+def _worker_cmp_cflw_phase3_batch(batch):
+    """Worker that handles a batch of phase3 tasks."""
+    batch_results = []
+    for task in batch:
+        batch_results.extend(worker_cmp_cflw_phase3(task))
+    return batch_results
+
+def _worker_cmp_cgen_phase3_batch(batch):
+    """Worker that handles a batch of phase3 tasks."""
+    batch_results = []
+    for task in batch:
+        batch_results.extend(worker_cmp_cgen_phase3(task))
+    return batch_results
+
+def auto_batch(tasks, workers, max_batch_factor=None, size_fn=None):
+    """
+    Split tasks into batches for parallel processing.
+    - Preserves your adaptive batch size logic.
+    - Optionally sorts tasks by size (descending) and greedily fills batches.
+
+    Args:
+        tasks: List of tasks (any type)
+        workers: Number of process pool workers
+        max_batch_factor: Multiplier for target number of batches (~workers*factor)
+        size_fn: Optional function returning a numeric cost per task (default=1)
+
+    Returns:
+        List of task batches (list of lists)
+    """
+    if not tasks:
+        return []
+
+    if max_batch_factor is None:
+        max_batch_factor = choose_max_batch_factor(workers)
+
+    target_batches = max(1, workers * max_batch_factor)
+    batch_size = max(1, len(tasks) // target_batches)
+
+    # Default size function if not given
+    if size_fn is None:
+        size_fn = lambda x: 1
+
+    # Sort tasks by size (descending)
+    sized_tasks = sorted(tasks, key=size_fn, reverse=True)
+
+    # Initialize batches and their current total size
+    batches = [[] for _ in range(target_batches)]
+    batch_loads = [0] * target_batches
+
+    # Greedy fill: always append to the lightest batch
+    for task in sized_tasks:
+        idx = batch_loads.index(min(batch_loads))
+        batches[idx].append(task)
+        batch_loads[idx] += size_fn(task)
+
+    # Remove empty batches (if tasks < batches)
+    batches = [b for b in batches if b]
+
+    # Optionally further split overly large batches if needed
+    final_batches = []
+    for batch in batches:
+        if len(batch) > batch_size * 2:  # prevent one batch from being huge
+            for i in range(0, len(batch), batch_size):
+                final_batches.append(batch[i:i + batch_size])
+        else:
+            final_batches.append(batch)
+
+    return final_batches
+
+def ___auto_batch(tasks, workers, max_batch_factor=None):
+    """
+    Split tasks into batches based on workers and an adaptive max_batch_factor.
+    Returns a list of batches (list of lists).
+    """
+    if not tasks:
+        return []
+
+    if max_batch_factor is None:
+        max_batch_factor = choose_max_batch_factor(workers)
+
+    target_batches = max(1, workers * max_batch_factor)
+    batch_size = max(1, len(tasks) // target_batches)
+
+    return [tasks[i:i + batch_size] for i in range(0, len(tasks), batch_size)]
+
+def __auto_batch(tasks, workers, max_batch_factor=2):
+    """
+    Split tasks into batches for multiprocessing.
+
+    Larger max_batch_factor => fewer, bigger batches.
+    """
+    n = len(tasks)
+    if n == 0:
+        return []
+
+    # Compute target_batches inversely to factor
+    # Example: workers=32, max_batch_factor=2 -> 32//8 = 4 target batches
+    target_batches = max(1, workers // max_batch_factor)
+
+    # Ensure at least 1 batch
+    batch_size = max(1, (n + target_batches - 1) // target_batches)
+
+    # Build batches
+    batches = [tasks[i:i + batch_size] for i in range(0, n, batch_size)]
+    return batches
+
+def _auto_batch(tasks, workers, max_batch_factor=2, size_fn=None):
     """
     Automatically batch tasks for parallel processing.
 
@@ -415,7 +539,7 @@ class PersistentWorkerPool:
 
     def __enter__(self):
         if self.workers > 1:
-            ctx = get_context("spawn")
+            ctx = get_context(MP_CONTEXT)
             self.executor = ProcessPoolExecutor(
                 max_workers=self.workers,
                 mp_context=ctx,
@@ -1359,7 +1483,7 @@ class ForestModel:
         # Step 2: Process trees into coverage constraints
         print('process trees')
         tree_items = list(p.trees.items())
-        batches = list(auto_batch(tree_items, workers, max_batch_factor=8))
+        batches = list(auto_batch(tree_items, workers, max_batch_factor=4))
         tasks = [(batch, z_coeff_key) for batch in batches]
 
         results = []
@@ -1367,7 +1491,7 @@ class ForestModel:
             for task in tasks:
                 results.extend(worker_summarize_tree_batch(task))
         else:
-            exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context("spawn"))
+            exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
             futures = [exec_ctx.submit(worker_summarize_tree_batch, task) for task in tasks]
             for f in as_completed(futures):
                 results.extend(f.result())
@@ -1418,7 +1542,7 @@ class ForestModel:
             # Batch size can be tuned for IPC vs load balance
             # batch_size = 256
             # task_batches = [tract_tasks[i:i + batch_size] for i in range(0, len(tract_tasks), batch_size)]
-            task_batches = auto_batch(tract_tasks, workers, max_batch_factor=1)
+            task_batches = auto_batch(tract_tasks, workers, max_batch_factor=4)
             if not executor:
                 # prepare serialized model and coeff_funcs
                 problems_backup = self.problems
@@ -1429,7 +1553,7 @@ class ForestModel:
                 serialized_funcs = {k: dill.dumps(f) for k, f in rebased_funcs.items()}
                 with ProcessPoolExecutor(
                     max_workers=workers,
-                    mp_context=get_context("spawn"),
+                    mp_context=get_context(MP_CONTEXT),
                     initializer=init_worker_gen_vars,
                     initargs=(blob_bytes, serialized_funcs, workers),
                 ) as executor:
@@ -1533,6 +1657,163 @@ class ForestModel:
     def _cmp_cflw_m1(self, problem, cflw_e, workers=1, executor=None):
         """
         Compile flow (even-flow) constraints in parallel using batched workers.
+        Optimized for less overhead while respecting the original (i, j) API.
+        """
+        if not cflw_e:
+            return
+
+        periods = self.periods
+        cflw_keys = list(cflw_e.keys())
+        print("_cmp_cflw_m1: phase 1")
+
+        # Phase 1: Compute mu values in parallel
+        tree_items = list(problem.trees.items())
+        # Larger batch_factor reduces executor overhead
+        # batches = list(auto_batch(tree_items, workers))
+        batches = auto_batch(
+            tree_items, 
+            workers, 
+            size_fn=lambda x: len(x[1].nodes()),
+            max_batch_factor=1
+        )
+        tasks = [(batch, cflw_keys, periods) for batch in batches]
+
+        if workers == 1:
+            results = []
+            for task in tasks:
+                results.extend(worker_cmp_cflw_batch(task))
+        else:
+            # Use existing executor if passed
+            exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
+            futures = [exec_ctx.submit(worker_cmp_cflw_batch, task) for task in tasks]
+
+            # Collect results without repeated extend() overhead
+            results_nested = [f.result() for f in as_completed(futures)]
+            results = [item for batch in results_nested for item in batch]
+
+            if executor is None:
+                exec_ctx.shutdown()
+
+        # Phase 2: Merge results into mu dict
+        print("_cmp_cflw_m1: phase 2")
+        mu = {t: {o: {} for o in cflw_keys} for t in periods}
+        for t, o, i, j, val in results:
+            mu[t][o][(i, j)] = val
+
+        # Phase 3: Build constraints (parallel with batching)
+        print("_cmp_cflw_m1: phase 3")
+
+        leaf_ids = problem._leaf_ids
+        xnames = {k: f"x_{v}" for k, v in leaf_ids.items()}
+        add_constraint = problem.add_constraint
+
+        # Build Phase 3 tasks
+        tasks = []
+        for t in periods:
+            for o, e in cflw_e.items():
+                eps_dict, ref_period = e
+                if t not in eps_dict:
+                    continue
+                mu_t_o = mu[t][o]
+                mu_ref_o = mu[ref_period][o]
+                eps = eps_dict[t]
+                tasks.append((t, o, mu_t_o, mu_ref_o, eps, xnames))
+
+        results = []
+
+        if workers == 1:
+            # Serial processing
+            for task in tasks:
+                results.extend(worker_cmp_cflw_phase3(task))
+        else:
+            # Create batches of tasks for more efficient multiprocessing
+            batches = auto_batch(tasks, workers, max_batch_factor=2)            
+            exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
+            futures = [exec_ctx.submit(_worker_cmp_cflw_phase3_batch, batch) for batch in batches]
+            for f in as_completed(futures):
+                results.extend(f.result())
+            if executor is None:
+                exec_ctx.shutdown()
+
+        # Add constraints sequentially
+        for name, coeffs, sense, rhs in results:
+            add_constraint(name=name, coeffs=coeffs, sense=sense, rhs=rhs)
+
+    # def _cmp_cflw_m1(self, problem, cflw_e, workers=1, executor=None):
+    #     """
+    #     Compile flow (even-flow) constraints in parallel using batched workers.
+    #     Phase 1/2: same as current code.
+    #     Phase 3: Uses threads instead of processes to reduce IPC overhead.
+    #     """
+    #     if not cflw_e:
+    #         return
+
+    #     periods = self.periods
+    #     cflw_keys = list(cflw_e.keys())
+    #     print("_cmp_cflw_m1: phase 1")
+
+    #     # --- Phase 1: Compute mu values (unchanged) ---
+    #     tree_items = list(problem.trees.items())
+    #     batches = auto_batch(tree_items, workers, max_batch_factor=4)
+    #     tasks = [(batch, cflw_keys, periods) for batch in batches]
+
+    #     results = []
+    #     if workers == 1:
+    #         for task in tasks:
+    #             results.extend(worker_cmp_cflw_batch(task))
+    #     else:
+    #         exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
+    #         futures = [exec_ctx.submit(worker_cmp_cflw_batch, task) for task in tasks]
+    #         for f in as_completed(futures):
+    #             results.extend(f.result())
+    #         if executor is None:
+    #             exec_ctx.shutdown()
+
+    #     # --- Phase 2: Merge into mu dict ---
+    #     print("_cmp_cflw_m1: phase 2")
+    #     mu = {t: {o: {} for o in cflw_keys} for t in periods}
+    #     for t, o, i, j, val in results:
+    #         mu[t][o][(i, j)] = val
+
+    #     # --- Phase 3: Build constraints ---
+    #     print("_cmp_cflw_m1: phase 3 (threaded)")
+
+    #     leaf_ids = problem._leaf_ids
+    #     xnames = {k: f"x_{v}" for k, v in leaf_ids.items()}
+    #     add_constraint = problem.add_constraint
+
+    #     tasks = []
+    #     for t in periods:
+    #         for o, e in cflw_e.items():
+    #             eps_dict, ref_period = e
+    #             if t not in eps_dict:
+    #                 continue
+    #             mu_t_o = mu[t][o]
+    #             mu_ref_o = mu[ref_period][o]
+    #             eps = eps_dict[t]
+    #             tasks.append((t, o, mu_t_o, mu_ref_o, eps, xnames))
+
+    #     # --- Parallel constraint building with threads ---
+    #     results = []
+    #     if workers == 1:
+    #         for task in tasks:
+    #             results.extend(worker_cmp_cflw_phase3(task))
+    #     else:
+    #         # Thread pool (shared memory, no serialization)
+    #         exec_ctx = executor or ThreadPoolExecutor(max_workers=workers)
+    #         futures = [exec_ctx.submit(worker_cmp_cflw_phase3, task) for task in tasks]
+    #         for f in as_completed(futures):
+    #             results.extend(f.result())
+    #         if executor is None:
+    #             exec_ctx.shutdown()
+
+    #     # --- Add constraints sequentially ---
+    #     for name, coeffs, sense, rhs in results:
+    #         add_constraint(name=name, coeffs=coeffs, sense=sense, rhs=rhs)            
+            
+    def __cmp_cflw_m1(self, problem, cflw_e, workers=1, executor=None):
+        """
+        Compile flow (even-flow) constraints in parallel using batched workers.
         """
         if not cflw_e:
             return
@@ -1542,7 +1823,7 @@ class ForestModel:
         print("_cmp_cflw_m1: phase 1")
 
         tree_items = list(problem.trees.items())
-        batches = list(auto_batch(tree_items, workers, max_batch_factor=8))
+        batches = list(auto_batch(tree_items, workers))
         tasks = [(batch, cflw_keys, periods) for batch in batches]
 
         results = []
@@ -1550,7 +1831,7 @@ class ForestModel:
             for task in tasks:
                 results.extend(worker_cmp_cflw_batch(task))
         else:
-            exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context("spawn"))
+            exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
             futures = [exec_ctx.submit(worker_cmp_cflw_batch, task) for task in tasks]
             for f in as_completed(futures):
                 results.extend(f.result())
@@ -1592,7 +1873,7 @@ class ForestModel:
             if not executor:
                 with ProcessPoolExecutor(
                     max_workers=workers,
-                    mp_context=get_context("spawn"),
+                    mp_context=get_context(MP_CONTEXT),
                 ) as pool:
                     futures = [pool.submit(worker_cmp_cflw_phase3, task) for task in tasks]
                     for f in as_completed(futures):
@@ -1610,6 +1891,85 @@ class ForestModel:
     def _cmp_cflw_m2(self):
         pass # not implemented
 
+    def ___cmp_cgen_m1(self, problem, cgen_e, workers=1, executor=None):
+        """
+        Compile general constraints in three phases, modeled after _cmp_cflw_m1.
+        """
+        if not cgen_e:
+            return
+
+        periods = self.periods
+        tree_items = list(problem.trees.items())
+        cgen_keys = list(cgen_e.keys())
+        print("_cmp_cgen_m1: phase 1")
+
+        # --- Phase 1: Per-tree contributions ---
+        batches = auto_batch(
+            tree_items,
+            workers,
+            size_fn=lambda kv: len(kv[1].nodes())
+        )
+        tasks = [(batch, cgen_keys, periods) for batch in batches]
+
+        results = []
+        if workers == 1:
+            for task in tasks:
+                results.extend(worker_cmp_cgen_batch(task))
+        else:
+            exec_ctx = executor or ProcessPoolExecutor(
+                max_workers=workers,
+                mp_context=get_context("fork"),
+            )
+            futures = [exec_ctx.submit(worker_cmp_cgen_batch, task) for task in tasks]
+            for f in as_completed(futures):
+                results.extend(f.result())
+            if executor is None:
+                exec_ctx.shutdown()
+
+        # --- Phase 2: Merge results into mu dict ---
+        print("_cmp_cgen_m1: phase 2")
+        mu = {t: {o: {} for o in cgen_keys} for t in periods}
+        for t, o, i, j, val in results:
+            mu[t][o][(i, j)] = val
+
+        # --- Phase 3: Build constraints ---
+        print("_cmp_cgen_m1: phase 3")
+        leaf_ids = problem._leaf_ids
+        xnames = {k: f"x_{v}" for k, v in leaf_ids.items()}
+        add_constraint = problem.add_constraint
+
+        # Prepare tasks for (t, o) pairs
+        tasks = []
+        for t in periods:
+            for o, e in cgen_e.items():
+                eps_dict, ref_period = e
+                if t not in eps_dict:
+                    continue
+                mu_t_o = mu[t][o]
+                mu_ref_o = mu[ref_period][o]
+                eps = eps_dict[t]
+                tasks.append((t, o, mu_t_o, mu_ref_o, eps, xnames))
+
+        results = []
+        if workers == 1:
+            for task in tasks:
+                results.extend(worker_cmp_cgen_phase3(task))
+        else:
+            exec_ctx = executor or ProcessPoolExecutor(
+                max_workers=workers,
+                mp_context=get_context("fork"),
+            )
+            futures = [exec_ctx.submit(worker_cmp_cgen_phase3, task) for task in tasks]
+            for f in as_completed(futures):
+                results.extend(f.result())
+            if executor is None:
+                exec_ctx.shutdown()
+
+        # --- Add constraints sequentially ---
+        for name, coeffs, sense, rhs in results:
+            add_constraint(name=name, coeffs=coeffs, sense=sense, rhs=rhs)
+
+    # original working but with a few tweaks (see commented out bits)
     def _cmp_cgen_m1(self, problem, cgen_data, workers=1, executor=None):
         """
         Compile general output constraints in parallel using batched workers.
@@ -1622,7 +1982,16 @@ class ForestModel:
         print("_cmp_cgen_m1: phase 1")
 
         tree_items = list(problem.trees.items())
-        batches = list(auto_batch(tree_items, workers, max_batch_factor=8))
+        # batches = list(auto_batch(tree_items, workers))
+        # tasks = [(batch, cgen_keys, periods) for batch in batches]
+        # --- Phase 1: Per-tree contributions ---
+        batches = auto_batch(
+            tree_items,
+            workers,
+            size_fn=lambda x: len(x[1].nodes()),
+            max_batch_factor=1
+        )
+        
         tasks = [(batch, cgen_keys, periods) for batch in batches]
 
         results = []
@@ -1630,7 +1999,7 @@ class ForestModel:
             for task in tasks:
                 results.extend(worker_cmp_cgen_batch(task))
         else:
-            exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context("spawn"))
+            exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
             futures = [exec_ctx.submit(worker_cmp_cgen_batch, task) for task in tasks]
             for f in as_completed(futures):
                 results.extend(f.result())
@@ -1662,17 +2031,17 @@ class ForestModel:
             for task in tasks:
                 results.extend(worker_cmp_cgen_phase3(task))
         else:
-            if not executor:
-                with ProcessPoolExecutor(max_workers=workers, mp_context=get_context("spawn")) as pool:
-                    futures = [pool.submit(worker_cmp_cgen_phase3, task) for task in tasks]
-                    for f in as_completed(futures):
-                        results.extend(f.result())
-            else:
-                futures = [executor.submit(worker_cmp_cgen_phase3, task) for task in tasks]
-                for f in as_completed(futures):
-                    results.extend(f.result())
+            # Create batches of tasks for more efficient multiprocessing
+            batches = auto_batch(tasks, workers, max_batch_factor=2)
+            exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
+            futures = [exec_ctx.submit(_worker_cmp_cgen_phase3_batch, batch) for batch in batches]
+            for f in as_completed(futures):
+                results.extend(f.result())
+            if executor is None:
+                exec_ctx.shutdown()
 
         # Add constraints to problem
+        print('add constraints')
         for name, coeffs, sense, rhs in results:
             add_constraint(name=name, coeffs=coeffs, sense=sense, rhs=rhs)
 
