@@ -311,7 +311,7 @@ def worker_cmp_cgen_phase3(args):
 
     return results
 
-    def _worker_cmp_cgen_phase3_batch(batch):
+def _worker_cmp_cgen_phase3_batch(batch):
     """Worker that handles a batch of phase3 tasks."""
     batch_results = []
     for task in batch:
