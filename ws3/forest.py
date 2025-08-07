@@ -1,7 +1,7 @@
 ###################################################################################
 # MIT License
 
-# Copyright (c) 2015-2017 Gregory Paradis
+# Copyright (c) 2015-2025 Gregory Paradis
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,11 @@ from functools import reduce
 _cfi = chain.from_iterable
 from collections import defaultdict as dd
 import pandas as pd
+from numba import njit
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
+from multiprocessing import get_context
+import dill
+from collections import defaultdict
 
 
 try:
@@ -54,9 +59,291 @@ except: # "__main__" case
 from ws3.common import timed
 
 from pdb import set_trace
-    
-#_mad = common.MAX_AGE_DEFAULT
+import types
+import functools
+from itertools import islice
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+MP_CONTEXT = "fork"
+
+def choose_max_batch_factor(workers: int) -> int:
+    """
+    Adaptive max_batch_factor for auto_batch based on number of workers.
+    Keeps IPC overhead low for small core counts while ensuring enough batches
+    for parallel saturation on large core counts.
+    """
+    if workers <= 2:
+        return 2
+    elif workers <= 8:
+        return 4
+    elif workers <= 16:
+        return 8
+    else:
+        return 16
+
+def auto_batch(tasks, workers, max_batch_factor=None, size_fn=None):
+    """
+    Split tasks into batches for parallel processing.
+    - Preserves your adaptive batch size logic.
+    - Optionally sorts tasks by size (descending) and greedily fills batches.
+
+    Args:
+        tasks: List of tasks (any type)
+        workers: Number of process pool workers
+        max_batch_factor: Multiplier for target number of batches (~workers*factor)
+        size_fn: Optional function returning a numeric cost per task (default=1)
+
+    Returns:
+        List of task batches (list of lists)
+    """
+    if not tasks:
+        return []
+
+    if max_batch_factor is None:
+        max_batch_factor = choose_max_batch_factor(workers)
+
+    target_batches = max(1, workers * max_batch_factor)
+    batch_size = max(1, len(tasks) // target_batches)
+
+    # Default size function if not given
+    if size_fn is None:
+        size_fn = lambda x: 1
+
+    # Sort tasks by size (descending)
+    sized_tasks = sorted(tasks, key=size_fn, reverse=True)
+
+    # Initialize batches and their current total size
+    batches = [[] for _ in range(target_batches)]
+    batch_loads = [0] * target_batches
+
+    # Greedy fill: always append to the lightest batch
+    for task in sized_tasks:
+        idx = batch_loads.index(min(batch_loads))
+        batches[idx].append(task)
+        batch_loads[idx] += size_fn(task)
+
+    # Remove empty batches (if tasks < batches)
+    batches = [b for b in batches if b]
+
+    # Optionally further split overly large batches if needed
+    final_batches = []
+    for batch in batches:
+        if len(batch) > batch_size * 2:  # prevent one batch from being huge
+            for i in range(0, len(batch), batch_size):
+                final_batches.append(batch[i:i + batch_size])
+        else:
+            final_batches.append(batch)
+
+    return final_batches
+
+def worker_summarize_tree_batch(args):
+    """
+    Summarize a batch of trees into coverage constraints and leaf outputs.
+    Returns: [(cname, coeffs, z_coeffs), ...]
+    """
+    batch, z_coeff_key = args
+    results = []
+    for i, tree in batch:
+        cname = f'cov_{common.hex_id(i)}'
+        coeffs = {}
+        z_coeffs = {}
+        for path in tree.paths():
+            j = tuple(n.data('acode') for n in path)
+            leaf_id = path[-1].data('leaf_id')
+            vname = f"x_{leaf_id}"
+            coeffs[vname] = 1.0
+            z_coeffs[vname] = path[-1].data(z_coeff_key)
+        results.append((cname, coeffs, z_coeffs))
+    return results
+
+def sanitize_func(f):
+    """Make a version of f that is safe to serialize via dill in 'spawn' mode"""
+    if isinstance(f, functools.partial):
+        return functools.partial(sanitize_func(f.func), *f.args, **(f.keywords or {}))
+    if isinstance(f, types.FunctionType):
+        new_f = types.FunctionType(
+            f.__code__,
+            {},  # empty globals dict — no module context
+            name=f.__name__,
+            argdefs=f.__defaults__,
+            closure=f.__closure__,
+        )
+        new_f.__module__ = '__main__'
+        return new_f
+    raise TypeError(f"Don't know how to sanitize function of type {type(f)}")
+
+
+# ----------------------------
+# Globals for _gen_vars_m1 parallel execution
+# ----------------------------
+_global_model_gen_vars = None
+_global_coeff_funcs_gen_vars = None
+_global_workers_gen_vars = 1
+
+def init_worker_gen_vars(blob_bytes_local, serialized_funcs_local, workers=1):
+    """
+    Initializer for _gen_vars_m1 workers: load model and coefficient functions once.
+    Also stores desired worker count for _bld_tree_m1.
+    """
+    global _global_model_gen_vars, _global_coeff_funcs_gen_vars, _global_workers_gen_vars
+    import dill
+    _global_model_gen_vars = dill.loads(blob_bytes_local)
+    _global_coeff_funcs_gen_vars = {k: dill.loads(f_bytes) for k, f_bytes in serialized_funcs_local.items()}
+    _global_workers_gen_vars = workers
+
+def worker_gen_vars(tasks, acodes_local):
+    """
+    Worker for building trees in _gen_vars_m1.
+    Returns list of (dtk, age, tree).
+    """
+    model = _global_model_gen_vars
+    coeff_funcs = _global_coeff_funcs_gen_vars
+    workers = _global_workers_gen_vars
+    acodes_eff = list(model.actions.keys()) if not acodes_local else acodes_local
+    results = []
+    for (dtk, age) in tasks:
+        area = model.dtypes[dtk].area(1, age)
+        if not area: continue
+        tree = model._bld_tree_m1(
+            area, dtk, age, coeff_funcs,
+            tree=None, period=1,
+            acodes=acodes_eff, compile_c_ycomps=True)
+        results.append((dtk, age, tree))
+    return results
+
+# ----------------------------
+# Globals for _cmp_cflw_m1 parallel execution
+# ----------------------------
+
+def worker_cmp_cflw_batch(args):
+    """
+    Module-scope worker for _cmp_cflw_m1.
+    Args: (batch, cflw_keys, periods)
+          where batch is a list of (i, tree) pairs
+    Returns: list of (t, o, i, j, value)
+    """
+    batch, cflw_keys, periods = args
+    results = []
+    for i, tree in batch:
+        for path in tree.paths():
+            j = tuple(n.data('acode') for n in path)
+            for o in cflw_keys:
+                _mu = path[-1].data(o)
+                for t in periods:
+                    results.append((t, o, i, j, _mu.get(t, 0.0)))
+    return results
+
+def worker_cmp_cflw_phase3(args):
+    """
+    Worker to compute (name, coeffs, sense, rhs) tuples for flow constraints Phase 3.
+    """
+    t, o, mu_t_o, mu_ref_o, eps, xnames = args
+    results = []
+
+    keys = list(mu_t_o.keys())
+    x_keys = [xnames[k] for k in keys]
+    mu_vals = [mu_t_o[k] for k in keys]
+    mu_ref = [mu_ref_o[k] for k in keys]
+
+    # Lower bound row
+    mu_lb_vals = [v - (1 - eps) * r for v, r in zip(mu_vals, mu_ref)]
+    mu_lb = dict(zip(x_keys, mu_lb_vals))
+    results.append((f'flw-lb_{t:03d}_{o}', mu_lb, opt.SENSE_GEQ, 0.0))
+
+    # Upper bound row
+    mu_ub_vals = [v - (1 + eps) * r for v, r in zip(mu_vals, mu_ref)]
+    mu_ub = dict(zip(x_keys, mu_ub_vals))
+    results.append((f'flw-ub_{t:03d}_{o}', mu_ub, opt.SENSE_LEQ, 0.0))
+
+    return results
+
+def _worker_cmp_cflw_phase3_batch(batch):
+    """Worker that handles a batch of phase3 tasks."""
+    batch_results = []
+    for task in batch:
+        batch_results.extend(worker_cmp_cflw_phase3(task))
+    return batch_results
+
+# ----------------------------
+# Globals for _cmp_cgen_m1 parallel execution
+# ----------------------------
+
+def worker_cmp_cgen_batch(args):
+    """
+    Module-scope worker for _cmp_cgen_m1.
+    Args: (batch, cgen_keys, periods)
+          where batch is a list of (i, tree) pairs
+    Returns: list of (t, o, i, j, val)
+    """
+    batch, cgen_keys, periods = args
+    results = []
+    for i, tree in batch:
+        for path in tree.paths():
+            j = tuple(n.data('acode') for n in path)
+            leaf = path[-1]
+            for o in cgen_keys:
+                _mu = leaf.data(o)  # dict {period: value}
+                for t in periods:
+                    results.append((t, o, i, j, _mu.get(t, 0.0)))
+    return results
+
+def worker_cmp_cgen_phase3(args):
+    """
+    Worker to compute (name, coeffs, sense, rhs) tuples for general constraints Phase 3.
+    """
+    t, o, mu_t_o, lb, ub, xnames = args
+    results = []
+
+    keys = list(mu_t_o.keys())
+    x_keys = [xnames[k] for k in keys]
+    mu_vals = [mu_t_o[k] for k in keys]
+
+    # Lower bound row
+    if lb is not None and t in lb:
+        mu_lb = dict(zip(x_keys, mu_vals))
+        results.append((f'gen-lb_{t:03d}_{o}', mu_lb, opt.SENSE_GEQ, lb[t]))
+
+    # Upper bound row
+    if ub is not None and t in ub:
+        mu_ub = dict(zip(x_keys, mu_vals))
+        results.append((f'gen-ub_{t:03d}_{o}', mu_ub, opt.SENSE_LEQ, ub[t]))
+
+    return results
+
+def _worker_cmp_cgen_phase3_batch(batch):
+    """Worker that handles a batch of phase3 tasks."""
+    batch_results = []
+    for task in batch:
+        batch_results.extend(worker_cmp_cgen_phase3(task))
+    return batch_results
+
+class PersistentWorkerPool:
+    """
+    Context manager for a persistent ProcessPoolExecutor that initializes
+    workers with ForestModel and coeff_funcs.
+    """
+
+    def __init__(self, workers, blob_bytes=None, serialized_funcs=None):
+        self.workers = workers
+        self.blob_bytes = blob_bytes
+        self.serialized_funcs = serialized_funcs
+        self.executor = None
+
+    def __enter__(self):
+        if self.workers > 1:
+            ctx = get_context(MP_CONTEXT)
+            self.executor = ProcessPoolExecutor(
+                max_workers=self.workers,
+                mp_context=ctx,
+                initializer=init_worker_gen_vars,
+                initargs=(self.blob_bytes, self.serialized_funcs, self.workers),
+            )
+        return self.executor
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.executor is not None:
+            self.executor.shutdown()
 
 class GreedyAreaSelector:
     """
@@ -320,7 +607,7 @@ class DevelopmentType:
             return ycomp if ycomp else default_ycomp
         
     def _resolver_multiply(self, yname, d):
-        args = [self._o(s.lower()) for s in re.split('\s?,\s?', re.search('(?<=\().*(?=\))', d).group(0))]
+        args = [self._o(s.lower()) for s in re.split(r'\s?,\s?', re.search(r'(?<=\().*(?=\))', d).group(0))]
         ##################################################################################################
         # NOTE: Not consistent with Remsoft documentation on 'complex-compound yields' (fix me)...
         ytype_set = set(a.type for a in args if isinstance(a, core.Curve))
@@ -328,37 +615,37 @@ class DevelopmentType:
         ##################################################################################################
 
     def _resolver_divide(self, yname, d):
-        _tmp = list(zip(re.split('\s?,\s?', re.search('(?<=\().*(?=\))', d).group(0)),
+        _tmp = list(zip(re.split(r'\s?,\s?', re.search(r'(?<=\().*(?=\))', d).group(0)),
                    (self._zero_curve, self._unit_curve)))
         args = [self._o(s, default_ycomp) for s, default_ycomp in _tmp]
         return args[0].type if not args[0].is_special else args[1].type, self._rc(args[0] / args[1])
         
     def _resolver_sum(self, yname, d):
-        args = [self._o(s.lower()) for s in re.split('\s?,\s?', re.search('(?<=\().*(?=\))', d).group(0))] 
+        args = [self._o(s.lower()) for s in re.split(r'\s?,\s?', re.search(r'(?<=\().*(?=\))', d).group(0))] 
         ytype_set = set(a.type for a in args if isinstance(a, core.Curve))
         return ytype_set.pop() if len(ytype_set) == 1 else 'c', self._rc(reduce(lambda x, y: x+y, [a for a in args]))
         
     def _resolver_cai(self, yname, d):
-        arg = self._o(re.split('\s?,\s?', re.search('(?<=\().*(?=\))', d).group(0))[0])
+        arg = self._o(re.split(r'\s?,\s?', re.search(r'(?<=\().*(?=\))', d).group(0))[0])
         return arg.type, self._rc(arg.mai())
         
     def _resolver_mai(self, yname, d):
-        arg = self._o(re.split('\s?,\s?', re.search('(?<=\().*(?=\))', d).group(0))[0])
+        arg = self._o(re.split(r'\s?,\s?', re.search(r'(?<=\().*(?=\))', d).group(0))[0])
         return arg.type, self._rc(arg.mai())
         
     def _resolver_ytp(self, yname, d):
-        arg = self._o(re.search('(?<=\().*(?=\))', d).group(0).lower())
+        arg = self._o(re.search(r'(?<=\().*(?=\))', d).group(0).lower())
         return arg.type, self._rc(arg.ytp())
         
     def _resolver_range(self, yname, d):
-        args = [self._o(s.lower()) for s in re.split('\s?,\s?', re.search('(?<=\().*(?=\))', d).group(0))] 
+        args = [self._o(s.lower()) for s in re.split(r'\s?,\s?', re.search(r'(?<=\().*(?=\))', d).group(0))] 
         arg_triplets = [args[i:i+3] for i in range(0, len(args), 3)]
         range_curve = self._rc(reduce(lambda x, y: x*y, [t[0].range(t[1], t[2]) for t in arg_triplets]))
         return args[0].type, self._rc(reduce(lambda x, y: x*y, [t[0].range(t[1], t[2]) for t in arg_triplets]))
 
     def _compile_complex_ycomp(self, yname):
         expression = self._complex_ycomps[yname]
-        keyword = re.search('(?<=_)[A-Z]+(?=\()', expression).group(0)
+        keyword = re.search(r'(?<=_)[A-Z]+(?=\()', expression).group(0)
         try:
             ytype, ycomp = self._resolvers[keyword](yname, expression)
             ycomp.label = yname
@@ -607,7 +894,7 @@ class Output:
 
     def _compile_basic(self, expression):
         # clean up (makes parsing easier)
-        s = re.sub('\s+', ' ', expression) # separate tokens by single space
+        s = re.sub(r'\s+', ' ', expression) # separate tokens by single space
         s = s.replace(' (', '(')  # remove space to left of left parentheses
         t = s.lower().split(' ')
         # filter dtypes, if starts with mask
@@ -615,12 +902,6 @@ class Output:
         if not (t[0] == '@' or t[0] == '_' or t[0] in self.parent.actions):
             mask = tuple(t[:self.parent.nthemes()])
             t = t[self.parent.nthemes():] # pop
-        #try:
-        #print expression
-        #self._dtype_keys = self.parent.unmask(mask) if mask else self.parent.dtypes.keys()
-        #except:
-        #    print expression
-        #    assert False
         # extract @AGE or @YLD condition, if present
         self._ages = None
         self._condition = None
@@ -756,27 +1037,16 @@ class ForestModel:
     """
     _ytypes = {'*Y':'a', '*YT':'t', '*YC':'c'}
     tree = (lambda f: f(f))(lambda a: (lambda: dd(a(a))))
-    #_vp_ratio_default = 1.
-    #_piece_size_yname_default = 'yd3s'
-    #_piece_size_factor_default = 0.001 # convert cubic decimeters to cubic meters
-    #_total_volume_yname_default = 'yv_s'
 
-            
     def __init__(self,
                  model_name,
                  model_path,
                  base_year,
                  horizon=common.HORIZON_DEFAULT,
                  period_length=common.PERIOD_LENGTH_DEFAULT,
-                 #aggr_period_length=common.PERIOD_LENGTH_DEFAULT,
                  max_age=common.MAX_AGE_DEFAULT,
-                 #species_groups=common.SPECIES_GROUPS_FOREST_QC, # not used (DELETE) [commenting out]
                  area_epsilon=common.AREA_EPSILON_DEFAULT,
                  curve_epsilon=common.CURVE_EPSILON_DEFAULT):
-                 #vp_ratio=_vp_ratio_default,
-                 #piece_size_yname=_piece_size_yname_default,
-                 #piece_size_factor=_piece_size_factor_default,
-                 #total_volume_yname=_total_volume_yname_default):
         """
          Initializes the ForestModel with the provided parameters.
 
@@ -795,12 +1065,8 @@ class ForestModel:
         self.base_year = base_year
         self.set_horizon(horizon)
         self.period_length = period_length
-        #self.aggr_period_length = aggr_period_length
-        #self._period_coeff = float(period_length) / float(aggr_period_length)
-        #assert self._period_coeff <= 1.
         self.max_age = max_age
         self.ages = list(range(max_age+1))
-        #self._species_groups = species_groups # Not used (DELETE) [commenting out]
         self.yields = []
         self.ynames = set()
         self.actions = {}
@@ -834,12 +1100,6 @@ class ForestModel:
         self.curve_epsilon = curve_epsilon
         self.areaselector = GreedyAreaSelector(self)
         self.inoperable_dtypes = []
-        #self._vp_ratio = vp_ratio
-        #self.piece_size_yname = piece_size_yname
-        #self.piece_size_factor = piece_size_factor
-        #self.total_volume_yname = total_volume_yname
-        self._problems = {}
-        #self.nthemes = 0
 
     def nthemes(self):
         """
@@ -883,29 +1143,9 @@ class ForestModel:
         cmp_sch_dsp = {1:self._cmp_sch_m1, 2:self._cmp_sch_m2}
         return cmp_sch_dsp[formulation](problem, skip_null)
 
-    def _cmp_sch_m1(self, problem, skip_null):
-        _sch = [[] for t in self.periods]
-        sln = problem.solution()
-        if not sln: return None
-        for i, tree in list(problem.trees.items()):
-            for path in tree.paths():
-                x = 'x_%s' % common.hex_id((i, tuple(n.data('acode') for n in path)))
-                if not sln[x]: continue
-                for t, n in enumerate(path):
-                    d = n.data()
-                    if skip_null and d['acode'] == skip_null: continue
-                    #print 'sch', i, d['dtk'], d['period'], d['acode'], d['age'], d['area'], '%0.1f' % (d['area'] * sln[x])
-                    etype = '_existing' if self.dt(i[0]).area(0) else '_future'
-                    _sch[t].append((d['dtk'], d['age'], d['area'] * sln[x], d['acode'], d['period'], etype))
-                    #_sch[t].append((d['dtk'], d['age'], d['area'] * 1., d['acode'], d['period'], etype))
-        return list(itertools.chain.from_iterable(_sch))
-                
-    def _cmp_sch_m2(self, problem):
-        pass
-
     def add_problem(self, name, coeff_funcs, cflw_e=None, cgen_data=None,
-                    solver=opt.SOLVER_PULP, formulation=1, z_coeff_key='z', acodes=None,
-                    sense=opt.SENSE_MAXIMIZE, mask=None):
+                    solver=opt.SOLVER_HIGHS, formulation=1, z_coeff_key='z', acodes=None,
+                    sense=opt.SENSE_MAXIMIZE, mask=None, workers=1):
         """
         Add an optimization problem to the model.
 
@@ -948,155 +1188,435 @@ class ForestModel:
         :param tuple mask: Tuple of strings constituting a valid mask for your `ForestModel` instance. Can be `None` if you do not want
             to filter `DevelopmentType` instances.
 
+        :param int workers: Number of worker threads to use for parallel processing.
+
         :return: ws3.opt.Problem. Reference to a new Problem instance that was created. Also stored in the ForestModel instance (problems attribute,
             keyed on problem name). 
             
         """
+        # --- Prepare serialization for parallel execution ---
+        if workers > 1:
+            problems_backup = self.problems
+            self.problems = None
+            blob_bytes = dill.dumps(self)  # Serialize model
+            self.problems = problems_backup
+            rebased_funcs = {k: sanitize_func(f) for k, f in coeff_funcs.items()}
+            serialized_funcs = {k: dill.dumps(f) for k, f in rebased_funcs.items()}
+        else:
+            blob_bytes = None
+            serialized_funcs = None
+
+        # --- Reset model state for problem creation ---
         self.reset()
-        bld_p_dsp = {1:self._bld_p_m1, 2:self._bld_p_m2}
-        cmp_cflw_dsp = {1:self._cmp_cflw_m1, 2:self._cmp_cflw_m2}
-        cmp_cgen_dsp = {1:self._cmp_cgen_m1, 2:self._cmp_cgen_m2}
-        assert formulation == 1 # only support Model I formulations for now
-        p = bld_p_dsp[formulation](name, coeff_funcs, solver, z_coeff_key, acodes, sense, mask) # build problem
-        cmp_cflw_dsp[formulation](p, cflw_e) # compile flow constraints
-        cmp_cgen_dsp[formulation](p, cgen_data) # compile general constraints
+
+        # --- Dispatch maps for formulation type ---
+        bld_p_dsp = {1: self._bld_p_m1, 2: self._bld_p_m2}
+        cmp_cflw_dsp = {1: self._cmp_cflw_m1, 2: self._cmp_cflw_m2}
+        cmp_cgen_dsp = {1: self._cmp_cgen_m1, 2: self._cmp_cgen_m2}
+        assert formulation == 1, "Only Model I supported for now"
+
+        # --- Persistent worker pool (None if workers=1) ---
+        with PersistentWorkerPool(workers, blob_bytes, serialized_funcs) as executor:
+            print('add_problem: build problem')
+            p = bld_p_dsp[formulation](
+                name,
+                coeff_funcs,
+                solver,
+                z_coeff_key,
+                acodes,
+                sense,
+                mask,
+                workers,
+                executor,  # None if serial
+            )
+            print('add_problem: compile flow constraints')
+            cmp_cflw_dsp[formulation](p, cflw_e, workers=workers, executor=executor)
+            print('add_problem: compile general constraints')
+            cmp_cgen_dsp[formulation](p, cgen_data, workers=workers, executor=executor)
+
+        # --- Save and return the problem ---
         self.problems[name] = p
         return p
-    
-    def _bld_p_m1(self, name, coeff_funcs, solver, z_coeff_key='z', acodes=None, sense=opt.SENSE_MAXIMIZE, mask=None):
+
+    def _bld_p_m1(
+        self,
+        name,
+        coeff_funcs,
+        solver,
+        z_coeff_key='z',
+        acodes=None,
+        sense=opt.SENSE_MAXIMIZE,
+        mask=None,
+        workers=1,
+        executor=None
+    ):
         """
-        Builds optimization problem, using Model I (m1) formulation.
-        Each column (variable) of the matrix represents a "prescription"
-        (i.e., a feasible sequence of actions, one per period, including the null action).
-        Variables x_ij are linear, bounded by 0 and 1, and represent proportion of a zone i
-        on which prescription j is applied.
-        Coverage constraints ensure that each zone i is fully covered by one or more prescriptions.
+        Build a Model I optimization problem with batched, parallel tree processing.
         """
         p = opt.Problem(name, sense=sense, solver=solver)
+
+        # Step 1: Generate trees and variables
+        print('generate trees using', workers, 'workers')
+        p.trees, p._vars, p._leaf_ids = self._gen_vars_m1(
+            coeff_funcs,
+            acodes=acodes,
+            mask=mask,
+            workers=workers,
+            executor=executor
+        )
+
+        # Step 2: Process trees into coverage constraints
+        print('process trees')
+        tree_items = list(p.trees.items())
+        batches = list(auto_batch(tree_items, workers, max_batch_factor=4))
+        tasks = [(batch, z_coeff_key) for batch in batches]
+
+        results = []
+        if workers == 1:
+            for task in tasks:
+                results.extend(worker_summarize_tree_batch(task))
+        else:
+            exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
+            futures = [exec_ctx.submit(worker_summarize_tree_batch, task) for task in tasks]
+            for f in as_completed(futures):
+                results.extend(f.result())
+            if executor is None:
+                exec_ctx.shutdown()
+
+        # Step 3: Apply results to the Problem object
+        print('_bld_p_m1: build problem')
+        for cname, coeffs, z_coeffs in results:
+            p.add_constraint(name=cname, coeffs=coeffs, sense=opt.SENSE_EQ, rhs=1.0)
+            p._z.update(z_coeffs)
+
         p.coeff_funcs = coeff_funcs
         p.formulation = 1
-        self._problems[name] = p
-        p.trees, p._vars = self._gen_vars_m1(coeff_funcs, acodes=acodes, mask=mask)
-        for i, tree in list(p.trees.items()):
-            cname = 'cov_%s' % common.hex_id(i)
-            coeffs = {'x_%s' % common.hex_id((i, tuple(n.data('acode') for n in path))):1. for path in tree.paths()}
-            p.add_constraint(name=cname, coeffs=coeffs, sense=opt.SENSE_EQ, rhs=1.)
-            for path in tree.paths():
-                try:
-                    p._z['x_%s' % common.hex_id((i, tuple(n.data('acode') for n in path)))] = path[-1].data(z_coeff_key)
-                except Exception as e:
-                    print('error processing tree', i)
-                    print(e)
-                    assert False
+        print('_bld_p_m1: done building problem')
         return p
-            
+        
     def _bld_p_m2(self, problem):
         pass # not implemented
-        
-    def _cmp_cgen_m1(self, problem, cgen_data):
-        if not cgen_data: return
-        mu = {t:{o:{} for o in list(cgen_data.keys())} for t in self.periods}
-        for i, tree in list(problem.trees.items()):
+
+    def _gen_vars_m1(self, coeff_funcs, acodes=None, mask=None, workers=1, executor=None):
+        """
+        Generate trees, variables, and leaf IDs for Model I problems.
+        Parallelized with model and coeff_funcs preloaded per worker.
+        """
+        dtype_keys = self.dtypes.keys() if not mask else self.unmask(mask)
+        # --- Step 1: Build (dtk, age) task list ---
+        tract_tasks = [
+            (dtk, age)
+            for dtk in dtype_keys
+            for age in self.dtypes[dtk]._areas[1].keys()
+            if self.dtypes[dtk].area(1, age)
+        ]
+        # --- Step 3: Serial or Parallel execution ---
+        results = []
+        if workers == 1:
+            # Serial: load once and run worker directly
+            # prepare serialized model and coeff_funcs
+            problems_backup = self.problems
+            self.problems = None
+            blob_bytes = dill.dumps(self)
+            self.problems = problems_backup
+            rebased_funcs = {k: sanitize_func(f) for k, f in coeff_funcs.items()}
+            serialized_funcs = {k: dill.dumps(f) for k, f in rebased_funcs.items()}
+            init_worker_gen_vars(blob_bytes, serialized_funcs, workers=1)
+            results = worker_gen_vars(tract_tasks, acodes)
+        else:
+            task_batches = auto_batch(tract_tasks, workers, max_batch_factor=4)
+            if not executor:
+                # prepare serialized model and coeff_funcs
+                problems_backup = self.problems
+                self.problems = None
+                blob_bytes = dill.dumps(self)
+                self.problems = problems_backup
+                rebased_funcs = {k: sanitize_func(f) for k, f in coeff_funcs.items()}
+                serialized_funcs = {k: dill.dumps(f) for k, f in rebased_funcs.items()}
+                with ProcessPoolExecutor(
+                    max_workers=workers,
+                    mp_context=get_context(MP_CONTEXT),
+                    initializer=init_worker_gen_vars,
+                    initargs=(blob_bytes, serialized_funcs, workers),
+                ) as executor:
+                    futures = [executor.submit(worker_gen_vars, batch, acodes) for batch in task_batches]
+                    for f in as_completed(futures):
+                        res = f.result()
+                        for item in res:
+                            if isinstance(item, Exception): raise item
+                            if item is not None: results.append(item)
+            else: # use executor that was passed in as arg
+                futures = [executor.submit(worker_gen_vars, batch, acodes) for batch in task_batches]
+                for f in as_completed(futures):
+                    res = f.result()
+                    for item in res:
+                        if isinstance(item, Exception): raise item
+                        if item is not None: results.append(item)
+        # --- Step 4: Restore problems and rebuild trees/vars ---
+        trees, vars, leaf_ids = {}, {}, {} 
+        for dtk, age, tree in results:
+            i = (dtk, age)
+            trees[i] = tree
             for path in tree.paths():
                 j = tuple(n.data('acode') for n in path)
-                for o in list(cgen_data.keys()):
-                    _mu = path[-1].data(o) 
-                    for t in self.periods:
-                        mu[t][o][i, j] = _mu[t] if t in _mu else 0. 
-        for o, b in list(cgen_data.items()):
-            for t in self.periods:
-                _mu = {'x_%s' % common.hex_id((i, j)):mu[t][o][i, j] for i, j in mu[t][o]}
-                if b['lb'] is not None and t in b['lb']:
-                    problem.add_constraint(name='gen-lb_%03d_%s' % (t, o), coeffs=_mu, sense=opt.SENSE_GEQ, rhs=b['lb'][t])
-                if b['ub'] is not None and t in b['ub']:
-                    problem.add_constraint(name='gen-ub_%03d_%s' % (t, o), coeffs=_mu, sense=opt.SENSE_LEQ, rhs=b['ub'][t])
-                
-        
+                leaf_id = path[-1].data('leaf_id')
+                vname = f"x_{leaf_id}"
+                leaf_ids[(i, j)] = leaf_id
+                vars[vname] = opt.Variable(vname, opt.VTYPE_CONTINUOUS, 0.0, 1.0)
+        return trees, vars, leaf_ids
 
-    def _cmp_cgen_m2(self):
-        pass # not implemented
+    def _gen_vars_m2(self):
+        pass
 
-    
-    def _cmp_cflw_m1(self, problem, cflw_e):
+    def _bld_tree_m1(
+        self,
+        area,
+        dtk,
+        age,
+        coeff_funcs,
+        tree=None,
+        period=1,
+        acodes=None,
+        compile_c_ycomps=True):
         """
-        Compiles flow constraints (lb and ub, per targeted output, per targeted period).
+        Build a tree of feasible action sequences (full-length paths = |periods|).
         """
-        if not cflw_e: return
-        mu = {t:{o:{} for o in list(cflw_e.keys())} for t in self.periods}
-        for i, tree in list(problem.trees.items()):
-            for path in tree.paths():
-                j = tuple(n.data('acode') for n in path)
-                for o in list(cflw_e.keys()):
-                    _mu = path[-1].data(o)
-                    for t in self.periods:
-                        mu[t][o][i, j] = _mu[t] if t in _mu else 0.
-        for t in self.periods:
-            for o, e in list(cflw_e.items()):
-                if t in e[0]:
-                    mu_lb = {'x_%s' % common.hex_id((i, j)):(mu[t][o][i, j] - (1 - e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
-                    mu_ub = {'x_%s' % common.hex_id((i, j)):(mu[t][o][i, j] - (1 + e[0][t]) * mu[e[1]][o][i, j]) for i, j in mu[t][o]}
-                    problem.add_constraint(name='flw-lb_%03d_%s' % (t, o), coeffs=mu_lb, sense=opt.SENSE_GEQ, rhs=0.)
-                    problem.add_constraint(name='flw-ub_%03d_%s' % (t, o), coeffs=mu_ub, sense=opt.SENSE_LEQ, rhs=0.)
+        # --- Step 0: Initialize tree if needed ---
+        if tree is None:
+            dt = self.dtypes[dtk]
+            dt.reset_areas()
+            dt.initialize_areas()
+            self.reset_actions()
+            tree = common.Tree()
+        acodes = list(self.actions.keys()) if not acodes else acodes
+        # --- Step 1: Depth-First Search (DFS) to build the tree structure ---
+        for acode in acodes:
+            if self.dt(dtk).is_operable(acode, period, age):
+                # Reset actions for this period and grow stand if needed
+                self.reset_actions(period)
+                if period > 1:
+                    self.dt(dtk).grow(period - 1, False)
+                # Apply action to get next state
+                errorcode, missingarea, tstate = self.apply_action(
+                    dtk, acode, period, age, area,
+                    compile_c_ycomps=compile_c_ycomps,
+                    override_operability=False,
+                    fuzzy_age=False,
+                    recourse_enabled=False
+                )
+                if errorcode:
+                    print(
+                        'apply_action error', dtk, acode, period, age, area,
+                        errorcode, missingarea, tstate
+                    )
+                _dtk, tprop, _age = tstate[0]
+                assert tprop == 1.  # no split handling yet
+                # Push node to the tree
+                tree.grow({
+                    'dtk': dtk, '_dtk': _dtk, 'acode': acode, 'period': period,
+                    'age': age, '_age': _age, 'products': None, 'area': area
+                })
+                # Recurse deeper or compute leaf coefficients
+                if period < self.periods[-1]:  # not at last period, continue DFS
+                    self.dt(_dtk).grow(period, False)
+                    self._bld_tree_m1(
+                        area, _dtk, _age + self.period_length,
+                        coeff_funcs, tree, period + 1, acodes,
+                        compile_c_ycomps=compile_c_ycomps)
+                elif period == self.periods[-1]:  # reached a leaf
+                    path = tree.path()
+                    leaf = path[-1]
+                    assert leaf.is_leaf()
+                    # Serial leaf coefficient computation
+                    leaf._data.update({k: coeff_funcs[k](self, path) for k in coeff_funcs})
+                    i = (path[0].data('dtk'), path[0].data('age'))
+                    j = tuple(node.data('acode') for node in path)
+                    leaf._data['leaf_id'] = common.hex_id((i, j))
+                # Pop node from the tree (DFS backtrack)
+                tree.ungrow()
+        return tree
+
+    def _cmp_cflw_m1(self, problem, cflw_e, workers=1, executor=None):
+        """
+        Compile flow (even-flow) constraints in parallel using batched workers.
+        Optimized for less overhead while respecting the original (i, j) API.
+        """
+        if not cflw_e:
+            return
+
+        periods = self.periods
+        cflw_keys = list(cflw_e.keys())
+        print("_cmp_cflw_m1: phase 1")
+
+        # Phase 1: Compute mu values in parallel
+        tree_items = list(problem.trees.items())
+        batches = auto_batch(
+            tree_items, 
+            workers, 
+            size_fn=lambda x: len(x[1].nodes()),
+            max_batch_factor=1
+        )
+        tasks = [(batch, cflw_keys, periods) for batch in batches]
+
+        if workers == 1:
+            results = []
+            for task in tasks:
+                results.extend(worker_cmp_cflw_batch(task))
+        else:
+            # Use existing executor if passed
+            exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
+            futures = [exec_ctx.submit(worker_cmp_cflw_batch, task) for task in tasks]
+
+            # Collect results without repeated extend() overhead
+            results_nested = [f.result() for f in as_completed(futures)]
+            results = [item for batch in results_nested for item in batch]
+
+            if executor is None:
+                exec_ctx.shutdown()
+
+        # Phase 2: Merge results into mu dict
+        print("_cmp_cflw_m1: phase 2")
+        mu = {t: {o: {} for o in cflw_keys} for t in periods}
+        for t, o, i, j, val in results:
+            mu[t][o][(i, j)] = val
+
+        # Phase 3: Build constraints (parallel with batching)
+        print("_cmp_cflw_m1: phase 3")
+
+        leaf_ids = problem._leaf_ids
+        xnames = {k: f"x_{v}" for k, v in leaf_ids.items()}
+        add_constraint = problem.add_constraint
+
+        # Build Phase 3 tasks
+        tasks = []
+        for t in periods:
+            for o, e in cflw_e.items():
+                eps_dict, ref_period = e
+                if t not in eps_dict:
+                    continue
+                mu_t_o = mu[t][o]
+                mu_ref_o = mu[ref_period][o]
+                eps = eps_dict[t]
+                tasks.append((t, o, mu_t_o, mu_ref_o, eps, xnames))
+
+        results = []
+
+        if workers == 1:
+            # Serial processing
+            for task in tasks:
+                results.extend(worker_cmp_cflw_phase3(task))
+        else:
+            # Create batches of tasks for more efficient multiprocessing
+            batches = auto_batch(tasks, workers, max_batch_factor=2)            
+            exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
+            futures = [exec_ctx.submit(_worker_cmp_cflw_phase3_batch, batch) for batch in batches]
+            for f in as_completed(futures):
+                results.extend(f.result())
+            if executor is None:
+                exec_ctx.shutdown()
+
+        # Add constraints sequentially
+        for name, coeffs, sense, rhs in results:
+            add_constraint(name=name, coeffs=coeffs, sense=sense, rhs=rhs)
 
     def _cmp_cflw_m2(self):
         pass # not implemented
 
-    def _bld_tree_m1(self, area, dtk, age, coeff_funcs, tree=None, period=1, acodes=None, compile_c_ycomps=True):
-        if not tree:
-            self.reset_areas()
-            self.dtypes[dtk]._areas[1][age] = area
-            self.reset_actions()
-            tree = common.Tree()
-        acodes = list(self.actions.keys()) if not acodes else acodes
-        for acode in acodes:
-            if self.dt(dtk).is_operable(acode, period, age):
-                self.reset_actions(period)
-                if period > 1:
-                    self.dt(dtk).grow(period-1, False)
-                errorcode, missingarea, tstate = self.apply_action(dtk, acode, period, age, area,
-                                                                   compile_c_ycomps=compile_c_ycomps,
-                                                                   override_operability=False,
-                                                                   fuzzy_age=False,
-                                                                   recourse_enabled=False)
-                if errorcode:
-                    print('apply_action error', dtk, acode, period, age, area, errorcode, missingarea, tstate)
-                _dtk, tprop, _age = tstate[0]
-                
-                assert tprop == 1. # cannot handle 'split' case yet...
-                products = None
-                tree.grow({'dtk':dtk, '_dtk':_dtk, 'acode':acode, 'period':period, 
-                           'age':age, '_age':_age, 'products':products, 'area':area})
-                if period < self.periods[-1]: # dive deeper (dfs)
-                    self.dt(_dtk).grow(period, False)
-                    self._bld_tree_m1(area, _dtk, _age+self.period_length, coeff_funcs, tree, period+1, acodes)
-                elif period == self.periods[-1]: # found leaf
-                    path = tree.path()
-                    leaf = path[-1]
-                    assert leaf.is_leaf()
-                    leaf._data.update({k:coeff_funcs[k](self, path) for k in coeff_funcs})
-                tree.ungrow()
-        return tree
-    
-    def _gen_vars_m1(self, coeff_funcs, acodes=None, mask=None):
-        trees, vars = {}, {}
-        dtype_keys = self.dtypes.keys() if not mask else self.unmask(mask)
-        for dtk in list(dtype_keys):
-            self.reset()
-            dt = self.dtypes[dtk]
-            for age in list(dt._areas[1].keys()):
-                self.reset()
-                if not dt.area(1, age): continue
-                i = (dt.key, age)
-                t = trees[i] = self._bld_tree_m1(dt.area(1, age), dt.key, age, coeff_funcs, acodes=acodes)
-                for path in t.paths():
-                    j = tuple(n.data('acode') for n in path)
-                    vname = 'x_%s' % common.hex_id((i, j))
-                    vtype = opt.VTYPE_CONTINUOUS
-                    lb, ub = 0., 1.
-                    vars[vname] = opt.Variable(vname, vtype, lb, ub)
-        return trees, vars
-    
-    def _gen_vars_m2(self):
+    def _cmp_cgen_m1(self, problem, cgen_data, workers=1, executor=None):
+        """
+        Compile general output constraints in parallel using batched workers.
+        """
+        if not cgen_data:
+            return
+
+        periods = self.periods
+        cgen_keys = list(cgen_data.keys())
+        print("_cmp_cgen_m1: phase 1")
+
+        tree_items = list(problem.trees.items())
+
+        # Phase 1: Per-tree contributions
+        batches = auto_batch(
+            tree_items,
+            workers,
+            size_fn=lambda x: len(x[1].nodes()),
+            max_batch_factor=1
+        )
+        
+        tasks = [(batch, cgen_keys, periods) for batch in batches]
+
+        results = []
+        if workers == 1:
+            for task in tasks:
+                results.extend(worker_cmp_cgen_batch(task))
+        else:
+            exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
+            futures = [exec_ctx.submit(worker_cmp_cgen_batch, task) for task in tasks]
+            for f in as_completed(futures):
+                results.extend(f.result())
+            if executor is None:
+                exec_ctx.shutdown()
+
+        # Phase 2: Merge into mu dict
+        print("_cmp_cgen_m1: phase 2")
+        mu = {t: {o: {} for o in cgen_keys} for t in periods}
+        for t, o, i, j, val in results:
+            mu[t][o][(i, j)] = val
+
+        # Phase 3: Build constraints (parallel)
+        print("_cmp_cgen_m1: phase 3")
+
+        leaf_ids = problem._leaf_ids
+        xnames = {k: f"x_{v}" for k, v in leaf_ids.items()}
+        add_constraint = problem.add_constraint
+
+        tasks = []
+        for o, bounds in cgen_data.items():
+            lb, ub = bounds['lb'], bounds['ub']
+            for t in periods:
+                mu_t_o = mu[t][o]
+                tasks.append((t, o, mu_t_o, lb, ub, xnames))
+
+        results = []
+        if workers == 1:
+            for task in tasks:
+                results.extend(worker_cmp_cgen_phase3(task))
+        else:
+            # Create batches of tasks for more efficient multiprocessing
+            batches = auto_batch(tasks, workers, max_batch_factor=2)
+            exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
+            futures = [exec_ctx.submit(_worker_cmp_cgen_phase3_batch, batch) for batch in batches]
+            for f in as_completed(futures):
+                results.extend(f.result())
+            if executor is None:
+                exec_ctx.shutdown()
+
+        # Add constraints to problem
+        print('add constraints')
+        for name, coeffs, sense, rhs in results:
+            add_constraint(name=name, coeffs=coeffs, sense=sense, rhs=rhs)
+
+    def _cmp_cgen_m2(self):
+        pass # not implemented
+
+    def _cmp_sch_m1(self, problem, skip_null):
+        _sch = [[] for t in self.periods]
+        sln = problem.solution()
+        if not sln: return None
+        for i, tree in list(problem.trees.items()):
+            for path in tree.paths():
+                x = 'x_%s' % common.hex_id((i, tuple(n.data('acode') for n in path)))
+                if not sln[x]: continue
+                for t, n in enumerate(path):
+                    d = n.data()
+                    if skip_null and d['acode'] == skip_null: continue
+                    #print 'sch', i, d['dtk'], d['period'], d['acode'], d['age'], d['area'], '%0.1f' % (d['area'] * sln[x])
+                    etype = '_existing' if self.dt(i[0]).area(0) else '_future'
+                    _sch[t].append((d['dtk'], d['age'], d['area'] * sln[x], d['acode'], d['period'], etype))
+                    #_sch[t].append((d['dtk'], d['age'], d['area'] * 1., d['acode'], d['period'], etype))
+        return list(itertools.chain.from_iterable(_sch))
+
+    def _cmp_sch_m2(self, problem):
         pass
 
     def add_null_action(self, acode='null', minage=None, maxage=None):
@@ -1113,8 +1633,6 @@ class ForestModel:
         for dtk in self.dtypes:
             self.dtypes[dtk].oper_expr[acode] = [oe]
             self.dtypes[dtk].transitions[acode, -1] = target
-            #for age in range(self.dtypes[dtk]._max_age):
-            #    self.dtypes[dtk].transitions[acode, age] = target
         for p in self.applied_actions:
             self.applied_actions[p][acode] = {}
     
@@ -1187,14 +1705,10 @@ class ForestModel:
             _dtype_keys = dtype_keys
         else:
             _dtype_keys = list(self.dtypes.keys())
-        #print len(_dtype_keys)
         for dtk in _dtype_keys:
             dt = self.dtypes[dtk]
             ycomp = dt.ycomp(yname) if yname else {a:1. for a in dt._areas[period]}
             if age is not None:
-                #print dtk
-                #print dt._areas[period]
-                #print age, yname, ycomp
                 result += dt.area(period, age) * ycomp[age] if age in dt._areas[period] else 0. 
             else:
                 result += sum(dt.area(period, a) * ycomp[a] for a in dt._areas[period]) if ycomp else 0.
@@ -1218,7 +1732,6 @@ class ForestModel:
         Copies areas from period 0 to period 1.
         """
         if reset_areas: self.reset_areas()
-        #for dt in list(self.dtypes.values()): dt.initialize_areas()
         for dtk in self.dtypes: self.dtypes[dtk].initialize_areas()
         
     def reset_areas(self, period=None):
@@ -1238,12 +1751,6 @@ class ForestModel:
             self.curves[key] = curve
         return self.curves[key]
             
-    # def _rdd(self):
-    #     """
-    #     Recursive defaultdict (i.e., tree)
-    #     """
-    #     return dd(self._rdd)   
-    
     def reset_actions(self, period=None, acode=None, override_sticky=False):
         """
         Resets actions.
@@ -1257,32 +1764,6 @@ class ForestModel:
             for a in acodes:
                 if a in self.actions and self.actions[a].is_sticky and not override_sticky: continue
                 self.applied_actions[p][a] = {} 
-
-    # def reset_actions(self, period=None, acode=None):
-    #     """
-    #     Resets actions (default resets all periods, all actions, unless period or acode specified).
-    #     """
-    #     if period is None:
-    #         print("resetting actions")
-    #         self.applied_actions = {p:{acode:{} for acode in list(self.actions.keys())} for p in self.periods}
-    #     else:
-    #         if acode is None:
-    #             # NOTE: This DOES NOT deal with consequences in future periods...
-    #             self.applied_actions[period] = {acode:{} for acode in list(self.actions.keys())}
-    #         else:
-    #             assert period is not None
-    #             self.applied_actions[period][acode] = {}
-
-    # def reset_actions(self, period=None, acode=None):
-    #     if period is None:
-    #         self.applied_actions = {p:self._rdd() for p in self.periods}
-    #     else:
-    #         if acode is None:
-    #             # NOTE: This DOES NOT deal with consequences in future periods...
-    #             self.applied_actions[period] = self._rdd()
-    #         else:
-    #             assert period is not None
-    #             self.applied_actions[period][acode] = self._rdd()
 
     def compile_product(self,
                         period,
@@ -1301,30 +1782,19 @@ class ForestModel:
         aa = self.applied_actions
         if acode is None:
             acodes = list(self.actions.keys())
-        #elif type(acode) == list: # assume list of acode strings
-        #    pass
         else:# elif type(acode) == str: 
             acodes = [acode] if not self.actions[acode].components else self.actions[acode].components
         tokens = expr.split(' ')
         result = 0.
         for _acode in acodes:
-            #if not aa[period][_acode]: continue # acode not in solution
             if _acode not in list(aa[period].keys()): continue # acode not in solution
             _dtype_keys = list(aa[period][_acode].keys()) if dtype_keys is None else dtype_keys
-            #print 'compile_product len(dtype_keys)', len(dtype_keys)
-            #keep = 0
-            #skip = 0
             for dtk in _dtype_keys:
-                #print dtk
                 if dtk not in list(aa[period][_acode].keys()):
-                    #skip += 1
-                    #if verbose: print len(aa[period][_acode].keys()), dtk 
                     continue
-                #keep += 1
                 ages = list(aa[period][_acode][dtk].keys()) if age is None else [age]
                 for _age in ages:
                     aaa = aa[period][_acode][dtk][_age]
-                    #print aaa
                     _tokens = []
                     for token in tokens:
                         if token in self.ynames: # found reference to ycomp
@@ -1344,8 +1814,6 @@ class ForestModel:
                         print(("Unexpected error:", sys.exc_info()[0]))
                         print("evaluating expression '%s' for case:" % ' '.join(_tokens), period, [' '.join(dtk)], _acode, _age)
                         raise
-
-            #print _acode, 'keep', keep, 'skip', skip
         return result
         
     def operated_area(self, acode, period, dtype_key=None, age=None):
@@ -1420,7 +1888,7 @@ class ForestModel:
         # HACK ####################################################################
         # Too lazy to implement all the use cases.
         # This should work OK for BFEC models (TO DO: confirm).
-        tokens = re.split('\s+', expr)
+        tokens = re.split(r'\s+', expr)
         i = int(tokens[0][3]) - 1
         try:
             return str(eval(expr.replace(tokens[0], dtk[i])))
@@ -1523,9 +1991,6 @@ class ForestModel:
         if verbose > 1:
             print('applying action', [' '.join(dtype_key)], acode, period, age, area)
         dt = self.dtypes[dtype_key]
-        ############################################
-        # TO DO: better error handling... ##########
-        #print dt.oper_expr
         if acode not in dt.oper_expr:
             print('requested action not defined for development type...')
             print(' ', [' '.join(dtype_key)], acode, period, age, area)
@@ -1539,19 +2004,15 @@ class ForestModel:
             print('not operable')
             print(' '.join(dt.key), acode, period, age)
             print(dt.operability[acode][period])
-            #assert False # dt.is_operable(acode, period, age)
             return 4, None, None
         if not any((acode, __age) in dt.transitions for __age in (age, -1)): # sanity check...
             print('transitions not defined...')
             print(' ', [' '.join(dtype_key)], acode, period, age, area)
             print(dt.oper_expr)
             print(dt.operability)
-            #print dt.transitions
-            #assert False 
             return 5, None, None
         if dt.area(period, age) - area < self.area_epsilon:
             # tweak area if slightly over or under, so we don't get any accounting drift...
-            #print 'foobar', dt.key, period, age, dt.area(period, age), area
             area = dt.area(period, age)
         missing_area = 0.
         if dt.area(period, age) < area:
@@ -1579,7 +2040,6 @@ class ForestModel:
                 if missing_area < self.area_epsilon:
                     missing_area = 0.
         action = self.actions[acode]
-        #if not dt.actions[acode].is_compiled: dt.compile_action(acode)
         ###########################################################################
         dt.area(period, age, -area)
         target_dt = []
@@ -1632,7 +2092,6 @@ class ForestModel:
                 aa[dtype_key][age][1][yname] = value
         return 0, missing_area, target_dt
 
-    
     def sylv_cred_formula(self, treatment_type, cover_type):
         """
         Calculate Sylviculture Credits based on treatment type and cover type.
@@ -1645,7 +2104,6 @@ class ForestModel:
             return 7 if cover_type.lower() in ['r', 'm'] else 4        
         return 0
 
-            
     def create_dtype_fromkey(self, key):
         """
         Creates a new development type, given a key (checks for existing, auto-assigns yield compompontents, 
@@ -1654,8 +2112,6 @@ class ForestModel:
         assert key not in self.dtypes # should not be creating new dtypes from existing key
         dt = DevelopmentType(key, self)
         self.dtypes[key] = dt
-        # breakpoint()
-        # assign yields
         for mask, t, ycomps in self.yields:
             if self.match_mask(mask, key):
                 for yname, ycomp in ycomps:
@@ -1682,8 +2138,8 @@ class ForestModel:
         buffering_for = False
         s = re.sub(r'\{.*?\}', '', s, flags=re.M|re.S) # remove curly-bracket comments
         for l in re.split(r'[\r\n]+', s, flags=re.M|re.S):
-            if re.match('^\s*(;|$)', l): continue # skip comments and blank lines
-            matches = re.findall('#[A-Za-z0-9_]*', l)
+            if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
+            matches = re.findall(r'#[A-Za-z0-9_]*', l)
             for m in matches: # replace CONSTANTS variables with value
                 try:
                     l = l.replace(m, str(self.constants[m[1:].lower()]))
@@ -1704,7 +2160,7 @@ class ForestModel:
                 else:
                     for_buffer.append(l)
                     continue
-            l = re.sub('\s+', ' ', l) # separate tokens by single space
+            l = re.sub(r'\s+', ' ', l) # separate tokens by single space
             l = l.strip().partition(';')[0].strip()
             l = l.replace(' (', '(')  # remove space to left of left parentheses
             t = l.lower().split(' ')
@@ -1758,7 +2214,6 @@ class ForestModel:
                 expression += ' '
                 expression += l       
         
-    #@timed
     def import_outputs_section(self, filename_suffix='out'):
         """
         Imports OUTPUTS section from a Forest model.
@@ -1770,17 +2225,12 @@ class ForestModel:
     def add_theme(self, name, basecodes=[], aggs={}, description=''):
         """
         Adds a theme to the model.
-
         
         :param str name: The name of theme.
         :param list basecodes: List of base codes for the theme.
         :param dict aggs: Dictionary containing aggregated values for the theme.
         :param str description: Description of the theme.       
-        """
-
-
-
-        
+        """        
         self._themes.append({})
         #self.nthemes +- 1
         self._themes[-1]['__name__'] = name
@@ -1792,7 +2242,6 @@ class ForestModel:
         for c in aggs:            
             self._themes[-1][c] = aggs[c]
         
-    #@timed
     def import_landscape_section(self, filename_suffix='lan', ti_offset=0):
         """
         Imports LANDSCAPE section from a Forest model.
@@ -1807,29 +2256,26 @@ class ForestModel:
             self._themes[-1]['__description__'] = '' # TO DO: extract comments in theme declaration
             self._theme_basecodes.append([])
             defining_aggregates = False
-            for l in [l for l in t.split('\n') if not re.match('^\s*(;|{|$)', l)]: 
-                if re.match('^\s*\*AGGREGATE', l): # aggregate theme attribute code
-                    tac = re.split('\s+', l.strip())[1].lower()
+            for l in [l for l in t.split('\n') if not re.match(r'^\s*(;|{|$)', l)]: 
+                if re.match(r'^\s*\*AGGREGATE', l): # aggregate theme attribute code
+                    tac = re.split(r'\s+', l.strip())[1].lower()
                     self._themes[ti][tac] = []
                     defining_aggregates = True
                     continue
                 if not defining_aggregates: # line defines basic theme attribute code
-                    tac = re.search('\S+', l.strip()).group(0).lower()
+                    tac = re.search(r'\S+', l.strip()).group(0).lower()
                     self._themes[ti][tac] = tac
                     self._theme_basecodes[ti].append(tac)
                 else: # line defines aggregate values (parse out multiple values before comment)
-                    _tacs = [_tac.lower() for _tac in re.split('\s+', l.strip().partition(';')[0].strip())]
+                    _tacs = [_tac.lower() for _tac in re.split(r'\s+', l.strip().partition(';')[0].strip())]
                     self._themes[ti][tac].extend(_tacs)
-        #self.nthemes = len(self._themes)
 
     def theme_basecodes(self, theme_index):
         """
         Return list of base codes, given theme index.
         """
         return self._theme_basecodes[theme_index]
-        #return self._themes[theme_index]
         
-    #@timed    
     def import_areas_section(self, model_path=None, model_name=None, filename_suffix='are', import_empty=False):
         """
         Imports AREAS section from a Forest model.
@@ -1846,9 +2292,9 @@ class ForestModel:
         with open('%s/%s.%s' % (model_path, model_name, filename_suffix)) as f:
             for l in f:
                 try:
-                    if re.match('^\s*(;|$)', l): continue # skip comments and blank lines
+                    if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
                     l = l.lower().strip().partition(';')[0] # strip leading whitespace and trailing comments
-                    t = re.split('\s+', l)
+                    t = re.split(r'\s+', l)
                     key = tuple(_t for _t in t[1:n+1])
                     age = int(t[n+1])
                     area = float(t[n+2].replace(',', ''))
@@ -1859,7 +2305,6 @@ class ForestModel:
                     print('Failed AREAS import on line: \n%s' % l)
                     return 1
         return 0
-
                     
     def _expand_action(self, c):
         self._actions = t
@@ -1871,12 +2316,10 @@ class ForestModel:
             print(c)
         return [c] if t[c] == c else list(_cfi(self._expand_theme(t, c) for c in t[c]))
 
-                
     def match_mask(self, mask, key):
         """
         Returns True if key matches mask.
         """
-        #dt = self.dtypes[key]
         for ti, tac in enumerate(mask):
             if tac == '?': continue # wildcard matches all keys
             tacs = self._expand_theme(self._themes[ti], tac)
@@ -1889,7 +2332,7 @@ class ForestModel:
         Accepts Woodstock-style string masks to facilitate cut-and-paste testing.
         """
         if isinstance(mask, str): # Woodstock-style string mask format
-            mask = tuple(re.sub('\s+', ' ', mask).lower().split(' '))
+            mask = tuple(re.sub(r'\s+', ' ', mask).lower().split(' '))
             assert len(mask) == self.nthemes() # must be bad mask if wrong theme count
         else:
             try:
@@ -1904,7 +2347,6 @@ class ForestModel:
             dtype_keys = [dtk for dtk in dtype_keys if dtk[ti] in tacs] # exclude bad matches
         return dtype_keys
 
-    #@timed                            
     def import_constants_section(self, filename_suffix='con'):
         """
         Imports CONSTANTS section from a Forest model.
@@ -1917,18 +2359,15 @@ class ForestModel:
         """
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             for lnum, l in enumerate(f):
-                if re.match('^\s*(;|$)', l): continue # skip comments and blank lines
+                if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
                 l = l.strip().partition(';')[0].strip() # strip leading whitespace, trailing comments
-                t = re.split('\s+', l)
+                t = re.split(r'\s+', l)
                 self.constants[t[0].lower()] = float(t[1])
 
-    #@timed        
     def import_yields_section(self, filename_suffix='yld', mask_func=None, verbose=False):
         """
         Imports YIELDS section from a Forest model.
         """
-        ###################################################
-        # local utility functions #########################
         def flush_ycomps(t, m, n, c):
             if t == 'a': # age-based ycomps
                 _c = lambda y: self.register_curve(core.Curve(y,
@@ -1950,7 +2389,7 @@ class ForestModel:
             for k in self.unmask(m):
                 for yname, ycomp in ycomps:
                     self.dtypes[k].add_ycomp(t, yname, ycomp)
-        ###################################################
+
         n = self.nthemes()
         ytype = ''
         mask = ('?',) * self.nthemes()
@@ -1958,9 +2397,9 @@ class ForestModel:
         data = None
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             for lnum, l in enumerate(f):
-                if re.match('^\s*(;|$)', l): continue # skip comments and blank lines
+                if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
                 l = l.strip().partition(';')[0].strip() # strip leading whitespace and trailing comments
-                t = re.split('\s+', l)
+                t = re.split(r'\s+', l)
                 if t[0].startswith('*Y'): # new yield definition
                     newyield = True
                     flush_ycomps(ytype, mask, ynames, data) # apply yield from previous block
@@ -2012,10 +2451,7 @@ class ForestModel:
                         ynames.append(yname)
                         data[yname] = ' '.join(t[1:]) # complex yield (defer interpretation)
         flush_ycomps(ytype, mask, ynames, data)
-
-                    
-            
-    #@timed        
+        
     def import_actions_section(self, filename_suffix='act', mask_func=None, nthemes=None):
         """
         Imports ACTIONS section from a Forest model.
@@ -2030,16 +2466,15 @@ class ForestModel:
         """
         nthemes = nthemes if nthemes else self.nthemes()
         actions = {}
-        #oper = {}
         aggregates = {}
         partials = {}
         keyword = ''
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f: s = f.read().lower()
         s = re.sub(r'\{.*?\}', '', s, flags=re.M|re.S) # remove curly-bracket comments
         for l in re.split(r'[\r\n]+', s, flags=re.M|re.S):
-            if re.match('^\s*(;|$)', l): continue # skip comments and blank lines
+            if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
             l = l.strip().partition(';')[0].strip() # strip leading whitespace and trailing comments
-            l = re.sub('\s+', ' ', l) # separate tokens by single space
+            l = re.sub(r'r\s+', ' ', l) # separate tokens by single space
             tokens = l.split(' ')
             if l.startswith('*action'): 
                 keyword = 'action'
@@ -2078,7 +2513,7 @@ class ForestModel:
 
     def resolve_treplace(self, dt, treplace):
         if '_TH' in treplace: # assume incrementing integer theme value
-            i = int(re.search('(?<=_TH)\w+', treplace).group(0))
+            i = int(re.search(r'(?<=_TH)\w+', treplace).group(0))
             return eval(re.sub('_TH%i'%i, str(dt.key[i-1]), treplace))
         else:
             assert False # many other possible arguments (see Forest documentation)
@@ -2115,7 +2550,7 @@ class ForestModel:
             lo, hi = [int(a) for a in condition[5:-1].split('..')]
             return list(range(lo, hi+1))
         elif condition.startswith('@YLD'):
-            args = re.split('\s?,\s?', condition[5:-1])
+            args = re.split(r'\s?,\s?', condition[5:-1])
             yname = args[0].lower()
             lo, hi = [float(y) for y in args[1].split('..')]
             dt = self.dtypes[dtype_key]
@@ -2123,46 +2558,32 @@ class ForestModel:
             return list(range(lo_age, hi_age+1))
             #return self.dtypes[dtype_key].resolve_condition(yname, hi, lo)
         
-    #@timed                        
     def import_transitions_section(self, filename_suffix='trn', mask_func=None, nthemes=None):
         """
         Imports TRANSITIONS section from a Forest model.
         """
         nthemes = nthemes if nthemes else self.nthemes()
-        # local utility function ####################################
         def flush_transitions(acode, sources):
             if not acode: return # nothing to flush on first loop
             self.transitions[acode] = {}
             for smask, scond in sources:
-                #if acode in ['acp']:
-                #    print [' '.join(smask)], scond, sources[smask, scond]
                 # store transition data for future dtypes creation 
                 if smask not in self.transitions[acode]:
                     self.transitions[acode][smask] = {}
-                #if scond not in self.transitions[acode][smask]:
-                #    self.transitions[acode][smask][scond] = []
                 self.transitions[acode][smask][scond] = sources[smask, scond]
                 # assign transitions to existing dtypes
                 for k in self.unmask(smask):
                     dt = self.dtypes[k]
                     for x in self.resolve_condition(scond, k): # store targets
                         dt.transitions[acode, x] = sources[smask, scond] 
-        # def flush_transitions(acode, sources):
-        #     if not acode: return # nothing to flush on first loop
-        #     for smask, scond in sources:
-        #         for k in self.unmask(smask):
-        #             dt = self.dtypes[k]
-        #             for x in self.resolve_condition(scond, k): # store targets
-        #                 dt.transitions[acode, x] = sources[smask, scond] 
-        #############################################################                    
         acode = None
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             s = f.read()
         s = re.sub(r'\{.*?\}', '', s, flags=re.M|re.S) # remove curly-bracket comments
         for l in re.split(r'[\r\n]+', s, flags=re.M|re.S):
-            if re.match('^\s*(;|$)', l): continue # skip comments and blank lines
+            if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
             l = l.strip().partition(';')[0].strip() # strip leading whitespace, trailing comments
-            tokens = re.split('\s+', l)
+            tokens = re.split(r'\s+', l)
             if l.startswith('*CASE'):
                 if acode: flush_transitions(acode, sources)
                 acode = tokens[1].lower()
@@ -2189,13 +2610,13 @@ class ForestModel:
                 except:
                     tlock = None
                 try: # _REPLACE keyword (TO DO: implement other cases)
-                    args = re.split('\s?,\s?', re.search('(?<=_REPLACE\().*(?=\))', l).group(0))
+                    args = re.split(r'\s?,\s?', re.search(r'(?<=_REPLACE\().*(?=\))', l).group(0))
                     theme_index = int(args[0][3]) - 1
                     treplace = theme_index, args[1]
                 except:
                     treplace = None
                 try: # _APPEND keyword (TO DO: implement other cases)
-                    args = re.split('\s?,\s?', re.search('(?<=_APPEND\().*(?=\))', l).group(0))
+                    args = re.split(r'\s?,\s?', re.search(r'(?<=_APPEND\().*(?=\))', l).group(0))
                     theme_index = int(args[0][3]) - 1
                     tappend = theme_index, args[1]
                 except:
@@ -2203,7 +2624,6 @@ class ForestModel:
                 sources[(smask, scond)].append((tmask, tprop, tyield, tage, tlock, treplace, tappend))
         flush_transitions(acode, sources)
 
-    
     def import_optimize_section(self, filename_suffix='opt'):
         """
         Imports OPTIMIZE section from a Forest model.
@@ -2233,7 +2653,6 @@ class ForestModel:
         """
         pass
 
-
     def import_schedule_section(self, filename_suffix='seq', replace_commas=True, filename_prefix=None):
         """
         Imports SCHEDULE section from a Forest model.
@@ -2243,9 +2662,9 @@ class ForestModel:
         n = self.nthemes()
         with open('%s/%s.%s' % (self.model_path, filename_prefix, filename_suffix)) as f:
             for lnum, l in enumerate(f):
-                if re.match('^\s*(;|$)', l): continue # skip comments and blank lines
+                if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
                 l = l.lower().strip().partition(';')[0].strip() # strip leading whitespace and trailing comments
-                t = re.split('\s+', l)
+                t = re.split(r'\s+', l)
                 if len(t) != n + 5: break
                 dtype_key = tuple(t[:n])
                 age = int(t[n])
@@ -2256,7 +2675,6 @@ class ForestModel:
                 schedule.append((dtype_key, age, area, acode, period, etype))
                 if area <= 0: print('area <= 0', l)
         return schedule
-
     
     def compile_schedule(self, problem=None):
         """
@@ -2269,7 +2687,6 @@ class ForestModel:
         else: # use data in self.applied_actions
             return self._compile_schedule_from_actions()
 
-        
     def _compile_schedule_from_actions(self):
         result = []
         for period in self.periods:
@@ -2282,7 +2699,6 @@ class ForestModel:
                         result.append((dtk, age, area, acode, period, etype))
         return result
            
-    
     def apply_schedule(self, schedule, max_period=None, verbose=False,
                        fail_on_missingarea=False, force_integral_area=False,
                        override_operability=False, fuzzy_age=True,
@@ -2310,9 +2726,7 @@ class ForestModel:
         :param scale_area: The scaling factor to apply to the area. Default is None. 
         :param bool reset: If True, resets the model before applying the schedule. Default is True.
 
-
         :return: The missing area (float) after applying the schedule. 
-        
         """
         if max_period is None: max_period = self.horizon
         if reset: self.reset()
@@ -2439,6 +2853,7 @@ class ForestModel:
             tvol_curve = svol_curve + hvol_curve
             x_cmai = tvol_curve.mai().ytp().lookup(0)
             return 'softwood' if svol_curve[x_cmai] > hvol_curve[x_cmai] else 'hardwood'
+
         def landclass(r):
             """
             The landclass column values should contain an integer in the range [0, 22], which CBM 
@@ -2450,7 +2865,8 @@ class ForestModel:
             if hasattr(dt, 'landclass'):
                 return dt.landclass
             else:
-                return '0'            
+                return '0'
+
         def last_pass_disturbance(r):
             """
             We use the value of the 'last_pass_disturbance' attribute of the corresponding development 
@@ -2462,6 +2878,7 @@ class ForestModel:
                 return dt.last_pass_disturbance
             else:
                 return default_last_pass_disturbance
+
         theme_cols = [theme['__name__'] for theme in self._themes]
         other_cols = ['species',
                       'using_age_class', 
@@ -2471,7 +2888,6 @@ class ForestModel:
                       'landclass', 
                       'historic_disturbance', 
                       'last_pass_disturbance']
-
         data = {**{c:[] for c in theme_cols}, **{c:[] for c in ['age', 'area']}}
         for dtype_key in self.dtypes:
             dt = self.dtypes[dtype_key]
@@ -2527,6 +2943,7 @@ class ForestModel:
             tvol_curve = svol_curve + hvol_curve
             x_cmai = tvol_curve.mai().ytp().lookup(0)
             return 'softwood' if svol_curve[x_cmai] > hvol_curve[x_cmai] else 'hardwood'
+
         schedule = self.compile_schedule()
         p = self.add_problem('__cbm_sit_bogus', {'z':(lambda forestmodel, path: 0.)})
         theme_cols = [theme['__name__'] for theme in self._themes]
@@ -2618,6 +3035,7 @@ class ForestModel:
             dtk = tuple(dtk)
             targetage = self.resolve_targetage(dtk, tyield, sage, tage, acode)
             return dtk, targetage
+
         theme_cols = colunmns = [theme['__name__'] for theme in self._themes]
         columns = theme_cols.copy()
         columns += ['species',
@@ -2667,25 +3085,26 @@ class ForestModel:
         result = pd.DataFrame(data)
         return result
 
-        for acode in fm.transitions:
-            if acode == null_acode: continue
-            for smask in self.transitions[acode]:
-                tmask, tprop, _, _, _, _, _ = self.transitions[acode][smask][''][0]
-                for i, c in enumerate(theme_cols): data[c].append(smask[i])
-                data['species'].append('softwood' if au_table1.loc[int(smask[2])].canfi_species < 1200 else 'hardwood')
-                data['using_age_class'].append('FALSE')
-                data['min_softwood_age'].append(1)
-                data['max_softwood_age'].append(999)
-                data['min_hardwood_age'].append(1)
-                data['max_hardwood_age'].append(999)
-                data['disturbance_type'].append('harvest')
-                for i in range(len(theme_cols)): data['to_theme%i' % i].append(tmask[i])
-                data['to_%s' % species_classifier_colname].append('softwood' if au_table2.loc[int(tmask[4])].canfi_species < 1200 else 'hardwood')
-                data['regen_delay'].append(0)
-                data['reset_age'].append(0)
-                data['percent'].append(100)
-        result = pd.DataFrame(data)
-        return result
+        # --- orphaneed code? delete? ---
+        # for acode in fm.transitions:
+        #     if acode == null_acode: continue
+        #     for smask in self.transitions[acode]:
+        #         tmask, tprop, _, _, _, _, _ = self.transitions[acode][smask][''][0]
+        #         for i, c in enumerate(theme_cols): data[c].append(smask[i])
+        #         data['species'].append('softwood' if au_table1.loc[int(smask[2])].canfi_species < 1200 else 'hardwood')
+        #         data['using_age_class'].append('FALSE')
+        #         data['min_softwood_age'].append(1)
+        #         data['max_softwood_age'].append(999)
+        #         data['min_hardwood_age'].append(1)
+        #         data['max_hardwood_age'].append(999)
+        #         data['disturbance_type'].append('harvest')
+        #         for i in range(len(theme_cols)): data['to_theme%i' % i].append(tmask[i])
+        #         data['to_%s' % species_classifier_colname].append('softwood' if au_table2.loc[int(tmask[4])].canfi_species < 1200 else 'hardwood')
+        #         data['regen_delay'].append(0)
+        #         data['reset_age'].append(0)
+        #         data['percent'].append(100)
+        # result = pd.DataFrame(data)
+        # return result
         
     def to_cbm_sit(self, softwood_volume_yname, hardwood_volume_yname, admin_boundary, eco_boundary, 
                    disturbance_type_mapping, 
@@ -2741,10 +3160,6 @@ class ForestModel:
                       'sit_transitions':self._cbm_sit_transitions()}
         return sit_config, sit_tables
 
-                      
-        
-                
-        
         
 if __name__ == '__main__':
     pass

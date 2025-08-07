@@ -1,7 +1,7 @@
 ###################################################################################
 # MIT License
 
-# Copyright (c) 2015-2017 Gregory Paradis
+# Copyright (c) 2015-2025 Gregory Paradis
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,6 @@ The ``Problem`` class is the main functional unit here. It encapsulates optimiza
 Note that we implemented a modular design that decouples the implementation from the choice of solver. Currently, only bindings to the Gurobi solver are implemented, although bindings to other solvers can easilty be added (we will add more binding in later releases, as the need arises). 
 """
 
-
 SENSE_MINIMIZE = +1 # same as GRB.MINIMIZE
 SENSE_MAXIMIZE = -1 # same as GRB.MAXIMIZE
 SENSE_EQ = '=' # same as GRB.EQUAL
@@ -44,6 +43,8 @@ VTYPE_CONTINUOUS = 'C' # same as GRB.CONTINUOUS
 VBNDS_INF = float('inf')
 SOLVER_GUROBI = 'gurobi'
 SOLVER_PULP = 'pulp'
+SOLVER_HIGHS = 'highs'
+SOLVER_DEFAULT = SOLVER_HIGHS
 STATUS_OPTIMAL = 'optimal'
 STATUS_INFEASIBLE = 'infeasible'
 STATUS_UNBOUNDED = 'unbounded'
@@ -81,7 +82,7 @@ class Problem:
     """
     This is the main class of the ``opt`` module---it encapsulates optimization problem data (i.e., variables, constraints, objective function, optimal solution, and choice of solver), as well as methods to operate on this data (i.e., methods to build and solve the problem, and report on the optimal solution).
     """
-    def __init__(self, name, sense=SENSE_MAXIMIZE, solver=SOLVER_PULP):
+    def __init__(self, name, sense=SENSE_MAXIMIZE, solver=SOLVER_DEFAULT):
         self._name = name
         self._vars = {}
         self._z = {}
@@ -91,7 +92,18 @@ class Problem:
         self._solver = solver
         self._solver_backend = None
         self._dispatch_map = {SOLVER_PULP:self._solve_pulp, 
-                              SOLVER_GUROBI:self._solve_gurobi}
+                              SOLVER_GUROBI:self._solve_gurobi,
+                              SOLVER_HIGHS:self._solve_highs}
+
+    def merge(self, problem):
+        """
+        Merge problem with data from another problem. 
+        
+        :param Problem: The problem to be merged with this one.
+        """
+        self._vars.update(problem._vars)
+        self._z.update(problem._z)
+        self._constraints.update(problem._constraints)
 
     def add_var(self, name, vtype, lb=0., ub=VBNDS_INF):
         """
@@ -101,7 +113,6 @@ class Problem:
         :param str vtype: The variable type that has to be one of ``VTYPE_CONTINUOUS``, ``VTYPE_INTEGER``, or ``VTYPE_BINARY``.
         :param float lb: The lower bound value for the variable (Default is zero).
         :param float ub: The upper bound value for the variable (Default is positive infinity).
-    
         """
 
         self._vars[name] = Variable(name, vtype, lb, ub)
@@ -199,24 +210,52 @@ class Problem:
         return self._solution
         #return {x:self._vars[x].val for x in self._vars}
 
-    def solve(self, validate=False):
+    def solve(self, validate=False, threads=0, warm_start=None):
         """
-        Solves the optimization problem. Dispatches to a solver-specific method (only Gurobi bindings are implemented at this time).
+        Solve the optimization problem.
+
+        :param bool validate: If True, performs pre-solve checks (not implemented).
+        :param int threads: Number of solver threads (0 = auto).
+        :param list[float] or None warm_start: Optional initial solution vector (in column order) to warm start the solver.
+
+        :return None: Solution is stored in self._solution if optimal.
         """
         if validate:
-            assert False # not implemented yet, but later check that all systems are GO before launching...
-        self._dispatch_map[self._solver].__get__(self, type(self))()
-        if self.status() == STATUS_OPTIMAL:
-            self._solution = {x:self._vars[x].val for x in self._vars}
+            assert False, "Validation not implemented yet"
 
+        # Store warm start for use by solver
+        self._warm_start = warm_start
+
+        # Dispatch to solver-specific method
+        self._dispatch_map[self._solver].__get__(self, type(self))(threads=threads)
+
+        # Capture solution if optimal
+        if self.status() == STATUS_OPTIMAL:
+            self._solution = {x: self._vars[x].val for x in self._vars}
+                
     def status(self):
         """
-        Checks whether the current solution is infeasible (i.e., not feasible).
+        Checks the solution status of the current model for PuLP, Gurobi, or HiGHS (highspy).
+
+        :returns:  STATUS_INFEASIBLE, STATUS_UNBOUNDED, STATUS_OPTIMAL, or None
         """
         import ws3.opt
-        # import gurobipy
         import pulp
+
+        # Optional import: only if Gurobi used
+        try:
+            import gurobipy
+        except ImportError:
+            gurobipy = None
+
+        # Optional import: only if HiGHS used
+        try:
+            import highspy
+        except ImportError:
+            highspy = None
+
         match self._solver:
+            # --- PuLP Solver ---
             case ws3.opt.SOLVER_PULP:
                 match self._model.status:
                     case pulp.constants.LpStatusInfeasible:
@@ -225,7 +264,11 @@ class Problem:
                         return STATUS_UNBOUNDED
                     case pulp.constants.LpStatusOptimal:
                         return STATUS_OPTIMAL
+
+            # --- Gurobi Solver ---
             case ws3.opt.SOLVER_GUROBI:
+                if gurobipy is None:
+                    return None
                 match self._model.status:
                     case gurobipy.GRB.INFEASIBLE:
                         return STATUS_INFEASIBLE
@@ -233,10 +276,46 @@ class Problem:
                         return STATUS_UNBOUNDED
                     case gurobipy.GRB.OPTIMAL:
                         return STATUS_OPTIMAL
-            # add last case to return None if no match
+
+            # --- HiGHS Solver (direct highspy) ---
+            case ws3.opt.SOLVER_HIGHS:
+                if highspy is None:
+                    return None
+                # HiGHS uses integer codes:
+                # 7 = Optimal, 8 = Infeasible, 9 = Unbounded (see HiGHSStatus)
+                highs_status = self._model.getModelStatus()  # integer code
+                if highs_status == highspy.HighsModelStatus.kOptimal:
+                    return STATUS_OPTIMAL
+                elif highs_status == highspy.HighsModelStatus.kInfeasible:
+                    return STATUS_INFEASIBLE
+                elif highs_status == highspy.HighsModelStatus.kUnbounded:
+                    return STATUS_UNBOUNDED
+
+            # --- Fallback ---
             case _:
                 return None
-
+    
+    def get_all_constraints_lhs_values(self):
+        """
+        Returns the left-hand side (LHS) values for all constraints in the problem after solving.
+        
+        :return: A dictionary where keys are constraint names and values are the LHS values.
+        """
+        if not self.solved():
+            raise ValueError("The problem has not been solved yet.")           
+        lhs_values = {}
+        if self._solver == SOLVER_PULP:
+            import pulp
+            for constraint_name, constraint in self._constraints.items():
+                lhs_value = sum(constraint.coeffs[v] * self._vars[v].val for v in constraint.coeffs)
+                lhs_values[constraint_name] = lhs_value
+        elif self._solver == SOLVER_GUROBI:
+            for constraint_name, constraint in self._constraints.items():
+                lhs_value = sum(constraint.coeffs[v] * self._vars[v].val for v in constraint.coeffs)
+                lhs_values[constraint_name] = lhs_value
+        else:
+            raise ValueError("Unsupported solver backend.")      
+        return lhs_values
 
     def _solve_gurobi(self, allow_feasrelax=True):
         """
@@ -283,7 +362,7 @@ class Problem:
                 v._solver_var = _v # might want to poke around this later...
                 v.val = _v.X
 
-    def _solve_pulp(self):
+    def _solve_pulp(self, threads=0):
         """
         Solve the LP problem using the pulp solver.
 
@@ -317,37 +396,122 @@ class Problem:
                 self._model += lhs >= constraint.rhs, name
             elif constraint.sense == SENSE_LEQ:
                 self._model += lhs <= constraint.rhs, name
-        # self._model.solve(solver=pulp.LpSolverDefault) # use default LP solver for now, but expland later to allow other backends
-        self._model.solve(solver=pulp.PULP_CBC_CMD(msg=False)) # use default LP solver for now, but expland later to allow other backends
+        #self._model.solve(solver=pulp.LpSolverDefault) # use default LP solver for now, but expland later to allow other backends
+        #self._model.solve(solver=pulp.PULP_CBC_CMD(msg=False, threads=64)) # use default LP solver for now, but expland later to allow other backends
+        #self._model.solve(solver=pulp.HiGHS(msg=True, threads=64, solver="pdlp")) # use default LP solver for now, but expland later to allow other backends
+        self._model.solve(solver=pulp.HiGHS(msg=True, 
+                                            threads=threads, 
+                                            solver="simplex",
+                                            simplex_strategy=2,
+                                            simplex_min_concurrency=2,
+                                            simplex_max_concurrency=8)) # use default LP solver for now, but expland later to allow other backends
         if pulp.LpStatus[self._model.status] in [pulp.constants.LpStatusInfeasible, pulp.constants.LpStatusUnbounded]:
             print(f"ws3.opt._solve_pulp: Model {pulp.LpStatus[self._model.status]}")
         else:
             for k, v in list(self._vars.items()):
                 self._vars[k].val = vars[k].varValue
 
+    def _solve_highs(self, threads=0, simplex_strategy=2):
+        """
+        Solve the current LP using HiGHS in the same way PuLP does in its buildSolverModel:
+        - Uses addCol() and addRow() for each variable and constraint
+        - Handles bounds and objective signs like PuLP
+        - Deduplicates variable coefficients per constraint
+        - Optionally applies a warm start solution vector
 
-    
-    def get_all_constraints_lhs_values(self):
-        """
-        Returns the left-hand side (LHS) values for all constraints in the problem after solving.
+        Parameters
+        ----------
+        threads : int
+            Number of threads for HiGHS. 0 = auto-detect.
+        simplex_strategy : int
+            HiGHS simplex strategy. 2 = parallel dual simplex (recommended for multi-core).
         
-        :return: A dictionary where keys are constraint names and values are the LHS values.
+        Returns
+        -------
+        status : highspy.HighsStatus
+            HiGHS solver status.
         """
-        if not self.solved():
-            raise ValueError("The problem has not been solved yet.")           
-        lhs_values = {}
-        if self._solver == SOLVER_PULP:
-            import pulp
-            for constraint_name, constraint in self._constraints.items():
-                lhs_value = sum(constraint.coeffs[v] * self._vars[v].val for v in constraint.coeffs)
-                lhs_values[constraint_name] = lhs_value
-        elif self._solver == SOLVER_GUROBI:
-            for constraint_name, constraint in self._constraints.items():
-                lhs_value = sum(constraint.coeffs[v] * self._vars[v].val for v in constraint.coeffs)
-                lhs_values[constraint_name] = lhs_value
+        import highspy
+        from collections import defaultdict
+        import numpy as np
+
+        highs = highspy.Highs()
+        inf = highspy.kHighsInf
+
+        # ----------------------------
+        # Solver options
+        # ----------------------------
+        highs.setOptionValue("threads", threads)
+        highs.setOptionValue("solver", "simplex")
+        highs.setOptionValue("simplex_strategy", simplex_strategy)
+        highs.setOptionValue("simplex_min_concurrency", 2)
+        highs.setOptionValue("simplex_max_concurrency", 8)
+
+        # ----------------------------
+        # Variables
+        # ----------------------------
+        obj_mult = -1 if self._sense == SENSE_MAXIMIZE else 1
+        var_index = {}
+
+        for i, (vname, var) in enumerate(self._vars.items()):
+            lb = var.lb if var.lb is not None else -inf
+            ub = var.ub if var.ub is not None else inf
+            obj_coef = obj_mult * self._z.get(vname, 0.0)
+
+            highs.addCol(obj_coef, lb, ub, 0, [], [])
+            var_index[vname] = i
+            var.index = i
+
+        # ----------------------------
+        # Constraints
+        # ----------------------------
+        for cname, con in self._constraints.items():
+            # Compute row bounds
+            if con.sense == SENSE_EQ:
+                lb, ub = con.rhs, con.rhs
+            elif con.sense == SENSE_LEQ:
+                lb, ub = -inf, con.rhs
+            elif con.sense == SENSE_GEQ:
+                lb, ub = con.rhs, inf
+            else:
+                raise ValueError(f"Unknown sense {con.sense}")
+
+            # Deduplicate coefficients
+            coeff_accum = defaultdict(float)
+            for vname, coef in con.coeffs.items():
+                coeff_accum[var_index[vname]] += coef
+            coeff_accum = {j: c for j, c in coeff_accum.items() if c != 0.0}
+
+            indices, coefs = zip(*coeff_accum.items()) if coeff_accum else ([], [])
+            highs.addRow(lb, ub, len(indices), indices, coefs)
+
+        # ----------------------------
+        # Warm start (if provided)
+        # ----------------------------
+        if getattr(self, "_warm_start", None) is not None:
+            print('ws3.opt.Proble._solve_highs: detected _warm_start solution')
+            highs.setOptionValue("run_crossover", "choose")  # let HiGHS auto-decide            
+            warm_start = self._warm_start
+            ncols = len(warm_start)
+            idx = np.arange(ncols, dtype=np.int32)
+            highs.setSolution(ncols, idx, warm_start)
+
+        # ----------------------------
+        # Solve
+        # ----------------------------
+        status = highs.run()
+        self._model = highs
+
+        # ----------------------------
+        # Store solution
+        # ----------------------------
+        if status == highspy.HighsStatus.kOk:
+            sol = highs.getSolution()
+            col_values = sol.col_value
+            for i, var in enumerate(self._vars.values()):
+                var.val = col_values[i]
         else:
-            raise ValueError("Unsupported solver backend.")      
-        return lhs_values
+            for var in self._vars.values():
+                var.val = None
 
-        
-
+        return status

@@ -6,3 +6,5 @@ rasterio
 fiona
 profilehooks
 pytest
+numba
+dill
