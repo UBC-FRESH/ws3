@@ -11,7 +11,8 @@ import numpy as np
 import seaborn as sns
 import pickle 
 import os
-import ws3.opt
+#from ws3 import opt
+import ws3
 ##########################################################
 # Implement a priority queue heuristic harvest scheduler
 ##########################################################
@@ -63,7 +64,7 @@ def schedule_harvest_areacontrol(fm, max_harvest=1, period=None, acode='harvest'
 # Implement an LP optimization harvest scheduler
 ##############################################################
 
-def cmp_c_z(fm, path, expr):
+def cmp_c_z(fm, path, expr, mask=None):
     """
     Compile objective function coefficient (given ForestModel instance, 
     leaf-to-root-node path, and expression to evaluate).
@@ -71,6 +72,7 @@ def cmp_c_z(fm, path, expr):
     result = 0.
     for t, n in enumerate(path, start=1):
         d = n.data()
+        if mask and not fm.match_mask(mask, d['dtk']): continue
         if fm.is_harvest(d['acode']):
             result += fm.compile_product(t, expr, d['acode'], [d['dtk']], d['age'], coeff=False)
     return result
@@ -113,53 +115,8 @@ def cmp_c_ci(fm, path, yname, mask=None): # product, named actions
     for t, n in enumerate(path, start=1):
         d = n.data()
         if mask and not fm.match_mask(mask, d['_dtk']): continue
-        result[t] = fm.inventory(t, yname=yname, age=d['_age'], dtype_keys=[d['_dtk']]) 
-        #result[t] = fm.inventory(t, yname=yname, age=d['age'], dtype_keys=[d['dtk']]) 
+        result[t] = fm.inventory(t, yname=yname, age=d['_age'], dtype_keys=[d['_dtk']])
     return result
-
-
-def gen_scenario(fm, name='base', util=0.85, harvest_acode='harvest',
-                 cflw_ha={}, cflw_hv={}, 
-                 cgen_ha={}, cgen_hv={}, cgen_gs={}, 
-                 tvy_name='totvol', obj_mode='max_hv', mask=None):
-    from functools import partial
-    import numpy as np
-    coeff_funcs = {}
-    cflw_e = {}
-    cgen_data = {}
-    acodes = ['null', harvest_acode] # define list of action codes
-    vexpr = '%s * %0.2f' % (tvy_name, util) # define volume expression
-    if obj_mode == 'max_hv': # maximize harvest volume
-        sense = ws3.opt.SENSE_MAXIMIZE 
-        zexpr = vexpr
-    elif obj_mode == 'min_ha': # minimize harvest area
-        sense = ws3.opt.SENSE_MINIMIZE 
-        zexpr = '1.'
-    else:
-        raise ValueError('Invalid obj_mode: %s' % obj_mode)        
-    coeff_funcs['z'] = partial(cmp_c_z, expr=zexpr) # define objective function coefficient function  
-    T = fm.periods
-    if cflw_ha: # define even flow constraint (on harvest area)
-        cname = 'cflw_ha'
-        coeff_funcs[cname] = partial(cmp_c_caa, expr='1.', acodes=[harvest_acode], mask=None) 
-        cflw_e[cname] = cflw_ha
-    if cflw_hv: # define even flow constraint (on harvest volume)
-        cname = 'cflw_hv'
-        coeff_funcs[cname] = partial(cmp_c_caa, expr=vexpr, acodes=[harvest_acode], mask=None) 
-        cflw_e[cname] = cflw_hv         
-    if cgen_ha: # define general constraint (harvest area)
-        cname = 'cgen_ha'
-        coeff_funcs[cname] = partial(cmp_c_caa, expr='1.', acodes=[harvest_acode], mask=None) 
-        cgen_data[cname] = cgen_ha
-    if cgen_hv: # define general constraint (harvest volume)
-        cname = 'cgen_hv'
-        coeff_funcs[cname] = partial(cmp_c_caa, expr=vexpr, acodes=[harvest_acode], mask=None) 
-        cgen_data[cname] = cgen_hv
-    if cgen_gs: # define general constraint (growing stock)
-        cname = 'cgen_gs'
-        coeff_funcs[cname] = partial(cmp_c_ci, yname=tvy_name, mask=None)
-        cgen_data[cname] = cgen_gs
-    return fm.add_problem(name, coeff_funcs, cflw_e, cgen_data=cgen_data, acodes=acodes, sense=sense, mask=mask)
 
 
 def compile_scenario(fm):
@@ -187,7 +144,7 @@ def plot_scenario(df):
     ax[2].set_title('Growing Stock (m3)')
     return fig, ax
 
-def run_scenario(fm, scenario_name='base', solver=ws3.opt.SOLVER_PULP):
+def run_scenario(fm, scenario_name='base', solver=ws3.opt.SOLVER_HIGHS, verbose=False, workers=1, print_df=False):
     import sys
     cflw_ha = {}
     cflw_hv = {}
@@ -223,11 +180,11 @@ def run_scenario(fm, scenario_name='base', solver=ws3.opt.SOLVER_PULP):
                      cflw_hv=cflw_hv,
                      cgen_ha=cgen_ha,
                      cgen_hv=cgen_hv,
-                     cgen_gs=cgen_gs)
+                     cgen_gs=cgen_gs,
+                     workers=workers)
     p.solver(solver)
-
     fm.reset()
-    p.solve()
+    p.solve(verbose=verbose)
 
     if p.status() != ws3.opt.STATUS_OPTIMAL:
         print('Model not optimal.')
@@ -242,8 +199,59 @@ def run_scenario(fm, scenario_name='base', solver=ws3.opt.SOLVER_PULP):
                         verbose=False,
                         compile_c_ycomps=True)
         df = compile_scenario(fm)
+        if print_df:
+            print(df)
         fig, ax = plot_scenario(df)
     return fig, df, p
+
+
+def gen_scenario(fm, name='base', util=0.85, harvest_acode='harvest',
+                 cflw_ha={}, cflw_hv={}, 
+                 cgen_ha={}, cgen_hv={}, cgen_gs={}, 
+                 tvy_name='totvol', obj_mode='max_hv', mask=None,
+                 workers=1):
+    from functools import partial
+    import numpy as np
+    coeff_funcs = {}
+    cflw_e = {}
+    cgen_data = {}
+    acodes = ['null', harvest_acode] # define list of action codes
+    vexpr = '%s * %0.2f' % (tvy_name, util) # define volume expression
+    if obj_mode == 'max_hv': # maximize harvest volume
+        sense = ws3.opt.SENSE_MAXIMIZE 
+        zexpr = vexpr
+    elif obj_mode == 'min_ha': # minimize harvest area
+        sense = opt.SENSE_MINIMIZE 
+        zexpr = '1.'
+    else:
+        raise ValueError('Invalid obj_mode: %s' % obj_mode)        
+    coeff_funcs['z'] = partial(cmp_c_z, expr=zexpr) # define objective function coefficient function  
+    T = fm.periods
+    if cflw_ha: # define even flow constraint (on harvest area)
+        cname = 'cflw_ha'
+        coeff_funcs[cname] = partial(cmp_c_caa, expr='1.', acodes=[harvest_acode], mask=None) 
+        cflw_e[cname] = cflw_ha
+    if cflw_hv: # define even flow constraint (on harvest volume)
+        cname = 'cflw_hv'
+        coeff_funcs[cname] = partial(cmp_c_caa, expr=vexpr, acodes=[harvest_acode], mask=None) 
+        cflw_e[cname] = cflw_hv         
+    if cgen_ha: # define general constraint (harvest area)
+        cname = 'cgen_ha'
+        coeff_funcs[cname] = partial(cmp_c_caa, expr='1.', acodes=[harvest_acode], mask=None) 
+        cgen_data[cname] = cgen_ha
+    if cgen_hv: # define general constraint (harvest volume)
+        cname = 'cgen_hv'
+        coeff_funcs[cname] = partial(cmp_c_caa, expr=vexpr, acodes=[harvest_acode], mask=None) 
+        cgen_data[cname] = cgen_hv
+    if cgen_gs: # define general constraint (growing stock)
+        cname = 'cgen_gs'
+        coeff_funcs[cname] = partial(cmp_c_ci, yname=tvy_name, mask=None)
+        cgen_data[cname] = cgen_gs
+    return fm.add_problem(
+        name, coeff_funcs, cflw_e, cgen_data=cgen_data, 
+        acodes=acodes, sense=sense, mask=mask, workers=workers
+    )
+
 
 
 ##############################################################

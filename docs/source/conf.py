@@ -36,7 +36,7 @@ class Mock(MagicMock):
             return MagicMock()
 
 MOCK_MODULES = ['scipy', 'scipy.stats', 'numpy', 'pandas', 'pacal', 'rasterio',
-                'fiona', 'fiona.transform', 'fiona.crs', 'profilehooks']
+                'fiona', 'fiona.transform', 'fiona.crs', 'profilehooks', 'pytest', 'dill']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # -- General configuration ------------------------------------------------

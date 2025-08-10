@@ -281,33 +281,6 @@ def worker_cmp_cgen_batch(args):
                     results.append((t, o, i, j, _mu.get(t, 0.0)))
     return results
 
-# def worker_cmp_cgen_phase3(args):
-#     """ Worker function to compute (name, coeffs, sense, rhs) tuples for Phase 3 of `_cmp_cgen_m1`.
-
-#     :param args: (t, o, mu_t_o, lb, ub, xnames)
-#     :type args: tuple(int, str, float, float, float, list[str])
-#     :return: list of (constraint_name, mu_val, sense, bound) tuples
-#     :rtype: list[(str, dict, str, float)]
-#     """    
-#     t, o, mu_t_o, lb, ub, xnames = args
-#     results = []
-
-#     keys = list(mu_t_o.keys())
-#     x_keys = [xnames[k] for k in keys]
-#     mu_vals = [mu_t_o[k] for k in keys]
-
-#     # Lower bound row
-#     if lb is not None and t in lb:
-#         mu_lb = dict(zip(x_keys, mu_vals))
-#         results.append((f'gen-lb_{t:03d}_{o}', mu_lb, opt.SENSE_GEQ, lb[t]))
-
-#     # Upper bound row
-#     if ub is not None and t in ub:
-#         mu_ub = dict(zip(x_keys, mu_vals))
-#         results.append((f'gen-ub_{t:03d}_{o}', mu_ub, opt.SENSE_LEQ, ub[t]))
-
-#     return results
-
 def worker_cmp_cgen_phase3(args):
     """
     Args: (t, o, mu_t_o, lb, ub)
@@ -332,23 +305,6 @@ def worker_cmp_cgen_phase3_batch(batch):
     for task in batch:
         out.extend(worker_cmp_cgen_phase3(task))
     return out
-
-
-# # def _worker_cmp_cgen_phase3_batch(batch):
-# def worker_cmp_cgen_phase3_batch(batch):
-#     """Worker function to process batches of phase 3 tasks for `_cmp_cgen_m1`
-
-#     :param batch: list of tasks (tuples)
-#     :type batch: list[tuple]
-#     :return: list of results
-#     :rtype: list[tuple]
-#     """        
-#     t, o, mu_t_o, mu_ref_o, eps, xnames = args
-#     results = []
-#     batch_results = []
-#     for task in batch:
-#         batch_results.extend(worker_cmp_cgen_phase3(task))
-#     return batch_results
 
 class PersistentWorkerPool:
     """

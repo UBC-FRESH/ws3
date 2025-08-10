@@ -1289,7 +1289,6 @@ class ForestModel:
         cgen_keys = list(cgen_data.keys())
 
         # --- Phase 1+2: build mu exactly like the reference implementation ---
-        # mu[t][o][(i, j)] = value
         mu = {t: {o: {} for o in cgen_keys} for t in periods}
         for i, tree in problem.trees.items():
             for path in tree.paths():
@@ -1325,102 +1324,6 @@ class ForestModel:
         add_constraint = problem.add_constraint
         for name, coeffs, sense, rhs in results:
             add_constraint(name=name, coeffs=coeffs, sense=sense, rhs=rhs)
-
-    # def _cmp_cgen_m1(self, problem, cgen_data, workers=1, executor=None, verbose=False):
-    #     """
-    #     Compile general output constraints in parallel using batched workers.
-    #     """
-    #     if not cgen_data:
-    #         return
-
-    #     periods = self.periods
-    #     cgen_keys = list(cgen_data.keys())
-    #     if verbose: print("_cmp_cgen_m1: phase 1")
-
-    #     tree_items = list(problem.trees.items())
-
-    #     # Phase 1: Per-tree contributions
-    #     batches = auto_batch(
-    #         tree_items,
-    #         workers,
-    #         size_fn=lambda x: len(x[1].nodes()),
-    #         max_batch_factor=1
-    #     )
-        
-    #     tasks = [(batch, cgen_keys, periods) for batch in batches]
-
-    #     results = []
-    #     if workers == 1:
-    #         for task in tasks:
-    #             results.extend(worker_cmp_cgen_batch(task))
-    #     else:
-    #         exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
-    #         futures = [exec_ctx.submit(worker_cmp_cgen_batch, task) for task in tasks]
-    #         for f in as_completed(futures):
-    #             results.extend(f.result())
-    #         if executor is None:
-    #             exec_ctx.shutdown()
-
-    #     # Phase 2: Merge into mu dict
-    #     if verbose: print("_cmp_cgen_m1: phase 2")
-    #     mu = {t: {o: {} for o in cgen_keys} for t in periods}
-    #     for t, o, i, j, val in results:
-    #         mu[t][o][(i, j)] = val
-
-    #     # Phase 3: Build constraints (parallel)
-    #     if verbose: print("_cmp_cgen_m1: phase 3")
-
-    #     leaf_ids = problem._leaf_ids
-    #     xnames = {k: f"x_{v}" for k, v in leaf_ids.items()}
-    #     add_constraint = problem.add_constraint
-
-    #     # Phase 3 task build
-    #     tasks = []
-    #     for o, bounds in cgen_data.items():
-    #         lb, ub = bounds.get('lb'), bounds.get('ub')
-    #         for t in periods:
-    #             mu_t_o = mu[t][o]
-    #             tasks.append((t, o, mu_t_o, lb, ub))
-
-    #     # Parallel Phase 3 (batched)
-    #     if workers == 1:
-    #         results = []
-    #         for task in tasks:
-    #             results.extend(worker_cmp_cgen_phase3(task))
-    #     else:
-    #         batches = auto_batch(tasks, workers)  # don’t force a factor unless you must
-    #         exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
-    #         futures = [exec_ctx.submit(worker_cmp_cgen_phase3_batch, b) for b in batches]
-    #         results_nested = [f.result() for f in as_completed(futures)]
-    #         results = [item for batch in results_nested for item in batch]
-    #         if executor is None:
-    #             exec_ctx.shutdown()
-                
-    #     # tasks = []
-    #     # for o, bounds in cgen_data.items():
-    #     #     lb, ub = bounds['lb'], bounds['ub']
-    #     #     for t in periods:
-    #     #         mu_t_o = mu[t][o]
-    #     #         tasks.append((t, o, mu_t_o, lb, ub, xnames))
-
-    #     # results = []
-    #     # if workers == 1:
-    #     #     for task in tasks:
-    #     #         results.extend(worker_cmp_cgen_phase3(task))
-    #     # else:
-    #     #     # Create batches of tasks for more efficient multiprocessing
-    #     #     batches = auto_batch(tasks, workers, max_batch_factor=2)
-    #     #     exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
-    #     #     futures = [exec_ctx.submit(_worker_cmp_cgen_phase3_batch, batch) for batch in batches]
-    #     #     for f in as_completed(futures):
-    #     #         results.extend(f.result())
-    #     #     if executor is None:
-    #     #         exec_ctx.shutdown()
-
-    #     # Add constraints to problem
-    #     if verbose: print('add constraints')
-    #     for name, coeffs, sense, rhs in results:
-    #         add_constraint(name=name, coeffs=coeffs, sense=sense, rhs=rhs)
 
     def _cmp_cgen_m2(self):
         pass # not implemented
