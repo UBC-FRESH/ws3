@@ -210,7 +210,7 @@ class Problem:
         return self._solution
         #return {x:self._vars[x].val for x in self._vars}
 
-    def solve(self, validate=False, threads=0, warm_start=None):
+    def solve(self, validate=False, threads=0, warm_start=None, verbose=False):
         """
         Solve the optimization problem.
 
@@ -227,7 +227,7 @@ class Problem:
         self._warm_start = warm_start
 
         # Dispatch to solver-specific method
-        self._dispatch_map[self._solver].__get__(self, type(self))(threads=threads)
+        self._dispatch_map[self._solver].__get__(self, type(self))(threads=threads, verbose=verbose)
 
         # Capture solution if optimal
         if self.status() == STATUS_OPTIMAL:
@@ -317,52 +317,71 @@ class Problem:
             raise ValueError("Unsupported solver backend.")      
         return lhs_values
 
-    def _solve_gurobi(self, allow_feasrelax=True):
-        """
-        Solve the LP optimization problem using Gurobi.
-
-        Returns
-        -------
-        None
-        """
+    def _solve_gurobi(self, allow_feasrelax=True, threads=1, verbose=False):
         import gurobipy as grb
+
+        # If you build a custom Env, you must pass it to Model OR set params on the model.
+        env = grb.Env(empty=True)
+        env.setParam("Threads", threads)
+        env.setParam("OutputFlag", int(verbose))
+        env.start()
+
         const_map = {
-            SENSE_MINIMIZE:grb.GRB.MINIMIZE,
-            SENSE_MAXIMIZE:grb.GRB.MAXIMIZE,
-            VTYPE_INTEGER:grb.GRB.INTEGER,
-            VTYPE_BINARY:grb.GRB.BINARY,
-            VTYPE_CONTINUOUS:grb.GRB.CONTINUOUS,
-            SENSE_EQ:grb.GRB.EQUAL,
-            SENSE_GEQ:grb.GRB.GREATER_EQUAL,
-            SENSE_LEQ:grb.GRB.LESS_EQUAL}
-        GUROBI_IU = grb.GRB.status.INF_OR_UNBD, grb.GRB.status.INFEASIBLE, grb.GRB.status.UNBOUNDED
-        self._model = grb.Model(self._name)
-        vars = {v.name:self._model.addVar(name=v.name, vtype=v.vtype) for v in list(self._vars.values())}
+            SENSE_MINIMIZE: grb.GRB.MINIMIZE,
+            SENSE_MAXIMIZE: grb.GRB.MAXIMIZE,
+            VTYPE_INTEGER:  grb.GRB.INTEGER,
+            VTYPE_BINARY:   grb.GRB.BINARY,
+            VTYPE_CONTINUOUS: grb.GRB.CONTINUOUS,
+            SENSE_EQ:  grb.GRB.EQUAL,
+            SENSE_GEQ: grb.GRB.GREATER_EQUAL,
+            SENSE_LEQ: grb.GRB.LESS_EQUAL,
+        }
+
+        # attach env so the Threads param actually applies
+        self._model = grb.Model(self._name, env=env)
+
+        vars = {v.name: self._model.addVar(name=v.name, vtype=v.vtype)
+                for v in self._vars.values()}
         self._model.update()
+
         z = grb.LinExpr()
-        for v in vars:
-            z += self._z[v] * vars[v]
-        self._model.setObjective(expr=z, sense=const_map[self._sense])
-        for name, constraint in list(self._constraints.items()):
+        for vname in vars:
+            z += self._z[vname] * vars[vname]
+        self._model.setObjective(z, sense=const_map[self._sense])
+
+        for name, constraint in self._constraints.items():
             lhs = grb.LinExpr()
             for x in constraint.coeffs:
                 lhs += constraint.coeffs[x] * vars[x]
-            self._model.addConstr(lhs=lhs,
-                        sense=const_map[constraint.sense],
-                        rhs=constraint.rhs,
-                        name=name)
+
+            # NEW: use operator overloads instead of sense/rhs keywords
+            if constraint.sense == SENSE_EQ:
+                self._model.addConstr(lhs == constraint.rhs, name=name)
+            elif constraint.sense == SENSE_LEQ:
+                self._model.addConstr(lhs <= constraint.rhs, name=name)
+            elif constraint.sense == SENSE_GEQ:
+                self._model.addConstr(lhs >= constraint.rhs, name=name)
+            else:
+                raise ValueError(f"Unknown sense {constraint.sense}")
+
         self._model.optimize()
-        if allow_feasrelax and self._model.status in GUROBI_IU: # infeasible or unbounded model
+
+        # Use the modern status enum casing
+        GUROBI_IU = (grb.GRB.Status.INF_OR_UNBD, grb.GRB.Status.INFEASIBLE, grb.GRB.Status.UNBOUNDED)
+
+        if allow_feasrelax and self._model.Status in GUROBI_IU:
             print('ws3.opt._solve_gurobi: Model infeasible, enabling feasRelaxS mode.')
+            # relaxobjtype=1 (squared violations), minrelax=False, vrelax=False, crelax=True
             self._model.feasRelaxS(1, False, False, True)
             self._model.optimize()
-        if self._model.status == grb.GRB.OPTIMAL:
-            for k, v in list(self._vars.items()):
-                _v = self._model.getVarByName(k)
-                v._solver_var = _v # might want to poke around this later...
-                v.val = _v.X
 
-    def _solve_pulp(self, threads=0):
+        if self._model.Status == grb.GRB.Status.OPTIMAL:
+            for k, v in self._vars.items():
+                _v = self._model.getVarByName(k)
+                v._solver_var = _v
+                v.val = _v.X
+                
+    def _solve_pulp(self, threads=0, verbose=False, solver_backend="CBC"):
         """
         Solve the LP problem using the pulp solver.
 
@@ -379,7 +398,8 @@ class Problem:
             VTYPE_CONTINUOUS:pulp.constants.LpContinuous,
             SENSE_EQ:pulp.constants.LpConstraintEQ,
             SENSE_GEQ:pulp.constants.LpConstraintGE,
-            SENSE_LEQ:pulp.constants.LpConstraintLE}
+            SENSE_LEQ:pulp.constants.LpConstraintLE
+        }
         self._model = pulp.LpProblem(name=self._name, sense=const_map[self._sense])
         vars = pulp.LpVariable.dicts(name='',
                                      indices=self._vars.keys(),
@@ -396,22 +416,20 @@ class Problem:
                 self._model += lhs >= constraint.rhs, name
             elif constraint.sense == SENSE_LEQ:
                 self._model += lhs <= constraint.rhs, name
-        #self._model.solve(solver=pulp.LpSolverDefault) # use default LP solver for now, but expland later to allow other backends
-        #self._model.solve(solver=pulp.PULP_CBC_CMD(msg=False, threads=64)) # use default LP solver for now, but expland later to allow other backends
-        #self._model.solve(solver=pulp.HiGHS(msg=True, threads=64, solver="pdlp")) # use default LP solver for now, but expland later to allow other backends
-        self._model.solve(solver=pulp.HiGHS(msg=True, 
-                                            threads=threads, 
-                                            solver="simplex",
-                                            simplex_strategy=2,
-                                            simplex_min_concurrency=2,
-                                            simplex_max_concurrency=8)) # use default LP solver for now, but expland later to allow other backends
+        if solver_backend == "CBC":
+            self._model.solve(solver=pulp.PULP_CBC_CMD(msg=verbose, threads=0))
+        elif solver_backend == "HiGHS":
+            self._model.solve(solver=pulp.HiGHS(msg=verbose, threads=0, solver="pdlp"))
+        else:
+            print("Solver backend not supported:", solver_backend)
+            raise ValueError
         if pulp.LpStatus[self._model.status] in [pulp.constants.LpStatusInfeasible, pulp.constants.LpStatusUnbounded]:
             print(f"ws3.opt._solve_pulp: Model {pulp.LpStatus[self._model.status]}")
         else:
             for k, v in list(self._vars.items()):
                 self._vars[k].val = vars[k].varValue
 
-    def _solve_highs(self, threads=0, simplex_strategy=2):
+    def _solve_highs(self, threads=0, simplex_strategy=2, verbose=False):
         """
         Solve the current LP using HiGHS in the same way PuLP does in its buildSolverModel:
         - Uses addCol() and addRow() for each variable and constraint
@@ -446,6 +464,7 @@ class Problem:
         highs.setOptionValue("simplex_strategy", simplex_strategy)
         highs.setOptionValue("simplex_min_concurrency", 2)
         highs.setOptionValue("simplex_max_concurrency", 8)
+        highs.setOptionValue("output_flag", verbose)
 
         # ----------------------------
         # Variables
