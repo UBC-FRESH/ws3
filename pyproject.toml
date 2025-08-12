@@ -19,8 +19,9 @@ dependencies = [
   "profilehooks",
   "libcbm",
   "pulp",
-  "numba",
-  "dill"
+  "dill",
+  "highspy",
+  "gurobipy"
 ]
 authors = [
   {name = "Gregory Paradis", email = "gregory.paradis@ubc.ca"}

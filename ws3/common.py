@@ -728,7 +728,7 @@ def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
     :param formula: formula index (1 to 7).
 
     .. Note:: Assumes that variables (P, vr, vp) are random variates (returns expected value of function, using PaCAL packages to model random variates, assuming normal distribution for all three variables).
-    Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).   
+        Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).   
     """
     if treatment_type and cover_type:
         formula = sylv_cred_formula(treatment_type, cover_type)
@@ -844,12 +844,12 @@ def harv_cost_rv(tv_mu, tv_sigma, N_mu, N_sigma, psr,
     """
     Returns harvest cost.
 
-    
     :param bool is_finalcut: Treatment type (final cut or not).
     :param bool is_toleranthw: Stand type (tolerant hardwood or not).
     :param bool partialcut_extracare: Partialcut "extra care" flag.
     :param float A: Series of regression coefficients (A, B, C, D, E, F, G, K, all with defaults that are extracted from MERIS technical documentation; also see Sebastien Lacroix, BMMB).
     :param bool rv: Types of variables (default: Variables random variates).
+
     Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).       
     """
     
@@ -1123,3 +1123,5 @@ class Tree:
     #            graph.edge(str(n.nid), str(c.nid))
     #    graph.graph_attr.update(size='10,10')
     #    return graph
+
+    

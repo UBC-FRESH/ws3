@@ -8,6 +8,7 @@
    common
    core
    forest
+   forest_helper
    financial
    opt
    spatial

@@ -6,5 +6,7 @@ rasterio
 fiona
 profilehooks
 pytest
-numba
 dill
+highspy
+gurobipy
+pulp
