@@ -183,7 +183,8 @@ def worker_gen_vars(tasks, acodes):
     workers = _GLOBAL_WORKERS_GEN_VARS
     
     results = []
-    for (dtk, age) in tasks:
+    for (dtk, age) in tasks: 
+        model.reset()
         area = model.dtypes[dtk].area(1, age)
         if not area: continue
         tree = model._bld_tree_m1(

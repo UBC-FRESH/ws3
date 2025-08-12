@@ -991,7 +991,7 @@ class ForestModel:
             mask=mask,
             workers=workers,
             executor=executor,
-            verbose=False
+            verbose=verbose
         )
 
         # Step 2: Process trees into coverage constraints
