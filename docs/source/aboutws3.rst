@@ -6,9 +6,4 @@
    :maxdepth: 5
 
    Chapt2
-   common
-   core
-   forest
-   financial
-   opt
-   spatial
+   modules
