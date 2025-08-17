@@ -438,7 +438,7 @@ class Node:
         """
         The function adds a child node to the current object.
         
-        :param :py:class:`ws3.tree.Node` child: The child node to be added.
+        :param :py:class:`ws3.core.Node` child: The child node to be added.
         """
         self._children.append(child)
 
@@ -447,7 +447,7 @@ class Node:
         The function gets the parent node of the current object.
        
         :return: The parent node.
-        :rtype:  :py:class:`ws3.tree.Node`
+        :rtype:  :py:class:`ws3.core.Node`
         """
         return self._parent
 
@@ -456,7 +456,7 @@ class Node:
         The function gets the list of child nodes of the current object.
         
         :return: List of child nodes.
-        :rtype: list of :py:class:`ws3.tree.Node` objects.
+        :rtype: list of :py:class:`ws3.core.Node` objects.
         """ 
         return self._children
     
@@ -491,7 +491,7 @@ class Tree:
         
         :param nid: The ID of the node for which to retrieve children.
         :return: List of child nodes.
-        :rtype: list of :py:class:`ws3.tree.Node` objects.
+        :rtype: list of :py:class:`ws3.core.Node` objects.
         """
         return [self._nodes[cid] for cid in self._nodes[nid].children()]
         
@@ -499,7 +499,7 @@ class Tree:
         """
         Returns all nodes in the tree.
         :returns: List of all nodes in the tree.
-        :rtype: list of :py:class:`ws3.tree.Node` objects.
+        :rtype: list of :py:class:`ws3.core.Node` objects.
         """
         return self._nodes
 
@@ -509,7 +509,7 @@ class Tree:
         
         :param nid: The unique identifier of the node to be retrieved.
         :return: The node object corresponding to the specified ID.
-        :rtype: :py:class:`ws3.tree.Node`
+        :rtype: :py:class:`ws3.core.Node`
         """
         return self._nodes[nid]
     
@@ -520,7 +520,7 @@ class Tree:
         :param data: The data associated with the new node.
         :param parent: The parent node to which the new node will be attached.    
         :return: The newly created node.
-        :rtype: :py:class:`ws3.tree.Node`
+        :rtype: :py:class:`ws3.core.Node`
         """
         n = Node(len(self._nodes), data, parent)
         self._nodes.append(n)
@@ -535,7 +535,7 @@ class Tree:
         
         :param data: The data associated with the new node.
         :return: The newly created node.
-        :rtype: :py:class:`ws3.tree.Node`
+        :rtype: :py:class:`ws3.core.Node`
         """
         parent = self._path[-1]
         child = self.add_node(data, parent=parent.nid)
@@ -554,7 +554,7 @@ class Tree:
         Returns all leaf nodes.
 
         :return: A list of all leaf nodes.
-        :rtype: list of :py:class:`ws3.tree.Node` objects
+        :rtype: list of :py:class:`ws3.core.Node` objects
         """
         return [n for n in self._nodes if n.is_leaf()]
     
@@ -563,7 +563,7 @@ class Tree:
         Returns the root node.
 
         :return: The root node.
-        :rtype: :py:class:`ws3.tree.Node`
+        :rtype: :py:class:`ws3.core.Node`
         """
         return self._nodes[0]
     
@@ -574,7 +574,7 @@ class Tree:
         :param leaf: The leaf node for which the path is to be retrieved. 
             Default is ``None`` (which returns the current path).
         :return: a path
-        :rtype: tuple of :py:class:`ws3.tree.Node` objects
+        :rtype: tuple of :py:class:`ws3.core.Node` objects
         """
         if not leaf: return self._path[1:]
         path = []
@@ -591,7 +591,7 @@ class Tree:
         Retrieves paths from the root to all leaf nodes.
 
         :return: A list of paths from the root to all leaf nodes.
-        :rtype: list of tuples of :py:class:`ws3.tree.Node` objects
+        :rtype: list of tuples of :py:class:`ws3.core.Node` objects
         """
         return [self.path(leaf) for leaf in self.leaves()]
 
