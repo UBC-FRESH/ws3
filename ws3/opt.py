@@ -454,6 +454,7 @@ class Problem:
         import numpy as np
 
         highs = highspy.Highs()
+        highs.resetGlobalScheduler(True) 
         inf = highspy.kHighsInf
 
         # ----------------------------
