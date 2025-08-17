@@ -11,7 +11,7 @@ import numpy as np
 import seaborn as sns
 import pickle 
 import os
-#from ws3 import opt
+from ws3 import opt
 import ws3
 ##########################################################
 # Implement a priority queue heuristic harvest scheduler
