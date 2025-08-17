@@ -879,19 +879,19 @@ class ForestModel:
             sure it is unique within a given model or you will overwrite dict values (assuming you want to stuff multiple 
             problems, and their solutions, into your model at the same time).                   
     
-        :param dict coeff_funcs: Dict of function references, keyed on _row name_ strings. These are the functions that generate 
+        :param dict coeff_funcs: Dict of function references, keyed on row name strings. These are the functions that generate 
             the LP optimization problem matrix coefficients (for the objective function and constraint rows). This one gets
             complicated, and is a likely source of bugs. Make sure the row name key strings are all unique or you will make 
             a mess. You can name the constraint rows anything you want, but the objective function row has to be named 'z'. 
             All coefficient functions must accept exactly two args, in this order: a ``ws3.forest.ForestModel`` instance and a
-            ``ws3.common.Path`` instance. The 'z' coefficient function is special in that it must return a single float value. 
+            path (a tuple of ``ws3.core.Node`` object instances). The 'z' coefficient function is special in that it must return a single float value. 
             All other (i.e., constraint) coefficient functions just return a dict of floats, keyed on period ints (can be 
             sparse, i.e., not necessary to include key:value pairs in output dict if value is 0.0). It is useful (but not 
             necessary) to use ``functools.partial`` to specialize a smaller number of more general function definitions (with 
             more args, that get "locked down" and hidden by ``partial``) as we have done in the example in this notebook. 
            
 
-        :param dict cflw_e: Dict of (dict, int) tuples, keyed on _row name_ strings (must match _row name_ key values used to 
+        :param dict cflw_e: Dict of (dict, int) tuples, keyed on row name strings (must match row name key values used to 
             define coefficient functions for flow constraints in coeff_func dict), where the int:float dict embedded in the 
             tuple defines epsilon values keyed on periods (must include all periods, even if epsilon value is always the same). 
             See example below. 
@@ -899,7 +899,7 @@ class ForestModel:
             ``{'foo':({1:0.01, ..., 10:0.01}, 1), 'bar':({1:0.05, ..., 10:0.05}, 1)}``            
 
 
-        :param dict cgen_data: Dict of dict of dicts. The outer-level dict is keyed on _row name_ strings (must match row names used 
+        :param dict cgen_data: Dict of dict of dicts. The outer-level dict is keyed on row name strings (must match row names used 
             in coeff_funcs. The middle second level of dicts always has keys 'lb' and 'ub', and the inner level of dicts 
             specifies lower- and upper-bound general constraint RHS (float) values, keyed on period (int). See example below.
             
@@ -1119,9 +1119,8 @@ class ForestModel:
             dt = self.dtypes[dtk]
             dt.reset_areas()
             self.dtypes[dtk]._areas[1][age] = area
-            #dt.initialize_areas()
             self.reset_actions()
-            tree = common.Tree()
+            tree = core.Tree()
         acodes = list(self.actions.keys()) if not acodes else acodes
         # --- Step 1: Depth-First Search (DFS) to build the tree structure ---
         for acode in acodes:
@@ -1289,6 +1288,7 @@ class ForestModel:
         cgen_keys = list(cgen_data.keys())
 
         # --- Phase 1+2: build mu exactly like the reference implementation ---
+        if verbose: print("_cmp_cgen_m1: phase 1 and 2")
         mu = {t: {o: {} for o in cgen_keys} for t in periods}
         for i, tree in problem.trees.items():
             for path in tree.paths():
@@ -1301,6 +1301,7 @@ class ForestModel:
 
         # --- Phase 3: build rows (can parallelize safely) ---
         # Build tasks
+        if verbose: print("_cmp_cgen_m1: phase 1")
         tasks = []
         for o, bounds in cgen_data.items():
             lb, ub = bounds.get('lb'), bounds.get('ub')
