@@ -17,7 +17,6 @@ dependencies = [
   "rasterio",
   "fiona",
   "profilehooks",
-  "libcbm",
   "pulp",
   "dill",
   "highspy",
@@ -31,6 +30,9 @@ maintainers = [
   {name = "Elaheh Ghasemi", email = "elaheh.ghasemi@ubc.ca"},
   {name = "Salar Ghotb", email = "salar.ghotb@ubc.ca"}
 ]
+
+[project.optional-dependencies]
+cbm = ["libcbm"]  # pip users can `pip install ws3[cbm]`
 
 [tool.hatch.version]
 source = "code"

@@ -23,3 +23,5 @@ sphinx_rtd_theme
 nbsphinx
 # furo
 
+# libcbm (to run some of the example notebooks)
+libcbm
