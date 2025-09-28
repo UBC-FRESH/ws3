@@ -24,6 +24,12 @@ Read the tutorial [here](https://ws3.readthedocs.io/en/latest/index.html).
 
 We recommend installing `ws3` package into a Python venv (virtual environment) to minimize interactions with system-level packages. 
 
+Optional CBM support available via `pip install libcbm`.
+
+Optional Gurobi support available via `pip install ws3[gurobi]` or `conda install -c gurobi gurobi`.
+
+Optional PuLP support available via `pip install pulp`.
+
 In [**000_venv_python_kernel_setup.ipynb**](https://github.com/UBC-FRESH/ws3/blob/dev/examples/000_venv_python_kernel_setup.ipynb) we provide the instructions for how to set up a new venv-sandboxed Python kernel and make it available in your JupyterLab environment, assuming that you are running this notebook in a standard linux-based environment and a regular (non-root) using running commands in a bash terminal. 
 
 ## Modules 
