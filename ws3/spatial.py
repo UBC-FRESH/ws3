@@ -213,8 +213,10 @@ class ForestRaster:
                         area = self._forestmodel.applied_actions[p][acode][dtk][from_age][0]
                         #print('processing case', p, acode, dtk, from_age, area) # DEBUG
                         if not area: continue
-                        from_dtk = list(dtk) 
-                        trn = self._forestmodel.dtypes[dtk].transitions[acode, from_age][0]
+                        from_dtk = list(dtk)
+                        transitions = self._forestmodel.dtypes[dtk].transitions 
+                        _from_age = from_age if (acode, from_age) in transitions else -1
+                        trn = transitions[acode, _from_age][0]
                         tmask, tprop, tyield, tage, tlock, treplace, tappend = trn
                         to_dtk = [t if tmask[i] == '?' else tmask[i] for i, t in enumerate(from_dtk)] 
                         if treplace: to_dtk[treplace[0]] = self._forestmodel.resolve_replace(from_dtk, treplace[1])
