@@ -34,9 +34,9 @@
 \end{itemize}
 
 % Graphical abstract (optional)
-%\begin{graphicalabstract}
-% \includegraphics[width=\linewidth]{figs/graphical_abstract.png}
-%\end{graphicalabstract}
+\begin{graphicalabstract}
+ \includegraphics[width=\linewidth]{figs/graphical_abstract.png}
+\end{graphicalabstract}
 
 \begin{abstract}
 Transparent, reproducible decision support for forest landscape planning increasingly requires integrated treatment of harvest scheduling, spatial allocation, and greenhouse gas (GHG) accounting. We present WS3, an open-source Python framework for long-horizon wood supply modeling that combines modular simulation with solver-backed optimization and hybrid spatial/aspatial workflows. WS3 represents stands, actions, and transitions through a clear data model, supports scenario-based analyses, and interoperates with geospatial rasters for spatial allocation of aspatial schedules. A key contribution is a built-in linkage to the open-source Canadian Forest Service Carbon Budget Model (libCBM), enabling seamless carbon stock and flux estimation alongside traditional harvest and area outcomes. We demonstrate WS3 on a reproducible case study that couples optimization-driven harvest scheduling with libCBM carbon accounting and a raster allocation step to visualize spatial implications. Results highlight how alternative policy constraints influence harvest flows and carbon dynamics, illustrating the framework’s utility for climate change mitigation planning. The full code, documentation, and notebooks are publicly available via GitHub and PyPI, with a versioned archive on Zenodo, and a complete reproduction package accompanying this article. WS3 lowers barriers to rigorous, extensible analysis, supporting researchers and practitioners seeking open, auditable workflows for forest sector planning under evolving climate and policy objectives.
@@ -49,9 +49,11 @@ Environmental modelling \sep Decision support \sep Forest estate \sep Optimizati
 \end{frontmatter}
 
 \section{Introduction}
-Forest landscape planning and wood supply analysis underpin long-term decisions about harvest allocations, silviculture, and conservation. Yet practitioners and researchers frequently face fragmented toolchains and proprietary software that limit transparency, extensibility, and reproducibility. These constraints are particularly acute when planning under climate objectives, where greenhouse gas (GHG) accounting must be integrated into scenario design, evaluation, and communication.
 
-We introduce WS3, an open-source Python framework for integrated simulation and optimization of forest landscape and wood supply systems. WS3 supports long-horizon, multi-scenario analyses; integrates solver-backed harvest scheduling; and provides a hybrid spatial/aspatial workflow that maps aspatial schedules to raster inventories for spatial evaluation. A defining feature is its built-in linkage to the Canadian Forest Service \texttt{libcbm} library, enabling carbon stock and flux estimation directly within planning workflows.
+Forest landscape planning and wood supply analysis underpin long-term decisions about harvest allocations, silviculture, and conservation. Yet practitioners and researchers frequently face fragmented toolchains and proprietary software that limit transparency, extensibility, and reproducibility—issues at the heart of open predictive ecology and the PERFICT principles \citep{mcintire2022perfict}. These constraints are particularly acute when planning under climate objectives, where greenhouse gas (GHG) accounting must be integrated into scenario design, evaluation, and communication \citep{smyth2020climate}.
+
+
+We introduce WS3, an open-source Python framework for integrated simulation and optimization of forest landscape and wood supply systems. WS3 supports long-horizon, multi-scenario analyses; integrates solver-backed harvest scheduling; and provides a hybrid spatial/aspatial workflow that maps aspatial schedules to raster inventories for spatial evaluation. A defining feature is its built-in linkage to the Canadian Forest Service \texttt{libcbm} library, enabling carbon stock and flux estimation directly within planning workflows \citep{kurz2009cbm, libcbm_py}.
 
 This article makes three contributions: (i) a description of WS3’s modular architecture and data model designed for clarity and reuse; (ii) a reproducible case study that couples optimization with libCBM-based carbon accounting and spatial allocation; and (iii) a comparison with established tools highlighting openness, extensibility, and cross-ecosystem interoperability. We provide a versioned release with an accompanying reproduction package to facilitate verification and reuse.
 
@@ -67,7 +69,7 @@ WS3 implements a modular architecture organized around five roles: (i) core data
 
 Data model and workflow. Inputs include initial inventory (areas by development type and age), yield curves, action definitions (e.g., harvest, silviculture, fire), and transition rules. WS3 builds a state-transition tree per development type across periods and supports both heuristic scheduling (priority-queue area selection) and optimization-based scheduling. Outputs include time-series indicators (harvested area/volume, growing stock), compiled action schedules, and optional spatial rasters.
 
-Interoperability. WS3 is designed to be explicit and auditable: configuration and tabular inputs are plain text (CSV/TSV), and geospatial outputs use standard rasters (GeoTIFF). A built-in linkage exports a Standard Input Table (SIT) data format compatible with libCBM, enabling carbon stock and flux estimation without ad hoc adapters.
+Interoperability. WS3 is designed to be explicit and auditable: configuration and tabular inputs are plain text (CSV/TSV), and geospatial outputs use standard rasters (GeoTIFF). A built-in linkage exports a Standard Input Table (SIT) data format compatible with libCBM \citep{kurz2009cbm, libcbm_py}, enabling carbon stock and flux estimation without ad hoc adapters.
 
 Figure~\ref{fig:architecture} summarizes modules and data flow; Figure~\ref{fig:workflow} shows the end-to-end workflow used in the case study.
 
@@ -85,21 +87,36 @@ Figure~\ref{fig:architecture} summarizes modules and data flow; Figure~\ref{fig:
   \label{fig:workflow}
 \end{figure}
 
+% Spatial stub (note it's a placeholder)
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.7\linewidth]{figs/f3_spatial_stub.png}
+  \caption{Spatial allocation schematic (stub). A stylized grid highlights an illustrative \textasciitilde1\% of cells as ‘harvested’ in one period, emphasizing the small spatial footprint typical of long-horizon planning. This placeholder will be replaced with a map derived from the raster allocation in the final submission.}
+  \label{fig:spatial_stub}
+\end{figure}
+
 \subsection{Implementation}
-Technology stack. WS3 is implemented in Python and distributed via PyPI. Optimization problems are formulated with PuLP and solved with open-source HiGHS by default, with optional Gurobi for larger instances. Geospatial I/O uses rasterio/fiona/GeoPandas. Documentation (Sphinx) and continuous integration ensure API consistency, example executability, and unit testing.
+\emph{Technology stack.} WS3 is implemented in Python and distributed via PyPI. Optimization problems are formulated with PuLP \citep{pulp} and solved with open-source HiGHS \citep{highs} by default, with optional Gurobi \citep{gurobi} for larger instances. Geospatial I/O uses rasterio/fiona/GeoPandas. Documentation (Sphinx) and continuous integration ensure API consistency, example executability, and unit testing.
 
-libCBM integration. The ForestModel exposes a to\_cbm\_sit method that compiles a SIT configuration and tables (classifiers, inventory, yields, disturbance events, transitions) consumable by libCBM. Users provide a disturbance type mapping and last-pass disturbance metadata to ensure correct dead organic matter (DOM) spin-up. The case study runs libCBM for 200 years using the official Python API.
+\emph{libCBM integration.} The ForestModel exposes a to\_cbm\_sit method that compiles a SIT configuration and tables (classifiers, inventory, yields, disturbance events, transitions) consumable by libCBM. Users provide a disturbance type mapping and last-pass disturbance metadata to ensure correct dead organic matter (DOM) spin-up. The case study runs libCBM for 200 years using the official Python API.
 
-Reproducibility and packaging. The repository includes examples and a reproduction package (papers/ems/repro) with pinned requirements and scripts to generate all figures and tables. Versioned releases are archived on Zenodo; the EMS-paper release DOI is referenced in this manuscript. WS3 supports interactive (Jupyter) and batch (Linux) workflows.
+\emph{Reproducibility and packaging.} The repository includes examples and a reproduction package (papers/ems/repro) with pinned requirements and scripts to generate all figures and tables. Versioned releases are archived on Zenodo; the EMS-paper release DOI is referenced in this manuscript. WS3 supports interactive (Jupyter) and batch (Linux) workflows.
 
-Performance and scalability. Typical case studies with tens of thousands (to millions) of stands and multi-decade-length planning horizons solve in seconds to minutes with HiGHS on a modern workstation. Larger landscapes and constraint sets can benefit from Gurobi (e.g., to leverage built-in feasibility-restoration functions via automated LP problem reformulation as a weighted goal-programming problem--not available yet when using the default open-source solver backends) and batching. Spatial allocation steps scale with raster size but are embarrassingly parallel across periods.
+\emph{Performance and scalability.} Typical case studies with tens of thousands (to millions) of stands and multi-decade-length planning horizons solve in seconds to minutes with HiGHS on a modern workstation. Larger landscapes and constraint sets can benefit from Gurobi (e.g., to leverage built-in feasibility-restoration functions via automated LP problem reformulation as a weighted goal-programming problem--not available yet when using the default open-source solver backends) and batching. Spatial allocation steps scale with raster size but are embarrassingly parallel across periods.
 
 \section{Illustrative case study}
 We demonstrate WS3 using a two-stage sequential pipeline that first schedules harvest in WS3 and then evaluates carbon dynamics using libCBM. The workflow replicates the existing example 031\_ws3\_libcbm\_sequential-builtin.ipynb to ensure full reproducibility.
 
-Study design. We load an inventory (areas, yields, actions, transitions) and schedule harvest using a self-parameterizing area-control heuristic, producing an aspatial action schedule over a 100-year horizon (10 periods of 10 years). We then export a libCBM SIT with a disturbance mapping for harvest and fire and run libCBM for 200 annual steps to estimate stocks and fluxes in biomass and dead organic matter pools.
+\emph{Study design.} We load an inventory (areas, yields, actions, transitions) and schedule harvest using a self-parameterizing area-control heuristic, producing an aspatial action schedule over a 100-year horizon (10 periods of 10 years). We then export a libCBM SIT with a disturbance mapping for harvest and fire and run libCBM for 200 annual steps to estimate stocks and fluxes in biomass and dead organic matter pools.
 
-Outputs. We report time-series of harvested area/volume and growing stock from WS3, and annual carbon stocks from libCBM. The reproduction package generates the figures and tables used below.
+\emph{Outputs.} We report time-series of harvested area/volume and growing stock from WS3, and annual carbon stocks from libCBM. The reproduction package generates the figures and tables used below.
+
+The full, deterministic workflow is scripted in \texttt{papers/ems/repro/generate\_case\_study.py}, which produces the flows table and carbon stocks table:
+\begin{itemize}
+  \item \texttt{papers/ems/tables/scenario\_flows.csv}: harvest area, harvest volume, and growing stock by period.
+  \item \texttt{papers/ems/tables/annual\_carbon\_stocks.csv}: annual biomass, DOM, and total ecosystem carbon.
+\end{itemize}
+Figures~\ref{fig:flows} and \ref{fig:cbm} visualize the resulting flows and carbon stocks. The entire pipeline, including architecture and workflow diagrams (Figures~\ref{fig:architecture}–\ref{fig:workflow}) and a schematic spatial placeholder (Figure~\ref{fig:spatial_stub}), is reproducible via \texttt{papers/ems/repro/make\_repro.sh}. The libCBM run length (200 years) matches the example and can be adjusted.
 
 \begin{figure}[h]
   \centering
@@ -113,14 +130,16 @@ Outputs. We report time-series of harvested area/volume and growing stock from W
   \includegraphics[width=0.95\linewidth]{figs/f4b_carbon_stocks.png}
   \caption{libCBM results: annual carbon stocks (biomass, dead organic matter, total ecosystem) over 200 years.}
   \label{fig:cbm}
-\end{figure}
+\end{figure} 
 
-Reproducibility. The folder papers/ems/repro contains a make\_repro.sh script that creates a virtual environment, installs pinned dependencies, and runs a deterministic Python script to regenerate Figures~\ref{fig:flows}--\ref{fig:cbm} and associated CSV tables.
+\emph{Reproducibility.} This case is intended to be transparent and portable; data are included in the repository’s examples folder. The spatial allocation step is kept illustrative; WS3’s hybrid spatial/aspatial workflow supports allocation of aspatial schedules to raster inventories, and we will provide a finalized spatial figure in the submission package. The folder papers/ems/repro contains a make\_repro.sh script that creates a virtual environment, installs pinned dependencies, and runs a deterministic Python script to regenerate Figures~\ref{fig:flows}--\ref{fig:cbm} and associated CSV tables.
 
 \section{Impact and reusability}
-WS3 enables transparent, auditable analysis for forest landscape planning and climate mitigation. It has been applied in research on bioenergy, value-creation potential, and climate impact assessment, integrated with SpaDES for spatial simulation, and used as a backend in decision-support web applications. The open MIT license, modular API, and PyPI distribution lower barriers to community contributions and reuse across jurisdictions.
 
-Interoperability fosters reusability: tabular/text inputs, raster outputs, and the libCBM linkage allow WS3 to slot into existing analytical pipelines. The reproduction package, unit tests, and CI enhance trust and facilitate method transfer. The architecture is intentionally general, making it applicable to studies of sustainable yield, carbon accounting, biodiversity, and policy trade-offs.
+WS3 enables transparent, auditable analysis for forest landscape planning and climate mitigation. It has supported research on bioenergy \citep{cantegril2019bioenergy}, value-creation potential and supply modelling \citep{paradis2018retro, paradis2018estimating}, and climate impact assessment \citep{smyth2020climate, ke2024climate, yan2025mathematical}. WS3 integrates with the SpaDES ecosystem for spatial simulation \citep{spades} and has been deployed as a backend in decision-support applications. The open MIT license, modular API, and PyPI distribution lower barriers to community contributions and reuse across jurisdictions.
+
+
+Interoperability fosters reusability: tabular/text inputs, raster outputs, and the libCBM linkage allow WS3 to slot into existing analytical pipelines. The reproduction package, unit tests, and CI enhance trust and facilitate method transfer. The architecture is intentionally general, making it applicable to studies of sustainable yield, carbon accounting, biodiversity, and policy trade-offs \citep{boisvenue2022managing}.
 
 \section{Comparison to alternatives}
 
@@ -143,7 +162,7 @@ JLP (MELA) & Landscape & Restricted/Legacy & Built-in & Spatial extensions & Ext
 \end{table}
 
 \noindent
-WS3 differs primarily in its open Python API, explicit libCBM integration, and hybrid spatial/aspatial workflow designed for reproducible research and policy analysis. We emphasize that SIMFOR operates at stand level, while WS3, Woodstock, Patchworks, Heureka, and JLP target landscape-scale planning with varying degrees of spatial explicitness and availability.
+WS3 differs primarily in its open Python API, explicit libCBM integration, and hybrid spatial/aspatial workflow designed for reproducible research and policy analysis. We emphasize that SIMFOR operates at stand level, while WS3, Woodstock, Patchworks, Heureka, and JLP target landscape-scale planning with varying degrees of spatial explicitness and availability \citep{remsoft_woodstock, patchworks, spades, heureka, jlp_mela, simfor}.
 
 \section{Conclusions and future work}
 WS3 provides an open, extensible framework for integrating harvest scheduling, simulation, and carbon accounting. By coupling solver-backed scheduling with libCBM via a documented interface, WS3 supports policy-relevant analyses with transparent, reproducible workflows.
@@ -152,6 +171,12 @@ Future work will expand uncertainty handling (stochastic scheduling, sensitivity
 
 \section*{Code and data availability}
 WS3 source code is publicly available at \url{https://github.com/UBC-FRESH/ws3} and distributed via PyPI (\texttt{pip install ws3}). Versioned releases are archived on Zenodo; the EMS-paper release DOI will be provided in the final manuscript. Documentation and tutorials are available at \url{https://ws3.readthedocs.io}. A complete reproduction package for the case study, including environment files, scripts, and figure-generation notebooks, is provided as supplementary material and in the release archive.
+
+\paragraph{Reproducibility}
+All figures and tables are generated by scripts in \texttt{papers/ems/repro}. The \texttt{make\_repro.sh} script creates an isolated environment, installs pinned dependencies (\texttt{requirements.txt}), and runs \texttt{generate\_diagrams.py}, a spatial schematic stub generator (\texttt{generate\_spatial\_stub.py}), and the case study script (\texttt{generate\_case\_study.py}). Outputs are written to \texttt{papers/ems/figs} and \texttt{papers/ems/tables}. The exact versions are preserved via the Zenodo-archived release.
+
+\paragraph{FAIR compliance}
+Findable: versioned releases archived with DOI (Zenodo) and indexed on GitHub/PyPI. Accessible: open-source license (MIT) and public repository without authentication. Interoperable: open formats for tabular and raster data (CSV, GeoTIFF) and a documented API linking to libCBM. Reusable: pinned environments, CI-tested examples, detailed documentation, and a complete reproduction package accompanying this article.
 
 \section*{CRediT authorship contribution statement}
 Gregory Paradis: Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Data curation, Writing—original draft, Writing—review \& editing, Visualization, Supervision, Project administration, Funding acquisition.
