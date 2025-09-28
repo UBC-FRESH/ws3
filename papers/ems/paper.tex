@@ -134,12 +134,24 @@ Figures~\ref{fig:flows} and \ref{fig:cbm} visualize the resulting flows and carb
 
 \emph{Reproducibility.} This case is intended to be transparent and portable; data are included in the repository’s examples folder. The spatial allocation step is kept illustrative; WS3’s hybrid spatial/aspatial workflow supports allocation of aspatial schedules to raster inventories, and we will provide a finalized spatial figure in the submission package. The folder papers/ems/repro contains a make\_repro.sh script that creates a virtual environment, installs pinned dependencies, and runs a deterministic Python script to regenerate Figures~\ref{fig:flows}--\ref{fig:cbm} and associated CSV tables.
 
+\subsection*{Broader example library and carbon-aware optimization}
+Beyond the sequential carbon accounting case, WS3 includes a curated set of executable notebooks designed as progressive tutorials, from synthetic examples to realistic policy-oriented analyses. Example 040 showcases carbon-aware optimization by embedding carbon prices and/or constraints directly in the harvest scheduling LP and computing carbon stocks and fluxes with \texttt{libcbm\_py}. A public, end-to-end case study exploring carbon-aware scheduling in a stylized British Columbia landscape is available in the repository by Yan (MSc), including scenario automation, sensitivity analysis, and reproducible outputs \citep{yan2025mathematical, yan_repo}.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figs/f5_neilsonhack_compare.png}
+  \caption{Neilson-hack demonstration (Example~040): comparison of libCBM (solid) and WS3-embedded (dashed) carbon indicators after bootstrapping pools/fluxes into WS3 as yield curves. Top: ecosystem carbon pools; Bottom: aggregate decay emissions flux.}
+  \label{fig:neilsonhack}
+\end{figure}
+
 \section{Impact and reusability}
 
 WS3 enables transparent, auditable analysis for forest landscape planning and climate mitigation. It has supported research on bioenergy \citep{cantegril2019bioenergy}, value-creation potential and supply modelling \citep{paradis2018retro, paradis2018estimating}, and climate impact assessment \citep{smyth2020climate, ke2024climate, yan2025mathematical}. WS3 integrates with the SpaDES ecosystem for spatial simulation \citep{spades} and has been deployed as a backend in decision-support applications. The open MIT license, modular API, and PyPI distribution lower barriers to community contributions and reuse across jurisdictions.
 
 
 Interoperability fosters reusability: tabular/text inputs, raster outputs, and the libCBM linkage allow WS3 to slot into existing analytical pipelines. The reproduction package, unit tests, and CI enhance trust and facilitate method transfer. The architecture is intentionally general, making it applicable to studies of sustainable yield, carbon accounting, biodiversity, and policy trade-offs \citep{boisvenue2022managing}.
+
+An advanced example notebook demonstrates how WS3 can be used to construct a stand-level optimization problem with explicit integration of carbon dynamics using \texttt{libcbm\_py}. This example solves a linear program that balances timber harvest revenues with carbon sequestration benefits under different carbon pricing assumptions (see Example 040). The workflow illustrates how WS3’s optimization layer and libCBM coupling enable carbon-aware planning experiments without bespoke glue code, supporting emerging policy analyses in nature-based climate solutions.
 
 \section{Comparison to alternatives}
 

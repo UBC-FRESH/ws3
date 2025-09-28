@@ -29,6 +29,9 @@ ${PYBIN} papers/ems/repro/generate_diagrams.py
 echo "[4/5] Generating spatial stub"
 ${PYBIN} papers/ems/repro/generate_spatial_stub.py
 
+echo "[4.5/5] Generating Example 040 figure"
+${PYBIN} papers/ems/repro/generate_example040_assets.py
+
 echo "[5/5] Running case study"
 ${PYBIN} papers/ems/repro/generate_case_study.py
 
