@@ -17,11 +17,8 @@ dependencies = [
   "rasterio",
   "fiona",
   "profilehooks",
-  "libcbm",
-  "pulp",
   "dill",
-  "highspy",
-  "gurobipy"
+  "highspy"
 ]
 authors = [
   {name = "Gregory Paradis", email = "gregory.paradis@ubc.ca"}
@@ -31,6 +28,11 @@ maintainers = [
   {name = "Elaheh Ghasemi", email = "elaheh.ghasemi@ubc.ca"},
   {name = "Salar Ghotb", email = "salar.ghotb@ubc.ca"}
 ]
+
+[project.optional-dependencies]
+cbm = ["libcbm"]  # pip users can `pip install ws3[cbm]`
+gurobi = ["gurobipy"]
+pulp = ["pulp"]
 
 [tool.hatch.version]
 source = "code"
