@@ -8,10 +8,12 @@ Contents
 - requirements.txt: minimal pinned dependencies to run the case study
 - make_repro.sh: end-to-end script to create a virtual environment, install deps, and generate outputs
 - generate_case_study.py: Python script that executes the case study workflow
+- generate_spatial_allocation.py: spatial allocation reproduction matching the manuscript example
 - style.py: plotting style helper (uses FRESH palette if available)
 
 Outputs (created)
 - papers/ems/figs/
+  - f3_spatial_allocation.png
   - f4a_harvest_and_stock.png
   - f4b_carbon_stocks.png
 - papers/ems/tables/

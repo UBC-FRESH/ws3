@@ -31,3 +31,7 @@ _minted-*/
 
 # Keep the final PDF (do NOT ignore)
 !paper.pdf
+
+scratch
+
+ems-sample-papers
