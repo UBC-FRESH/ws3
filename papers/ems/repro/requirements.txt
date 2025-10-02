@@ -12,3 +12,4 @@ fiona>=1.9
 geopandas>=0.14
 # libcbm is installed from PyPI as libcbm
 libcbm>=2.8.1
+psutil>=5.9

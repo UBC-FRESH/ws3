@@ -35,3 +35,7 @@ _minted-*/
 scratch
 
 ems-sample-papers
+
+repro/_scaling_cache
+repro/_spatial_cache
+repro/data/

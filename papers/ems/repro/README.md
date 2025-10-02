@@ -11,6 +11,13 @@ Contents
 - generate_spatial_allocation.py: spatial allocation reproduction matching the manuscript example
 - style.py: plotting style helper (uses FRESH palette if available)
 
+Optional scalability benchmarks
+- A larger public dataset (five non-overlapping TSAs in NE BC) can be fetched with DataLad to run deterministic scaling tests.
+- Enable via `RUN_SCALING=1 bash papers/ems/repro/make_repro.sh`. The first run performs `datalad install -r -g -s https://github.com/UBC-FRESH/cccandies_demo_input papers/ems/repro/data/cccandies_demo_input`.
+- `papers/ems/repro/run_scaling_benchmarks.py` now bootstraps WS3 directly from the dataset (no Woodstock sections required), sorts TSAs by complexity, and evaluates single TSA and cumulative “mash-up” combinations.
+- Each combination is executed in deterministic single-core (1 worker) and multi-core (16 worker) modes, reporting runtimes for model bootstrap, heuristic scheduling, indicator compilation, and spatial allocation, along with peak memory usage.
+- Spatial allocation uses `ForestRaster` to generate (and immediately clean up) disturbance rasters; results and diagnostics are written to `papers/ems/tables/perf_scaling.csv`.
+
 Outputs (created)
 - papers/ems/figs/
   - f3_spatial_allocation.png

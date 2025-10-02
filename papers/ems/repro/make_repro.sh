@@ -32,6 +32,17 @@ ${PYBIN} papers/ems/repro/generate_spatial_allocation.py
 echo "[5/6] Generating Example 040 figure"
 ${PYBIN} papers/ems/repro/generate_example040_assets.py
 
+if [[ "${RUN_SCALING:-0}" == "1" ]]; then
+  echo "[6/6] (Optional) Installing DataLad and running scalability benchmarks"
+  pip install datalad >/dev/null 2>&1 || true
+  if [[ ! -d papers/ems/repro/data/cccandies_demo_input ]]; then
+    mkdir -p papers/ems/repro/data
+    echo "Cloning benchmark dataset with DataLad (shallow)..."
+    datalad install -r -g -s https://github.com/UBC-FRESH/cccandies_demo_input papers/ems/repro/data/cccandies_demo_input || true
+  fi
+  ${PYBIN} papers/ems/repro/run_scaling_benchmarks.py || echo "Scaling benchmarks skipped (dataset/tools unavailable)."
+fi
+
 echo "[6/6] Running case study"
 ${PYBIN} papers/ems/repro/generate_case_study.py
 
