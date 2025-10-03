@@ -310,6 +310,7 @@ def gen_scenario(
     obj_mode="max_hv",
     mask=None,
     workers=1,
+    verbose=False
 ):
     """
     Generate a linear programming (LP) scenario for a given ForestModel instance.
@@ -372,7 +373,8 @@ def gen_scenario(
         coeff_funcs[cname] = partial(cmp_c_ci, yname=tvy_name, mask=None)
         cgen_data[cname] = cgen_gs
     return fm.add_problem(
-        name, coeff_funcs, cflw_e, cgen_data=cgen_data, acodes=acodes, sense=sense, mask=mask, workers=workers
+        name, coeff_funcs, cflw_e, cgen_data=cgen_data, acodes=acodes, sense=sense, mask=mask, 
+        workers=workers, verbose=verbose
     )
 
 

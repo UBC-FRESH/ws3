@@ -163,9 +163,7 @@ def bootstrap_forestmodel(
     bootstrap_themes(fm, basecodes=basecodes)
     bootstrap_areas(fm, basenames, tif_path_fn, hdt)
     bootstrap_yields(fm, yld_path, tvy_name=tvy_name, period_length=period_length)
-    if action_params:
-        bootstrap_actions(fm, action_params)
-    fm.add_null_action('harvest')
+    bootstrap_actions(fm, action_params)
     fm.add_null_action()
     fm.compile_actions()
     fm.reset_actions()

@@ -33,7 +33,7 @@ echo "[5/6] Generating Example 040 figure"
 ${PYBIN} papers/ems/repro/generate_example040_assets.py
 
 if [[ "${RUN_SCALING:-0}" == "1" ]]; then
-  echo "[6/6] (Optional) Installing DataLad and running scalability benchmarks"
+  echo "[6/6] (Optional) Installing DataLad and running scalability benchmarks (set RUN_LP=1 for LP timing)"
   pip install datalad >/dev/null 2>&1 || true
   if [[ ! -d papers/ems/repro/data/cccandies_demo_input ]]; then
     mkdir -p papers/ems/repro/data
@@ -42,6 +42,9 @@ if [[ "${RUN_SCALING:-0}" == "1" ]]; then
   fi
   ${PYBIN} papers/ems/repro/run_scaling_benchmarks.py || echo "Scaling benchmarks skipped (dataset/tools unavailable)."
 fi
+
+# Regenerate scaling figures if perf_scaling.csv exists
+${PYBIN} papers/ems/repro/generate_scaling_figures.py || echo "Scaling figures skipped (missing CSV)."
 
 echo "[6/6] Running case study"
 ${PYBIN} papers/ems/repro/generate_case_study.py

@@ -26,11 +26,11 @@
 % Highlights (3--5 bullets)
 \section*{Highlights}
 \begin{itemize}
-  \item An open-source Python framework for decision support in forest landscape and wood supply planning.
-  \item Modular architecture with solver-backed optimization and hybrid spatial/aspatial workflows.
-  \item Interoperable with standard geospatial formats and supports carbon accounting via libcbm.
-  \item Reproducible workflows, CI-tested codebase, and PyPI distribution.
-  \item Illustrated through reproducible use-case demonstrations with transparent, reusable notebooks and scripts.
+  \item Open-source Python framework for forest estate decision support.
+  \item Solver-agnostic Model~I generator with parallel LP build.
+  \item Native libCBM linkage for carbon stock and flux accounting.
+  \item Hybrid aspatial-to-raster workflows with reproducible geospatial I/O.
+  \item Deterministic reproduction package and archived scaling benchmarks.
 \end{itemize}
 
 % Graphical abstract (optional)
@@ -114,6 +114,14 @@ Figure~\ref{fig:architecture} summarizes modules and data flow; Figure~\ref{fig:
   \label{fig:spatial_allocation}
 \end{figure}
 
+\noindent\textbf{Contributions.} WS3 delivers four primary contributions:
+\begin{enumerate}[label=(\roman*)]
+  \item A solver-agnostic, path-based Model~I generator embedded within an audited forest estate API, with parallel coefficient compilation for large instances.
+  \item A first-class libCBM interface that exports Standard Input Tables and ingests carbon pools and fluxes for integrated mitigation accounting.
+  \item A hybrid aspatial-to-raster allocation workflow that emits reproducible geospatial artefacts from deterministic schedules.
+  \item A FAIR-aligned reproduction package, including scaling benchmarks on real inventories and archived releases with pinned environments.
+\end{enumerate}
+
 \subsection{Optimization formulation (Model I)}
 WS3 adopts a classic Model~I linear programming model formulation \citep{johnson1977techniques, gunn2007models} in which each decision variable selects the proportion of a development type (all stands with the same initial stratification variable values) allocated to a feasible root-to-leaf prescription (path) across the planning horizon. Let:
 \begin{align*}
@@ -164,47 +172,42 @@ The objective coefficients $c_{ij}$ encode the user-defined value of a path (e.g
 
 \emph{Performance spot checks.} The heuristic scheduler used in the case study produces a 100-year plan in under a second, and the subsequent 200-year libCBM simulation dominates total runtime (\textasciitilde5~s). Larger linear programs formulated through \texttt{ws3.opt} benefit from HiGHS (default) or optional Gurobi: internal regression notebooks (e.g., Examples~030/040) routinely solve tens-of-thousands-of-stand path-based instances within minutes using HiGHS, while the optional Gurobi backend shortens solve time further via its advanced presolve and feasibility tools. Raster allocations scale linearly with the number of cells processed per period and are trivially parallelizable.
 
-\emph{Optional scalability experiment.} To characterize scaling on real inventories, the reproduction package optionally integrates a DataLad-hosted benchmark dataset comprising five non-overlapping timber supply areas (TSAs) in northeastern British Columbia (the same study region as \citealt{boisvenue2022managing}). Enabling the optional step (\texttt{RUN\_SCALING=1}) fetches the dataset and executes \texttt{papers/ems/repro/run\_scaling\_benchmarks.py}, which sorts TSAs by complexity, evaluates them individually and cumulatively (\texttt{tsa08}, \texttt{tsa08+tsa40}, \ldots, \texttt{tsa08+tsa40+tsa41+tsa24+tsa16}), and records deterministic runtimes and memory footprints for both single-core (1 worker) and 16-worker runs. Inside the reference container (Ubuntu~24.04, dual Xeon~6254 CPUs, 72 logical cores, 768~GB RAM) single-core runs finish scheduling in 4--63~s and spatial allocation in 15--82~s as problem size grows from one TSA (4.7\,k dtype--age pairs) to the full mash-up (37.7\,k dtype--age pairs). The 16-worker mode leaves the outputs unchanged but roughly halves spatial allocation wall-time on the larger mash-ups (e.g., 82~s to 36~s on the full suite), and peak resident memory remains below 0.7~GB across all cases. A compact summary of these timings and memory measurements is distributed as \texttt{perf\_scaling.csv} alongside the reproduction scripts.
+\emph{Optional scalability experiment.} To characterize scaling on real inventories, the reproduction package optionally integrates a DataLad-hosted benchmark dataset comprising five non-overlapping timber supply areas (TSAs) in northeastern British Columbia (the same study region as \citealt{boisvenue2022managing}). Enabling the optional step (\texttt{RUN\_SCALING=1}) fetches the dataset and executes \texttt{papers/ems/repro/run\_scaling\_benchmarks.py}, which sorts TSAs by complexity and evaluates them individually and cumulatively (\texttt{tsa08}, \texttt{tsa08+tsa40}, \ldots, \texttt{tsa08+tsa40+tsa41+tsa24+tsa16}). The scripted benchmark always runs the heuristic scheduler on a single worker---reflecting the implementation's serial design---and records sequential spatial-allocation runtimes using \texttt{ForestRaster}. On the reference container the heuristic schedules complete in 1.3--31.4~s while spatial allocation requires 46--656~s as problem size grows from 4.7~k to 37.7~k dtype--age pairs. Setting \texttt{RUN\_LP=1} extends the run to model-building benchmarks for the deterministic Model~I LP: WS3 constructs the LP with 1 and 16 workers (parallel coefficient compilation) and solves it with matching HiGHS thread counts, logging build/solve time, solver status, and stage-wise memory footprints. LP builds scale from 5.1~s (4.7~k dtype--age pairs) to 92.8~s (37.7~k dtype--age pairs) with single-worker compilation, while the 16-worker mode trims build time to 59~s at the cost of higher peak RSS (2.5~GB versus 1.8~GB). Because large path-based LPs routinely exceed tens of gigabytes of RAM on even larger inventories, the LP measurements are opt-in and intended for suitably provisioned systems. All metrics are written to \texttt{perf\_scaling.csv} with deterministic seeds so that regenerated figures and tables remain byte-identical.
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.85\linewidth]{figs/scaling_schedule_runtime.png}
-  \caption{Heuristic scheduling runtime versus problem size (number of development-type/age combinations) for single-core and 16-worker runs.}
+  \caption{Scheduling runtime versus problem size. Heuristic runs are single worker; LP build/solve lines appear when \texttt{RUN\_LP=1}.}
   \label{fig:scaling_sched}
 \end{figure}
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.85\linewidth]{figs/scaling_spatial_runtime.png}
-  \caption{Spatial allocation runtime versus problem size, using annual ForestRaster allocation after applying the heuristic schedule.}
+  \caption{Spatial allocation runtime (serial \texttt{ForestRaster}) versus problem size after applying the heuristic schedule.}
   \label{fig:scaling_spatial}
 \end{figure}
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.85\linewidth]{figs/scaling_peak_mem.png}
-  \caption{Peak resident memory usage remains below 0.7~GB even for the five-TSA mash-up.}
+  \caption{Peak resident memory for heuristic scheduling (serial) and LP model builds (1 and 16 workers).}
   \label{fig:scaling_mem}
 \end{figure}
 
 \begin{table}[h]
   \centering
-  \caption{Scalability summary for deterministic runs in the reference container.}
+  \caption{Peak resident memory during heuristic scheduling and LP model builds on the reference container. LP measurements report the maximum RSS observed while compiling the Model~I matrix with 1 or 16 workers; spatial allocation runs serially.}
   \label{tab:scaling_summary}
-  \begin{tabular}{lrrrrr}
+  \begin{tabular}{lrrrr}
     \toprule
-    Combo & Workers & $n_{\text{dtype-age}}$ & Sched (s) & Spatial (s) & Peak RSS (GB) \\
+    Combo & $n_{\text{dtype-age}}$ & \shortstack[c]{Heuristic\\peak RSS\\(GB)} & \shortstack[c]{LP peak RSS\\(GB; 1 worker)} & \shortstack[c]{LP peak RSS\\(GB; 16 workers)} \\
     \midrule
-    \texttt{tsa08} & 1 & 4\,682 & 4.23 & 15.71 & 0.27 \\
-    \texttt{tsa08} & 16 & 4\,682 & 4.10 & 15.77 & 0.28 \\
-    \texttt{tsa08+tsa40} & 1 & 10\,453 & 10.51 & 23.06 & 0.33 \\
-    \texttt{tsa08+tsa40} & 16 & 10\,453 & 10.45 & 19.64 & 0.46 \\
-    \texttt{tsa08+tsa40+tsa41} & 1 & 16\,653 & 19.29 & 30.13 & 0.47 \\
-    \texttt{tsa08+tsa40+tsa41} & 16 & 16\,653 & 19.26 & 20.35 & 0.52 \\
-    \texttt{tsa08+tsa40+tsa41+tsa24} & 1 & 26\,346 & 41.47 & 55.49 & 0.55 \\
-    \texttt{tsa08+tsa40+tsa41+tsa24} & 16 & 26\,346 & 41.44 & 29.78 & 0.62 \\
-    \texttt{tsa08+tsa40+tsa41+tsa24+tsa16} & 1 & 37\,691 & 62.11 & 79.46 & 0.63 \\
-    \texttt{tsa08+tsa40+tsa41+tsa24+tsa16} & 16 & 37\,691 & 62.30 & 36.10 & 0.69 \\
+    \texttt{tsa08} & 4\,682 & 0.23 & 0.33 & 0.56 \\
+    \texttt{tsa08+tsa40} & 10\,453 & 0.52 & 0.78 & 1.22 \\
+    \texttt{tsa08+tsa40+tsa41} & 16\,653 & 0.77 & 1.03 & 1.33 \\
+    \texttt{tsa08+tsa40+tsa41+tsa24} & 26\,346 & 0.87 & 1.38 & 1.87 \\
+    \texttt{tsa08+tsa40+tsa41+tsa24+tsa16} & 37\,691 & 1.07 & 1.81 & 2.51 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -267,7 +270,7 @@ Figures~\ref{fig:flows} and \ref{fig:cbm} visualize the resulting flows and carb
   \label{fig:cbm}
 \end{figure} 
 
-\emph{Results.} The heuristic scheduler delivers a 10-period harvest plan whose flows stay within \textasciitilde10\% of their period means without any explicit even-flow constraint: harvest area averages 106.8~kha (dataset convention) with a coefficient of variation of 0.047, and harvest volume averages 15.3~Mm$^3$ with a coefficient of variation of 0.106 (Table~\ref{tab:case_params}; Figure~\ref{fig:flows}). Growing stock declines smoothly from 135 to 82 in the same area-equivalent units (consistent with the 0.85 utilization factor), documenting the state trajectory exported to libCBM. In the carbon stage, libCBM aggregates show biomass pools increasing from $2.7\times10^5$~tC to $3.1\times10^5$~tC over 200 years, while DOM remains within $1.7$--$1.9\times10^5$~tC, yielding a total ecosystem carbon gain of 42~ktC (Figure~\ref{fig:cbm}). The summary tables \texttt{scenario\_flows.csv} and \texttt{annual\_carbon\_stocks.csv} (\texttt{papers/ems/tables}) retain the raw outputs for external verification.
+\emph{Results.} The heuristic scheduler delivers a 10-period harvest plan whose flows stay within \textasciitilde10\% of their period means without any explicit even-flow constraint: harvest area averages 106.8~kha and ranges from 103 to 114~kha, while harvest volume averages 15.3~Mm$^3$ with a 14.1--18.5~Mm$^3$ span (Table~\ref{tab:case_params}; Figure~\ref{fig:flows}). Growing stock declines smoothly from 135 to 82 in the same area-equivalent units (consistent with the 0.85 utilization factor), documenting the state trajectory exported to libCBM. In the carbon stage, libCBM aggregates show biomass pools increasing from $2.7\times10^5$~tC to $3.1\times10^5$~tC over 200 years, while DOM remains within $1.7$--$1.9\times10^5$~tC, yielding a total ecosystem carbon gain of 42~ktC (Figure~\ref{fig:cbm}). The summary tables \texttt{scenario\_flows.csv} and \texttt{annual\_carbon\_stocks.csv} (\texttt{papers/ems/tables}) retain the raw outputs for external verification.
 
 \emph{Reproducibility.} This demonstration is intended to be transparent and portable; all input data reside in \texttt{examples/data/woodstock\_model\_files}. The spatial allocation step renders the raster-based harvest allocation shown in Figure~\ref{fig:spatial_allocation}, derived directly from the aspatial schedule via the ForestRaster utility. The folder papers/ems/repro contains \texttt{make\_repro.sh}, which provisions a clean virtual environment, installs pinned dependencies (including the optional libCBM extra via \texttt{pip install ws3[cbm]}), and runs deterministic scripts that regenerate Figures~\ref{fig:architecture}--\ref{fig:cbm} and the accompanying CSV tables. Outputs are checksum-stable across repeated runs, providing an audit trail for review and reuse.
 
@@ -337,6 +340,13 @@ WS3 differs primarily in its open Python API, explicit libCBM integration, and h
 Proprietary landscape systems such as Woodstock and Patchworks provide mature optimization and spatial planning capabilities, but their licensing and closed codebases limit transparent methods development, automated testing, and reproducibility at scale. SpaDES, by contrast, is an open simulation framework oriented to spatial processes and agent-based dynamics; it does not natively provide a solver-backed harvest scheduling layer but interoperates with WS3 via \texttt{spades\_ws3} for hybrid workflows. Heureka and JLP are landscape-oriented and include optimization, yet are region-specific or legacy-maintained, which constrains adoption beyond their primary jurisdictions.
 
 WS3’s distinctive contribution is to combine: (i) a solver-agnostic, path-based Model~I LP generator embedded directly in an open forest estate API; (ii) a documented, first-class linkage to libCBM for carbon stocks and fluxes; and (iii) a hybrid spatial/aspatial pipeline with standard geospatial I/O. These design choices enable reproducible, auditable workflows in notebooks and scripts, fast iteration on objectives/constraints, and easy integration into larger research and decision-support ecosystems. For many research and policy analyses, this balance of openness, extensibility, and end-to-end reproducibility is decisive—even when spatial planning itself is conducted in a specialized tool, WS3 can serve as the transparent scheduling and carbon accounting engine feeding it.
+
+\section{Limitations and scope}
+WS3 focuses on deterministic, aspatial forest estate formulations. The Model~I LP implementation is well suited to even-flow policies, policy bounds, and value-maximisation problems, yet it inherits the classic limitations of the formulation: stochastic or endogenous disturbances cannot be represented faithfully without departing from linearity, and non-linear objectives or constraints require either linearisation or external wrappers. In practice, we rely on the heuristic scheduler to interleave random disturbances or sensitivity analyses when scenario logic demands it, and reserve the LP for static policy experiments.
+
+Spatial representation is delivered through a post-hoc raster allocation step that respects operability and transitions but does not enforce spatial adjacency, road-building, or block-shape constraints. Those dynamics fall outside the scope of WS3 and are the motivation for ongoing spatial extensions (e.g., the forthcoming WS4 prototype). Users requiring spatial optimisation should therefore treat WS3 as a scheduling and accounting engine that feeds specialised spatial tools.
+
+Finally, large LP instances involve substantial memory pressure—tens of gigabytes for the largest benchmarks—because the column generation compiles full path matrices. The reproduction package flags the LP scaling experiment as opt-in so that teams can execute it on appropriately provisioned infrastructure. All supporting assets, however, remain deterministic and auditable even when the LP portion is skipped.
 
 \section{Conclusions and future work}
 WS3 provides an open, extensible framework for integrating harvest scheduling, simulation, and carbon accounting. By coupling solver-backed scheduling with libCBM via a documented interface, WS3 supports policy-relevant analyses with transparent, reproducible workflows.

@@ -15,8 +15,9 @@ Optional scalability benchmarks
 - A larger public dataset (five non-overlapping TSAs in NE BC) can be fetched with DataLad to run deterministic scaling tests.
 - Enable via `RUN_SCALING=1 bash papers/ems/repro/make_repro.sh`. The first run performs `datalad install -r -g -s https://github.com/UBC-FRESH/cccandies_demo_input papers/ems/repro/data/cccandies_demo_input`.
 - `papers/ems/repro/run_scaling_benchmarks.py` now bootstraps WS3 directly from the dataset (no Woodstock sections required), sorts TSAs by complexity, and evaluates single TSA and cumulative “mash-up” combinations.
-- Each combination is executed in deterministic single-core (1 worker) and multi-core (16 worker) modes, reporting runtimes for model bootstrap, heuristic scheduling, indicator compilation, and spatial allocation, along with peak memory usage.
-- Spatial allocation uses `ForestRaster` to generate (and immediately clean up) disturbance rasters; results and diagnostics are written to `papers/ems/tables/perf_scaling.csv`.
+- Each combination executes the heuristic scheduler in deterministic single-core mode and records sequential spatial allocation timings. Setting `RUN_LP=1` adds Model~I LP benchmarks that build the problem with 1 and 16 workers (parallel coefficient compilation) and solve with matching HiGHS thread counts.
+- Spatial allocation uses `ForestRaster` to generate (and immediately clean up) disturbance rasters; results and diagnostics are written to `papers/ems/tables/perf_scaling.csv`, including optional LP build/solve metrics and memory footprints.
+- `generate_scaling_figures.py` rebuilds the manuscript scaling plots directly from `perf_scaling.csv` whenever that file is present.
 
 Outputs (created)
 - papers/ems/figs/
