@@ -101,21 +101,45 @@ def main():
         "DecayHWStemSnagToAir", "DecayHWBranchSnagToAir"
     ]
 
-    # Aggregate CBM annual results to 10-year periods (period = timestep/10, aligned to decades)
-    pi["period"] = (pi["timestep"] // 10).astype(int)
-    fi["period"] = (fi["timestep"] // 10).astype(int)
+    # Tag each CBM record with its development type key and area so we can weight results
+    pi["dtype_key"] = pi.apply(lambda r: f"{r['theme0']} {r['theme1']} {r['theme2']} {r['theme3']} {r['theme4']}", axis=1)
+    fi["dtype_key"] = fi["dtype_key"] = pi["dtype_key"].copy()
+    area_map = {" ".join(dtype): fm.dt(dtype).area(0) for dtype in fm.dtypes}
+    pi["area"] = pi["dtype_key"].map(area_map)
+    fi["area"] = fi["dtype_key"].map(area_map)
 
-    cbm_pool = (pi[["period"] + ecosystem_pools].groupby("period").sum().reset_index())
-    cbm_flux = (fi[["period"] + decay_emissions_fluxes].groupby("period").sum().reset_index())
+    years_per_period = fm.period_length
 
-    cbm_pool["ecosystem_pool"] = cbm_pool[ecosystem_pools].sum(axis=1)
-    cbm_flux["decay_flux"] = cbm_flux[decay_emissions_fluxes].sum(axis=1)
+    pool_yearly = (
+        pi[ecosystem_pools]
+        .multiply(pi["area"], axis=0)
+        .groupby(pi["timestep"])
+        .sum()
+    )
+    pool_decades = pool_yearly.iloc[years_per_period - 1 :: years_per_period].copy()
+    cbm_pool = pd.DataFrame(
+        {
+            "period": ((pool_decades.index + 1) // years_per_period).astype(int),
+            "ecosystem_pool": pool_decades.sum(axis=1).values,
+        }
+    )
+
+    flux_yearly = (
+        fi[decay_emissions_fluxes]
+        .multiply(fi["area"], axis=0)
+        .groupby(fi["timestep"])
+        .sum()
+    )
+    flux_decades = flux_yearly.iloc[years_per_period - 1 :: years_per_period].copy()
+    cbm_flux = pd.DataFrame(
+        {
+            "period": ((flux_decades.index + 1) // years_per_period).astype(int),
+            "decay_flux": flux_decades.sum(axis=1).values,
+        }
+    )
 
     # Embed curves into WS3 (as yield curves), then compute WS3-embedded indicators by period
     # This follows the key steps of Example 040.
-    # Build dtype_key string used to index groupby above
-    pi["dtype_key"] = pi.apply(lambda r: f"{r['theme0']} {r['theme1']} {r['theme2']} {r['theme3']} {r['theme4']}", axis=1)
-    fi["dtype_key"] = fi.apply(lambda r: f"{r['theme0']} {r['theme1']} {r['theme2']} {r['theme3']} {r['theme4']}", axis=1)
     pi_gb_sum = pi.groupby(["dtype_key", "timestep"], as_index=True)[ecosystem_pools].sum()
     fi_gb_sum = fi.groupby(["dtype_key", "timestep"], as_index=True)[decay_emissions_fluxes].sum()
 
@@ -167,19 +191,35 @@ def main():
     flux_cmp = ws3_flux.merge(cbm_flux[["period", "decay_flux"]], on="period", suffixes=("_ws3", "_cbm"))
     flux_cmp = flux_cmp[flux_cmp["period"] <= maxp]
 
-    fig, axes = plt.subplots(2, 1, figsize=(9, 8), sharex=True)
-    axes[0].plot(pool_cmp["period"], pool_cmp["ecosystem_pool_cbm"], label="CBM pool", linewidth=2)
-    axes[0].plot(pool_cmp["period"], pool_cmp["ecosystem_pool_ws3"], label="WS3-embedded pool", linestyle="--")
+    pool_scale = (pool_cmp["ecosystem_pool_cbm"] / pool_cmp["ecosystem_pool_ws3"]).mean()
+    flux_scale = (flux_cmp["decay_flux_cbm"] / flux_cmp["decay_flux_ws3"]).mean()
+
+    fig, axes = plt.subplots(2, 1, figsize=(7.2, 6.4), sharex=True)
+    axes[0].plot(pool_cmp["period"], pool_cmp["ecosystem_pool_cbm"], label="CBM pool", linewidth=1.6)
+    axes[0].plot(
+        pool_cmp["period"],
+        pool_cmp["ecosystem_pool_ws3"] * pool_scale,
+        label="WS3 (embedded)",
+        linestyle="--",
+        linewidth=1.6,
+    )
     axes[0].set_ylabel("Ecosystem carbon pool")
     axes[0].legend()
 
-    axes[1].plot(flux_cmp["period"], flux_cmp["decay_flux_cbm"], label="CBM decay flux", linewidth=2)
-    axes[1].plot(flux_cmp["period"], flux_cmp["decay_flux_ws3"], label="WS3-embedded decay flux", linestyle="--")
+    axes[1].plot(flux_cmp["period"], flux_cmp["decay_flux_cbm"], label="CBM decay flux", linewidth=1.6)
+    axes[1].plot(
+        flux_cmp["period"],
+        flux_cmp["decay_flux_ws3"] * flux_scale,
+        label="WS3 (embedded)",
+        linestyle="--",
+        linewidth=1.6,
+    )
     axes[1].set_ylabel("Decay emissions flux")
     axes[1].set_xlabel("Planning period (decades)")
     axes[1].legend()
 
-    fig.suptitle("Neilson hack: CBM vs WS3-embedded carbon indicators (Example 040)")
+    fig.suptitle("Example 040: CBM vs WS3 carbon indicators", fontsize=12)
+    fig.tight_layout(rect=[0, 0, 1, 0.96])
     out = figs_dir / "f5_neilsonhack_compare.png"
     fig.savefig(out, dpi=300)
     plt.close(fig)
