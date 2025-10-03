@@ -1,107 +1,291 @@
 #!/usr/bin/env python3
-import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle, FancyArrow
+"""Generate architecture and workflow diagrams for the EMS manuscript."""
+
+from __future__ import annotations
+
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+
 from style import apply_fresh_style, ensure_dir
 
 
-def draw_box(ax, xy, text, width=2.6, height=1.0):
-    x, y = xy
-    rect = Rectangle((x, y), width, height, linewidth=1.5, edgecolor='black', facecolor='white')
-    ax.add_patch(rect)
-    ax.text(x + width/2, y + height/2, text, ha='center', va='center', fontsize=10)
-    return (x + width/2, y + height/2)
+def add_box(
+    ax,
+    center: tuple[float, float],
+    text: str,
+    width: float = 1.4,
+    height: float = 0.58,
+    facecolor: str = "#FFFFFF",
+    edgecolor: str = "#333333",
+    fontsize: int = 10,
+):
+    """Draw a rounded box centered at *center* and return the bounding box."""
+    x0 = center[0] - width / 2
+    y0 = center[1] - height / 2
+    patch = FancyBboxPatch(
+        (x0, y0),
+        width,
+        height,
+        boxstyle="round,pad=0.1,rounding_size=0.1",
+        linewidth=0.95,
+        edgecolor=edgecolor,
+        facecolor=facecolor,
+    )
+    ax.add_patch(patch)
+    ax.text(
+        center[0],
+        center[1],
+        text,
+        ha="center",
+        va="center",
+        fontsize=fontsize,
+    )
+    return (x0, y0, width, height)
 
 
-def draw_arrow(ax, start, end):
-    ax.add_patch(FancyArrow(start[0], start[1], end[0]-start[0], end[1]-start[1],
-                            width=0.02, length_includes_head=True, head_width=0.15, head_length=0.25,
-                            color='black'))
+def edge_point_by_side(bbox: tuple[float, float, float, float], side: str | None) -> tuple[float, float]:
+    x0, y0, w, h = bbox
+    if side == "left":
+        return x0, y0 + h / 2
+    if side == "right":
+        return x0 + w, y0 + h / 2
+    if side == "top":
+        return x0 + w / 2, y0 + h
+    if side == "bottom":
+        return x0 + w / 2, y0
+    return x0 + w / 2, y0 + h / 2
 
 
-def fig_architecture(out_path):
+def edge_point_direction(bbox: tuple[float, float, float, float], dx: float, dy: float) -> tuple[float, float]:
+    x0, y0, w, h = bbox
+    cx = x0 + w / 2
+    cy = y0 + h / 2
+    if abs(dx) < 1e-9 and abs(dy) < 1e-9:
+        return cx, cy
+    tx = (w / 2) / abs(dx) if dx else float("inf")
+    ty = (h / 2) / abs(dy) if dy else float("inf")
+    t = min(tx, ty)
+    return cx + dx * t, cy + dy * t
+
+
+def connect_boxes(
+    axis,
+    bbox_a: tuple[float, float, float, float],
+    bbox_b: tuple[float, float, float, float],
+    color: str = "#555555",
+    curvature: float = 0.0,
+    arrowstyle: str = "-|>",
+    side_a: str | None = None,
+    side_b: str | None = None,
+):
+    """Draw an arrow between two bounding boxes touching their edges."""
+    axc, ayc = bbox_a[0] + bbox_a[2] / 2, bbox_a[1] + bbox_a[3] / 2
+    bxc, byc = bbox_b[0] + bbox_b[2] / 2, bbox_b[1] + bbox_b[3] / 2
+    dx, dy = bxc - axc, byc - ayc
+    if side_a:
+        start = edge_point_by_side(bbox_a, side_a)
+    else:
+        start = edge_point_direction(bbox_a, dx, dy)
+    if side_b:
+        end = edge_point_by_side(bbox_b, side_b)
+    else:
+        end = edge_point_direction(bbox_b, -dx, -dy)
+    arrow = FancyArrowPatch(
+        start,
+        end,
+        connectionstyle=f"arc3,rad={curvature}",
+        arrowstyle=arrowstyle,
+        mutation_scale=9,
+        linewidth=0.85,
+        color=color,
+    )
+    axis.add_patch(arrow)
+
+
+def fig_architecture(out_path: Path) -> None:
     apply_fresh_style()
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.axis('off')
-    ax.set_xlim(0, 12)
-    ax.set_ylim(0, 8)
+    fig, ax = plt.subplots(figsize=(9.0, 4.4))
+    ax.axis("off")
+    ax.set_xlim(0, 9.5)
+    ax.set_ylim(0, 5.0)
 
-    # Left column: Inputs
-    b_inventory = draw_box(ax, (0.5, 6.0), 'Inventory\n(Yields, Areas, Themes)')
-    b_actions = draw_box(ax, (0.5, 4.5), 'Actions &\nTransitions')
-    b_config = draw_box(ax, (0.5, 3.0), 'Scenario\nConfig (YAML/CSV)')
+    columns = {
+        "inputs": 1.15,
+        "core": 3.55,
+        "integration": 5.95,
+        "outputs": 8.2,
+    }
 
-    # Middle: WS3 core
-    b_forest = draw_box(ax, (4.0, 6.0), 'WS3 ForestModel')
-    b_opt = draw_box(ax, (4.0, 4.5), 'Optimization\n(PuLP / HiGHS / Gurobi)')
-    b_sim = draw_box(ax, (4.0, 3.0), 'Simulation &\nEvaluation')
+    palette = {
+        "inputs": "#E8F1FA",
+        "core": "#F4F1FA",
+        "integration": "#F9F1E8",
+        "outputs": "#E9F6F0",
+    }
 
-    # Right: External couplings
-    b_cbm = draw_box(ax, (7.5, 5.25), 'libCBM\n(carbon pools/flux)')
-    b_spatial = draw_box(ax, (7.5, 3.75), 'Spatial allocation\n(rasterio/GeoTIFF)')
-    b_outputs = draw_box(ax, (10.0, 4.5), 'Outputs\n(plots, tables)')
+    ax.text(columns["inputs"], 4.6, "Inputs", ha="center", va="bottom", fontsize=11, fontweight="bold")
+    ax.text(columns["core"], 4.6, "WS3 core", ha="center", va="bottom", fontsize=11, fontweight="bold")
+    ax.text(columns["integration"], 4.6, "Integration", ha="center", va="bottom", fontsize=11, fontweight="bold")
+    ax.text(columns["outputs"], 4.6, "Outputs", ha="center", va="bottom", fontsize=11, fontweight="bold")
 
-    # Arrows (inputs to forest)
-    draw_arrow(ax, (1.8, 6.5), (4.0, 6.5))
-    draw_arrow(ax, (1.8, 5.5), (4.0, 5.5))
-    draw_arrow(ax, (1.8, 4.0), (4.0, 4.0))
+    y_positions = [3.0, 1.85, 0.7]
 
-    # Internal flow
-    draw_arrow(ax, (5.3, 6.5), (5.3, 5.75))
-    draw_arrow(ax, (5.3, 4.5), (5.3, 3.75))
+    nodes = {}
+    nodes["inventory"] = add_box(
+        ax,
+        (columns["inputs"], y_positions[0]),
+        "Inventory\n(yields, areas, themes)",
+        width=1.35,
+        height=0.55,
+        facecolor=palette["inputs"],
+    )
+    nodes["actions"] = add_box(
+        ax,
+        (columns["inputs"], y_positions[1]),
+        "Actions &\ntransitions",
+        width=1.35,
+        height=0.55,
+        facecolor=palette["inputs"],
+    )
+    nodes["config"] = add_box(
+        ax,
+        (columns["inputs"], y_positions[2]),
+        "Scenario config\n(CSV / YAML)",
+        width=1.35,
+        height=0.55,
+        facecolor=palette["inputs"],
+    )
 
-    # Couplings
-    draw_arrow(ax, (5.3, 5.25), (7.5, 5.75))  # Forest->libCBM
-    draw_arrow(ax, (5.3, 3.75), (7.5, 4.25))  # Sim->Spatial
+    nodes["forest"] = add_box(
+        ax,
+        (columns["core"], y_positions[0]),
+        "ForestModel\n(data API)",
+        width=1.45,
+        height=0.55,
+        facecolor=palette["core"],
+    )
+    nodes["opt"] = add_box(
+        ax,
+        (columns["core"], y_positions[1]),
+        "Optimization\n(PuLP / HiGHS / Gurobi)",
+        width=1.65,
+        height=0.58,
+        facecolor=palette["core"],
+    )
+    nodes["sim"] = add_box(
+        ax,
+        (columns["core"], y_positions[2]),
+        "Simulation &\nreporting",
+        width=1.45,
+        height=0.55,
+        facecolor=palette["core"],
+    )
 
-    # Outputs
-    draw_arrow(ax, (8.8, 5.5), (10.0, 5.0))
-    draw_arrow(ax, (8.8, 4.25), (10.0, 4.5))
+    nodes["cbm"] = add_box(
+        ax,
+        (columns["integration"], 3.3),
+        "libCBM\n(carbon pools / flux)",
+        width=1.65,
+        height=0.58,
+        facecolor=palette["integration"],
+    )
+    nodes["spatial"] = add_box(
+        ax,
+        (columns["integration"], 1.7),
+        "Spatial allocation\n(rasterio / GeoTIFF)",
+        width=1.65,
+        height=0.58,
+        facecolor=palette["integration"],
+    )
 
+    nodes["outputs"] = add_box(
+        ax,
+        (columns["outputs"], 2.5),
+        "Dashboards, reports\nAPIs, reproducible assets",
+        width=1.75,
+        height=0.62,
+        facecolor=palette["outputs"],
+    )
+
+    connect_boxes(ax, nodes["inventory"], nodes["forest"], curvature=0.0, side_a="right", side_b="left")
+    connect_boxes(ax, nodes["actions"], nodes["forest"], curvature=-0.04, side_a="right", side_b="top")
+    connect_boxes(ax, nodes["config"], nodes["opt"], curvature=0.02, side_a="right", side_b="left")
+
+    connect_boxes(ax, nodes["forest"], nodes["opt"], curvature=0.0, side_a="bottom", side_b="top")
+    connect_boxes(ax, nodes["opt"], nodes["sim"], curvature=0.0, side_a="bottom", side_b="top")
+
+    connect_boxes(ax, nodes["forest"], nodes["cbm"], curvature=0.04, side_a="right", side_b="top")
+    connect_boxes(ax, nodes["sim"], nodes["cbm"], curvature=-0.06, side_a="right", side_b="bottom")
+    connect_boxes(ax, nodes["sim"], nodes["spatial"], curvature=0.06, side_a="right", side_b="left")
+
+    connect_boxes(ax, nodes["cbm"], nodes["outputs"], curvature=0.02, side_a="right", side_b="left")
+    connect_boxes(ax, nodes["spatial"], nodes["outputs"], curvature=-0.02, side_a="right", side_b="left")
+
+    ax.text(
+        4.75,
+        0.25,
+        "WS3 coordinates data preparation, optimization, and analysis in a transparent pipeline.",
+        ha="center",
+        va="bottom",
+        fontsize=9,
+        color="#555555",
+    )
+
+    fig.tight_layout()
     fig.savefig(out_path, dpi=300)
     plt.close(fig)
 
 
-def fig_workflow(out_path):
+def fig_workflow(out_path: Path) -> None:
     apply_fresh_style()
-    fig, ax = plt.subplots(figsize=(11, 4))
-    ax.axis('off')
-    ax.set_xlim(0, 14)
+    fig, ax = plt.subplots(figsize=(10.2, 3.2))
+    ax.axis("off")
+    ax.set_xlim(0, 13)
     ax.set_ylim(0, 3)
 
-    x = 0.5
-    centers = []
-    labels = [
-        'Load inputs',
-        'Build ForestModel',
-        'Schedule (heuristic or LP)',
-        'Compile SIT (to_cbm_sit)',
-        'Run libCBM',
-        'Spatial allocation',
-        'Plots & Tables'
+    steps = [
+        "Load inputs",
+        "Build ForestModel",
+        "Schedule (heuristic or LP)",
+        "Compile SIT (to_cbm_sit)",
+        "Run libCBM",
+        "Spatial allocation",
+        "Plots & tables",
     ]
-    for i, lab in enumerate(labels):
-        c = draw_box(ax, (x, 1.1), lab, width=2.2, height=0.9)
-        centers.append(c)
-        x += 2.2 + 0.6
 
-    for i in range(len(centers)-1):
-        draw_arrow(ax, centers[i], centers[i+1])
+    x = 1.2
+    centers = []
+    for label in steps:
+        bbox = add_box(
+            ax,
+            (x, 1.5),
+            label,
+            width=2.0,
+            height=0.8,
+            facecolor="#EDF2FA",
+        )
+        centers.append(bbox)
+        x += 1.9
 
+    for left, right in zip(centers[:-1], centers[1:]):
+        connect_boxes(ax, left, right, curvature=0.0)
+
+    fig.tight_layout()
     fig.savefig(out_path, dpi=300)
     plt.close(fig)
 
 
-def main():
-    figs_dir = Path('papers/ems/figs')
+def main() -> None:
+    figs_dir = Path("papers/ems/figs")
     ensure_dir(figs_dir)
 
-    fig_architecture(figs_dir / 'f1_architecture.png')
-    fig_workflow(figs_dir / 'f2_workflow.png')
-    # Graphical abstract: reuse architecture but smaller
-    fig_architecture(figs_dir / 'graphical_abstract.png')
-    print('Wrote diagrams to', figs_dir)
+    fig_architecture(figs_dir / "f1_architecture.png")
+    fig_workflow(figs_dir / "f2_workflow.png")
+    fig_architecture(figs_dir / "graphical_abstract.png")
+    print("Wrote diagrams to", figs_dir)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
