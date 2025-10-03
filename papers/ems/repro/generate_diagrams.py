@@ -106,16 +106,16 @@ def connect_boxes(
 
 def fig_architecture(out_path: Path) -> None:
     apply_fresh_style()
-    fig, ax = plt.subplots(figsize=(9.0, 4.4))
+    fig, ax = plt.subplots(figsize=(8.5, 4.2))
     ax.axis("off")
-    ax.set_xlim(0, 9.5)
-    ax.set_ylim(0, 5.0)
+    ax.set_xlim(0, 8.5)
+    ax.set_ylim(0, 4.8)
 
     columns = {
-        "inputs": 1.15,
-        "core": 3.55,
-        "integration": 5.95,
-        "outputs": 8.2,
+        "inputs": 0.9,
+        "core": 2.9,
+        "integration": 4.9,
+        "outputs": 6.9,
     }
 
     palette = {
@@ -125,12 +125,13 @@ def fig_architecture(out_path: Path) -> None:
         "outputs": "#E9F6F0",
     }
 
-    ax.text(columns["inputs"], 4.6, "Inputs", ha="center", va="bottom", fontsize=11, fontweight="bold")
-    ax.text(columns["core"], 4.6, "WS3 core", ha="center", va="bottom", fontsize=11, fontweight="bold")
-    ax.text(columns["integration"], 4.6, "Integration", ha="center", va="bottom", fontsize=11, fontweight="bold")
-    ax.text(columns["outputs"], 4.6, "Outputs", ha="center", va="bottom", fontsize=11, fontweight="bold")
+    header_y = 4.2
+    ax.text(columns["inputs"], header_y, "Inputs", ha="center", va="bottom", fontsize=11, fontweight="bold")
+    ax.text(columns["core"], header_y, "WS3 core", ha="center", va="bottom", fontsize=11, fontweight="bold")
+    ax.text(columns["integration"], header_y, "Integration", ha="center", va="bottom", fontsize=11, fontweight="bold")
+    ax.text(columns["outputs"], header_y, "Outputs", ha="center", va="bottom", fontsize=11, fontweight="bold")
 
-    y_positions = [3.0, 1.85, 0.7]
+    y_positions = [3.2, 1.9, 0.7]
 
     nodes = {}
     nodes["inventory"] = add_box(
@@ -185,7 +186,7 @@ def fig_architecture(out_path: Path) -> None:
 
     nodes["cbm"] = add_box(
         ax,
-        (columns["integration"], 3.3),
+        (columns["integration"], 2.6),
         "libCBM\n(carbon pools / flux)",
         width=1.65,
         height=0.58,
@@ -193,7 +194,7 @@ def fig_architecture(out_path: Path) -> None:
     )
     nodes["spatial"] = add_box(
         ax,
-        (columns["integration"], 1.7),
+        (columns["integration"], 1.0),
         "Spatial allocation\n(rasterio / GeoTIFF)",
         width=1.65,
         height=0.58,
@@ -202,7 +203,7 @@ def fig_architecture(out_path: Path) -> None:
 
     nodes["outputs"] = add_box(
         ax,
-        (columns["outputs"], 2.5),
+        (columns["outputs"], 1.8),
         "Dashboards, reports\nAPIs, reproducible assets",
         width=1.75,
         height=0.62,
@@ -210,22 +211,22 @@ def fig_architecture(out_path: Path) -> None:
     )
 
     connect_boxes(ax, nodes["inventory"], nodes["forest"], curvature=0.0, side_a="right", side_b="left")
-    connect_boxes(ax, nodes["actions"], nodes["forest"], curvature=-0.04, side_a="right", side_b="top")
+    connect_boxes(ax, nodes["actions"], nodes["forest"], curvature=-0.02, side_a="right", side_b="top")
     connect_boxes(ax, nodes["config"], nodes["opt"], curvature=0.02, side_a="right", side_b="left")
 
     connect_boxes(ax, nodes["forest"], nodes["opt"], curvature=0.0, side_a="bottom", side_b="top")
     connect_boxes(ax, nodes["opt"], nodes["sim"], curvature=0.0, side_a="bottom", side_b="top")
 
-    connect_boxes(ax, nodes["forest"], nodes["cbm"], curvature=0.04, side_a="right", side_b="top")
-    connect_boxes(ax, nodes["sim"], nodes["cbm"], curvature=-0.06, side_a="right", side_b="bottom")
-    connect_boxes(ax, nodes["sim"], nodes["spatial"], curvature=0.06, side_a="right", side_b="left")
+    connect_boxes(ax, nodes["forest"], nodes["cbm"], curvature=0.02, side_a="right", side_b="left")
+    connect_boxes(ax, nodes["sim"], nodes["cbm"], curvature=-0.04, side_a="right", side_b="bottom")
+    connect_boxes(ax, nodes["sim"], nodes["spatial"], curvature=0.04, side_a="right", side_b="left")
 
-    connect_boxes(ax, nodes["cbm"], nodes["outputs"], curvature=0.02, side_a="right", side_b="left")
-    connect_boxes(ax, nodes["spatial"], nodes["outputs"], curvature=-0.02, side_a="right", side_b="left")
+    connect_boxes(ax, nodes["cbm"], nodes["outputs"], curvature=0.05, side_a="right", side_b="top")
+    connect_boxes(ax, nodes["spatial"], nodes["outputs"], curvature=-0.05, side_a="right", side_b="bottom")
 
     ax.text(
-        4.75,
-        0.25,
+        4.25,
+        0.05,
         "WS3 coordinates data preparation, optimization, and analysis in a transparent pipeline.",
         ha="center",
         va="bottom",
@@ -242,7 +243,6 @@ def fig_workflow(out_path: Path) -> None:
     apply_fresh_style()
     fig, ax = plt.subplots(figsize=(10.2, 3.2))
     ax.axis("off")
-    ax.set_xlim(0, 13)
     ax.set_ylim(0, 3)
 
     steps = [
@@ -255,22 +255,31 @@ def fig_workflow(out_path: Path) -> None:
         "Plots & tables",
     ]
 
-    x = 1.2
+    box_width = 2.0
+    box_height = 0.8
+    spacing = 0.45
+    margin = 0.8
+
+    x = margin + box_width / 2
     centers = []
     for label in steps:
         bbox = add_box(
             ax,
             (x, 1.5),
             label,
-            width=2.0,
-            height=0.8,
+            width=box_width,
+            height=box_height,
             facecolor="#EDF2FA",
         )
         centers.append(bbox)
-        x += 1.9
+        x += box_width + spacing
 
     for left, right in zip(centers[:-1], centers[1:]):
-        connect_boxes(ax, left, right, curvature=0.0)
+        connect_boxes(ax, left, right, curvature=0.0, side_a="right", side_b="left")
+
+    last_box = centers[-1]
+    right_extent = last_box[0] + last_box[2] + margin
+    ax.set_xlim(0, right_extent)
 
     fig.tight_layout()
     fig.savefig(out_path, dpi=300)

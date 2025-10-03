@@ -10,6 +10,7 @@
 \usepackage{geometry}
 \usepackage{multirow}
 \usepackage{listings}
+\usepackage{enumitem}
 
 \journal{Environmental Modelling \& Software}
 
@@ -91,7 +92,7 @@ WS3 implements a modular architecture organized around five roles: (i) core data
 
 \emph{Interoperability}. WS3 can import Woodstock-format text sections (LAN/ARE/YLD/ACT/TRN), enabling reuse of established data pipelines. For carbon, ForestModel exposes \texttt{to\_cbm\_sit} to export Standard Input Table (SIT) configuration/tables consumable by libCBM, with user-provided disturbance-type mappings and per-dtype last-pass-disturbance metadata. Geospatial I/O uses standard formats (shapefile, GeoTIFF). All tabular inputs are plain text (CSV/TSV), and workflows are scripted or notebook-based for reproducibility.
 
-Figure~\ref{fig:architecture} summarizes modules and data flow; Figure~\ref{fig:workflow} outlines the end-to-end case-study workflow used later in the manuscript.
+Figure~\ref{fig:architecture} summarizes modules and data flow; Listing~\ref{lst:workflow} outlines the end-to-end case-study workflow used later in the manuscript.
 
 \begin{figure}[h]
   \centering
@@ -100,12 +101,18 @@ Figure~\ref{fig:architecture} summarizes modules and data flow; Figure~\ref{fig:
   \label{fig:architecture}
 \end{figure}
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=0.95\linewidth]{figs/f2_workflow.png}
-  \caption{Case study workflow: load inputs, build ForestModel, schedule, export SIT (to\_cbm\_sit), run libCBM, generate plots and tables.}
-  \label{fig:workflow}
-\end{figure}
+\begin{lstlisting}[float=tb,language=Python,basicstyle=\ttfamily\small,caption={Case-study workflow executed by the reproduction package.},label={lst:workflow}]
+def run_case_study(data_root, solver="highs"):
+    inputs = load_inputs(data_root)
+    forest = build_forest_model(inputs)
+    schedule = schedule_harvest(forest, method=solver)
+    sit_tables = compile_to_cbm(schedule)
+    cbm_outputs = run_libcbm(sit_tables)
+    spatial_products = allocate_spatial(schedule)
+    generate_plots_and_tables(schedule, cbm_outputs, spatial_products)
+
+run_case_study("papers/ems")
+\end{lstlisting}
 
 \begin{figure}[t]
   \centering
@@ -254,7 +261,7 @@ Outputs & \texttt{scenario\_flows.csv} (periodic flows/stocks); \texttt{annual\_
 \label{tab:case_params}
 \end{table}
 
-Figures~\ref{fig:flows} and \ref{fig:cbm} visualize the resulting flows and carbon stocks. The entire pipeline, including architecture and workflow diagrams (Figures~\ref{fig:architecture}–\ref{fig:workflow}) and the spatial allocation example (Figure~\ref{fig:spatial_allocation}), is reproducible via \texttt{papers/ems/repro/make\_repro.sh}. The libCBM run length (200 years) matches the example and can be adjusted.
+Figures~\ref{fig:flows} and \ref{fig:cbm} visualize the resulting flows and carbon stocks. The entire pipeline, including the architecture diagram (Figure~\ref{fig:architecture}), workflow pseudocode (Listing~\ref{lst:workflow}), and the spatial allocation example (Figure~\ref{fig:spatial_allocation}), is reproducible via \texttt{papers/ems/repro/make\_repro.sh}. The libCBM run length (200 years) matches the example and can be adjusted.
 
 \begin{figure}[h]
   \centering
@@ -318,8 +325,10 @@ An advanced example notebook demonstrates how WS3 can be used to construct a sta
 \begin{table}[h]
 \centering
 \caption{Comparison of WS3 with selected tools.}
-\setlength{\tabcolsep}{4pt}
-\small
+\begingroup
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{0.92}
+\footnotesize
 \begin{tabular}{p{2.4cm}p{2.1cm}p{1.5cm}p{2.2cm}p{2.2cm}p{2.2cm}p{2.1cm}}
 \toprule
 Tool & Scope & License & Optimization integration & Spatial workflow & Carbon integration & Geography focus \\
@@ -333,7 +342,7 @@ Heureka & Landscape & Mixed/Restricted & Built-in & Spatial capabilities & Exter
 JLP (MELA) & Landscape & Restricted/Legacy & Built-in & Spatial extensions & External integrations & Finland-focused \\
 \bottomrule
 \end{tabular}
-\normalsize
+\endgroup
 \end{table}
 
 \noindent

@@ -192,7 +192,16 @@ def render_overlay(by_year: Dict[int, Path]) -> Path:
         Patch(facecolor=palette[i], label=str(year))
         for i, (year, _path) in enumerate(available)
     ]
-    ax.legend(handles=handles, title="Harvest year", loc="lower left", frameon=False)
+    legend = ax.legend(
+        handles=handles,
+        title="Harvest year",
+        loc="upper right",
+        bbox_to_anchor=(0.98, 0.98),
+        frameon=True,
+        framealpha=0.92,
+    )
+    legend.get_frame().set_facecolor("white")
+    legend.get_frame().set_edgecolor("#dddddd")
 
     fig.savefig(OUTPUT_FIG, dpi=300)
     plt.close(fig)
