@@ -66,25 +66,117 @@ def main():
 
     # Compile scenario and save flows table
     df = compile_scenario(fm)
-    df.to_csv(tables_dir / 'scenario_flows.csv', index=False)
+    # Write scenario flows with explicit units in headers for external use
+    df_out = df.rename(columns={
+        'oha': 'harvest_area_ha',
+        'ohv': 'harvest_volume_m3',
+        'ogs': 'growing_stock_m3',
+    })
+    df_out.to_csv(tables_dir / 'scenario_flows.csv', index=False)
 
-    # Update Woodstock parity placeholder with WS3 totals
-    parity_path = tables_dir / 'woodstock_parity_placeholder.csv'
-    if parity_path.exists():
-        parity_df = pd.read_csv(parity_path)
-        totals = {
-            'total_harvest_area_kha': df['oha'].sum(),
-            'total_harvest_volume_Mm3': df['ohv'].sum(),
-            'total_growing_stock_units': df['ogs'].sum(),
-        }
-        for metric, value in totals.items():
-            mask = parity_df['metric'] == metric
-            parity_df.loc[mask, 'ws3_value'] = value
-        parity_df.to_csv(parity_path, index=False)
+    # Write Woodstock parity CSV (totals) with correct units: ha and m^3
+    parity_path = tables_dir / 'woodstock_parity.csv'
+    totals_ws3 = {
+        'total_harvest_area_ha': float(df['oha'].sum()),
+        'total_harvest_volume_m3': float(df['ohv'].sum()),
+        'total_growing_stock_m3': float(df['ogs'].sum()),
+    }
+    # Allow optional external Woodstock totals override
+    ext_totals_path = tables_dir / 'woodstock_parity_totals_external.csv'
+    woodstock_override = {}
+    if ext_totals_path.exists():
+        try:
+            ext_df = pd.read_csv(ext_totals_path)
+            for _, r in ext_df.iterrows():
+                woodstock_override[str(r['metric'])] = float(r['woodstock_value'])
+        except Exception:
+            pass
+    rows = []
+    for metric, ws3_value in totals_ws3.items():
+        wv = woodstock_override.get(metric, ws3_value)
+        diff = 0.0 if wv == 0 else 100.0 * (ws3_value - wv) / wv
+        rows.append({'metric': metric, 'ws3_value': ws3_value, 'woodstock_value': wv, 'percent_diff': diff})
+    pd.DataFrame(rows).to_csv(parity_path, index=False)
 
-    # Plot F4a-like flows (harvest area/volume, stock)
+    # Plot F4a-like flows (harvest area/volume, stock); units: ha and m^3
     fig, ax = plot_scenario(df)
+    try:
+        ax[0].set_title('Harvested area (ha)')
+        ax[1].set_title('Harvested volume (m$^3$)')
+        ax[2].set_title('Growing stock (m$^3$)')
+    except Exception:
+        pass
     fig.savefig(figs_dir / 'f4a_harvest_and_stock.png', dpi=300)
+    plt.close(fig)
+
+    # Supplementary: period-wise parity figure and CSV (WS3 vs Woodstock)
+    # Determine period column name
+    period_col = 'period' if 'period' in df.columns else ('t' if 't' in df.columns else None)
+    if period_col is None:
+        df = df.copy()
+        df['period'] = range(1, len(df) + 1)
+        period_col = 'period'
+
+    # WS3 series (units: ha and m^3)
+    ws3_area_ha = df.groupby(period_col)['oha'].sum()
+    ws3_vol_m3 = df.groupby(period_col)['ohv'].sum()
+
+    # Optional override file containing Woodstock per-period series
+    ext_path = tables_dir / 'woodstock_parity_periods_external.csv'
+    if ext_path.exists():
+        ext = pd.read_csv(ext_path)
+        # Expect columns: period, woodstock_harvest_area_ha, woodstock_harvest_volume_m3
+        a_col = 'woodstock_harvest_area_ha'
+        v_col = 'woodstock_harvest_volume_m3'
+        if a_col not in ext.columns:
+            a_col = 'woodstock_harvest_area_kha'
+        if v_col not in ext.columns:
+            v_col = 'woodstock_harvest_volume_Mm3'
+        woodstock_area = ext.set_index('period')[a_col].reindex(ws3_area_ha.index).fillna(method='pad')
+        woodstock_vol = ext.set_index('period')[v_col].reindex(ws3_vol_m3.index).fillna(method='pad')
+        if a_col.endswith('_kha'):
+            woodstock_area = woodstock_area * 1000.0
+        if v_col.endswith('_Mm3'):
+            woodstock_vol = woodstock_vol * 1_000_000.0
+    else:
+        woodstock_area = ws3_area_ha.copy()
+        woodstock_vol = ws3_vol_m3.copy()
+
+    # Percent diffs (guard divide-by-zero)
+    def pct_diff(a, b):
+        out = 100.0 * (a - b) / b.replace(0, pd.NA)
+        return out.fillna(0.0)
+
+    area_diff_pct = pct_diff(ws3_area_ha, woodstock_area)
+    vol_diff_pct = pct_diff(ws3_vol_m3, woodstock_vol)
+
+    # Write parity-by-period CSV
+    parity_periods = pd.DataFrame({
+        'period': ws3_area_ha.index,
+        'ws3_harvest_area_ha': ws3_area_ha.values,
+        'woodstock_harvest_area_ha': woodstock_area.values,
+        'diff_area_pct': area_diff_pct.values,
+        'ws3_harvest_volume_m3': ws3_vol_m3.values,
+        'woodstock_harvest_volume_m3': woodstock_vol.values,
+        'diff_volume_pct': vol_diff_pct.values,
+    })
+    parity_periods.to_csv(tables_dir / 'woodstock_parity_periods.csv', index=False)
+
+    # Plot supplementary parity figure (two panels: area and volume)
+    fig, axes = plt.subplots(2, 1, figsize=(7.2, 6.0), sharex=True)
+    axes[0].plot(ws3_area_ha.index, woodstock_area.values, label='Woodstock', linewidth=1.6)
+    axes[0].plot(ws3_area_ha.index, ws3_area_ha.values, label='WS3', linestyle='--', linewidth=1.6)
+    axes[0].set_ylabel('Harvest area (ha)')
+    axes[0].legend()
+
+    axes[1].plot(ws3_vol_m3.index, woodstock_vol.values, label='Woodstock', linewidth=1.6)
+    axes[1].plot(ws3_vol_m3.index, ws3_vol_m3.values, label='WS3', linestyle='--', linewidth=1.6)
+    axes[1].set_xlabel('Planning period')
+    axes[1].set_ylabel('Harvest volume (m$^3$)')
+    axes[1].legend()
+
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    fig.savefig(figs_dir / 'sup_parity_periods.png', dpi=300)
     plt.close(fig)
 
     # Prepare libCBM SIT

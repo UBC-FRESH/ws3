@@ -25,7 +25,7 @@ Outputs (created)
   - f4a_harvest_and_stock.png
   - f4b_carbon_stocks.png
 - papers/ems/tables/
-  - scenario_flows.csv
+  - scenario_flows.csv (columns: period, harvest_area_ha, harvest_volume_m3, growing_stock_m3)
   - annual_carbon_stocks.csv
 
 How to run (Linux, bash)

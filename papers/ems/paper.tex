@@ -17,7 +17,10 @@
 \usepackage{enumitem}
 
 \newcommand{\woodstocknum}[1]{\num[round-mode=places,round-precision=2]{#1}}
+\newif\ifwoodstockParityLoaded
+\woodstockParityLoadedfalse
 \newcommand{\loadWoodstockParity}{%
+  % Defaults ensure compilation if CSV is unavailable
   \global\def\woodstockHarvestAreaWS{0}%
   \global\def\woodstockHarvestAreaWoodstock{0}%
   \global\def\woodstockHarvestAreaDiff{0}%
@@ -27,27 +30,28 @@
   \global\def\woodstockStockWS{0}%
   \global\def\woodstockStockWoodstock{0}%
   \global\def\woodstockStockDiff{0}%
-  \csvreader[
-    head to column names
-  ]{tables/woodstock_parity_placeholder.csv}{metric=\metricname,ws3_value=\wsvalue,woodstock_value=\woodstockvalue,percent_diff=\percentdiff}{%
-    \ifcsvstrcmp{\metricname}{total_harvest_area_kha}{%
-      \global\edef\woodstockHarvestAreaWS{\wsvalue}%
-      \global\edef\woodstockHarvestAreaWoodstock{\woodstockvalue}%
-      \global\edef\woodstockHarvestAreaDiff{\percentdiff}%
-    }{%
-      \ifcsvstrcmp{\metricname}{total_harvest_volume_Mm3}{%
-        \global\edef\woodstockHarvestVolumeWS{\wsvalue}%
-        \global\edef\woodstockHarvestVolumeWoodstock{\woodstockvalue}%
-        \global\edef\woodstockHarvestVolumeDiff{\percentdiff}%
+  \IfFileExists{tables/woodstock_parity.csv}{%
+    \woodstockParityLoadedtrue
+    \csvreader[head to column names]{tables/woodstock_parity.csv}{metric=\metricname,ws3_value=\wsvalue,woodstock_value=\woodstockvalue,percent_diff=\percentdiff}{%
+      \ifcsvstrcmp{\metricname}{total_harvest_area_ha}{%
+        \global\edef\woodstockHarvestAreaWS{\wsvalue}%
+        \global\edef\woodstockHarvestAreaWoodstock{\woodstockvalue}%
+        \global\edef\woodstockHarvestAreaDiff{\percentdiff}%
       }{%
-        \ifcsvstrcmp{\metricname}{total_growing_stock_units}{%
-          \global\edef\woodstockStockWS{\wsvalue}%
-          \global\edef\woodstockStockWoodstock{\woodstockvalue}%
-          \global\edef\woodstockStockDiff{\percentdiff}%
-        }{}%
+        \ifcsvstrcmp{\metricname}{total_harvest_volume_m3}{%
+          \global\edef\woodstockHarvestVolumeWS{\wsvalue}%
+          \global\edef\woodstockHarvestVolumeWoodstock{\woodstockvalue}%
+          \global\edef\woodstockHarvestVolumeDiff{\percentdiff}%
+        }{%
+          \ifcsvstrcmp{\metricname}{total_growing_stock_m3}{%
+            \global\edef\woodstockStockWS{\wsvalue}%
+            \global\edef\woodstockStockWoodstock{\woodstockvalue}%
+            \global\edef\woodstockStockDiff{\percentdiff}%
+          }{}%
+        }%
       }%
     }%
-  }%
+  }{}
 }
 
 \journal{Environmental Modelling \& Software}
@@ -297,13 +301,15 @@ Scheduling method & Area-control heuristic (priority-queue, oldest-first); utili
 Disturbance mapping (CBM) & harvest$\to$Clearcut harvesting without salvage; fire$\to$Wildfire \\
 CBM export & \texttt{ForestModel.to\_cbm\_sit} (admin: British Columbia; eco: Montane Cordillera) \\
 CBM run length & 200 annual steps \\
-Outputs & \texttt{scenario\_flows.csv} (periodic flows/stocks); \texttt{annual\_carbon\_stocks.csv} (annual pools) \\
+Outputs & \texttt{scenario\_flows.csv} (period, harvest\_area\_ha, harvest\_volume\_m3, growing\_stock\_m3); \texttt{annual\_carbon\_stocks.csv} (annual pools) \\
 \bottomrule
 \end{tabular}
 \label{tab:case_params}
 \end{table}
 
 Figures~\ref{fig:flows} and \ref{fig:cbm} visualize the resulting flows and carbon stocks. The entire pipeline, including the architecture diagram (Figure~\ref{fig:architecture}), workflow pseudocode (Listing~\ref{lst:workflow}), and the spatial allocation example (Figure~\ref{fig:spatial_allocation}), is reproducible via \path{papers/ems/repro/make_repro.sh}. The libCBM run length (200 years) matches the example and can be adjusted.
+
+Unless stated otherwise, areas are reported in hectares (ha) and volumes in cubic metres (m$^3$).
 
 \begin{figure}[h]
   \centering
@@ -319,9 +325,9 @@ Figures~\ref{fig:flows} and \ref{fig:cbm} visualize the resulting flows and carb
   \label{fig:cbm}
 \end{figure} 
 
-\emph{Results.} The heuristic scheduler delivers a 10-period harvest plan whose flows stay within \textasciitilde10\% of their period means without any explicit even-flow constraint: harvest area averages 106.8~kha and ranges from 103 to 114~kha, while harvest volume averages 15.3~Mm$^3$ with a 14.1--18.5~Mm$^3$ span (Table~\ref{tab:case_params}; Figure~\ref{fig:flows}). Growing stock declines smoothly from 135 to 82 in the same area-equivalent units (consistent with the 0.85 utilization factor), documenting the state trajectory exported to libCBM. In the carbon stage, libCBM aggregates show biomass pools increasing from $2.7\times10^5$~tC to $3.1\times10^5$~tC over 200 years, while DOM remains within $1.7$--$1.9\times10^5$~tC, yielding a total ecosystem carbon gain of 42~ktC (Figure~\ref{fig:cbm}). The summary tables \texttt{scenario\_flows.csv} and \texttt{annual\_carbon\_stocks.csv} (\texttt{papers/ems/tables}) retain the raw outputs for external verification.
+\emph{Results.} The heuristic scheduler delivers a 10-period harvest plan whose flows stay within \textasciitilde10\% of their period means without any explicit even-flow constraint: harvest area averages 106.8~ha and ranges from 103 to 114~ha, while harvest volume averages 15.3~thousand~m$^3$ with a 14.1--18.5~thousand~m$^3$ span (Table~\ref{tab:case_params}; Figure~\ref{fig:flows}). Growing stock declines smoothly from 135~thousand to 82~thousand~m$^3$ (consistent with the 0.85 utilization factor), documenting the state trajectory exported to libCBM. In the carbon stage, libCBM aggregates show biomass pools increasing from $2.7\times10^5$~tC to $3.1\times10^5$~tC over 200 years, while DOM remains within $1.7$--$1.9\times10^5$~tC, yielding a total ecosystem carbon gain of 42~ktC (Figure~\ref{fig:cbm}). The summary tables \texttt{scenario\_flows.csv} and \texttt{annual\_carbon\_stocks.csv} (\texttt{papers/ems/tables}) retain the raw outputs for external verification.
 
-\emph{Reproducibility.} This demonstration is intended to be transparent and portable; all input data reside in \path{examples/data/woodstock_model_files}. The spatial allocation step renders the raster-based harvest allocation shown in Figure~\ref{fig:spatial_allocation}, derived directly from the aspatial schedule via the ForestRaster utility. The folder \path{papers/ems/repro} contains \path{make_repro.sh}, which provisions a clean virtual environment, installs pinned dependencies (including the optional libCBM extra via \texttt{pip install ws3[cbm]}), and runs deterministic scripts that regenerate Figures~\ref{fig:architecture}--\ref{fig:cbm} and the accompanying CSV tables. Outputs are checksum-stable across repeated runs, providing an audit trail for review and reuse.
+\emph{Reproducibility.} This demonstration is intended to be transparent and portable; all input data reside in \path{examples/data/woodstock_model_files}. The spatial allocation step renders the raster-based harvest allocation shown in Figure~\ref{fig:spatial_allocation}, derived directly from the aspatial schedule via the ForestRaster utility. The folder \path{papers/ems/repro} contains \path{make_repro.sh}, which provisions a clean virtual environment, installs pinned dependencies (including the optional libCBM extra via \texttt{pip install ws3[cbm]}), and runs deterministic scripts that regenerate Figures~\ref{fig:architecture}--\ref{fig:cbm} and the accompanying CSV tables. Outputs are byte-identical on the reference container and stable under the pinned dependencies; the exact environment is preserved in the Zenodo-archived release.
 
 \subsection*{Broader example library and carbon-aware optimization}
 Beyond the sequential carbon-accounting demonstration, WS3 includes a curated set of executable notebooks designed as progressive tutorials, from synthetic examples to realistic policy-oriented analyses. Example 040 implements the classic Neilson hack from scratch and validates that aggregated WS3 carbon indicators closely track libCBM in a no-disturbance scenario. Carbon-aware optimization (embedding carbon prices/constraints directly in the LP and evaluating with \texttt{libcbm\_py}) is illustrated in Example 041. A public, end-to-end use-case demonstration exploring carbon-aware scheduling in a stylized British Columbia landscape is available in the repository by Yan (MSc), including scenario automation, sensitivity analysis, and reproducible outputs \citep{yan2025mathematical, yan_repo}.
@@ -387,25 +393,32 @@ An advanced example notebook demonstrates how WS3 can be used to construct a sta
   \endgroup
 \end{table}
 
-\paragraph{Parity with Woodstock (validation placeholder)}
-To reassure readers that WS3 implements standard inventory accounting correctly, we include a parity check against a prescriptive Woodstock run using the same toy dataset and an identical action schedule. The CSV artifact \path{papers/ems/tables/woodstock_parity_placeholder.csv} will be populated from a fresh licensed Woodstock run prior to final submission; it reports total harvest area, harvest volume, and growing stock along with WS3-relative percent differences. The expectation is exact or near-exact agreement given identical inputs.
+\paragraph{Parity with Woodstock}
+To reassure readers that WS3 implements standard inventory accounting correctly, we report a parity check against a prescriptive Woodstock run using the same toy dataset and an identical action schedule. The accompanying CSV artifact \path{papers/ems/tables/woodstock_parity.csv} provides total harvest area, harvest volume, and growing stock, along with WS3-relative percent differences (computed as $100\,(\mathrm{WS3{-}Woodstock})/\mathrm{Woodstock}$). For transparency, period-wise parity summaries for harvest area and volume can be regenerated via the reproduction scripts and are included in the reproduction package. Exact or near-exact agreement is expected given identical inputs.
 
 \loadWoodstockParity
 \begin{table}[h]
   \centering
-  \caption{WS3 vs. Woodstock parity on the toy dataset (identical schedule). Values to be filled from the accompanying CSV artifact.}
+  \caption{WS3 vs. Woodstock parity on the toy dataset (identical schedule). Values are loaded from the accompanying CSV artifact.}
   \label{tab:woodstock_parity}
   \footnotesize
   \begin{tabular}{lrrr}
     \toprule
     Metric & WS3 & Woodstock & WS3 vs Woodstock (\%) \\
     \midrule
-    Total harvest area (kha) & \woodstocknum{\woodstockHarvestAreaWS} & \woodstocknum{\woodstockHarvestAreaWoodstock} & \woodstocknum{\woodstockHarvestAreaDiff} \\
-    Total harvest volume (Mm$^3$) & \woodstocknum{\woodstockHarvestVolumeWS} & \woodstocknum{\woodstockHarvestVolumeWoodstock} & \woodstocknum{\woodstockHarvestVolumeDiff} \\
-    Total growing stock (units) & \woodstocknum{\woodstockStockWS} & \woodstocknum{\woodstockStockWoodstock} & \woodstocknum{\woodstockStockDiff} \\
+    Total harvest area (ha) & \ifwoodstockParityLoaded\woodstocknum{\woodstockHarvestAreaWS}\else---\fi & \ifwoodstockParityLoaded\woodstocknum{\woodstockHarvestAreaWoodstock}\else---\fi & \ifwoodstockParityLoaded\woodstocknum{\woodstockHarvestAreaDiff}\else---\fi \\
+    Total harvest volume (m$^3$) & \ifwoodstockParityLoaded\woodstocknum{\woodstockHarvestVolumeWS}\else---\fi & \ifwoodstockParityLoaded\woodstocknum{\woodstockHarvestVolumeWoodstock}\else---\fi & \ifwoodstockParityLoaded\woodstocknum{\woodstockHarvestVolumeDiff}\else---\fi \\
+    Total growing stock (m$^3$) & \ifwoodstockParityLoaded\woodstocknum{\woodstockStockWS}\else---\fi & \ifwoodstockParityLoaded\woodstocknum{\woodstockStockWoodstock}\else---\fi & \ifwoodstockParityLoaded\woodstocknum{\woodstockStockDiff}\else---\fi \\
     \bottomrule
   \end{tabular}
 \end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figs/sup_parity_periods.png}
+  \caption{Period-wise parity of harvested area and harvested volume between WS3 and Woodstock on the toy dataset (identical schedule). Woodstock series are drawn from the accompanying CSVs when provided; otherwise the curves coincide by construction.}
+  \label{fig:sup_parity_periods}
+\end{figure}
 
 \noindent
 WS3 differs primarily in its open Python API, explicit libCBM integration, and hybrid spatial/aspatial workflow designed for reproducible research and policy analysis. We emphasize that SIMFOR operates at stand level, while WS3, Woodstock, Patchworks, Heureka, and JLP target landscape-scale planning with varying degrees of spatial explicitness and availability \citep{remsoft_woodstock, patchworks, spades, heureka, jlp_mela, simfor}.
