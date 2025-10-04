@@ -49,11 +49,38 @@ def main():
     fm.reset_actions()
 
     # Schedule harvesting via heuristic to have content to pass to libCBM
-    schedule_harvest_areacontrol(fm)
+    schedule = schedule_harvest_areacontrol(fm)
+
+    # Export schedule for Woodstock parity (space-delimited)
+    schedule_path = Path('examples/data/woodstock_model_files/tsa24_clipped.sch')
+    schedule_lines = []
+    for record in schedule:
+        parts = []
+        for value in record:
+            if isinstance(value, tuple):
+                parts.extend(str(v) for v in value)
+            else:
+                parts.append(str(value))
+        schedule_lines.append(" ".join(parts))
+    schedule_path.write_text("\n".join(schedule_lines) + "\n")
 
     # Compile scenario and save flows table
     df = compile_scenario(fm)
     df.to_csv(tables_dir / 'scenario_flows.csv', index=False)
+
+    # Update Woodstock parity placeholder with WS3 totals
+    parity_path = tables_dir / 'woodstock_parity_placeholder.csv'
+    if parity_path.exists():
+        parity_df = pd.read_csv(parity_path)
+        totals = {
+            'total_harvest_area_kha': df['oha'].sum(),
+            'total_harvest_volume_Mm3': df['ohv'].sum(),
+            'total_growing_stock_units': df['ogs'].sum(),
+        }
+        for metric, value in totals.items():
+            mask = parity_df['metric'] == metric
+            parity_df.loc[mask, 'ws3_value'] = value
+        parity_df.to_csv(parity_path, index=False)
 
     # Plot F4a-like flows (harvest area/volume, stock)
     fig, ax = plot_scenario(df)
