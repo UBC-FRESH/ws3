@@ -1,13 +1,13 @@
 metric,value
 harvest_area_total_diff_ha,4.263256414560601e-14
 harvest_volume_total_diff_m3,0.00029802801691403147
-growing_stock_total_diff_m3,34341.01616711699
+growing_stock_total_diff_m3,-0.0011093340290244669
 harvest_area_mae_ha,7.105427357601002e-15
 harvest_volume_mae_m3,0.001004035798359837
-growing_stock_mae_m3,3434.101616711699
+growing_stock_mae_m3,0.0023662075982429087
 harvest_area_mape_pct,7.105427357601002e-15
 harvest_volume_mape_pct,6.051716281771586e-06
-growing_stock_mape_pct,2.7759623869772243
+growing_stock_mape_pct,1.8511628326113547e-06
 harvest_area_max_abs_pct_diff,4.263256414560601e-14
 harvest_volume_max_abs_pct_diff,1.972506557145334e-05
-growing_stock_max_abs_pct_diff,4.524010353986009
+growing_stock_max_abs_pct_diff,2.8508313279872153e-06

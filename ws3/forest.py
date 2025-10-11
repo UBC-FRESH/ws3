@@ -1437,8 +1437,7 @@ class ForestModel:
                 result[dt.key] = operable_ages
         return result
 
-    def inventory(self, period, yname=None, age=None, mask=None, dtype_keys=None, verbose=0,
-                  use_pre_action_inventory=True):
+    def inventory(self, period, yname=None, age=None, mask=None, dtype_keys=None, verbose=0):
         """
         Flexible method that compiles inventory at given period.
         Unit of return data defaults to area if yname not given, 
@@ -1453,33 +1452,40 @@ class ForestModel:
             _dtype_keys = dtype_keys
         else:
             _dtype_keys = list(self.dtypes.keys())
+        shift = self.period_length
         for dtk in _dtype_keys:
             dt = self.dtypes[dtk]
-            if use_pre_action_inventory:
-                if period <= 1:
-                    inventory_map = dt._areas[0]
-                else:
-                    inventory_map = dd(float)
-                    shift = self.period_length
-                    for src_age, src_area in dt._areas[period - 1].items():
-                        inventory_map[src_age + shift] += src_area
+            if period == 0:
+                inventory_map = dt._areas[0]
             else:
-                inventory_map = dt._areas[period]
+                inventory_map = dd(float)
+                for src_age, src_area in dt._areas[period].items():
+                    aged_age = src_age + shift
+                    inventory_map[aged_age] += src_area
             if yname:
                 ycomp = dt.ycomp(yname)
                 if not ycomp:
                     continue
+                ymax = getattr(ycomp, "xmax", None)
             else:
                 ycomp = None
+                ymax = None
             if age is not None:
                 value = 0.0
                 if age in inventory_map:
-                    factor = ycomp[age] if ycomp else 1.0
+                    if ycomp:
+                        lookup_age = min(age, ymax) if ymax is not None else age
+                        factor = ycomp[lookup_age]
+                    else:
+                        factor = 1.0
                     value = inventory_map[age] * factor
                 result += value
             else:
                 if ycomp:
-                    result += sum(area * ycomp[a] for a, area in inventory_map.items())
+                    if ymax is not None:
+                        result += sum(area * ycomp[min(a, ymax)] for a, area in inventory_map.items())
+                    else:
+                        result += sum(area * ycomp[a] for a, area in inventory_map.items())
                 else:
                     result += sum(inventory_map.values())
         return result
