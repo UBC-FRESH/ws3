@@ -14,9 +14,9 @@
 | Reproducible Case Study    | ✅ Ready     | Manuscript documents hardware, runtime/scale metrics, and libCBM install notes; optional scaling script and perf_scaling.csv ship with repro package |
 | Software Archive with DOI  | ✅ Ready     | Release archived on Zenodo (10.5281/zenodo.17219651) and cited in manuscript       |
 | Graphical Abstract         | ✅ Ready     | Figure available as `papers/ems/figs/graphical_abstract.png` and referenced        |
-| FAIR Checklist Compliance  | ⚠️ In Progress | Summary in text, but full Elsevier FAIR form and dataset/installation caveats still to be drafted explicitly |
+| FAIR Checklist Compliance  | ✅ Ready     | Manuscript FAIR checklist table (label `tab:fair-checklist`) and supplementary CSV (`papers/ems/tables/fair_checklist.csv`) document the requirements; paragraph cross-references the artefact |
 | Input validation scope     | ⏭️ Out of scope | Exhaustive auto-validation is infeasible for Woodstock’s full domain; targeted checks documented; responsibility remains with qualified analysts |
-| Verification vs Woodstock  | ⚠️ In Progress | Historical parity checks performed; manuscript now includes verification paragraph; consider adding a small side-by-side table/figure if space allows |
+| Verification vs Woodstock  | ✅ Ready     | Parity tables/figure generated in `papers/ems/repro/generate_case_study.py`; manuscript table (label `tab:woodstock_parity`) and supplementary CSVs provide prescriptive comparison |
 | Scalability benchmarks     | ✅ Ready     | DataLad-enabled TSA suite wired; `perf_scaling.csv` covers sorted mash-ups, 1-vs-16 worker runs, spatial timing, and memory profiles |
 
 ### FAIR Compliance Summary

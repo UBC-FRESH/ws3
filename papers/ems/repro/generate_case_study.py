@@ -200,14 +200,18 @@ def main():
         'total_growing_stock_m3': float(woodstock_df['woodstock_growing_stock_m3'].sum()),
     }
     rows = []
+    def round_two(value):
+        rounded = round(value, 2)
+        return 0.0 if abs(rounded) < 1e-9 else rounded
+
     for metric, ws3_value in totals_ws3.items():
         woodstock_value = totals_woodstock[metric]
         diff = 0.0 if woodstock_value == 0 else 100.0 * (ws3_value - woodstock_value) / woodstock_value
         rows.append({
             'metric': metric,
-            'ws3_value': ws3_value,
-            'woodstock_value': woodstock_value,
-            'percent_diff': diff,
+            'ws3_value': round_two(ws3_value),
+            'woodstock_value': round_two(woodstock_value),
+            'percent_diff': round_two(diff),
         })
     pd.DataFrame(rows).to_csv(parity_path, index=False)
 
@@ -268,6 +272,8 @@ def main():
         'woodstock_growing_stock_m3': woodstock_stock.values,
         'diff_growing_stock_pct': stock_diff_pct.values,
     })
+    numeric_cols = [col for col in parity_periods.columns if col != 'period']
+    parity_periods[numeric_cols] = parity_periods[numeric_cols].apply(lambda col: col.map(round_two))
     parity_periods.to_csv(tables_dir / 'woodstock_parity_periods.csv', index=False)
 
     # Summary error statistics for reporting
@@ -398,6 +404,30 @@ def main():
     ax.set_title('Annual carbon stocks (libCBM)')
     fig.savefig(figs_dir / 'f4b_carbon_stocks.png', dpi=300)
     plt.close(fig)
+
+    fair_rows = [
+        {
+            'principle': 'Findable',
+            'checklist_focus': 'Persistent identifier; indexed repository',
+            'evidence': 'Zenodo DOI 10.5281/zenodo.17219651; tagged GitHub releases; PyPI project metadata',
+        },
+        {
+            'principle': 'Accessible',
+            'checklist_focus': 'License and public access',
+            'evidence': 'MIT license; public GitHub repository; PyPI wheels; bundled reproduction package assets',
+        },
+        {
+            'principle': 'Interoperable',
+            'checklist_focus': 'Open formats and connectors',
+            'evidence': 'Woodstock LAN/ARE/YLD import; libCBM SIT export; CSV/GeoTIFF outputs; documented API',
+        },
+        {
+            'principle': 'Reusable',
+            'checklist_focus': 'Documentation, provenance, validation',
+            'evidence': 'ReadTheDocs site; notebooks/examples; CI-tested pytest suite; deterministic repro scripts',
+        },
+    ]
+    pd.DataFrame(fair_rows).to_csv(tables_dir / 'fair_checklist.csv', index=False)
 
     print("Done. Wrote figures to:", figs_dir)
     print("Tables to:", tables_dir)
