@@ -9,5 +9,5 @@
   *SOURCE harvest _AREA
 
 ; Growing stock
-;*OUTPUT growing_stock
-;  *SOURCE ? ? ? ? ? _INVENT _YLD(totvol)
+*OUTPUT growing_stock
+  *SOURCE ? ? ? ? ? _INVENT totvol
