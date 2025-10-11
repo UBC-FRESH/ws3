@@ -29,7 +29,7 @@ from util import schedule_harvest_areacontrol, compile_scenario
 
 
 DATA_DIR = EXAMPLES_DIR / "data"
-WOODSTOCK_DIR = DATA_DIR / "woodstock_model_files"
+WOODSTOCK_DIR = DATA_DIR / "woodstock_model_files_tsa24_clipped"
 SHAPE_PATH = DATA_DIR / "shp" / "tsa24_clipped.shp" / "stands.shp"
 
 CACHE_DIR = REPO_ROOT / "papers" / "ems" / "repro" / "_spatial_cache"
@@ -60,11 +60,12 @@ def build_forest_model() -> ws3.forest.ForestModel:
         max_age=1000,
     )
 
+    period_factor = fm.period_length
     fm.import_landscape_section()
-    fm.import_areas_section()
-    fm.import_yields_section()
-    fm.import_actions_section()
-    fm.import_transitions_section()
+    fm.import_areas_section(convert_periods_to_years=period_factor)
+    fm.import_yields_section(convert_periods_to_years=period_factor)
+    fm.import_actions_section(convert_periods_to_years=period_factor)
+    fm.import_transitions_section(convert_periods_to_years=period_factor)
     fm.initialize_areas()
     fm.add_null_action()
     fm.reset_actions()

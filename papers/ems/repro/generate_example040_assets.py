@@ -27,17 +27,18 @@ def main():
 
     fm = ws3.forest.ForestModel(
         model_name="tsa24_clipped",
-        model_path="examples/data/woodstock_model_files",
+        model_path="examples/data/woodstock_model_files_tsa24_clipped",
         base_year=base_year,
         horizon=horizon,
         period_length=period_length,
         max_age=max_age,
     )
+    period_factor = fm.period_length
     fm.import_landscape_section()
-    fm.import_areas_section()
-    fm.import_yields_section()
-    fm.import_actions_section()
-    fm.import_transitions_section()
+    fm.import_areas_section(convert_periods_to_years=period_factor)
+    fm.import_yields_section(convert_periods_to_years=period_factor)
+    fm.import_actions_section(convert_periods_to_years=period_factor)
+    fm.import_transitions_section(convert_periods_to_years=period_factor)
     fm.initialize_areas()
     fm.add_null_action()
     fm.reset_actions()

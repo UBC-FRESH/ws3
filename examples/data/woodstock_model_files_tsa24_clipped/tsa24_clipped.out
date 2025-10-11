@@ -1,0 +1,13 @@
+; Outputs
+
+; Harvested volume
+*OUTPUT harvested_volume
+  *SOURCE harvest totvol
+
+; Harvested area
+*OUTPUT harvested_area
+  *SOURCE harvest _AREA
+
+; Growing stock
+;*OUTPUT growing_stock
+;  *SOURCE ? ? ? ? ? _INVENT _YLD(totvol)

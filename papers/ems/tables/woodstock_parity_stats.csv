@@ -1,0 +1,9 @@
+metric,value
+harvest_area_total_diff_ha,-328.04541892207556
+harvest_volume_total_diff_m3,-72138.24440018968
+harvest_area_mae_ha,32.80454189220755
+harvest_volume_mae_m3,7213.824440018968
+harvest_area_mape_pct,32.80454189220755
+harvest_volume_mape_pct,44.03795402069511
+harvest_area_max_abs_pct_diff,85.168042220391
+harvest_volume_max_abs_pct_diff,87.39283588733234

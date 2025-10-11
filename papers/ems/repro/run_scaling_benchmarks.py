@@ -369,7 +369,7 @@ def benchmark_lp(
 
 
 def bench_example_woodstock() -> List[dict]:
-    example_root = REPO_ROOT / "examples" / "data" / "woodstock_model_files"
+    example_root = REPO_ROOT / "examples" / "data" / "woodstock_model_files_tsa24_clipped"
     if not example_root.exists():
         return []
     metrics = init_metrics("example", "heuristic", HEURISTIC_WORKERS, None)
@@ -382,11 +382,12 @@ def bench_example_woodstock() -> List[dict]:
         max_age=1000,
     )
     t0 = time.perf_counter()
+    period_factor = fm.period_length
     fm.import_landscape_section()
-    fm.import_areas_section()
-    fm.import_yields_section()
-    fm.import_actions_section()
-    fm.import_transitions_section()
+    fm.import_areas_section(convert_periods_to_years=period_factor)
+    fm.import_yields_section(convert_periods_to_years=period_factor)
+    fm.import_actions_section(convert_periods_to_years=period_factor)
+    fm.import_transitions_section(convert_periods_to_years=period_factor)
     fm.initialize_areas()
     fm.add_null_action()
     fm.reset_actions()
