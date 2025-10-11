@@ -1,0 +1,43 @@
+; File created Oct 11 2025 at 11:03:15 am
+; Created with Woodstock version 2025.5.0 (64 Bit)
+
+Run = 1    Period = 1
+harvested_volume                                15,457.23
+harvested_area                                     100.00
+
+Run = 1    Period = 2
+harvested_volume                                15,404.70
+harvested_area                                     100.00
+
+Run = 1    Period = 3
+harvested_volume                                15,425.86
+harvested_area                                     100.00
+
+Run = 1    Period = 4
+harvested_volume                                17,235.60
+harvested_area                                     100.00
+
+Run = 1    Period = 5
+harvested_volume                                19,872.46
+harvested_area                                     100.00
+
+Run = 1    Period = 6
+harvested_volume                                15,200.00
+harvested_area                                     100.00
+
+Run = 1    Period = 7
+harvested_volume                                15,571.45
+harvested_area                                     100.00
+
+Run = 1    Period = 8
+harvested_volume                                15,700.00
+harvested_area                                     100.00
+
+Run = 1    Period = 9
+harvested_volume                                16,000.00
+harvested_area                                     100.00
+
+Run = 1    Period = 10
+harvested_volume                                18,970.78
+harvested_area                                     100.00
+

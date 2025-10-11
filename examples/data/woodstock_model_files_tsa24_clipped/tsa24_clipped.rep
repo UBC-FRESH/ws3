@@ -1,0 +1,6 @@
+;REPORTS
+*TARGET  everything.txt  ;Report all defined outputs
+ _ALL 1.._LENGTH
+
+*TARGET tsa24_clipped.seq
+ _SCHEDULE 1.._LENGTH
