@@ -1437,7 +1437,8 @@ class ForestModel:
                 result[dt.key] = operable_ages
         return result
 
-    def inventory(self, period, yname=None, age=None, mask=None, dtype_keys=None, verbose=0):
+    def inventory(self, period, yname=None, age=None, mask=None, dtype_keys=None, verbose=0,
+                  use_pre_action_inventory=True):
         """
         Flexible method that compiles inventory at given period.
         Unit of return data defaults to area if yname not given, 
@@ -1454,11 +1455,33 @@ class ForestModel:
             _dtype_keys = list(self.dtypes.keys())
         for dtk in _dtype_keys:
             dt = self.dtypes[dtk]
-            ycomp = dt.ycomp(yname) if yname else {a:1. for a in dt._areas[period]}
-            if age is not None:
-                result += dt.area(period, age) * ycomp[age] if age in dt._areas[period] else 0. 
+            if use_pre_action_inventory:
+                if period <= 1:
+                    inventory_map = dt._areas[0]
+                else:
+                    inventory_map = dd(float)
+                    shift = self.period_length
+                    for src_age, src_area in dt._areas[period - 1].items():
+                        inventory_map[src_age + shift] += src_area
             else:
-                result += sum(dt.area(period, a) * ycomp[a] for a in dt._areas[period]) if ycomp else 0.
+                inventory_map = dt._areas[period]
+            if yname:
+                ycomp = dt.ycomp(yname)
+                if not ycomp:
+                    continue
+            else:
+                ycomp = None
+            if age is not None:
+                value = 0.0
+                if age in inventory_map:
+                    factor = ycomp[age] if ycomp else 1.0
+                    value = inventory_map[age] * factor
+                result += value
+            else:
+                if ycomp:
+                    result += sum(area * ycomp[a] for a, area in inventory_map.items())
+                else:
+                    result += sum(inventory_map.values())
         return result
         
     def operable_area(self, acode, period, age=None, mask=None):

@@ -183,7 +183,7 @@ def compile_scenario(fm):
                           their volumes, and overall inventory at each period respectively.
     """
     oha = [fm.compile_product(period, '1.', acode='harvest') for period in fm.periods]
-    ohv = [fm.compile_product(period, 'totvol * 0.85', acode='harvest') for period in fm.periods]
+    ohv = [fm.compile_product(period, 'totvol', acode='harvest') for period in fm.periods]
     ogs = [fm.inventory(period, 'totvol') for period in fm.periods]
     data = {'period':fm.periods, 
             'oha':oha, 

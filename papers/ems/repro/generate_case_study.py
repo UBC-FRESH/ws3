@@ -47,6 +47,12 @@ def load_woodstock_everything(path: Path) -> pd.DataFrame:
                     continue
                 value = float(match_value.group(1).replace(',', ''))
                 records[current_period]['harvested_area'] = value
+            elif line.lower().startswith('growing_stock'):
+                match_value = value_re.search(line)
+                if not match_value:
+                    continue
+                value = float(match_value.group(1).replace(',', ''))
+                records[current_period]['growing_stock'] = value
     if not records:
         raise ValueError(f"No harvest records parsed from {path}")
     df = (
@@ -55,7 +61,7 @@ def load_woodstock_everything(path: Path) -> pd.DataFrame:
         .rename(columns={'index': 'period'})
         .sort_values('period')
     )
-    expected_cols = {'harvested_area', 'harvested_volume'}
+    expected_cols = {'harvested_area', 'harvested_volume', 'growing_stock'}
     missing_cols = expected_cols.difference(df.columns)
     if missing_cols:
         raise ValueError(f"Missing expected columns in Woodstock output: {missing_cols}")
@@ -178,6 +184,7 @@ def main():
     woodstock_df = load_woodstock_everything(woodstock_output_path).rename(columns={
         'harvested_area': 'woodstock_harvest_area_ha',
         'harvested_volume': 'woodstock_harvest_volume_m3',
+        'growing_stock': 'woodstock_growing_stock_m3',
     })
 
     # Write Woodstock parity CSV (totals) with correct units: ha and m^3
@@ -185,10 +192,12 @@ def main():
     totals_ws3 = {
         'total_harvest_area_ha': float(df['oha'].sum()),
         'total_harvest_volume_m3': float(df['ohv'].sum()),
+        'total_growing_stock_m3': float(df['ogs'].sum()),
     }
     totals_woodstock = {
         'total_harvest_area_ha': float(woodstock_df['woodstock_harvest_area_ha'].sum()),
         'total_harvest_volume_m3': float(woodstock_df['woodstock_harvest_volume_m3'].sum()),
+        'total_growing_stock_m3': float(woodstock_df['woodstock_growing_stock_m3'].sum()),
     }
     rows = []
     for metric, ws3_value in totals_ws3.items():
@@ -224,13 +233,16 @@ def main():
     # WS3 series (units: ha and m^3)
     ws3_area_ha = df.groupby(period_col)['oha'].sum()
     ws3_vol_m3 = df.groupby(period_col)['ohv'].sum()
+    ws3_stock_m3 = df.groupby(period_col)['ogs'].sum()
 
     woodstock_area = woodstock_df.set_index('period')['woodstock_harvest_area_ha'].reindex(ws3_area_ha.index)
     woodstock_vol = woodstock_df.set_index('period')['woodstock_harvest_volume_m3'].reindex(ws3_vol_m3.index)
-    if woodstock_area.isna().any() or woodstock_vol.isna().any():
+    woodstock_stock = woodstock_df.set_index('period')['woodstock_growing_stock_m3'].reindex(ws3_stock_m3.index)
+    if woodstock_area.isna().any() or woodstock_vol.isna().any() or woodstock_stock.isna().any():
         missing_periods = sorted({
             *woodstock_area[woodstock_area.isna()].index.tolist(),
             *woodstock_vol[woodstock_vol.isna()].index.tolist(),
+            *woodstock_stock[woodstock_stock.isna()].index.tolist(),
         })
         raise ValueError(f"Woodstock outputs missing data for periods: {missing_periods}")
 
@@ -241,6 +253,7 @@ def main():
 
     area_diff_pct = pct_diff(ws3_area_ha, woodstock_area)
     vol_diff_pct = pct_diff(ws3_vol_m3, woodstock_vol)
+    stock_diff_pct = pct_diff(ws3_stock_m3, woodstock_stock)
 
     # Write parity-by-period CSV
     parity_periods = pd.DataFrame({
@@ -251,6 +264,9 @@ def main():
         'ws3_harvest_volume_m3': ws3_vol_m3.values,
         'woodstock_harvest_volume_m3': woodstock_vol.values,
         'diff_volume_pct': vol_diff_pct.values,
+        'ws3_growing_stock_m3': ws3_stock_m3.values,
+        'woodstock_growing_stock_m3': woodstock_stock.values,
+        'diff_growing_stock_pct': stock_diff_pct.values,
     })
     parity_periods.to_csv(tables_dir / 'woodstock_parity_periods.csv', index=False)
 
@@ -267,12 +283,20 @@ def main():
             'value': float((ws3_vol_m3 - woodstock_vol).sum()),
         },
         {
+            'metric': 'growing_stock_total_diff_m3',
+            'value': float((ws3_stock_m3 - woodstock_stock).sum()),
+        },
+        {
             'metric': 'harvest_area_mae_ha',
             'value': float(area_abs_diff.mean()),
         },
         {
             'metric': 'harvest_volume_mae_m3',
             'value': float(vol_abs_diff.mean()),
+        },
+        {
+            'metric': 'growing_stock_mae_m3',
+            'value': float((ws3_stock_m3 - woodstock_stock).abs().mean()),
         },
         {
             'metric': 'harvest_area_mape_pct',
@@ -283,12 +307,20 @@ def main():
             'value': float(vol_diff_pct.abs().mean()),
         },
         {
+            'metric': 'growing_stock_mape_pct',
+            'value': float(stock_diff_pct.abs().mean()),
+        },
+        {
             'metric': 'harvest_area_max_abs_pct_diff',
             'value': float(area_diff_pct.abs().max()),
         },
         {
             'metric': 'harvest_volume_max_abs_pct_diff',
             'value': float(vol_diff_pct.abs().max()),
+        },
+        {
+            'metric': 'growing_stock_max_abs_pct_diff',
+            'value': float(stock_diff_pct.abs().max()),
         },
     ]
     pd.DataFrame(stats_rows).to_csv(tables_dir / 'woodstock_parity_stats.csv', index=False)
