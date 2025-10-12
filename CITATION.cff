@@ -5,8 +5,8 @@ authors:
     given-names: Gregory
     orcid: https://orcid.org/0000-0001-9618-8797
 title: "ws3: a Wood Supply Simulation System"
-version: 1.0.4
-date-released: 2025-09-28
+version: 1.0.5
+date-released: 2025-10-12
 license: MIT
 url: https://github.com/UBC-FRESH/ws3
-doi: 10.5281/zenodo.17219651
+doi: 10.5281/zenodo.17331213
