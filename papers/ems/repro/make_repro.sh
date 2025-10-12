@@ -21,7 +21,7 @@ echo "[2/6] Installing requirements"
 pip install -r papers/ems/repro/requirements.txt
 
 # If using a local checkout, ensure it is importable over pip ws3
-# pip install -e .
+pip install -e .
 
 echo "[3/6] Generating diagrams"
 ${PYBIN} papers/ems/repro/generate_diagrams.py

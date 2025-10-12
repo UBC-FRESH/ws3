@@ -320,9 +320,10 @@ class ForestRaster:
             #global ___foo
             #___foo = self._x
             #assert False
-            _ix = np.where((self._x[0][self._ix_forested] == fh) & 
-                           (self._x[1][self._ix_forested]+da >= from_age-0) &
-                           (self._x[1][self._ix_forested]+da <= from_age+0))
+            ages = self._x[1][self._ix_forested] + da
+            age_tolerance = max(1, int(self._period_length))
+            age_mask = np.abs(ages - from_age) <= age_tolerance
+            _ix = np.where((self._x[0][self._ix_forested] == fh) & age_mask)
             x = self._ix_forested[0][_ix], self._ix_forested[1][_ix]
         else:
             x = np.where((self._x[0] == fh) & (self._x[1]+da == from_age))
