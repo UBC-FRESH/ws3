@@ -1,4 +1,12 @@
 libcbm_py/
 _woodstock_model_files/
+_woodstock_model_files_tsa24_clipped/
 __scratch*.ipynb
 ws3/
+# Generated spatial artifacts (keep directories, ignore files)
+data/raster_spatial_demo/*
+!data/raster_spatial_demo/.gitkeep
+data/spatial_outputs/*
+!data/spatial_outputs/.gitkeep
+data/spatial_outputs/tsa24_demo/*
+!data/spatial_outputs/tsa24_demo/.gitkeep

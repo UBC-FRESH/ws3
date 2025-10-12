@@ -10,5 +10,6 @@ docs/build/html
 docs/build/latex
 # ignore .venv in the root of the workspace
 .venv/
+.ems-venv/
 paper/jats
 paper/paper.pdf

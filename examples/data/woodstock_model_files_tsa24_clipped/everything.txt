@@ -1,0 +1,53 @@
+; File created Oct 11 2025 at 1:42:52 pm
+; Created with Woodstock version 2025.5.0 (64 Bit)
+
+Run = 1    Period = 1
+harvested_volume                                15,457.23
+harvested_area                                     100.00
+growing_stock                                  142,746.01
+
+Run = 1    Period = 2
+harvested_volume                                15,404.70
+harvested_area                                     100.00
+growing_stock                                  140,039.22
+
+Run = 1    Period = 3
+harvested_volume                                15,425.86
+harvested_area                                     100.00
+growing_stock                                  137,228.87
+
+Run = 1    Period = 4
+harvested_volume                                17,235.60
+harvested_area                                     100.00
+growing_stock                                  134,852.23
+
+Run = 1    Period = 5
+harvested_volume                                19,872.46
+harvested_area                                     100.00
+growing_stock                                  129,015.55
+
+Run = 1    Period = 6
+harvested_volume                                15,200.00
+harvested_area                                     100.00
+growing_stock                                  125,893.90
+
+Run = 1    Period = 7
+harvested_volume                                15,571.45
+harvested_area                                     100.00
+growing_stock                                  121,036.36
+
+Run = 1    Period = 8
+harvested_volume                                15,700.00
+harvested_area                                     100.00
+growing_stock                                  116,451.33
+
+Run = 1    Period = 9
+harvested_volume                                16,000.00
+harvested_area                                     100.00
+growing_stock                                  113,109.84
+
+Run = 1    Period = 10
+harvested_volume                                18,970.78
+harvested_area                                     100.00
+growing_stock                                  109,318.84
+

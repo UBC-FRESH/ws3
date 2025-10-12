@@ -779,8 +779,7 @@ class ForestModel:
          :param str model_name: The name of model.
          :param str model_path: The path to input data of model.
          :param int base_year: The base year of teh model.
-         :param int horizon: The simulation horizon of the model.
-         :param int horizon: The length of the simulation period.
+         :param int horizon: The length (in number of periods) of the simulation horizon.
          :param int max_age: The maximum age considered in the model.
          :param int area_epsilon: 
          :param int curve_epsilon: 
@@ -793,6 +792,7 @@ class ForestModel:
         self.period_length = period_length
         self.max_age = max_age
         self.ages = list(range(max_age+1))
+        self._period_to_years_factor = None
         self.yields = []
         self.ynames = set()
         self.actions = {}
@@ -849,7 +849,26 @@ class ForestModel:
         """
         self.horizon = int(horizon)
         self.periods = list(range(1, horizon+1))
-        
+
+
+    def _resolve_period_multiplier(self, convert_periods_to_years):
+        """Resolve the Woodstock period-to-year multiplier for import helpers."""
+        if convert_periods_to_years is None:
+            return self._period_to_years_factor or 1
+        try:
+            multiplier = int(convert_periods_to_years)
+        except Exception as exc:
+            raise ValueError("convert_periods_to_years must be an integer number of years per period") from exc
+        if multiplier <= 0:
+            raise ValueError("convert_periods_to_years must be positive")
+        if self._period_to_years_factor is None:
+            self._period_to_years_factor = multiplier
+        elif self._period_to_years_factor != multiplier:
+            raise ValueError(
+                f"convert_periods_to_years={multiplier} conflicts with existing multiplier {self._period_to_years_factor}"
+            )
+        return multiplier
+
         
     def compile_actions(self, mask=None, verbose=False):
         """
@@ -1433,13 +1452,42 @@ class ForestModel:
             _dtype_keys = dtype_keys
         else:
             _dtype_keys = list(self.dtypes.keys())
+        shift = self.period_length
         for dtk in _dtype_keys:
             dt = self.dtypes[dtk]
-            ycomp = dt.ycomp(yname) if yname else {a:1. for a in dt._areas[period]}
-            if age is not None:
-                result += dt.area(period, age) * ycomp[age] if age in dt._areas[period] else 0. 
+            if period == 0:
+                inventory_map = dt._areas[0]
             else:
-                result += sum(dt.area(period, a) * ycomp[a] for a in dt._areas[period]) if ycomp else 0.
+                inventory_map = dd(float)
+                for src_age, src_area in dt._areas[period].items():
+                    aged_age = src_age + shift
+                    inventory_map[aged_age] += src_area
+            if yname:
+                ycomp = dt.ycomp(yname)
+                if not ycomp:
+                    continue
+                ymax = getattr(ycomp, "xmax", None)
+            else:
+                ycomp = None
+                ymax = None
+            if age is not None:
+                value = 0.0
+                if age in inventory_map:
+                    if ycomp:
+                        lookup_age = min(age, ymax) if ymax is not None else age
+                        factor = ycomp[lookup_age]
+                    else:
+                        factor = 1.0
+                    value = inventory_map[age] * factor
+                result += value
+            else:
+                if ycomp:
+                    if ymax is not None:
+                        result += sum(area * ycomp[min(a, ymax)] for a, area in inventory_map.items())
+                    else:
+                        result += sum(area * ycomp[a] for a, area in inventory_map.items())
+                else:
+                    result += sum(inventory_map.values())
         return result
         
     def operable_area(self, acode, period, age=None, mask=None):
@@ -2004,7 +2052,12 @@ class ForestModel:
         """
         return self._theme_basecodes[theme_index]
         
-    def import_areas_section(self, model_path=None, model_name=None, filename_suffix='are', import_empty=False):
+    def import_areas_section(self,
+                             model_path=None,
+                             model_name=None,
+                             filename_suffix='are',
+                             import_empty=False,
+                             convert_periods_to_years=None):
         """
         Imports AREAS section from a Forest model.
 
@@ -2017,6 +2070,7 @@ class ForestModel:
         n = self.nthemes()
         model_path = self.model_path if not model_path else model_path
         model_name = self.model_name if not model_name else model_name
+        multiplier = self._resolve_period_multiplier(convert_periods_to_years)
         with open('%s/%s.%s' % (model_path, model_name, filename_suffix)) as f:
             for l in f:
                 try:
@@ -2024,7 +2078,7 @@ class ForestModel:
                     l = l.lower().strip().partition(';')[0] # strip leading whitespace and trailing comments
                     t = re.split(r'\s+', l)
                     key = tuple(_t for _t in t[1:n+1])
-                    age = int(t[n+1])
+                    age = int(t[n+1]) * multiplier
                     area = float(t[n+2].replace(',', ''))
                     if area < self.area_epsilon and not import_empty: continue
                     if key not in self.dtypes: self.dtypes[key] = DevelopmentType(key, self)
@@ -2092,7 +2146,11 @@ class ForestModel:
                 t = re.split(r'\s+', l)
                 self.constants[t[0].lower()] = float(t[1])
 
-    def import_yields_section(self, filename_suffix='yld', mask_func=None, verbose=False):
+    def import_yields_section(self,
+                               filename_suffix='yld',
+                               mask_func=None,
+                               verbose=False,
+                               convert_periods_to_years=None):
         """
         Imports YIELDS section from a Forest model.
         """
@@ -2117,6 +2175,10 @@ class ForestModel:
             for k in self.unmask(m):
                 for yname, ycomp in ycomps:
                     self.dtypes[k].add_ycomp(t, yname, ycomp)
+
+        self._resolve_period_multiplier(convert_periods_to_years)
+        age_multiplier = self._period_to_years_factor or 1
+        period_step = self._period_to_years_factor or self.period_length
 
         n = self.nthemes()
         ytype = ''
@@ -2158,7 +2220,7 @@ class ForestModel:
                         continue
                 if is_tabular:
                     try:
-                        x = int(t[0])
+                        x = int(t[0]) * age_multiplier
                     except:
                         print(lnum, l)
                     for i, yname in enumerate(ynames):
@@ -2168,19 +2230,30 @@ class ForestModel:
                         if not common.is_num(t[0]): # first line of row-based yield component
                             yname = t[0].lower()
                             ynames.append(yname)
-                            data[yname] = [((int(t[1])*self.period_length)+(i*self.period_length),
-                                             float(t[i+2])) 
-                                           for i in range(len(t)-2)]
+                            start = int(t[1]) * period_step
+                            data[yname] = [(start + (i * period_step), float(t[i+2]))
+                                           for i in range(len(t) - 2)]
                         else: # continuation of row-based yield compontent
                             x_last = data[yname][-1][0]
-                            data[yname].extend([(i+x_last+1, float(t[i])) for i in range(len(t))])
+                            if len(data[yname]) >= 2:
+                                step = data[yname][1][0] - data[yname][0][0]
+                            else:
+                                step = period_step
+                            if not step:
+                                step = period_step
+                            data[yname].extend([(x_last + step * (i + 1), float(t[i]))
+                                                for i in range(len(t))])
                     else:
                         yname = t[0].lower()
                         ynames.append(yname)
                         data[yname] = ' '.join(t[1:]) # complex yield (defer interpretation)
         flush_ycomps(ytype, mask, ynames, data)
         
-    def import_actions_section(self, filename_suffix='act', mask_func=None, nthemes=None):
+    def import_actions_section(self,
+                               filename_suffix='act',
+                               mask_func=None,
+                               nthemes=None,
+                               convert_periods_to_years=None):
         """
         Imports ACTIONS section from a Forest model.
 
@@ -2193,6 +2266,14 @@ class ForestModel:
             - Partials represent components of an action.        
         """
         nthemes = nthemes if nthemes else self.nthemes()
+        multiplier = self._resolve_period_multiplier(convert_periods_to_years)
+        def scale_expr(expr):
+            if multiplier == 1:
+                return expr
+            pattern = re.compile(r'(_age\s*(?:>=|<=|=|<|>)\s*)(\d+)')
+            def repl(match):
+                return f"{match.group(1)}{int(int(match.group(2)) * multiplier)}"
+            return pattern.sub(repl, expr)
         actions = {}
         aggregates = {}
         partials = {}
@@ -2227,7 +2308,8 @@ class ForestModel:
                 if keyword == 'operable':
                     mask = tuple(tokens[:nthemes])
                     mask = mask_func(mask) if mask_func else mask
-                    self.oper_expr[acode][mask] = ' '.join(tokens[nthemes:])
+                    expression = ' '.join(tokens[nthemes:])
+                    self.oper_expr[acode][mask] = scale_expr(expression)
                 elif keyword == 'aggregate':
                     self.actions[acode].components.extend(tokens)
                 elif keyword == 'partial':
@@ -2276,7 +2358,14 @@ class ForestModel:
             return [-1]
         elif condition.startswith('@AGE'):
             lo, hi = [int(a) for a in condition[5:-1].split('..')]
-            return list(range(lo, hi+1))
+            multiplier = self._period_to_years_factor or 1
+            if multiplier != 1:
+                lo *= multiplier
+                hi *= multiplier
+                step = multiplier
+            else:
+                step = 1
+            return list(range(lo, hi + step, step))
         elif condition.startswith('@YLD'):
             args = re.split(r'\s?,\s?', condition[5:-1])
             yname = args[0].lower()
@@ -2286,11 +2375,17 @@ class ForestModel:
             return list(range(lo_age, hi_age+1))
             #return self.dtypes[dtype_key].resolve_condition(yname, hi, lo)
         
-    def import_transitions_section(self, filename_suffix='trn', mask_func=None, nthemes=None):
+    def import_transitions_section(self,
+                                   filename_suffix='trn',
+                                   mask_func=None,
+                                   nthemes=None,
+                                   convert_periods_to_years=None):
         """
         Imports TRANSITIONS section from a Forest model.
         """
         nthemes = nthemes if nthemes else self.nthemes()
+        self._resolve_period_multiplier(convert_periods_to_years)
+        age_multiplier = self._period_to_years_factor or 1
         def flush_transitions(acode, sources):
             if not acode: return # nothing to flush on first loop
             self.transitions[acode] = {}
@@ -2330,11 +2425,11 @@ class ForestModel:
                 if len(tokens) > nthemes+2 and tokens[nthemes+2].lower() in self.ynames:
                     tyield = (tokens[nthemes+2].lower(), float(tokens[nthemes+3]))
                 try: # _AGE keyword
-                    tage = int(tokens[tokens.index('_AGE')+1])
+                    tage = int(tokens[tokens.index('_AGE')+1]) * age_multiplier
                 except:
                     tage = None
                 try: # _LOCK keyword
-                    tlock = int(tokens[tokens.index('_LOCK')+1])
+                    tlock = int(tokens[tokens.index('_LOCK')+1]) * age_multiplier
                 except:
                     tlock = None
                 try: # _REPLACE keyword (TO DO: implement other cases)
@@ -2381,11 +2476,16 @@ class ForestModel:
         """
         pass
 
-    def import_schedule_section(self, filename_suffix='seq', replace_commas=True, filename_prefix=None):
+    def import_schedule_section(self,
+                                filename_suffix='seq',
+                                replace_commas=True,
+                                filename_prefix=None,
+                                convert_periods_to_years=None):
         """
         Imports SCHEDULE section from a Forest model.
         """
         filename_prefix = self.model_name if filename_prefix is None else filename_prefix
+        age_multiplier = self._resolve_period_multiplier(convert_periods_to_years)
         schedule = []
         n = self.nthemes()
         with open('%s/%s.%s' % (self.model_path, filename_prefix, filename_suffix)) as f:
@@ -2395,7 +2495,7 @@ class ForestModel:
                 t = re.split(r'\s+', l)
                 if len(t) != n + 5: break
                 dtype_key = tuple(t[:n])
-                age = int(t[n])
+                age = int(t[n]) * age_multiplier
                 area = float(t[n+1].replace(',', '')) if replace_commas else float(t[n+1])
                 acode = t[n+2]
                 period = int(t[n+3])
@@ -2794,7 +2894,9 @@ class ForestModel:
                     data['disturbance_type'].append(acode)
                     to_dtype_key, to_age = resolve_target(dtype_key, target, sage)
                     for i in range(len(theme_cols)): data['to_theme%i' % i].append(to_dtype_key[i])  # Monkey patch
-                    data['to_species'].append(self.dt(to_dtype_key).leading_species)
+                    target_dt = self.dt(to_dtype_key)
+                    target_species = target_dt.leading_species if target_dt else dt.leading_species
+                    data['to_species'].append(target_species)
                     data['regen_delay'].append(0)
                     data['reset_age'].append(to_age)
                     data['percent'].append(int(target[1] * 100))
