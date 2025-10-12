@@ -186,11 +186,20 @@ def main():
             df_cbm = df_cbm.iloc[10::10, :].reset_index(drop=True)
             df_cbm["period"] = df_cbm["period"].astype(int)
 
-        df_ws3 = pd.DataFrame({
-            "period": fm.periods,
-            "pool": [sum(fm.inventory(period, pool) for pool in pools) for period in fm.periods],
-            "flux": [sum(fm.inventory(period, flux) for flux in fluxes) for period in fm.periods],
-        })
+        # Shift WS3 reporting one planning period to align with end-of-period inventory semantics
+        first_period = fm.periods[0]
+        ws3_rows = [{
+            "period": first_period,
+            "pool": sum(fm.inventory(0, pool) for pool in pools),
+            "flux": sum(fm.inventory(0, flux) for flux in fluxes),
+        }]
+        for period in fm.periods:
+            ws3_rows.append({
+                "period": period + 1,
+                "pool": sum(fm.inventory(period, pool) for pool in pools),
+                "flux": sum(fm.inventory(period, flux) for flux in fluxes),
+            })
+        df_ws3 = pd.DataFrame(ws3_rows)
         return df_ws3, df_cbm
 
     pools_compare = biomass_pools + dom_pools + products_pools
