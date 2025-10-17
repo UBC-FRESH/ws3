@@ -16,6 +16,18 @@
 % \usepackage{underscore} % not needed; causes conflicts
 \usepackage{enumitem}
 
+% PDF metadata and link styling
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue,
+  pdftitle={WS3: An open-source Python framework for integrated simulation and optimization of forest landscape and wood supply systems},
+  pdfauthor={Gregory Paradis},
+  pdfsubject={EarthArXiv preprint; submitted to Environmental Modelling \& Software},
+  pdfkeywords={WS3, wood supply, forest estate, forest planning, optimization, libCBM, carbon accounting, environmental modelling, Python}
+}
+
 \newcommand{\woodstocknum}[1]{\num[round-mode=places,round-precision=2]{#1}}
 \newif\ifwoodstockParityLoaded
 \woodstockParityLoadedfalse
@@ -57,6 +69,33 @@
 \journal{Environmental Modelling \& Software}
 
 \begin{document}
+
+% EarthArXiv-compliant coversheet (page 1)
+\begin{titlepage}
+  \thispagestyle{empty}
+  \vspace*{2cm}
+  \begin{center}
+    {\LARGE\bfseries WS3: An open-source Python framework for integrated simulation and optimization of forest landscape and wood supply systems\par}
+    \vspace{1.5cm}
+    {\large Gregory Paradis\\
+    Faculty of Forestry, University of British Columbia, Canada\\
+    Email: gregory.paradis@ubc.ca\\
+    ORCID: \url{https://orcid.org/0000-0001-9618-8797}\par}
+    \vspace{1.5cm}
+    {\large\bfseries EarthArXiv Preprint Status\par}
+    \vspace{0.5cm}
+    {\normalsize This manuscript is a non\hyp peer\hyp reviewed preprint submitted to EarthArXiv.\\
+    It has been submitted to Environmental Modelling \& Software for peer review.\\
+    Subsequent versions may differ. If accepted, the peer\hyp reviewed version will be available from the journal.\par}
+    \vspace{1.5cm}
+    {\large Date: \today\par}
+  \end{center}
+  \vfill
+  % Optional: include author Mastodon handle(s) for EarthArXiv promotion.
+  % Uncomment and fill in if available, e.g.:
+  % \noindent Mastodon: @your\_handle@instance\par
+\end{titlepage}
+\setcounter{page}{2}
 
 \begin{frontmatter}
 
@@ -103,7 +142,7 @@ Transparent, reproducible decision support for forest landscape planning increas
 \end{itemize}
 
 \begin{keyword}
-Environmental modelling \sep Decision support \sep Forest estate \sep Optimization \sep Simulation \sep Spatial modelling \sep Reproducibility \sep Open-source software
+forest management \sep decision support systems \sep forest estate modelling \sep optimization \sep simulation \sep spatial modelling \sep reproducibility \sep open-source software
 \end{keyword}
 
 \end{frontmatter}
