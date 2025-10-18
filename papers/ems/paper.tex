@@ -27,7 +27,7 @@
   urlcolor=blue,
   pdftitle={WS3: An open-source Python framework for integrated simulation and optimization of forest landscape and wood supply systems},
   pdfauthor={Gregory Paradis},
-  pdfsubject={EarthArXiv preprint; submitted to Environmental Modelling \& Software},
+  pdfsubject={Submitted to Environmental Modelling \& Software},
   pdfkeywords={WS3, wood supply, forest estate, forest planning, optimization, libCBM, carbon accounting, environmental modelling, Python}
 }
 
@@ -105,7 +105,7 @@ Transparent, reproducible decision support for forest landscape planning increas
 \begin{itemize}
   \item Software name: WS3 (Wood Supply Simulation System)
   \item Developers: Gregory Paradis (UBC FRESH) with contributions from the FRESH lab community
-  \item First public release: 2015 (v0.1); current version: 1.0.4
+  \item First public release: 2015 (v0.1); current version: 1.0.5
   \item Programming language: Python (>=3.9); optional extras: libcbm, PuLP, gurobipy
   \item Source: \url{https://github.com/UBC-FRESH/ws3}; Issue tracker and discussions hosted on GitHub
   \item Distribution: PyPI package \texttt{ws3} (\texttt{pip install ws3} or \texttt{ws3[cbm]}) with wheels for Linux, macOS, Windows
@@ -172,24 +172,24 @@ Figure~\ref{fig:workflow_overview} summarizes the WS3 workflow from open inputs 
   \prismaflownode{core1}{below=of in2}{\textbf{ForestModel}\\Data API}{in2}
   \prismaflownode{core2}{below=of core1}{\textbf{Optimization}\\PuLP / HiGHS / Gurobi}{core1}
   \prismaflownode{core3}{right=of core2}{\textbf{Simulation \& reporting}}{core2}
-  \prismalabel{1.3*\mh}{core1.west}{WS3 core}
+  \prismalabel{1.3*\mh}{in1.west |- {$(core1)!0.5!(core2)$}}{WS3 core}
 
   % Integration row
   \prismaflownode{int1}{below=of core2}{\textbf{libCBM}\\Carbon pools \& flux}{core2}
   \prismaflownode{int2}{right=of int1}{\textbf{Spatial allocation}\\Rasterio / GeoTIFF}{core3}
-  \prismalabel{1.3*\mh}{int1.west}{Integration}
+  \prismalabel{1.3*\mh}{in1.west |- int1}{Integrate}
 
   % Outputs row
   \prismaflownode{out1}{below=of int1}{\textbf{Outputs}\\Dashboards, reports, reproducible assets}{int1}
-  \prismalabel{1.3*\mh}{out1.west}{Outputs}
+  \prismalabel{1.3*\mh}{in1.west |- out1}{Outputs}
 
   % Arrows from inputs
   \prismaflowarrow{in1}{core1}
   \prismaflowarrow{in2}{core1}
-  \prismaflowarrow{in3}{core2}
+  \prismaflowarrow{in3}{core1}
 
   % Arrows to integration
-  \prismaflowarrow{core1}{int1}
+  %\prismaflowarrow{core1}{int1}
 
   % Arrows to outputs
   \prismaflowarrow{int2}{out1}
@@ -279,7 +279,7 @@ The objective coefficients $c_{ij}$ encode the user-defined value of a path (e.g
 
 \emph{Performance spot checks.} The heuristic scheduler used in the case study produces a 100-year plan in under a second, and the subsequent 200-year libCBM simulation dominates total runtime (\textasciitilde5~s). Larger linear programs formulated through \texttt{ws3.opt} benefit from HiGHS (default) or optional Gurobi: internal regression notebooks (e.g., Examples~030/040) routinely solve tens-of-thousands-of-stand path-based instances within minutes using HiGHS, while the optional Gurobi backend shortens solve time further via its advanced presolve and feasibility tools. Raster allocations scale linearly with the number of cells processed per period and are trivially parallelizable.
 
-\emph{Optional scalability experiment.} To characterize scaling on real inventories, the reproduction package optionally integrates a DataLad-hosted benchmark dataset comprising five non-overlapping timber supply areas (TSAs) in northeastern British Columbia (the same study region as \citealt{boisvenue2022managing}). Enabling the optional step (\texttt{RUN\_SCALING=1}) fetches the dataset and executes \texttt{papers/ems/repro/run\_scaling\_benchmarks.py}, which sorts TSAs by complexity and evaluates them individually and cumulatively (\texttt{tsa08}, \texttt{tsa08+tsa40}, \ldots, \texttt{tsa08+tsa40+tsa41+tsa24+tsa16}). The scripted benchmark always runs the heuristic scheduler on a single worker---reflecting the implementation's serial design---and records sequential spatial-allocation runtimes using \texttt{ForestRaster}. On the reference container the heuristic schedules complete in 1.3--31.4~s while spatial allocation requires 46--656~s as problem size grows from 4.7~k to 37.7~k dtype--age pairs. Setting \texttt{RUN\_LP=1} extends the run to model-building benchmarks for the deterministic Model~I LP: WS3 constructs the LP with 1 and 16 workers (parallel coefficient compilation) and solves it with matching HiGHS thread counts, logging build/solve time, solver status, and stage-wise memory footprints. LP builds scale from 5.1~s (4.7~k dtype--age pairs) to 92.8~s (37.7~k dtype--age pairs) with single-worker compilation, while the 16-worker mode trims build time to 59~s at the cost of higher peak RSS (2.5~GB versus 1.8~GB). Because large path-based LPs routinely exceed tens of gigabytes of RAM on even larger inventories, the LP measurements are opt-in and intended for suitably provisioned systems. All metrics are written to \texttt{perf\_scaling.csv} with deterministic seeds so that regenerated figures and tables remain byte-identical; Figures~\ref{fig:scaling_sched}--\ref{fig:scaling_mem} and Table~\ref{tab:scaling_summary} summarise the resulting runtimes and memory profiles.
+\emph{Optional scalability experiment.} To characterize scaling on real inventories, the reproduction package optionally integrates a DataLad-hosted benchmark dataset comprising five non-overlapping timber supply areas (TSAs) in northeastern British Columbia (the same study region as \citealt{boisvenue2022managing}). Enabling the optional step (\texttt{RUN\_SCALING=1}) fetches the dataset and executes \texttt{papers/ems/repro/run\_scaling\_benchmarks.py}, which sorts TSAs by complexity and evaluates them individually and cumulatively (\texttt{tsa08}, \texttt{tsa08+tsa40}, \ldots, \texttt{tsa08+tsa40+tsa41+tsa24+tsa16}). The scripted benchmark always runs the heuristic scheduler on a single worker---reflecting the implementation's serial design---and records sequential spatial-allocation runtimes using \texttt{ForestRaster}. On the reference container the heuristic schedules complete in 1.3--31.4~s while spatial allocation requires 46--656~s as problem size grows from 4.7~k to 37.7~k dtype--age pairs. Setting \texttt{RUN\_LP=1} extends the run to model-building benchmarks for the deterministic Model~I LP: WS3 constructs the LP with 1 and 16 workers (parallel coefficient compilation) and solves it with matching HiGHS thread counts, logging build/solve time, solver status, and stage-wise memory footprints. LP builds scale from 5.1~s (4.7~k dtype--age pairs) to 92.8~s (37.7~k dtype--age pairs) with single-worker compilation, while the 16-worker mode trims build time to 59~s at the cost of higher peak RSS (2.5~GB versus 1.8~GB). Because large path-based LPs routinely exceed tens of gigabytes of RAM on even larger inventories, the LP measurements are opt-in and intended for suitably provisioned systems. All metrics are written to \texttt{perf\_scaling.csv} with deterministic seeds so that regenerated figures and tables remain byte-identical; Figures~\ref{fig:scaling_sched}--\ref{fig:scaling_mem} and Table~\ref{tab:scaling_summary} summarise the resulting runtimes and memory profiles (Figures~\ref{fig:scaling_sched} and~\ref{fig:scaling_spatial}).
 
 \begin{figure}[h]
   \centering
@@ -391,7 +391,7 @@ Beyond the sequential carbon-accounting demonstration, WS3 includes a curated se
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.95\linewidth]{figs/f5_neilsonhack_compare.png}
-\caption{Neilson-hack demonstration (Example~040): comparison of libCBM (solid) and WS3-embedded (dashed) carbon indicators after bootstrapping pools/fluxes into WS3 as yield curves. Top: ecosystem carbon pools; Bottom: aggregate decay emissions flux. In a no-disturbance scenario, the aggregated indicators match closely; with harvesting, flux gaps reflect known limitations of the Neilson hack due to CBM DOM spin-up assumptions mapping time to age.}
+\caption{Neilson-hack demonstration (Example~040): comparison of libCBM (solid) and WS3-embedded (dashed) carbon indicators after bootstrapping pools/fluxes into WS3 as yield curves. Top: ecosystem carbon pools; Bottom: aggregate decay emissions flux. In a no-disturbance scenario, the aggregated indicators match closely; with harvesting, flux gaps reflect known limitations of the Neilson hack due to CBM DOM spin-up assumptions mapping time to age (Figure~\ref{fig:neilsonhack}).}
   \label{fig:neilsonhack}
 \end{figure}
 
@@ -407,7 +407,7 @@ WS3 enables transparent, auditable analysis for forest landscape planning and cl
   \item Decision-support prototypes for nature-based solutions: avoided fire and avoided harvest workflows (Examples 050/060) with net-emission indicators derived from libCBM.
   \item Integration with spatial simulation: \texttt{spades\_ws3} module bridging WS3 with SpaDES for disturbance and landscape dynamics studies \citep{spades, spades_ws3}.
   \item Application backends: WS3 used in web-based decision-support systems (e.g., \texttt{ecotrust-dss}) for scenario configuration and reporting \citep{ecotrust-dss}.
-  \item Ongoing initiatives: CCCANDiES (integrated carbon and ecosystem services; in progress) and mining-sector nature-based solutions (separate paper under review).
+  \item Ongoing initiatives: CCCANDiES (integrated carbon and ecosystem services; in progress) and mining-sector nature-based solutions \citep{ghasemi2025decarbonization}. 
 \end{itemize}
 
 Interoperability fosters reusability: tabular/text inputs, raster outputs, and the libCBM linkage allow WS3 to slot into existing analytical pipelines. The reproduction package, unit tests, and continuous integration (CI) pipelines enhance trust and facilitate method transfer, aligned with community guidance on open and efficient scientific practice \citep{hampton2015tao, lowndes2017path}. The architecture is intentionally general, making it applicable to studies of sustainable yield, carbon accounting, biodiversity, and policy trade-offs \citep{boisvenue2022managing}.
@@ -450,7 +450,7 @@ An advanced example notebook demonstrates how WS3 can be used to construct a sta
 \end{table}
 
 \paragraph{Parity with Woodstock}
-To reassure readers that WS3 implements standard inventory accounting correctly, we report a parity check against a prescriptive Woodstock run using the same toy dataset and an identical action schedule. The accompanying CSV artifact \path{papers/ems/tables/woodstock_parity.csv} provides total harvest area, harvest volume, and growing stock, along with WS3-relative percent differences (computed as $100\,(\mathrm{WS3{-}Woodstock})/\mathrm{Woodstock}$). For transparency, period-wise parity summaries for harvest area and volume can be regenerated via the reproduction scripts and are included in the reproduction package. Exact or near-exact agreement is expected given identical inputs.
+To reassure readers that WS3 implements standard inventory accounting correctly, we report a parity check against a prescriptive Woodstock run using the same toy dataset and an identical action schedule. The accompanying CSV artifact \path{papers/ems/tables/woodstock_parity.csv} provides total harvest area, harvest volume, and growing stock, along with WS3-relative percent differences (computed as $100\,(\mathrm{WS3{-}Woodstock})/\mathrm{Woodstock}$). For transparency, period-wise parity summaries for harvest area and volume can be regenerated via the reproduction scripts and are included in the reproduction package. (Figure~\ref{fig:sup_parity_periods}) Exact or near-exact agreement is expected given identical inputs.
 
 \loadWoodstockParity
 \begin{table}[h]
@@ -500,7 +500,7 @@ Future work will expand uncertainty handling (stochastic scheduling, sensitivity
 WS3 source code is publicly available at \url{https://github.com/UBC-FRESH/ws3} and distributed via PyPI (\texttt{pip install ws3}). Versioned releases are archived on Zenodo (DOI \href{https://doi.org/10.5281/zenodo.17219651}{10.5281/zenodo.17219651}) \citep{ws3_zenodo2025}. Documentation and tutorials are available at \url{https://ws3.readthedocs.io}. A complete reproduction package for the sequential demonstration, including environment files, scripts, and figure-generation notebooks, is provided as supplementary material and in the release archive.
 
 \paragraph{Reproducibility}
-All figures and tables are generated by scripts in \texttt{papers/ems/repro}. The \texttt{make\_repro.sh} script creates an isolated environment, installs pinned dependencies (\texttt{requirements.txt}), and runs \texttt{generate\_diagrams.py}, the spatial allocation workflow (\texttt{generate\_spatial\_allocation.py}), and the sequential demonstration script (\texttt{generate\_case\_study.py}). Outputs are written to \texttt{papers/ems/figs} and \texttt{papers/ems/tables}, with intermediate rasters cached under \texttt{papers/ems/repro/\_spatial\_cache}. The exact versions are preserved via the Zenodo-archived release.
+All figures and tables are generated by scripts in \texttt{papers/ems/repro}. The \texttt{make\_repro.sh} script creates an isolated environment, installs pinned dependencies (\texttt{requirements.txt}), and runs \texttt{generate\_diagrams.py}, the spatial allocation workflow (\texttt{generate\_spatial\_allocation.py}), and the sequential demonstration script (\texttt{generate\_case\_study.py}). Outputs are written to \texttt{papers/ems/figs} and \texttt{papers/ems/tables}. The exact versions are preserved via the Zenodo-archived release.
 
 \paragraph{FAIR compliance}
 Table~\ref{tab:fair-checklist} summarises the EMS FAIR/software checklist submitted with the manuscript (see supplementary CSV \texttt{papers/ems/tables/fair\_checklist.csv}). WS3 remains Findable through its Zenodo DOI archive and indexed repositories, Accessible under the MIT license with public code/data artefacts, Interoperable via open tabular and geospatial formats plus Woodstock/libCBM linkages, and Reusable through pinned environments, continuous-integration (CI)–tested workflows, and full reproduction scripts \citep{ws3_zenodo2025}.
