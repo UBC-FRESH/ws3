@@ -4,7 +4,7 @@
 |----------------------------|--------------|-------------------------------------------------------------------------------------|
 | Open Repository            | ✅ Ready     | GitHub repo is public, active, and well-structured                                 |
 | Open Source License        | ✅ Ready     | Clearly licensed under MIT (compatible with EMS requirements)                      |
-| Versioning                 | ✅ Ready     | Semantic versioning applied (v1.0.5 on PyPI), changelog well maintained            |
+| Versioning                 | ✅ Ready     | Semantic versioning applied (v1.0.0 on PyPI), changelog well maintained            |
 | Documentation (Sphinx)     | ✅ Ready     | Excellent: full Sphinx site with install guide, architecture, use cases            |
 | ReadTheDocs Hosting        | ✅ Ready     | Published, stable, auto-updating documentation site                                |
 | Installation Instructions  | ✅ Ready     | Easy install via PyPI and Conda; documented in README.md and Sphinx docs           |
@@ -12,7 +12,7 @@
 | User Support Features      | ✅ Ready     | CONTRIBUTING.md, CODE_OF_CONDUCT.md, ISSUE_TEMPLATE, clean project structure       |
 | Examples & Tutorials       | ✅ Ready     | Multiple Jupyter Notebooks in `examples/`, with narrative and executable code       |
 | Reproducible Case Study    | ✅ Ready     | Manuscript documents hardware, runtime/scale metrics, and libCBM install notes; optional scaling script and perf_scaling.csv ship with repro package |
-| Software Archive with DOI  | ✅ Ready     | Release archived on Zenodo (10.5281/zenodo.17331213) and cited in manuscript       |
+| Software Archive with DOI  | ✅ Ready     | Release archived on Zenodo (10.5281/zenodo.17219651) and cited in manuscript       |
 | Graphical Abstract         | ✅ Ready     | Figure available as `papers/ems/figs/graphical_abstract.png` and referenced        |
 | FAIR Checklist Compliance  | ✅ Ready     | Manuscript FAIR checklist table (label `tab:fair-checklist`) and supplementary CSV (`papers/ems/tables/fair_checklist.csv`) document the requirements; paragraph cross-references the artefact |
 | Input validation scope     | ⏭️ Out of scope | Exhaustive auto-validation is infeasible for Woodstock’s full domain; targeted checks documented; responsibility remains with qualified analysts |
@@ -20,7 +20,7 @@
 | Scalability benchmarks     | ✅ Ready     | DataLad-enabled TSA suite wired; `perf_scaling.csv` covers sorted mash-ups, 1-vs-16 worker runs, spatial timing, and memory profiles |
 
 ### FAIR Compliance Summary
-- **Findable**: GitHub repo with tagged releases; Zenodo DOI 10.5281/zenodo.17331213 referenced in paper and README.
+- **Findable**: GitHub repo with tagged releases; Zenodo DOI 10.5281/zenodo.17219651 referenced in paper and README.
 - **Accessible**: MIT license, public repository, PyPI distribution; data assets derived from open/example datasets bundled with repo.
 - **Interoperable**: Uses standard tabular formats (CSV), Woodstock text sections, and GeoTIFF rasters; API integrates with libCBM and SpaDES connectors.
 - **Reusable**: Comprehensive docs on ReadTheDocs, deterministic reproduction scripts in `papers/ems/repro`, CI-validated tests/examples, contribution guidelines.

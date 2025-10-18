@@ -409,7 +409,7 @@ def main():
         {
             'principle': 'Findable',
             'checklist_focus': 'Persistent identifier; indexed repository',
-            'evidence': 'Zenodo DOI 10.5281/zenodo.17331213; tagged GitHub releases; PyPI project metadata',
+            'evidence': 'Zenodo DOI 10.5281/zenodo.17219651; tagged GitHub releases; PyPI project metadata',
         },
         {
             'principle': 'Accessible',
