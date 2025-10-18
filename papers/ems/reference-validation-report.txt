@@ -28,9 +28,7 @@ Entry: cattaneo2024pixsim
 Entry: johnson1977techniques
   DOI: 10.1093/forestscience/23.s1.a0001
   Crossref status: 200
-  Title match: no
-    Bib title: Techniques for prescribing optimal timber harvest and investment under different objectives: discussion and synthesis
-    API title: Techniques for Prescribing Optimal Timber Harvest and Investment Under Different Objectives—Discussion and Synthesis
+  Title match: yes
 
 Entry: gunn2007models
   DOI: 10.1007/978-0-387-71815-6_16
@@ -50,12 +48,10 @@ Entry: rammer2024individual
 Entry: ke2024climate
   DOI: 10.14288/1.0441338
   Crossref status: 404
-  Title match: n/a
 
 Entry: yan2025mathematical
   DOI: 10.14288/1.0449036
   Crossref status: 404
-  Title match: n/a
 
 Entry: paradis2013risk
   DOI: 10.1139/cjfr-2012-0334
@@ -65,12 +61,10 @@ Entry: paradis2013risk
 Entry: paradis2018retro
   DOI: 10.13140/RG.2.2.19284.71040
   Crossref status: 404
-  Title match: n/a
 
 Entry: paradis2018estimating
   DOI: 10.13140/RG.2.2.32706.48321
   Crossref status: 404
-  Title match: n/a
 
 Entry: mcintire2022perfict
   DOI: 10.1111/ele.13994
@@ -97,7 +91,6 @@ Entry: remsoft2024carbon
 Entry: ecotrust-dss
   DOI: 10.5281/zenodo.17330007
   Crossref status: 404
-  Title match: n/a
 
 Entry: patchworks
   DOI: (missing)
@@ -110,7 +103,6 @@ Entry: spades
 Entry: spades_ws3
   DOI: 10.5281/zenodo.17330027
   Crossref status: 404
-  Title match: n/a
 
 Entry: syncrosim
   DOI: (missing)
@@ -143,7 +135,6 @@ Entry: ci_workflow
 Entry: ws3_zenodo2025
   DOI: 10.5281/zenodo.17219651
   Crossref status: 404
-  Title match: n/a
 
 Entry: kurz2009cbm
   DOI: 10.1016/j.ecolmodel.2008.10.018
