@@ -39,6 +39,7 @@ Common targets:
 - `make pdf`: build PDF without cleaning
 - `make clean`: remove intermediates, keep paper.pdf
 - `make distclean`: remove everything including paper.pdf
+- `make em-package`: rebuild PDFs, flatten all source assets, and create `em-submission/` plus `em-submission.zip` for Editorial Manager uploads (required because EM does not accept subdirectories).
 
 The build uses:
 ```bash

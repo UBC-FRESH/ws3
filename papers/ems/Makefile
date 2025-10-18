@@ -1,8 +1,9 @@
 # Simple LaTeX build with latexmk
 PAPER := paper.tex
 COVER := cover-letter.tex
+EM_DIR := em-submission
 
-.PHONY: all pdf cover clean distclean
+.PHONY: all pdf cover clean distclean em-package
 
 all: clean pdf cover
 
@@ -21,3 +22,6 @@ distclean:
 	# Remove everything, including the final PDF
 	latexmk -C $(PAPER)
 	latexmk -C $(COVER)
+
+em-package: pdf cover
+	python scripts/prepare_em_submission.py
