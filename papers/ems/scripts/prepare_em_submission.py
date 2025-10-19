@@ -24,16 +24,13 @@ def copy_flattened_sources() -> None:
 
     # Files to copy directly.
     direct_files = [
-        "paper.bib",
+        "references.bib",
         "highlights.txt",
-        "cover-letter.tex",
         "cover-letter.pdf",
-        "reference-validation-report.txt",
+        "declarationStatement.docx",
+        "paper.bbl",
         "ws3-manuscript-graphical-abstract.pdf",
         "prisma-flow-diagram.sty",
-        # scripts for reproducibility if desired
-        "scripts/validate_references.py",
-        "scripts/requirements.txt",
     ]
     for rel in direct_files:
         src = BASE / rel

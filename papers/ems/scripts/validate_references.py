@@ -4,7 +4,7 @@ Validate BibTeX entries against the Crossref API.
 
 Example:
     python validate_references.py \
-        --bib ../paper.bib \
+        --bib ../references.bib \
         --output ../reference-validation-report.txt
 """
 
@@ -84,9 +84,9 @@ def main() -> None:
     )
     parser.add_argument(
         "--bib",
-        default="../paper.bib",
+        default="../references.bib",
         type=Path,
-        help="Path to the BibTeX file (default: ../paper.bib relative to script).",
+        help="Path to the BibTeX file (default: ../references.bib relative to script).",
     )
     parser.add_argument(
         "--output",

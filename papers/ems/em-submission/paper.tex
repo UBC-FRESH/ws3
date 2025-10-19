@@ -18,6 +18,7 @@
 % \usepackage{underscore} % not needed; causes conflicts
 \usepackage{enumitem}
 \usepackage{prisma-flow-diagram}
+\usepackage{placeins}
 
 % PDF metadata and link styling
 \hypersetup{
@@ -81,7 +82,12 @@
 \cortext[cor1]{Corresponding author: gregory.paradis@ubc.ca}
 \address[ubc]{Faculty of Forestry, University of British Columbia, Canada}
 
-% Highlights (3--5 bullets)
+% Graphical abstract (optional)
+\begin{graphicalabstract}
+  \centering
+  \includegraphics[width=\linewidth]{ws3-manuscript-graphical-abstract.pdf}
+\end{graphicalabstract}
+
 \section*{Highlights}
 \begin{itemize}
   \item Open-source Python framework for forest estate decision support.
@@ -91,38 +97,33 @@
   \item Deterministic reproduction package and archived scaling benchmarks.
 \end{itemize}
 
-% Graphical abstract (optional)
-\begin{graphicalabstract}
-  \centering
-  \includegraphics[width=\linewidth]{ws3-manuscript-graphical-abstract.pdf}
-\end{graphicalabstract}
-
 \begin{abstract}
-Transparent, reproducible decision support for forest landscape planning increasingly requires integrated treatment of harvest scheduling, spatial allocation, and greenhouse gas (GHG) accounting. WS3 is an open-source Python framework for long-horizon wood supply modeling that combines modular simulation with solver-backed optimization and hybrid spatial/aspatial workflows. WS3 represents stands, actions, and transitions through an explicit data model, supports scenario-based analyses, and interoperates with geospatial rasters for spatial allocation of aspatial schedules. A key contribution is a built-in linkage to the open-source Canadian Forest Service Carbon Budget Model (libCBM), enabling seamless carbon stock and flux estimation for Canadian-managed forests and other jurisdictions covered by existing libCBM calibrations alongside traditional harvest and area outcomes. The manuscript presents reproducible use-case analyses that couple optimization-driven harvest scheduling with libCBM carbon accounting and a raster allocation step to visualize spatial implications. These analyses highlight how alternative policy constraints influence harvest flows and carbon dynamics, illustrating the framework’s utility for climate change mitigation planning. The full code, documentation, and notebooks are publicly available via GitHub and PyPI, with a versioned archive on Zenodo, and a complete reproduction package accompanying this article. WS3 lowers barriers to rigorous, flexible analyses, supporting researchers and practitioners seeking open, auditable workflows for forest sector planning under evolving climate and policy objectives.
+Transparent decision support for forest landscapes demands integrated scheduling, carbon accounting, and spatial reporting. WS3 is an open-source Python framework that unifies modular simulation, solver-backed Model~I optimization, and raster allocation in a single workflow. The system ingests Woodstock-style inventories, actions, and scenarios; exposes an explicit data model; and automates spatial/aspatial conversions. Native linkage to the Canadian Forest Service Carbon Budget Model (libCBM) provides carbon stock and flux estimation for Canada and other libCBM-calibrated jurisdictions. We document the architecture, mathematical formulation, and reproducible case studies that pair optimization-driven harvest scheduling with libCBM and spatial allocation to illustrate policy trade-offs in harvest flows, carbon dynamics, and disturbance footprints. WS3 ships with an open reproduction package, documentation, and Zenodo-archived releases that ensure deterministic builds of figures, tables, and parity tests. The framework lowers barriers to auditable, climate-aware forest planning for researchers, agencies, and practitioners.
 \end{abstract}
+
+\begin{keyword}
+forest management \sep decision support systems \sep forest estate modelling \sep optimization \sep spatial modelling \sep reproducibility
+\end{keyword}
 
 \section*{Software availability}
 \begin{itemize}
   \item Software name: WS3 (Wood Supply Simulation System)
-  \item Developers: Gregory Paradis (UBC FRESH) with contributions from the FRESH lab community
-  \item First public release: 2015 (v0.1); current version: 1.0.5
-  \item Programming language: Python (>=3.9); optional extras: libcbm, PuLP, gurobipy
-  \item Source: \url{https://github.com/UBC-FRESH/ws3}; Issue tracker and discussions hosted on GitHub
-  \item Distribution: PyPI package \texttt{ws3} (\texttt{pip install ws3} or \texttt{ws3[cbm]}) with wheels for Linux, macOS, Windows
+  \item Developer and contact: Gregory Paradis (Faculty of Forestry, University of British Columbia); \href{mailto:gregory.paradis@ubc.ca}{gregory.paradis@ubc.ca}
+  \item First public release and current version: 2015 (v0.1); current release v1.0.5
+  \item Programming language and dependencies: Python (>=3.9); optional extras include \texttt{libcbm\_py}, PuLP/HiGHS, and Gurobi
+  \item Source repository and issue tracker: \url{https://github.com/UBC-FRESH/ws3}
+  \item Distribution channel: PyPI package \texttt{ws3} (\texttt{pip install ws3} or \texttt{ws3[cbm]}) with wheels for Linux, macOS, and Windows
   \item Documentation: \url{https://ws3.readthedocs.io}
-  \item Archive: Zenodo release \citep{ws3_zenodo2025} (DOI \href{https://doi.org/10.5281/zenodo.17331213}{10.5281/zenodo.17331213})
+  \item Archived release: Zenodo DOI \href{https://doi.org/10.5281/zenodo.17331213}{10.5281/zenodo.17331213}
   \item License: MIT
-  \item Supported OS / hardware: Linux, macOS, Windows; tested on Ubuntu 24.04 and macOS 14; CPU-only. Typical laptop runs examples; LP scaling and libCBM long runs benefit from 16+ GB RAM.
-  \item Python versions tested: 3.9, 3.10, 3.11, 3.12 (continuous integration, CI, matrix)
-  \item Optional libCBM: validated with \texttt{libcbm\_py} v2.8.1; install via \texttt{pip install ws3[cbm]} (see docs for platform notes).
-  \item Footprint: source ~3 MB; install < 50 MB excluding optional extras; reproduction outputs (figures/tables) < 10 MB.
+  \item Hardware and OS requirements: Linux, macOS, or Windows; tested on Ubuntu 24.04 and macOS 14; CPU-only with recommended 16+ GB RAM for large LP instances
+  \item Tested Python versions: 3.9--3.12 (continuous-integration matrix)
+  \item Data form and access: supplementary CSV, GeoTIFF, and notebook artifacts packaged in the GitHub repository and Zenodo release; total archive size < 50 MB excluding optional outputs
 \end{itemize}
 
-\begin{keyword}
-forest management \sep decision support systems \sep forest estate modelling \sep optimization \sep simulation \sep spatial modelling \sep reproducibility \sep open-source software
-\end{keyword}
-
 \end{frontmatter}
+
+\clearpage
 
 \linenumbers
 
@@ -221,13 +222,15 @@ The scripted pipeline in Listing~\ref{lst:workflow} underpins the sequential cas
   \label{fig:spatial_allocation}
 \end{figure}
 
-\noindent\textbf{Contributions.} WS3 delivers four primary contributions:
+WS3 delivers four primary contributions:
 \begin{enumerate}[label=(\roman*)]
   \item A solver-agnostic, path-based Model~I generator embedded within an audited forest estate API, with parallel coefficient compilation for large instances.
   \item A first-class libCBM interface that exports Standard Input Tables and ingests carbon pools and fluxes for integrated mitigation accounting.
-  \item A hybrid aspatial-to-raster allocation workflow that emits reproducible geospatial artefacts from deterministic schedules.
+\item A hybrid aspatial-to-raster allocation workflow that emits reproducible geospatial artefacts from deterministic schedules.
   \item A FAIR-aligned reproduction package, including scaling benchmarks on real inventories and archived releases with pinned environments.
 \end{enumerate}
+
+\FloatBarrier
 
 \subsection{Optimization formulation (Model I)}
 WS3 adopts a classic Model~I linear programming model formulation \citep{johnson1977techniques, gunn2007models} in which each decision variable selects the proportion of a development type (all stands with the same initial stratification variable values) allocated to a feasible root-to-leaf prescription (path) across the planning horizon. Let:
@@ -462,9 +465,9 @@ To reassure readers that WS3 implements standard inventory accounting correctly,
     \toprule
     Metric & WS3 & Woodstock & WS3 vs Woodstock (\%) \\
     \midrule
-    Total harvest area (ha) & \ifwoodstockParityLoaded\woodstocknum{\woodstockHarvestAreaWS}\else---\fi & \ifwoodstockParityLoaded\woodstocknum{\woodstockHarvestAreaWoodstock}\else---\fi & \ifwoodstockParityLoaded\woodstocknum{\woodstockHarvestAreaDiff}\else---\fi \\
-    Total harvest volume (m$^3$) & \ifwoodstockParityLoaded\woodstocknum{\woodstockHarvestVolumeWS}\else---\fi & \ifwoodstockParityLoaded\woodstocknum{\woodstockHarvestVolumeWoodstock}\else---\fi & \ifwoodstockParityLoaded\woodstocknum{\woodstockHarvestVolumeDiff}\else---\fi \\
-    Total growing stock (m$^3$) & \ifwoodstockParityLoaded\woodstocknum{\woodstockStockWS}\else---\fi & \ifwoodstockParityLoaded\woodstocknum{\woodstockStockWoodstock}\else---\fi & \ifwoodstockParityLoaded\woodstocknum{\woodstockStockDiff}\else---\fi \\
+    Total harvest area (ha) & 1,000.00 & 1,000.00 & 0.00 \\
+    Total harvest volume (m$^3$) & 164,838.08 & 164,838.08 & 0.00 \\
+    Total growing stock (m$^3$) & 1,269,692.15 & 1,269,692.15 & 0.00 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -496,9 +499,6 @@ WS3 provides an open, extensible framework for integrating harvest scheduling, s
 
 Future work will expand uncertainty handling (stochastic scheduling, sensitivity analysis), add cloud/HPC deployment patterns, and strengthen spatial allocation and visualization. We also plan to enhance carbon–economics linkages and support machine learning surrogates for speedups in large scenario ensembles \citep{forrester2008surrogatemodelling}. The open design invites community extensions and cross-ecosystem applications.
 
-\section*{Code and data availability}
-WS3 source code is publicly available at \url{https://github.com/UBC-FRESH/ws3} and distributed via PyPI (\texttt{pip install ws3}). Versioned releases are archived on Zenodo (DOI \href{https://doi.org/10.5281/zenodo.17219651}{10.5281/zenodo.17219651}) \citep{ws3_zenodo2025}. Documentation and tutorials are available at \url{https://ws3.readthedocs.io}. A complete reproduction package for the sequential demonstration, including environment files, scripts, and figure-generation notebooks, is provided as supplementary material and in the release archive.
-
 \paragraph{Reproducibility}
 All figures and tables are generated by scripts in \texttt{repro}. The \texttt{make\_repro.sh} script creates an isolated environment, installs pinned dependencies (\texttt{requirements.txt}), and runs \texttt{generate\_diagrams.py}, the spatial allocation workflow (\texttt{generate\_spatial\_allocation.py}), and the sequential demonstration script (\texttt{generate\_case\_study.py}). Outputs are written to \texttt{figs} and \texttt{tables}. The exact versions are preserved via the Zenodo-archived release.
 
@@ -526,7 +526,7 @@ Table~\ref{tab:fair-checklist} summarises the EMS FAIR/software checklist submit
 Gregory Paradis: Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Data curation, Writing—original draft, Writing—review \& editing, Visualization, Supervision, Project administration, Funding acquisition.
 
 \section*{Acknowledgements}
-Development of WS3 was supported by the Forest Resources Environmental Services Hub (FRESH) at the University of British Columbia. Funding was provided by the Canada Foundation for Innovation (CFI JELF), the British Columbia Knowledge Development Fund (BCKDF), Mitacs, Environment and Climate Change Canada (ECCC), the Natural Sciences and Engineering Research Council of Canada (NSERC), Natural Resources Canada (NRCan), and the Government of British Columbia. The author thanks Elaheh Ghasemi, Salar Ghotb, and Kathleen Coupland for their contributions to documentation, testing, and code quality improvements leading up to this release.
+Development of WS3 was supported by the Forest Resources Environmental Services Hub (FRESH) at the University of British Columbia. Funding was provided by the Natural Sciences and Engineering Research Council of Canada (NSERC, grant RGPIN-2023-04197), Environment and Climate Change Canada (ECCC, grant 3000770190), Natural Resources Canada (NRCan, grant 3000771054), the Government of British Columbia (grant TP24FCCS004), and Mitacs (in collaboration with industry partner Newmont Goldcorp Inc., grant IT32088). The author thanks Elaheh Ghasemi, Salar Ghotb, and Kathleen Coupland for their contributions to documentation, testing, and code quality improvements leading up to this release.
 
 \section*{Declaration of competing interest}
 The authors declare no competing interests.
@@ -535,6 +535,6 @@ The authors declare no competing interests.
 During the preparation of this work the author used the OpenAI \texttt{gpt-5} and \texttt{gpt-5-codex} models to assist and expedite editing and revision tasks. After using these tools, the author reviewed and edited the content as needed and takes full responsibility for the content of the published article.
 
 \bibliographystyle{elsarticle-harv}
-\bibliography{paper}
+\bibliography{references}
 
 \end{document}
