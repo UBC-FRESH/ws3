@@ -1,0 +1,268 @@
+Reference validation report (Crossref)
+
+Entry: boisvenue2022managing
+  DOI: 10.1088/1748-9326/ac9919
+  Crossref status: 200
+  Title match: yes
+
+Entry: smyth2020climate
+  DOI: 10.1186/s13021-020-00155-2
+  Crossref status: 200
+  Title match: yes
+
+Entry: nguyen2022prism
+  DOI: 10.1016/j.envsoft.2022.105515
+  Crossref status: 200
+  Title match: yes
+
+Entry: cantegril2019bioenergy
+  DOI: 10.1016/j.apenergy.2019.04.022
+  Crossref status: 200
+  Title match: yes
+
+Entry: cattaneo2024pixsim
+  DOI: 10.1016/j.simpa.2024.100695
+  Crossref status: 200
+  Title match: yes
+
+Entry: johnson1977techniques
+  DOI: 10.1093/forestscience/23.s1.a0001
+  Crossref status: 200
+  Title match: yes
+
+Entry: gunn2007models
+  DOI: 10.1007/978-0-387-71815-6_16
+  Crossref status: 200
+  Title match: yes
+
+Entry: gunn2009some
+  DOI: 10.3138/infor.47.3.261
+  Crossref status: 200
+  Title match: yes
+
+Entry: rammer2024individual
+  DOI: 10.1016/j.ecolmodel.2024.110785
+  Crossref status: 200
+  Title match: yes
+
+Entry: ke2024climate
+  DOI: 10.14288/1.0441338
+  Crossref status: 404
+
+Entry: yan2025mathematical
+  DOI: 10.14288/1.0449036
+  Crossref status: 404
+
+Entry: paradis2013risk
+  DOI: 10.1139/cjfr-2012-0334
+  Crossref status: 200
+  Title match: yes
+
+Entry: paradis2018retro
+  DOI: 10.13140/RG.2.2.19284.71040
+  Crossref status: 404
+
+Entry: paradis2018estimating
+  DOI: 10.13140/RG.2.2.32706.48321
+  Crossref status: 404
+
+Entry: mcintire2022perfict
+  DOI: 10.1111/ele.13994
+  Crossref status: 200
+  Title match: yes
+
+Entry: daigneault2022forest
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: blackburn2020applied
+  DOI: 10.1093/aesa/saz072
+  Crossref status: 200
+  Title match: yes
+
+Entry: remsoft-woodstock
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: remsoft2024carbon
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: ecotrust-dss
+  DOI: 10.5281/zenodo.17330007
+  Crossref status: 404
+
+Entry: patchworks
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: spades
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: spades_ws3
+  DOI: 10.5281/zenodo.17330027
+  Crossref status: 404
+
+Entry: syncrosim
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: landisii
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: heureka
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: jlp_mela
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: fps_atlas
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: simfor
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: ci_workflow
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: ws3_zenodo2025
+  DOI: 10.5281/zenodo.17219651
+  Crossref status: 404
+
+Entry: kurz2009cbm
+  DOI: 10.1016/j.ecolmodel.2008.10.018
+  Crossref status: 200
+  Title match: no
+    Bib title: CBM-CFS3: A model of carbon-dynamics in forestry and land use change
+    API title: CBM-CFS3: A model of carbon-dynamics in forestry and land-use change implementing IPCC standards
+
+Entry: libcbm_py
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: libcbm_py_docs
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: libcbm_py_repo
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: pulp
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: highs
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: gurobi
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: harris2020array
+  DOI: 10.1038/s41586-020-2649-2
+  Crossref status: 200
+  Title match: yes
+
+Entry: yan_repo
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: neilson2006co2fix
+  DOI: 10.4141/S05-081
+  Crossref status: 200
+  Title match: no
+    Bib title: Modeling carbon sequestration with CO2Fix and a timber supply model for use in forest management planning
+    API title: Modeling carbon sequestration with CO<sub>2</sub>Fix and a timber supply model for use in forest management planning
+
+Entry: hunter2007matplotlib
+  DOI: 10.1109/MCSE.2007.55
+  Crossref status: 200
+  Title match: yes
+
+Entry: virtanen2020scipy
+  DOI: 10.1038/s41592-019-0686-2
+  Crossref status: 200
+  Title match: yes
+
+Entry: canadell2022wgiii
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: gasser2020historical
+  DOI: doi.org/10.5194/bg-17-4075-2020
+  Crossref status: 200
+  Title match: no
+    Bib title: Historical CO2 emissions from land use and land cover change and their uncertainty
+    API title: Historical CO<sub>2</sub> emissions from land use and land cover change and their uncertainty
+
+Entry: griscom2017natural
+  DOI: 10.1073/pnas.1710465114
+  Crossref status: 200
+  Title match: yes
+
+Entry: law2018land
+  DOI: 10.1073/pnas.1720064115
+  Crossref status: 200
+  Title match: yes
+
+Entry: fao2020fra
+  DOI: 10.4060/ca9825en
+  Crossref status: 200
+  Title match: no
+    Bib title: Global Forest Resources Assessment 2020. Main Report
+    API title: Global Forest Resources Assessment 2020
+
+Entry: hampton2015tao
+  DOI: 10.1890/ES14-00402.1
+  Crossref status: 200
+  Title match: yes
+
+Entry: lowndes2017path
+  DOI: 10.1038/s41559-017-0160
+  Crossref status: 200
+  Title match: yes
+
+Entry: fortin2022altframework
+  DOI: 10.1139/cjfr-2021-0255
+  Crossref status: 200
+  Title match: yes
+
+Entry: fortin2022metamodel
+  DOI: 10.1139/cjfr-2022-0002
+  Crossref status: 200
+  Title match: yes
+
+Entry: power2015artemis
+  DOI: (missing)
+  Crossref status: n/a
+
+Entry: gilson2025climatesensitive
+  DOI: 10.1093/forestry/cpaf020
+  Crossref status: 200
+  Title match: yes
+
+Entry: forrester2008surrogatemodelling
+  DOI: 10.1002/9780470770801
+  Crossref status: 200
+  Title match: no
+    Bib title: Engineering Design via Surrogate Modelling: A Practical Guide
+    API title: Engineering Design via Surrogate Modelling
+
+Entry: peng2011reproducible
+  DOI: 10.1126/science.1213847
+  Crossref status: 200
+  Title match: yes
+
+Entry: ghasemi2025decarbonization
+  DOI: 10.31223/X5W731
+  Crossref status: 200
+  Title match: yes

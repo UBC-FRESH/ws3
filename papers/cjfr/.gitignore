@@ -1,0 +1,42 @@
+# LaTeX intermediate files
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.idx
+*.ilg
+*.ind
+*.log
+*.lot
+*.lof
+*.nav
+*.out
+*.run.xml
+*.snm
+*.synctex.gz
+*.toc
+*.vrb
+*.xdv
+*.spl
+
+# minted cache
+_minted-*/
+*.pyg
+
+# Editors
+.texpadtmp
+*.synctex(busy)
+
+# Keep the final PDF (do NOT ignore)
+!paper.pdf
+
+scratch
+
+ems-sample-papers
+
+repro/_scaling_cache
+repro/_spatial_cache
+repro/data/
+repro/scratch.*
