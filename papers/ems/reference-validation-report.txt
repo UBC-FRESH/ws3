@@ -133,7 +133,7 @@ Entry: ci_workflow
   Crossref status: n/a
 
 Entry: ws3_zenodo2025
-  DOI: 10.5281/zenodo.17219651
+  DOI: 10.5281/zenodo.17331213
   Crossref status: 404
 
 Entry: kurz2009cbm

@@ -28,7 +28,7 @@
   urlcolor=blue,
   pdftitle={WS3: An open-source Python framework for integrated simulation and optimization of forest landscape and wood supply systems},
   pdfauthor={Gregory Paradis},
-  pdfsubject={EarthArXiv preprint; submitted to Environmental Modelling \& Software},
+  pdfsubject={Submitted to Ecological Informatics},
   pdfkeywords={WS3, wood supply, forest estate, forest planning, optimization, libCBM, carbon accounting, environmental modelling, Python}
 }
 
@@ -70,34 +70,9 @@
   }{}
 }
 
-\journal{Environmental Modelling \& Software}
+\journal{Ecological Informatics}
 
 \begin{document}
-
-% EarthArXiv-compliant cover page (page 1)
-\begin{titlepage}
-  \thispagestyle{empty}
-  \vspace*{2.5cm}
-  \begin{center}
-    {\LARGE\bfseries WS3: An open-source Python framework for integrated simulation and optimization of forest landscape and wood supply systems\par}
-    \vspace{1.5cm}
-    {\large Gregory Paradis\\Faculty of Forestry, University of British Columbia, Canada\\Corresponding author: gregory.paradis@ubc.ca\par}
-    \vspace{1.5cm}
-    {\large\bfseries EarthArXiv Preprint Status\par}
-    \vspace{0.6cm}
-    {\normalsize This manuscript is a non\hyp peer\hyp reviewed preprint uploaded to EarthArXiv.\\
-    The work has been submitted to \textit{Environmental Modelling \& Software} for peer review.\\
-    Subsequent versions may differ. If accepted, the peer\hyp reviewed version will be available from the journal.\par}
-    \vspace{1.0cm}
-    {\normalsize Preprint DOI: \url{https://eartharxiv.org/repository/view/10500/}\par}
-    \vspace{0.8cm}
-    {\normalsize Date: \today\par}
-    \vspace{0.8cm}
-    {\normalsize Licensing: This preprint is distributed under the Creative Commons Attribution 4.0 International (CC BY 4.0) license.\par}
-  \end{center}
-  \vfill
-\end{titlepage}
-\setcounter{page}{2}
 
 \begin{frontmatter}
 
@@ -116,7 +91,7 @@
 \section*{Highlights}
 \begin{itemize}
   \item Open-source Python framework for forest estate decision support.
-  \item Solver-agnostic Model~I generator with parallel linear-programming (LP) build.
+  \item Solver-agnostic Model I generator with parallel LP build.
   \item Native libCBM linkage for carbon stock and flux accounting.
   \item Hybrid aspatial-to-raster workflows with reproducible geospatial I/O.
   \item Deterministic reproduction package and archived scaling benchmarks.
@@ -127,7 +102,7 @@ Transparent decision support for forest landscapes demands integrated scheduling
 \end{abstract}
 
 \begin{keyword}
-forest management \sep decision support systems \sep forest estate modelling \sep optimization \sep spatial modelling \sep reproducibility
+computational ecology \sep decision support \sep forest planning \sep optimization \sep carbon accounting \sep geospatial workflows
 \end{keyword}
 
 \section*{Software availability}
@@ -161,6 +136,8 @@ Strategic forest planning has long relied on operations-research formulations su
 In response, an open-source ecosystem has begun to chip away at these constraints. Spatial simulation platforms such as SpaDES and LANDIS-II, scenario-management frameworks like SyncroSim, and integrative planning prototypes such as PRISM demonstrate strong community appetite for modular, shareable tooling \citep{spades, landisii, syncrosim, nguyen2022prism}. SpaDES in particular mirrors WS3's open-science commitments---the core team helped write the PERFICT guidance---yet, by design, it delivers a coordination shell that depends on user-supplied simulation modules for every landscape process. That architecture excels at orchestrating high-fidelity spatial and stochastic dynamics, but the developers themselves acknowledge that harvest modules rarely move beyond stylised heuristics. They have therefore started collaborating with us on a \texttt{spades\_ws3} wrapper so SpaDES users can bring professional-grade wood-supply scheduling into cumulative-effects experiments. LANDIS-II and SELES occupy similar ecological-simulation niches but remain harder to adapt for rigorous forest-estate analysis: LANDIS-II's governance, C\# codebase, and Windows-centric binaries slow outside contributions and impede deployment to linux-based cloud or high-performance computing (HPC) environments, while SELES is closed-source black-box commercial software whose advanced modules typically require direct support from its original developer. In practice, practitioners must still bolt on their own solver integrations, carbon-accounting pipelines, and spatial reporting to assemble a full decision-support stack \citep{daigneault2022forest, law2018land}. Parallel efforts such as the French CAPSIS platform illustrate both the promise and the effort required to host interoperable forest growth models: CAPSIS underpins climate-sensitive planning experiments \citep{fortin2022altframework} and Bayesian meta-modelling work for Quebec landscapes \citep{fortin2022metamodel}, and it remains the delivery vehicle for the ARTEMIS stem-level growth model used by the Quebec government to generate official hardwood yield curves \citep{power2015artemis}. These international experiences align with broader calls for interoperable, climate-sensitive growth modelling ecosystems capable of linking models across scales \citep{gilson2025climatesensitive}. This persistent gap between open landscape-simulation scaffolds and purpose-built forest-estate planning motivates the deterministic, optimization-first framework we introduce with WS3 in the following section.
 
 WS3 fills this methodological gap with a fully open Python framework that preserves the expressive power of legacy Model~I scheduling while embedding reproducibility, automation, and carbon accounting as first-class design goals. It imports Woodstock-format text files to protect historical investments, provides solver-agnostic optimization, couples natively to the Canadian Forest Service’s libCBM implementation, and exposes hybrid spatial–aspatial workflows compatible with geospatial rasters and SpaDES-based simulations \citep{remsoft-woodstock, pulp, highs, gurobi, kurz2009cbm, libcbm_py, spades}. The codebase embraces open-science practices—version control, packaged releases, and documented reproduction scripts—to support transparent collaboration across institutions \citep{hampton2015tao, lowndes2017path}.
+
+This article contributes to ecological informatics in three ways. First, it documents a modular decision-support architecture that combines harvest optimization, carbon accounting, and spatial reporting in a single, scriptable workflow. Second, it validates that architecture through parity checks against an industrial Woodstock benchmark and through computational scaling experiments that expose runtime and memory envelopes for large landscapes. Third, it releases the complete toolchain—source code, configuration files, and reproduction scripts—under an open license with an archived Zenodo DOI, enabling immediate reuse and extension by researchers and practitioners.
 
 The remainder of this article details the WS3 architecture and data model (Section~2), demonstrates reproducible use-case workflows linking solver-backed optimal harvest scheduling to libCBM carbon accounting and spatial disturbance allocation for hypothetical linkage to downstream raster-based spatial simulation models (Section~3), discusses impact and reusability (Section~4), compares WS3 with alternative tools (Section~5), and summarises availability, authorship, and future work to facilitate uptake. Together these sections document (i) the design principles and modular implementation of WS3, (ii) an end-to-end workflow that pairs optimization with carbon analysis and spatial outputs, and (iii) comparative evidence and resources that support reuse by researchers and practitioners.
 
@@ -522,6 +499,8 @@ Finally, large LP instances involve substantial memory pressure—tens of gigaby
 \section{Conclusions and future work}
 WS3 provides an open, extensible framework for integrating harvest scheduling, simulation, and carbon accounting. By coupling solver-backed scheduling with libCBM via a documented interface, WS3 supports policy-relevant analyses with transparent, reproducible workflows.
 
+Limitations of the current release centre on input data fidelity and computational resources. WS3 assumes that yield curves, transition rules, and carbon parameters supplied by users are defensible; errors in these inputs propagate directly into optimization outcomes and libCBM flux estimates. The deterministic Model~I formulation also omits stochastic disturbance processes and climate-forced growth uncertainty, so scenario ensembles are still required to bracket plausible futures. Finally, large linear programs can demand tens of gigabytes of memory and access to multi-core CPUs; while the reproduction package identifies these hotspots, practitioners should budget HPC or cloud resources accordingly.
+
 Future work will expand uncertainty handling (stochastic scheduling, sensitivity analysis), add cloud/HPC deployment patterns, and strengthen spatial allocation and visualization. We also plan to enhance carbon–economics linkages and support machine learning surrogates for speedups in large scenario ensembles \citep{forrester2008surrogatemodelling}. The open design invites community extensions and cross-ecosystem applications.
 
 \paragraph{Reproducibility}
@@ -539,7 +518,7 @@ Table~\ref{tab:fair-checklist} summarises the EMS FAIR/software checklist submit
     \toprule
     Principle & Checklist focus & Evidence / artefact \\
     \midrule
-    Findable & Persistent identifier; indexed repository & Zenodo DOI \href{https://doi.org/10.5281/zenodo.17219651}{10.5281/zenodo.17219651}; tagged GitHub releases; PyPI project metadata \\
+    Findable & Persistent identifier; indexed repository & Zenodo DOI \href{https://doi.org/10.5281/zenodo.17331213}{10.5281/zenodo.17331213}; tagged GitHub releases; PyPI project metadata \\
     Accessible & License and public access & MIT license (CITATION.cff, LICENSE); public GitHub repository; PyPI wheels; reproduction package assets bundled in repository \\
     Interoperable & Open formats and connectors & Woodstock LAN/ARE/YLD importers; libCBM SIT export; tabular CSV, GeoTIFF, and shapefile outputs; documented workflow in Figure~\ref{fig:workflow_overview} \\
     Reusable & Documentation, provenance, validation & ReadTheDocs site; notebooks/examples; continuous-integration (CI)–tested \texttt{pytest} suite; deterministic scripts in \texttt{papers/ems/repro}; submission checklist metadata \\
@@ -548,16 +527,22 @@ Table~\ref{tab:fair-checklist} summarises the EMS FAIR/software checklist submit
 \end{table}
 
 \section*{CRediT authorship contribution statement}
-Gregory Paradis: Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Data curation, Writing—original draft, Writing—review \& editing, Visualization, Supervision, Project administration, Funding acquisition.
+G.E.P.: Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Data curation, Writing—original draft, Writing—review \& editing, Visualization, Supervision, Project administration, Funding acquisition.
 
 \section*{Acknowledgements}
-Development of WS3 was supported by the Forest Resources Environmental Services Hub (FRESH) at the University of British Columbia. Funding was provided by the Natural Sciences and Engineering Research Council of Canada (NSERC, grant RGPIN-2023-04197), Environment and Climate Change Canada (ECCC, grant 3000770190), Natural Resources Canada (NRCan, grant 3000771054), the Government of British Columbia (grant TP24FCCS004), and Mitacs (in collaboration with industry partner Newmont Goldcorp Inc., grant IT32088). The author thanks Elaheh Ghasemi, Salar Ghotb, and Kathleen Coupland for their contributions to documentation, testing, and code quality improvements leading up to this release.
+Development of WS3 was supported by the Forest Resources Environmental Services Hub (FRESH) at the University of British Columbia. The author thanks Elaheh Ghasemi, Salar Ghotb, and Kathleen Coupland for their contributions to documentation, testing, and code quality improvements leading up to this release. Language polishing and compliance checks were assisted by the OpenAI GPT-5 and GPT-5-Codex models; the author reviewed and edited all outputs.
+
+\section*{Funding}
+Funding: Natural Sciences and Engineering Research Council of Canada (NSERC, grant RGPIN-2023-04197); Environment and Climate Change Canada (ECCC, grant 3000770190); Natural Resources Canada (NRCan, grant 3000771054); Government of British Columbia (grant TP24FCCS004); Mitacs (Newmont Goldcorp Inc., grant IT32088).
+
+\section*{Data availability}
+Data availability: Source code, configuration files, and reproduction assets are archived at \href{https://doi.org/10.5281/zenodo.17331213}{https://doi.org/10.5281/zenodo.17331213}. All scripts used to generate the figures and tables are included; reuse is permitted under the MIT License.
 
 \section*{Declaration of competing interest}
-The authors declare no competing interests.
+Competing interests: The author declares no competing interests.
 
 \section*{Declaration of generative AI and AI-assisted technologies in the manuscript preparation process}
-During the preparation of this work the author used the OpenAI \texttt{gpt-5} and \texttt{gpt-5-codex} models to assist and expedite editing and revision tasks. After using these tools, the author reviewed and edited the content as needed and takes full responsibility for the content of the published article.
+During the preparation of this work the author used the OpenAI GPT-5 and GPT-5-Codex models to assist with language polishing and format compliance. After using these tools, the author reviewed and edited the content as needed and takes full responsibility for the content of the published article.
 
 \bibliographystyle{elsarticle-harv}
 \bibliography{references}
