@@ -32,44 +32,6 @@
   pdfkeywords={WS3, wood supply, forest estate, forest planning, optimization, libCBM, carbon accounting, environmental modelling, Python}
 }
 
-\newcommand{\woodstocknum}[1]{\num[round-mode=places,round-precision=2]{#1}}
-\newif\ifwoodstockParityLoaded
-\woodstockParityLoadedfalse
-\newcommand{\loadWoodstockParity}{%
-  % Defaults ensure compilation if CSV is unavailable
-  \global\def\woodstockHarvestAreaWS{0}%
-  \global\def\woodstockHarvestAreaWoodstock{0}%
-  \global\def\woodstockHarvestAreaDiff{0}%
-  \global\def\woodstockHarvestVolumeWS{0}%
-  \global\def\woodstockHarvestVolumeWoodstock{0}%
-  \global\def\woodstockHarvestVolumeDiff{0}%
-  \global\def\woodstockStockWS{0}%
-  \global\def\woodstockStockWoodstock{0}%
-  \global\def\woodstockStockDiff{0}%
-  \IfFileExists{tables/woodstock_parity.csv}{%
-    \woodstockParityLoadedtrue
-    \csvreader[head to column names]{tables/woodstock_parity.csv}{metric=\metricname,ws3_value=\wsvalue,woodstock_value=\woodstockvalue,percent_diff=\percentdiff}{%
-      \ifcsvstrcmp{\metricname}{total_harvest_area_ha}{%
-        \global\edef\woodstockHarvestAreaWS{\wsvalue}%
-        \global\edef\woodstockHarvestAreaWoodstock{\woodstockvalue}%
-        \global\edef\woodstockHarvestAreaDiff{\percentdiff}%
-      }{%
-        \ifcsvstrcmp{\metricname}{total_harvest_volume_m3}{%
-          \global\edef\woodstockHarvestVolumeWS{\wsvalue}%
-          \global\edef\woodstockHarvestVolumeWoodstock{\woodstockvalue}%
-          \global\edef\woodstockHarvestVolumeDiff{\percentdiff}%
-        }{%
-          \ifcsvstrcmp{\metricname}{total_growing_stock_m3}{%
-            \global\edef\woodstockStockWS{\wsvalue}%
-            \global\edef\woodstockStockWoodstock{\woodstockvalue}%
-            \global\edef\woodstockStockDiff{\percentdiff}%
-          }{}%
-        }%
-      }%
-    }%
-  }{}
-}
-
 \journal{Ecological Informatics}
 
 \begin{document}
@@ -463,7 +425,6 @@ An advanced example notebook demonstrates how WS3 can be used to construct a sta
 \paragraph{Parity with Woodstock}
 To reassure readers that WS3 implements standard inventory accounting correctly, we report a parity check against a prescriptive Woodstock run using the same toy dataset and an identical action schedule. The accompanying CSV artifact \path{papers/ems/tables/woodstock_parity.csv} provides total harvest area, harvest volume, and growing stock, along with WS3-relative percent differences (computed as $100\,(\mathrm{WS3{-}Woodstock})/\mathrm{Woodstock}$). For transparency, period-wise parity summaries for harvest area and volume can be regenerated via the reproduction scripts and are included in the reproduction package. (Figure~\ref{fig:sup_parity_periods}) Exact or near-exact agreement is expected given identical inputs.
 
-\loadWoodstockParity
 \begin{table}[h]
   \centering
   \caption{WS3 vs. Woodstock parity on the toy dataset (identical schedule). Values are loaded from the accompanying CSV artifact.}
