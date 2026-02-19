@@ -1,6 +1,6 @@
 # WS3 Ecological Informatics — R1 Resubmission Roadmap
 
-Decision letter dated Nov 27, 2025. Revision due date listed as Jan 11, 2026 (now past as of Feb 19, 2026) — request/confirm extension before resubmission.
+Decision letter dated Nov 27, 2025. Revision due date listed as Jan 11, 2026 (now past as of Feb 19, 2026) — requested and confirm extension to February 23, 2026.
 
 - [ ] 1. Phase 1 — Intake, scope, and constraints
   - [ ] 1.1 Task — Confirm editorial requirements and missing materials
@@ -27,24 +27,28 @@ Decision letter dated Nov 27, 2025. Revision due date listed as Jan 11, 2026 (no
     - [ ] 2.3.3 Subtask — Sanity check diff output (readable, anonymized, no broken refs)
 
 - [ ] 3. Phase 3 — Manuscript revisions (content and framing)
-  - [ ] 3.1 Task — Tone, claims, and scope alignment
-    - [ ] 3.1.1 Subtask — Remove “sales-pitch” language and value adjectives (R2/R5)
-    - [ ] 3.1.2 Subtask — Temper abstract/summary claims (toy dataset, limitations)
-    - [ ] 3.1.3 Subtask — Strengthen ecological/informatics framing for EI scope (R1/R4)
-    - [ ] 3.1.4 Subtask — Reduce jargon/LLM-like phrasing; define acronyms and key terms (R1/R5)
-  - [ ] 3.2 Task — Methods clarity and rigor
-    - [ ] 3.2.1 Subtask — Clarify LP model as strata-based Model I and implications (R2)
-    - [ ] 3.2.2 Subtask — Explain heuristic allocation process and scheduling logic (R2)
-    - [ ] 3.2.3 Subtask — Define decision variables (Xi,j) and spatial units explicitly (R3)
-    - [ ] 3.2.4 Subtask — Add missing Discussion section and integrate methodological context (R1)
-  - [ ] 3.3 Task — Novelty and comparison positioning
-    - [ ] 3.3.1 Subtask — Add literature/context on carbon in optimization-based planning (R5)
-    - [ ] 3.3.2 Subtask — Explicitly compare WS3 vs existing DSS (Woodstock, Patchworks, etc.) (R3)
-    - [ ] 3.3.3 Subtask — Clarify what is and is not supported (adjacency/opening size, carbon in objective) (R3/R5)
-  - [ ] 3.4 Task — Results, discussion, and conclusion
-    - [ ] 3.4.1 Subtask — Expand case-study description to justify benchmarks (R2)
-    - [ ] 3.4.2 Subtask — Reframe results as software/architecture contribution (R3/R5)
-    - [ ] 3.4.3 Subtask — Rewrite conclusion to synthesize findings and implications (R3)
+- [~] 3.0 Task — Author voice consistency (HIGH PRIORITY)
+  - [x] 3.0.1 Subtask — Review prior publications/tech docs to establish voice baseline (internal)
+  - [x] 3.0.2 Subtask — Maintain concise voice notes (tone, cadence, vocabulary, structure)
+  - [~] 3.0.3 Subtask — Edit manuscript for consistent author voice and clarity
+  - [~] 3.1 Task — Tone, claims, and scope alignment
+    - [~] 3.1.1 Subtask — Remove “sales-pitch” language and value adjectives (R2/R5)
+    - [~] 3.1.2 Subtask — Temper abstract/summary claims (toy dataset, limitations)
+    - [~] 3.1.3 Subtask — Strengthen ecological/informatics framing for EI scope (R1/R4)
+    - [~] 3.1.4 Subtask — Reduce jargon and generic phrasing; define acronyms and key terms (R1/R5)
+  - [x] 3.2 Task — Methods clarity and rigor
+    - [x] 3.2.1 Subtask — Clarify LP model as strata-based Model I and implications (R2)
+    - [x] 3.2.2 Subtask — Explain heuristic allocation process and scheduling logic (R2)
+    - [x] 3.2.3 Subtask — Define decision variables (Xi,j) and spatial units explicitly (R3)
+    - [x] 3.2.4 Subtask — Add missing Discussion section and integrate methodological context (R1)
+  - [x] 3.3 Task — Novelty and comparison positioning
+    - [x] 3.3.1 Subtask — Add literature/context on carbon in optimization-based planning (R5)
+    - [x] 3.3.2 Subtask — Explicitly compare WS3 vs existing DSS (Woodstock, Patchworks, etc.) (R3)
+    - [x] 3.3.3 Subtask — Clarify what is and is not supported (adjacency/opening size, carbon in objective) (R3/R5)
+  - [x] 3.4 Task — Results, discussion, and conclusion
+    - [x] 3.4.1 Subtask — Expand case-study description to justify benchmarks (R2)
+    - [x] 3.4.2 Subtask — Reframe results as software/architecture contribution (R3/R5)
+    - [x] 3.4.3 Subtask — Rewrite conclusion to synthesize findings and implications (R3)
 
 - [ ] 4. Phase 4 — Reviewer-specific responses
   - [ ] 4.1 Task — Reviewer #1 response (Review final.docx)
@@ -67,7 +71,7 @@ Decision letter dated Nov 27, 2025. Revision due date listed as Jan 11, 2026 (no
   - [ ] 4.5 Task — Reviewer #5 response
     - [ ] 4.5.1 Subtask — Clarify carbon accounting integration (post-hoc vs in-model)
     - [ ] 4.5.2 Subtask — Add literature review on carbon in optimization-based planning
-    - [ ] 4.5.3 Subtask — Reduce jargon/LLM-like phrasing and tighten narrative
+    - [ ] 4.5.3 Subtask — Reduce jargon and generic phrasing; tighten narrative
 
 - [ ] 5. Phase 5 — Figures, tables, references, and artifacts
   - [ ] 5.1 Task — Figures/tables updates

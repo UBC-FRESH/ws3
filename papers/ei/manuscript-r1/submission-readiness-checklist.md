@@ -16,5 +16,5 @@
 - Export PDF, source `.tex`, figures, tables, highlights, and cover letter from `papers/ei`.
 - Ensure the declarations tool reflects funding/competing interests at submission.
 - Confirm Zenodo DOI resolves and README enumerates dependencies (libCBM optional install instructions).
+- Confirm author-voice alignment against writing samples; remove any LLM-like phrasing.
 - Decide on open access route (UBC has Elsevier OA agreement covering *Ecological Informatics*). |
-
