@@ -1,0 +1,6 @@
+Highlights:
+- Open-source Python framework for forest estate decision support.
+- Solver-agnostic Model I scheduling with parallel LP build.
+- Native libCBM linkage for carbon stocks and flux accounting.
+- Hybrid aspatial→spatial workflows with reproducible geospatial I/O.
+- Deterministic reproduction package with archived scaling benchmarks.

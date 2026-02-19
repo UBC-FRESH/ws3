@@ -1,0 +1,2 @@
+bibtexparser==2.0.0b8
+requests>=2.31
