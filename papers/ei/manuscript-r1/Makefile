@@ -34,5 +34,6 @@ em-package-r0:
 latexdiff: em-package em-package-r0
 	mkdir -p $(DIFF_DIR)
 	cp -a $(EM_DIR)/. $(DIFF_DIR)/
+	printf '\n@misc{simfor,\n  title = {{SIMFOR: A stand-level simulation tool}},\n  author = {{SIMFOR Project}},\n  note = {Latexdiff stub entry for removed citation}\n}\n' >> $(DIFF_DIR)/references.bib
 	PERLIO=:utf8 latexdiff --encoding=utf8 $(R0_DIR)/$(EM_DIR)/paper.tex $(EM_DIR)/paper.tex > $(DIFF_DIR)/paper.tex
 	latexmk -pdf -interaction=nonstopmode -f -cd $(DIFF_DIR)/paper.tex

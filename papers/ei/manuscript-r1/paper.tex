@@ -29,7 +29,7 @@
   pdftitle={WS3: An open-source Python framework for integrated simulation and optimization of forest landscape and wood supply systems},
   pdfauthor={Gregory Paradis},
   pdfsubject={Submitted to Ecological Informatics},
-  pdfkeywords={WS3, wood supply, forest estate, forest planning, optimization, libCBM, carbon accounting, environmental modeling, Python}
+  pdfkeywords={computational ecology, decision support, forest planning, optimization, carbon accounting, geospatial workflows, open-source software}
 }
 
 \journal{Ecological Informatics}
@@ -60,17 +60,13 @@
 \end{itemize}
 
 \begin{abstract}
-We describe WS3, an open-source Python framework that integrates Model~I scheduling, carbon accounting, and raster allocation into a single, scriptable workflow for reproducible forest planning analyses. WS3 ingests Woodstock-style inventories, actions, and scenarios; defines an explicit data model; and automates aspatial--spatial conversions so analysts can move from harvest schedules to georeferenced disturbance footprints. A documented linkage to the Canadian Forest Service Carbon Budget Model (libCBM) provides carbon stock and flux estimates for Canada and other libCBM-calibrated jurisdictions.
+WS3 is an open-source Python framework that integrates Model~I scheduling, carbon accounting, and raster allocation into a scriptable workflow for reproducible forest planning. It ingests Woodstock-format inventories, actions, and scenarios; defines an explicit data model; and automates aspatial--spatial conversion so harvest schedules can be mapped to disturbance footprints. A documented linkage to the Canadian Forest Service Carbon Budget Model (libCBM) provides carbon stock and flux estimates for libCBM-calibrated jurisdictions.
 
-This paper documents a modular software architecture that decouples inventory ingestion, linear programming (LP) harvest scheduling, carbon accounting, and raster allocation. Users can combine heuristic and LP approaches and extend indicators as needed. We provide a reproducible parity check against Woodstock on a toy dataset and report scaling experiments that characterize runtime and memory envelopes from desktop to cluster deployments. The complete toolchain---source code, configuration files, and deterministic reproduction scripts---is released under the MIT license with an archived Zenodo DOI.
-
-We demonstrate WS3 on five timber supply areas in northeastern British Columbia, with individual inventories spanning 2.27~Mha (TSA~41) to 5.90~Mha (TSA~24) and a cumulative scaling run aggregating all five to 20.40~Mha. Post hoc libCBM runs provide carbon trajectories for alternative schedules, and raster allocation routines produce disturbance footprints for downstream spatial simulators such as SpaDES. The reproduction suite includes notebooks, container-ready scripts, and pinned dependency manifests so practitioners can adapt the workflow to their inventories and verify results against existing pipelines.
-
-WS3 provides an open implementation of workflows otherwise delivered through closed, licensed systems. The framework is intended as reusable informatics infrastructure for decision support under competing sustainability mandates.
+We document a modular architecture that decouples inventory ingestion, linear programming (LP) scheduling, carbon accounting, and raster allocation. Users can combine heuristic and LP approaches and extend indicators. We provide a reproducible parity check against Woodstock on a toy dataset and scaling experiments that characterize runtime and memory envelopes from desktop to cluster deployments. The complete toolchain---source code, configuration files, and deterministic reproduction scripts---is released under the MIT license with an archived Zenodo DOI. We demonstrate WS3 on five timber supply areas in northeastern British Columbia (20.40~Mha combined); post hoc libCBM runs provide carbon trajectories and raster allocation produces disturbance footprints for downstream spatial simulators. The framework is intended as reusable informatics infrastructure for decision support under competing sustainability mandates.
 \end{abstract}
 
 \begin{keyword}
-computational ecology \sep decision support \sep forest planning \sep optimization \sep carbon accounting \sep geospatial workflows
+computational ecology \sep decision support \sep forest planning \sep optimization \sep carbon accounting \sep geospatial workflows \sep open-source software
 \end{keyword}
 
 \section*{Software availability}
