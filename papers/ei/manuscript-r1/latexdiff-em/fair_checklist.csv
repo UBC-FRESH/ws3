@@ -1,0 +1,5 @@
+principle,checklist_focus,evidence
+Findable,Persistent identifier; indexed repository,Zenodo DOI 10.5281/zenodo.17331213; tagged GitHub releases; PyPI project metadata
+Accessible,License and public access,MIT license; public GitHub repository; PyPI wheels; bundled reproduction package assets
+Interoperable,Open formats and connectors,Woodstock LAN/ARE/YLD import; libCBM SIT export; CSV/GeoTIFF outputs; documented API
+Reusable,"Documentation, provenance, validation",ReadTheDocs site; notebooks/examples; CI-tested pytest suite; deterministic repro scripts

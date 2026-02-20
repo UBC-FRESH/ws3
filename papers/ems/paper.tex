@@ -28,7 +28,7 @@
   urlcolor=blue,
   pdftitle={WS3: An open-source Python framework for integrated simulation and optimization of forest landscape and wood supply systems},
   pdfauthor={Gregory Paradis},
-  pdfsubject={Submitted to Environmental Modelling \& Software},
+  pdfsubject={EarthArXiv preprint; submitted to Environmental Modelling \& Software},
   pdfkeywords={WS3, wood supply, forest estate, forest planning, optimization, libCBM, carbon accounting, environmental modelling, Python}
 }
 
@@ -73,6 +73,31 @@
 \journal{Environmental Modelling \& Software}
 
 \begin{document}
+
+% EarthArXiv-compliant cover page (page 1)
+\begin{titlepage}
+  \thispagestyle{empty}
+  \vspace*{2.5cm}
+  \begin{center}
+    {\LARGE\bfseries WS3: An open-source Python framework for integrated simulation and optimization of forest landscape and wood supply systems\par}
+    \vspace{1.5cm}
+    {\large Gregory Paradis\\Faculty of Forestry, University of British Columbia, Canada\\Corresponding author: gregory.paradis@ubc.ca\par}
+    \vspace{1.5cm}
+    {\large\bfseries EarthArXiv Preprint Status\par}
+    \vspace{0.6cm}
+    {\normalsize This manuscript is a non\hyp peer\hyp reviewed preprint uploaded to EarthArXiv.\\
+    The work has been submitted to \textit{Environmental Modelling \& Software} for peer review.\\
+    Subsequent versions may differ. If accepted, the peer\hyp reviewed version will be available from the journal.\par}
+    \vspace{1.0cm}
+    {\normalsize Preprint DOI: \url{https://eartharxiv.org/repository/view/10500/}\par}
+    \vspace{0.8cm}
+    {\normalsize Date: \today\par}
+    \vspace{0.8cm}
+    {\normalsize Licensing: This preprint is distributed under the Creative Commons Attribution 4.0 International (CC BY 4.0) license.\par}
+  \end{center}
+  \vfill
+\end{titlepage}
+\setcounter{page}{2}
 
 \begin{frontmatter}
 
@@ -514,7 +539,7 @@ Table~\ref{tab:fair-checklist} summarises the EMS FAIR/software checklist submit
     \toprule
     Principle & Checklist focus & Evidence / artefact \\
     \midrule
-    Findable & Persistent identifier; indexed repository & Zenodo DOI \href{https://doi.org/10.5281/zenodo.17219651}{10.5281/zenodo.17219651}; tagged GitHub releases; PyPI project metadata \\
+    Findable & Persistent identifier; indexed repository & Zenodo DOI \href{https://doi.org/10.5281/zenodo.17331213}{10.5281/zenodo.17331213}; tagged GitHub releases; PyPI project metadata \\
     Accessible & License and public access & MIT license (CITATION.cff, LICENSE); public GitHub repository; PyPI wheels; reproduction package assets bundled in repository \\
     Interoperable & Open formats and connectors & Woodstock LAN/ARE/YLD importers; libCBM SIT export; tabular CSV, GeoTIFF, and shapefile outputs; documented workflow in Figure~\ref{fig:workflow_overview} \\
     Reusable & Documentation, provenance, validation & ReadTheDocs site; notebooks/examples; continuous-integration (CI)–tested \texttt{pytest} suite; deterministic scripts in \texttt{papers/ems/repro}; submission checklist metadata \\
