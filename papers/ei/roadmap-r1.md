@@ -1,41 +1,42 @@
 # WS3 Ecological Informatics — R1 Resubmission Roadmap
 
-Decision letter dated Nov 27, 2025. Revision due date listed as Jan 11, 2026 (now past as of Feb 19, 2026) — requested and confirm extension to February 23, 2026.
+Decision letter dated Nov 27, 2025. Revision due date listed as Jan 11, 2026 (now past as of Feb 19, 2026) — extension granted to February 23, 2026.
 
 - [ ] 1. Phase 1 — Intake, scope, and constraints
-  - [ ] 1.1 Task — Confirm editorial requirements and missing materials
+  - [~] 1.1 Task — Confirm editorial requirements and missing materials
     - [ ] 1.1.1 Subtask — Verify current deadline/extension in Editorial Manager
-    - [ ] 1.1.2 Subtask — Locate/collect the “Review final.docx” attachment (if distinct from PDF)
-    - [ ] 1.1.3 Subtask — Identify required resubmission artifacts (response letter, highlighted manuscript, etc.)
-  - [ ] 1.2 Task — Summarize decision letter and reviewer themes
-    - [ ] 1.2.1 Subtask — Distill high-level concerns (novelty, scope fit, methods clarity, tone)
-    - [ ] 1.2.2 Subtask — Map reviewer comments to manuscript sections
-    - [ ] 1.2.3 Subtask — Decide response strategy (revise vs rebut)
+    - [x] 1.1.2 Subtask — Locate/collect the “Review final.docx” attachment (if distinct from PDF)
+    - [~] 1.1.3 Subtask — Identify required resubmission artifacts (response letter, highlighted manuscript, etc.)
+  - [~] 1.2 Task — Summarize decision letter and reviewer themes
+    - [x] 1.2.1 Subtask — Distill high-level concerns (novelty, scope fit, methods clarity, tone)
+    - [x] 1.2.2 Subtask — Map reviewer comments to manuscript sections
+    - [~] 1.2.3 Subtask — Decide response strategy (revise vs rebut)
 
 - [ ] 2. Phase 2 — Repository reorganization (r0/r1 parallel tracks)
-  - [ ] 2.1 Task — Freeze and archive r0 baseline
-    - [ ] 2.1.1 Subtask — Create `manuscript-r0/` from current manuscript sources
+  - [~] 2.1 Task — Freeze and archive r0 baseline
+    - [x] 2.1.1 Subtask — Create `manuscript-r0/` from current manuscript sources
     - [ ] 2.1.2 Subtask — Record r0 manifest (hashes + file list) for diff baseline
-    - [ ] 2.1.3 Subtask — Ensure r0 builds cleanly and matches tagged PDF
-  - [ ] 2.2 Task — Create r1 working tree
-    - [ ] 2.2.1 Subtask — Create `manuscript-r1/` as copy of r0 baseline
-    - [ ] 2.2.2 Subtask — Add r1 placeholders (response letter, roadmap, diff output)
-    - [ ] 2.2.3 Subtask — Update Makefile/scripts to support r0/r1 builds
-  - [ ] 2.3 Task — Latexdiff workflow
-    - [ ] 2.3.1 Subtask — Define r0/r1 “flattened” EM submission sources
-    - [ ] 2.3.2 Subtask — Generate latexdiff source + PDF in `manuscript-r1/latexdiff-em/`
-    - [ ] 2.3.3 Subtask — Sanity check diff output (readable, anonymized, no broken refs)
+    - [~] 2.1.3 Subtask — Ensure r0 builds cleanly and matches tagged PDF
+  - [x] 2.2 Task — Create r1 working tree
+    - [x] 2.2.1 Subtask — Create `manuscript-r1/` as copy of r0 baseline
+    - [x] 2.2.2 Subtask — Add r1 placeholders (response letter, roadmap, diff output)
+    - [x] 2.2.3 Subtask — Update Makefile/scripts to support r0/r1 builds
+  - [~] 2.3 Task — Latexdiff workflow
+    - [x] 2.3.1 Subtask — Define r0/r1 “flattened” EM submission sources
+    - [x] 2.3.2 Subtask — Generate latexdiff source + PDF in `manuscript-r1/latexdiff-em/`
+    - [~] 2.3.3 Subtask — Sanity check diff output (readable, anonymized, no broken refs)
 
 - [ ] 3. Phase 3 — Manuscript revisions (content and framing)
-- [~] 3.0 Task — Author voice consistency (HIGH PRIORITY)
-  - [x] 3.0.1 Subtask — Review prior publications/tech docs to establish voice baseline (internal)
-  - [x] 3.0.2 Subtask — Maintain concise voice notes (tone, cadence, vocabulary, structure)
-  - [~] 3.0.3 Subtask — Edit manuscript for consistent author voice and clarity
+  - [~] 3.0 Task — Author voice consistency (HIGH PRIORITY)
+    - [x] 3.0.1 Subtask — Review prior publications/tech docs to establish voice baseline (internal)
+    - [x] 3.0.2 Subtask — Maintain concise voice notes (tone, cadence, vocabulary, structure)
+    - [~] 3.0.3 Subtask — Edit manuscript for consistent author voice and clarity
   - [~] 3.1 Task — Tone, claims, and scope alignment
     - [~] 3.1.1 Subtask — Remove “sales-pitch” language and value adjectives (R2/R5)
     - [~] 3.1.2 Subtask — Temper abstract/summary claims (toy dataset, limitations)
     - [~] 3.1.3 Subtask — Strengthen ecological/informatics framing for EI scope (R1/R4)
     - [~] 3.1.4 Subtask — Reduce jargon and generic phrasing; define acronyms and key terms (R1/R5)
+    - [ ] 3.1.5 Subtask — Align tone/structure with EI open-software exemplar papers
   - [x] 3.2 Task — Methods clarity and rigor
     - [x] 3.2.1 Subtask — Clarify LP model as strata-based Model I and implications (R2)
     - [x] 3.2.2 Subtask — Explain heuristic allocation process and scheduling logic (R2)
@@ -49,50 +50,51 @@ Decision letter dated Nov 27, 2025. Revision due date listed as Jan 11, 2026 (no
     - [x] 3.4.1 Subtask — Expand case-study description to justify benchmarks (R2)
     - [x] 3.4.2 Subtask — Reframe results as software/architecture contribution (R3/R5)
     - [x] 3.4.3 Subtask — Rewrite conclusion to synthesize findings and implications (R3)
+    - [x] 3.4.4 Subtask — Remove programming-level detail (Listing 1) and replace with narrative
 
 - [ ] 4. Phase 4 — Reviewer-specific responses
-  - [ ] 4.1 Task — Reviewer #1 response (Review final.docx)
-    - [ ] 4.1.1 Subtask — Articulate novelty vs existing DSS and narrow “ecological informatics” claim
-    - [ ] 4.1.2 Subtask — Rebalance narrative away from user-manual tone; add scientific rationale
-    - [ ] 4.1.3 Subtask — Define Model I, stratification, zones, prescriptions; expand acronyms
-    - [ ] 4.1.4 Subtask — Remove/repair placeholder doc quotes and incomplete documentation references
-    - [ ] 4.1.5 Subtask — Add missing Discussion section; fix typos and citation formatting issues
-  - [ ] 4.2 Task — Reviewer #2 response
-    - [ ] 4.2.1 Subtask — Address tone/wording issues and remove subjective terms
-    - [ ] 4.2.2 Subtask — Expand LP/heuristic method details and scheduling logic
+  - [~] 4.1 Task — Reviewer #1 response (Review final.docx)
+    - [~] 4.1.1 Subtask — Articulate novelty vs existing DSS and narrow “ecological informatics” claim
+    - [~] 4.1.2 Subtask — Rebalance narrative away from user-manual tone; add scientific rationale
+    - [x] 4.1.3 Subtask — Define Model I, stratification, zones, prescriptions; expand acronyms
+    - [x] 4.1.4 Subtask — Remove/repair placeholder doc quotes and incomplete documentation references
+    - [~] 4.1.5 Subtask — Add missing Discussion section; fix typos and citation formatting issues
+  - [~] 4.2 Task — Reviewer #2 response
+    - [~] 4.2.1 Subtask — Address tone/wording issues and remove subjective terms
+    - [x] 4.2.2 Subtask — Expand LP/heuristic method details and scheduling logic
     - [ ] 4.2.3 Subtask — Fix minor typos and citation details
-  - [ ] 4.3 Task — Reviewer #3 response
-    - [ ] 4.3.1 Subtask — Explain methodological framework and innovation claims
-    - [ ] 4.3.2 Subtask — Demonstrate advantages vs other DSS platforms
-    - [ ] 4.3.3 Subtask — Improve conclusion and reduce programming-level detail
-  - [ ] 4.4 Task — Reviewer #4 response
-    - [ ] 4.4.1 Subtask — Strengthen ecological informatics motivation and scope fit
-    - [ ] 4.4.2 Subtask — Clarify contribution beyond OR formulation
-  - [ ] 4.5 Task — Reviewer #5 response
-    - [ ] 4.5.1 Subtask — Clarify carbon accounting integration (post-hoc vs in-model)
-    - [ ] 4.5.2 Subtask — Add literature review on carbon in optimization-based planning
-    - [ ] 4.5.3 Subtask — Reduce jargon and generic phrasing; tighten narrative
+  - [~] 4.3 Task — Reviewer #3 response
+    - [~] 4.3.1 Subtask — Explain methodological framework and innovation claims
+    - [~] 4.3.2 Subtask — Demonstrate advantages vs other DSS platforms
+    - [x] 4.3.3 Subtask — Improve conclusion and reduce programming-level detail
+  - [~] 4.4 Task — Reviewer #4 response
+    - [~] 4.4.1 Subtask — Strengthen ecological informatics motivation and scope fit
+    - [~] 4.4.2 Subtask — Clarify contribution beyond OR formulation
+  - [~] 4.5 Task — Reviewer #5 response
+    - [x] 4.5.1 Subtask — Clarify carbon accounting integration (post-hoc vs in-model)
+    - [~] 4.5.2 Subtask — Add literature review on carbon in optimization-based planning
+    - [~] 4.5.3 Subtask — Reduce jargon and generic phrasing; tighten narrative
 
 - [ ] 5. Phase 5 — Figures, tables, references, and artifacts
   - [ ] 5.1 Task — Figures/tables updates
     - [ ] 5.1.1 Subtask — Regenerate figures/tables if text changes require updates
     - [ ] 5.1.2 Subtask — Validate captions and cross-references
-  - [ ] 5.2 Task — References and citations
-    - [ ] 5.2.1 Subtask — Add missing citations (Stanley model; carbon planning literature)
+  - [~] 5.2 Task — References and citations
+    - [x] 5.2.1 Subtask — Add missing citations (Stanley model; carbon planning literature)
     - [ ] 5.2.2 Subtask — Re-run reference validation and fix DOI/title mismatches
   - [ ] 5.3 Task — Front/back matter
     - [ ] 5.3.1 Subtask — Update highlights, keywords, and cover letter for r1
     - [ ] 5.3.2 Subtask — Update declarations and AI-use statements if needed
 
 - [ ] 6. Phase 6 — Response package and submission prep
-  - [ ] 6.1 Task — Response to reviewers package
+  - [~] 6.1 Task — Response to reviewers package
     - [ ] 6.1.1 Subtask — Draft point-by-point response letter
-    - [ ] 6.1.2 Subtask — Build response matrix mapping comments → edits
-    - [ ] 6.1.3 Subtask — Ensure each response cites manuscript section/line refs
-  - [ ] 6.2 Task — Build outputs
-    - [ ] 6.2.1 Subtask — Compile r1 PDF and check warnings
-    - [ ] 6.2.2 Subtask — Produce latexdiff PDF for reviewers
-    - [ ] 6.2.3 Subtask — Generate EM-ready flattened submission package
+    - [x] 6.1.2 Subtask — Build response matrix mapping comments → edits
+    - [~] 6.1.3 Subtask — Ensure each response cites manuscript section/line refs
+  - [~] 6.2 Task — Build outputs
+    - [x] 6.2.1 Subtask — Compile r1 PDF and check warnings
+    - [x] 6.2.2 Subtask — Produce latexdiff PDF for reviewers
+    - [x] 6.2.3 Subtask — Generate EM-ready flattened submission package
 
 - [ ] 7. Phase 7 — QA and resubmission
   - [ ] 7.1 Task — Final QA
@@ -107,12 +109,37 @@ Decision letter dated Nov 27, 2025. Revision due date listed as Jan 11, 2026 (no
 ## Submission Readiness Checklist (R1)
 
 - [ ] Deadline/extension confirmed in Editorial Manager
-- [ ] r0 baseline archived and reproducible from tag
-- [ ] r1 manuscript PDF compiles cleanly (no critical LaTeX warnings)
-- [ ] Latexdiff PDF generated and readable
+- [x] r0 baseline archived and reproducible from tag
+- [x] r1 manuscript PDF compiles cleanly (no critical LaTeX warnings)
+- [x] Latexdiff PDF generated and readable
 - [ ] Response-to-reviewers letter complete and cross-referenced
 - [ ] Highlights/cover letter/metadata updated for r1
 - [ ] References validated (DOIs, titles, year/volume/pages)
 - [ ] Figures/tables consistent with text and captions
 - [ ] Data/software availability statements accurate
 - [ ] Final EM submission package validated (no subdirs, all assets present)
+
+## Current focus
+
+Deep-dive sweep (point‑by‑point vs. reviewer/editor comments)
+- Editor (ED‑1): response letter line references updated after proof pass; re‑verified against the latest marked‑line PDF.
+- Editor (ED‑2): extension noted in roadmap but not verified in Editorial Manager. Gap: EM verification pending. Plan: extension date confirmed February 23, 2026.
+- Reviewer 1 (docx): novelty/EC‑informatics framing mostly addressed in Intro + Discussion; ensure final pass sharpens positioning and avoids generic phrasing. Placeholder‑doc issue: no quoted placeholders remain, but documentation scope/links need an explicit response entry. Typos/citation issues still pending.
+- Reviewer 2: tone softened; abstract claims tempered; case‑study details expanded. Methods clarity improved (data model + Model I + workflow narrative). Line refs re‑verified against the latest marked‑line PDF.
+- Reviewer 3: framing tightened in Intro; scope limits stated (no adjacency/road planning, etc.); comparison narrative strengthened; conclusion rewritten. Ensure response letter flags the explicit “does not attempt” scope statement.
+- Reviewer 4: informatics framing improved but still needs crisp, explicit positioning against OR‑novelty expectations.
+- Reviewer 5: carbon post‑hoc position clarified; carbon‑planning literature added; cadence/jargon cleanup complete pending line‑ref verification.
+Gaps to address next (high‑priority)
+- No further reference‑metadata gaps pending (FPS‑Atlas is EOL; no reliable public URL/DOI available).
+Recently addressed
+- R1‑5 doc‑completeness framing: documentation is scoped to core structures/examples and versioned with releases.
+- Acronym expansions: PuLP/HiGHS clarified at first use; libCBM spelled out in dependencies list.
+- Novelty framing tightened in Contributions (explicitly workflow/reproducibility, not a new formulation).
+- Cadence/jargon smoothing in Introduction, Data model/Interoperability, and scalability‑experiment text.
+- Consistency cleanup: defined CMAI/THLB/RSS; standardized “modeling” and “artifacts.”
+- Results/Comparison/Discussion cadence pass; Impact/Comparison typos/cadence tweaks (carbon accounting; “use cases”; parity figure parenthetical).
+- Final line‑by‑line proof pass completed; reviewer‑response matrix and response‑letter line refs refreshed to match current manuscript source.
+- Marked‑line PDF rebuilt; response‑letter line refs re‑verified.
+- Latexdiff rebuilt (UTF‑8); EM submission package regenerated; latexdiff stub entry added for removed SIMFOR citation.
+- Added explicit “does not attempt” scope statement (risk/uncertainty/ML/fully spatial optimization) in Discussion; softened performance‑spot‑check phrasing; intro tightened for tone.
+- Reference cleanup: added/confirmed URLs for Feunekes 1997/1999, Mistik 2019, and Canadell 2022; removed SIMFOR references; corrected DOI formatting (Gasser 2020), added explicit CI workflow URL, and removed trailing DOI whitespace in CIRRELT tech report entries.
