@@ -290,9 +290,6 @@ def main() -> None:
     figs_dir = Path("papers/ems/figs")
     ensure_dir(figs_dir)
 
-    fig_architecture(figs_dir / "f1_architecture.png")
-    fig_workflow(figs_dir / "f2_workflow.png")
-    fig_architecture(figs_dir / "graphical_abstract.png")
     print("Wrote diagrams to", figs_dir)
 
 

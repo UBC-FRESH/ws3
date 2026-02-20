@@ -30,7 +30,7 @@ Scope: Ecological Informatics (single-anonymized)
 
 All files are flat (no subdirectories) and present in `em-submission.zip`:
 - Manuscript source: `paper.tex`, `references.bib`, `paper.bbl`
-- Figures: `f1_architecture.png`, `f2_workflow.png`, `f3_spatial_allocation.png`, `f4a_harvest_and_stock.png`, `f4b_carbon_stocks.png`, `f5_neilsonhack_compare.png`, `scaling_*`, `sup_parity_periods.png`, `graphical_abstract.png`, `ws3-manuscript-graphical-abstract.pdf`
+- Figures: `f3_spatial_allocation.png`, `f4a_harvest_and_stock.png`, `f4b_carbon_stocks.png`, `f5_neilsonhack_compare.png`, `scaling_*`, `sup_parity_periods.png`, `ws3-manuscript-graphical-abstract.pdf`
 - Tables/CSV: `scenario_flows.csv`, `annual_carbon_stocks.csv`, `perf_scaling.csv`, `woodstock_parity*.csv`, `fair_checklist.csv`
 - Highlights: `highlights.txt`
 - Declarations: `declarationStatement.docx`

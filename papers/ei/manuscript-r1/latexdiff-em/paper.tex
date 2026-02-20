@@ -1,7 +1,7 @@
 \documentclass[review]{elsarticle}
 %DIF LATEXDIFF DIFFERENCE FILE
-%DIF DEL ../manuscript-r0/em-submission/paper.tex   Fri Feb 20 18:33:13 2026
-%DIF ADD em-submission/paper.tex                    Fri Feb 20 18:33:13 2026
+%DIF DEL ../manuscript-r0/em-submission/paper.tex   Fri Feb 20 20:57:05 2026
+%DIF ADD em-submission/paper.tex                    Fri Feb 20 20:57:04 2026
 
 \usepackage{hyperref}
 \usepackage{lineno}
@@ -35,7 +35,7 @@
 %DIF 32c32
 %DIF <   pdfkeywords={WS3, wood supply, forest estate, forest planning, optimization, libCBM, carbon accounting, environmental modelling, Python}
 %DIF -------
-  pdfkeywords={computational ecology, decision support, forest planning, optimization, carbon accounting, geospatial workflows, open-source software} %DIF > 
+  pdfkeywords={forest management, decision support systems, forest estate modelling, optimization, simulation, reproducibility} %DIF > 
 %DIF -------
 }
 
@@ -161,7 +161,8 @@
 \end{abstract}
 
 \begin{keyword}
-computational ecology \sep decision support \sep forest planning \sep optimization \sep carbon accounting \sep geospatial workflows \DIFaddbegin \sep \DIFadd{open-source software
+\DIFdelbegin \DIFdel{computational ecology }\DIFdelend \DIFaddbegin \DIFadd{forest management }\DIFaddend \sep decision support \DIFaddbegin \DIFadd{systems }\DIFaddend \sep forest \DIFdelbegin \DIFdel{planning }\DIFdelend \DIFaddbegin \DIFadd{estate modelling }\DIFaddend \sep optimization \sep \DIFdelbegin \DIFdel{carbon accounting }\DIFdelend \DIFaddbegin \DIFadd{simulation }\DIFaddend \sep \DIFdelbegin \DIFdel{geospatial workflows
+}\DIFdelend \DIFaddbegin \DIFadd{reproducibility
 }\DIFaddend \end{keyword}
 
 \section*{Software availability}
@@ -180,7 +181,8 @@ computational ecology \sep decision support \sep forest planning \sep optimizati
   }%DIFDELCMD < \item %%%
 \item%DIFAUXCMD
 \DIFdelend Documentation: \url{https://ws3.readthedocs.io}
-  \item Archived release: Zenodo DOI \href{https://doi.org/10.5281/zenodo.17331213}{10.5281/zenodo.17331213}
+  \item Archived release: Zenodo DOI \DIFdelbegin %DIFDELCMD < \href{https://doi.org/10.5281/zenodo.17331213}{%%%
+\DIFdelend \DIFaddbegin \href{https://doi.org/10.5281/zenodo.18716705}{\DIFaddend 10.5281/zenodo\DIFdelbegin \DIFdel{.17331213}\DIFdelend \DIFaddbegin \DIFadd{.18716705}\DIFaddend }
   \item License: MIT
   \item \DIFdelbegin \DIFdel{Hardware and OS requirements: Linux, macOS, or Windows; tested on Ubuntu 24.04 and macOS 14; CPU-only with recommended 16+ GB RAM for large LP instances
   }%DIFDELCMD < \item %%%
@@ -673,7 +675,8 @@ Table~\ref{tab:fair-checklist} \DIFdelbegin \DIFdel{summarises the EMS }\DIFdele
     \toprule
     Principle & Checklist focus & Evidence / \DIFdelbeginFL \DIFdelFL{artefact }\DIFdelendFL \DIFaddbeginFL \DIFaddFL{artifact }\DIFaddendFL \\
     \midrule
-    Findable & Persistent identifier; indexed repository & Zenodo DOI \href{https://doi.org/10.5281/zenodo.17331213}{10.5281/zenodo.17331213}; tagged GitHub releases; \DIFdelbeginFL \DIFdelFL{PyPI project }\DIFdelendFL \DIFaddbeginFL \DIFaddFL{indexed repository }\DIFaddendFL metadata \\
+    Findable & Persistent identifier; indexed repository & Zenodo DOI \DIFdelbeginFL %DIFDELCMD < \href{https://doi.org/10.5281/zenodo.17331213}{%%%
+\DIFdelendFL \DIFaddbeginFL \href{https://doi.org/10.5281/zenodo.18716705}{\DIFaddendFL 10.5281/zenodo\DIFdelbeginFL \DIFdelFL{.17331213}\DIFdelendFL \DIFaddbeginFL \DIFaddFL{.18716705}\DIFaddendFL }; tagged GitHub releases; \DIFdelbeginFL \DIFdelFL{PyPI project }\DIFdelendFL \DIFaddbeginFL \DIFaddFL{indexed repository }\DIFaddendFL metadata \\
     Accessible & License and public access & MIT license (CITATION.cff, LICENSE); public GitHub repository; \DIFdelbeginFL \DIFdelFL{PyPI wheels; }\DIFdelendFL reproduction package assets bundled in repository \\
     Interoperable & Open formats and connectors & Woodstock LAN/ARE/YLD importers; libCBM SIT export; tabular CSV, GeoTIFF, and shapefile outputs; documented workflow in Figure~\ref{fig:workflow_overview} \\
     Reusable & Documentation, provenance, validation & ReadTheDocs site; notebooks/examples; \DIFdelbeginFL \DIFdelFL{continuous-integration (CI)–tested }\DIFdelendFL \texttt{pytest} suite; deterministic scripts in \DIFdelbeginFL \texttt{\DIFdelFL{repro}}%DIFAUXCMD
@@ -693,7 +696,7 @@ Development of WS3 was supported by the Forest Resources Environmental Services 
 
 \section*{Data availability}
 \DIFdelbegin \DIFdel{Data availability: }\DIFdelend Source code, configuration files, and reproduction assets are archived at \DIFdelbegin \href{https://doi.org/10.5281/zenodo.17331213}{\DIFdel{https://doi.org/10.5281/zenodo.17331213}}%DIFAUXCMD
-\DIFdelend \DIFaddbegin \DIFadd{Zenodo (DOI: }\url{10.5281/zenodo.17331213}\DIFadd{)}\DIFaddend . All scripts used to generate the figures and tables are included; reuse is permitted under the MIT License.
+\DIFdelend \DIFaddbegin \DIFadd{Zenodo (DOI: }\url{10.5281/zenodo.18716705}\DIFadd{)}\DIFaddend . All scripts used to generate the figures and tables are included; reuse is permitted under the MIT License.
 
 \section*{Declaration of competing interest}
 \DIFdelbegin \DIFdel{Competing interests: }\DIFdelend The author declares no competing interests.

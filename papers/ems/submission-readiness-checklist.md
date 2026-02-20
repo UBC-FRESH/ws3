@@ -13,7 +13,7 @@
 | Examples & Tutorials       | ✅ Ready     | Multiple Jupyter Notebooks in `examples/`, with narrative and executable code       |
 | Reproducible Case Study    | ✅ Ready     | Manuscript documents hardware, runtime/scale metrics, and libCBM install notes; optional scaling script and perf_scaling.csv ship with repro package |
 | Software Archive with DOI  | ✅ Ready     | Release archived on Zenodo (10.5281/zenodo.17331213) and cited in manuscript       |
-| Graphical Abstract         | ✅ Ready     | Figure available as `papers/ems/figs/graphical_abstract.png` and referenced        |
+| Graphical Abstract         | ✅ Ready     | Figure available as `papers/ems/ws3-manuscript-graphical-abstract.pdf`             |
 | FAIR Checklist Compliance  | ✅ Ready     | Manuscript FAIR checklist table (label `tab:fair-checklist`) and supplementary CSV (`papers/ems/tables/fair_checklist.csv`) document the requirements; paragraph cross-references the artefact |
 | Input validation scope     | ⏭️ Out of scope | Exhaustive auto-validation is infeasible for Woodstock’s full domain; targeted checks documented; responsibility remains with qualified analysts |
 | Verification vs Woodstock  | ✅ Ready     | Parity tables/figure generated in `papers/ems/repro/generate_case_study.py`; manuscript table (label `tab:woodstock_parity`) and supplementary CSVs provide prescriptive comparison |
