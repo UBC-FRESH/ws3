@@ -1,112 +1,54 @@
-# 🛠️ Contributing Guidelines
+# Contributing Guidelines
 
-🎉 **Thank you for your interest in contributing to this project!**  
-Your contributions—big or small—make a meaningful difference. We're grateful to have you here!
+Thank you for contributing to `ws3`. This repository follows the same UBC-FRESH development workflow that is being used in `agent-workbench` and `freshforge`: work is planned and tracked through roadmap phases, tasks, and subtasks, with GitHub issues used as the durable coordination surface.
 
-We welcome all kinds of contributions. Here are some ways you can get involved:
+## Project Workflow
 
-- 🐞 **Report bugs and request features**  
-  Help us improve by identifying problems or suggesting new ideas.
+All non-trivial work should be organized as follows:
 
-- 📝 **Write tutorials or examples**  
-  Share how you use the project to help others get started.
+- One roadmap phase maps to one GitHub parent issue and one feature branch.
+- One roadmap task maps to one child GitHub issue linked from the parent issue body.
+- Subtasks should be tracked as checklist items in the child issue body unless they are large enough to warrant separate implementation issues.
+- `ROADMAP.md`, `CHANGELOG.md`, planning notes, issue bodies, and pull request descriptions should stay synchronized.
 
-- 📚 **Improve documentation**  
-  Clear and accurate docs make the project more accessible to everyone.
+Contributors should begin by reviewing the current roadmap and the active issue context before making substantive changes.
 
-- 💡 **Contribute code**  
-  Submit bug fixes, enhancements, or new features that others can benefit from.
+## Branching and Issue Hygiene
 
-If you ever get stuck or have questions, feel free to [open an issue](https://github.com/UBC-FRESH/ws3/issues) or [email us directly](mailto:gregory.paradis@ubc.ca).  
+- Create or use a branch that corresponds to the active roadmap phase.
+- Prefer branch names such as `feature/ws3-<phase-id>-<short-name>`.
+- Before starting a new feature or substantial task, ensure the relevant GitHub issue exists and is linked to the roadmap.
+- Keep work scoped to the current phase and child task. Avoid broad side work unless the maintainer explicitly approves it.
+- When a roadmap task is completed, update the corresponding issue body and roadmap status so the repository reflects the current state.
 
-If you're new to open-source, check out [GitHub’s guide to contributing](https://opensource.guide/how-to-contribute/) and the [Zen of Scientific Software Maintenance](https://jrleeman.github.io/ScientificSoftwareMaintenance/) for best practices on writing high-quality scientific software.
+## Development Expectations
 
----
+- Keep changes small, reviewable, and clearly scoped.
+- Prefer evidence-based validation over assumptions.
+- Add or update tests when changing behaviour.
+- Update documentation when the change materially affects usage, contributor workflow, or package behaviour.
+- Keep public repository content free of private data, credentials, machine-specific paths, and unpublished notes.
 
-## 📄 Ground Rules
+## Verification
 
-We strive to create a friendly, respectful, and inclusive community. Please:
+Before concluding work, verify the change with the relevant checks. At minimum, the following are expected for substantive changes:
 
-- Be kind and considerate to others  
-- Use welcoming and inclusive language  
-- Respect differing viewpoints and experiences  
+```bash
+python -m pytest
+python -m ruff check .
+python -m build
+sphinx-build -b html docs _build/html -W
+```
 
-All contributors must follow our [Code of Conduct](./CODE_OF_CONDUCT.md). We encourage everyone to read it before participating.
+For larger changes, use the same verification style expected in the UBC-FRESH ecosystem: provide evidence from the repo, tests, or runtime output rather than relying on informal statements.
 
----
+## Reporting Bugs and Proposing Features
 
-## 🔗 Useful Links
+- Report bugs by opening or updating a GitHub issue with a clear description, steps to reproduce, expected behaviour, actual behaviour, and any relevant logs.
+- Propose new features through a GitHub issue that includes the motivation, scope, and any implementation sketch.
+- Link the relevant issue in pull requests and describe how the change was validated.
 
-- 📚 [WS3 Documentation](https://ws3.readthedocs.io/en/stable/)
-- 📦 [Project Overview & Installation Guide](./README.md)
-- ⚙️ [Environment Setup Guide](https://ws3.readthedocs.io/en/stable/examples/000_venv_python_kernel_setup.html)
-- 🤝 [Code of Conduct](./CODE_OF_CONDUCT.md)
-- 📄 [LICENSE](./LICENSE)
+## Code of Conduct
 
----
-
-## 📑 Contents
-
-- [Setting Up Your Development Environment](#setting-up-your-development-environment)
-- [Reporting Bugs](#reporting-bugs)
-- [Proposing New Features](#proposing-new-features)
-- [Pull Request Guidelines](#pull-request-guidelines)
-- [Development Guide](#development-guide)
-
----
-
-## 🧰 Setting Up Your Development Environment
-
-To get started, follow our [setup guide](https://ws3.readthedocs.io/en/stable/examples/000_venv_python_kernel_setup.html) to install `ws3` packages and configure your development environment.
-
----
-
-## 🐞 Reporting Bugs
-
-Found a bug? Please [open an issue](https://github.com/UBC-FRESH/ws3/issues) and include the following:
-
-- A clear description of the issue  
-- Steps to reproduce the problem  
-- What you expected vs. what actually happened  
-- Any error messages or logs  
-- Your OS and Python version  
-
----
-
-## 💡 Proposing New Features
-
-We’re excited to hear your ideas! Before submitting a feature request:
-
-1. Search [existing issues](https://github.com/UBC-FRESH/ws3/issues) to avoid duplicates.  
-2. If it’s new, open a detailed issue including:  
-   - A concise summary of the idea  
-   - Why it's useful or needed  
-   - Any implementation suggestions or examples  
-
----
-
-## 🚀 Pull Request Guidelines
-
-We love pull requests! Please follow these guidelines:
-
-- Create a branch:
-  - For features: `feature/your-feature-name`
-  - For bug fixes: `bug/your-bug-name`
-- Write clear, well-documented, and testable code
-- Follow [PEP 8](https://peps.python.org/pep-0008/) style guidelines
-- Add or update tests for your changes
-- Write a clear pull request description
-  - Link related issues (e.g., `Fixes #42`)
-
-All pull requests will be automatically tested via GitHub Actions. Try to make sure all checks pass (green). If you're having trouble, just leave a comment on the PR or [reach out](mailto:gregory.paradis@ubc.ca)—we’re happy to help!
-
----
-
-## 📘 Development Guide
-
-We acknowledge the importance of a structured development guide, especially for growing and collaborative projects. However, given our current limited team size, we have not yet formalized one.
-
-That said, we encourage open collaboration and diverse applications of the project. We aim to grow into a broader development model over time and will revisit this as our community and contributor base expand.
-
-In the meantime, please reach out if you have any specific questions about the internal structure or implementation—we’re always happy to assist!
+All contributors are expected to follow the community standards in [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).
 

@@ -38,6 +38,7 @@ import random
 import itertools
 from itertools import chain
 from functools import reduce
+from typing import Any
 _cfi = chain.from_iterable
 from collections import defaultdict as dd
 import pandas as pd
@@ -762,7 +763,7 @@ class ForestModel:
     a larger modelling pipeline).  
     """
     _ytypes = {'*Y':'a', '*YT':'t', '*YC':'c'}
-    tree = (lambda f: f(f))(lambda a: (lambda: dd(a(a))))
+    tree: Any = (lambda f: f(f))(lambda a: (lambda: dd(a(a))))
 
     def __init__(self,
                  model_name,
