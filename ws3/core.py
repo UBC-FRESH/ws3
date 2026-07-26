@@ -379,6 +379,65 @@ class Curve:
         """
         return self._y[x] if self._y else self.interp(x)
 
+    def y_array(self) -> List[float]:
+        """
+        Returns y-values as a list (alias for y() for compatibility).
+        
+        :return: List of y values.
+        """
+        return self.y()
+
+    def cumulative_sum(self) -> List[float]:
+        """
+        Calculate cumulative sum of y-values.
+        
+        :return: List of cumulative sums.
+        """
+        y = self.y()
+        cumulative = [0.0] * len(y)
+        total = 0.0
+        for i, val in enumerate(y):
+            total += val
+            cumulative[i] = total
+        return cumulative
+
+    def moving_average(self, window: int = 5) -> List[float]:
+        """
+        Calculate moving average of y-values.
+        
+        :param window: Size of the moving average window. Defaults to 5.
+        :return: List of moving averages.
+        """
+        y = self.y()
+        n = len(y)
+        if window <= 1:
+            return y
+        
+        result = [0.0] * n
+        for i in range(n):
+            start = max(0, i - window // 2)
+            end = min(n, i + window // 2 + 1)
+            result[i] = sum(y[start:end]) / (end - start)
+        return result
+
+    def peak_age(self) -> int:
+        """
+        Find the age at which the curve reaches its peak value.
+        
+        :return: Age at peak.
+        """
+        y = self.y()
+        max_y = max(y)
+        return self.x[y.index(max_y)]
+
+    def peak_value(self) -> float:
+        """
+        Find the peak value of the curve.
+        
+        :return: Maximum y-value.
+        """
+        return max(self.y())
+
 
 # Cache for frequently accessed curve values
 _curve_cache: Dict[Tuple[str, int], float] = {}

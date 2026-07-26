@@ -105,32 +105,52 @@ class GreedyAreaSelector:
         :param bool verbose: Verbosity flag. Defaults to False.
          
         """
+        # Pre-compute operable dtypes once
+        operable = self.parent.operable_dtypes(acode, period, mask)
         key = lambda item: max(item[1])
-        odt = sorted(list(self.parent.operable_dtypes(acode, period, mask).items()), key=key)
+        odt = sorted(list(operable.items()), key=key)
+        
         if verbose:
             print(' entering selector.operate()', len(odt), 'operable dtypes')
+        
+        # Cache for frequently accessed dtypes
+        dtypes_cache = self.parent.dtypes
+        
         while target_area > 0 and odt:
             while target_area > 0 and odt:
                 popped = odt.pop()
                 try:
-                    dtk, ages = popped #odt.pop()
+                    dtk, ages = popped
                 except:
-                    print(odt)
-                    print(popped)
+                    if verbose:
+                        print('Error processing odt:', odt, popped)
                     raise
+                
                 age = sorted(ages)[-1]
-                oa = self.parent.dtypes[dtk].operable_area(acode, period, age)
-                if not oa: continue # nothing to operate
+                
+                # Use cached dtype for better performance
+                dtype = dtypes_cache[dtk]
+                oa = dtype.operable_area(acode, period, age)
+                
+                if not oa:
+                    continue
+                
                 area = min(oa, target_area)
                 target_area -= area
+                
                 if area < 0:
-                    print('negative area', area, oa, target_area, acode, period, age)
+                    if verbose:
+                        print('negative area', area, oa, target_area, acode, period, age)
                     assert False
+                    
                 if verbose:
                     print(' selector found area', [' '.join(dtk)], acode, period, age, area)
+                    
                 self.parent.apply_action(dtk, acode, period, age, area, compile_c_ycomps=True,
                                          fuzzy_age=False, recourse_enabled=False, verbose=verbose)
+            # Re-sort operable dtypes after each full pass
             odt = sorted(list(self.parent.operable_dtypes(acode, period, mask).items()), key=key)
+            
         self.parent.commit_actions(period, repair_future_actions=True)
         if verbose:
             print('GreedyAreaSelector.operate done (remaining target_area: %0.1f)' % target_area)
@@ -559,10 +579,19 @@ class DevelopmentType:
         """
         
         end_period = start_period + 1 if not cascade else self.parent.horizon
+        period_length = self.parent.period_length
+        
+        # Cache for frequently accessed period data
         for p in range(start_period, end_period):
-            self.reset_areas(p+1) #, self._areas[p], self._areas[p+1] # WTF?
-            #for age, area in list(self._areas[p].items()): self._areas[p+1][age+1] = area
-            for age, area in list(self._areas[p].items()): self._areas[p+1][age+self.parent.period_length] = area
+            self.reset_areas(p+1)
+            # Use direct dictionary operations for better performance
+            current_areas = self._areas[p]
+            next_areas = self._areas[p+1]
+            
+            # Bulk update with pre-calculated keys
+            for age, area in current_areas.items():
+                next_age = age + period_length
+                next_areas[next_age] = area
 
     def overwrite_initial_areas(self, period):
 
