@@ -78,6 +78,10 @@ Prerequisite Chain
      CH10 --> CH12["ch12: FHOPS Integration"]
      CH11 --> CH13["ch13: FreshForge Workflows"]
      CH12 --> CH13
+     CH13 --> CH14["ch14: SpaDES Integration"]
+     CH14 --> CH15["ch15: Disturbance Modelling"]
+     CH14 --> CH16["ch16: Supply Chain"]
+     CH15 --> CH16
 
 .. note::
 
@@ -85,6 +89,8 @@ Prerequisite Chain
    Chapters 05 and 06 can also be studied in parallel after Chapter 04.
    Chapter 10 (Carbon Modelling) can be studied after Chapter 07 (Financial Analysis).
    Chapters 11-13 build on earlier chapters and cover the UBC-FRESH ecosystem.
+   Chapters 14-16 cover integration with external systems and advanced topics.
+   Chapters 15 and 16 are stubs — see notes in each chapter for details.
 
 Contents
 --------
@@ -106,6 +112,9 @@ Contents
    ch11_femic_models
    ch12_fhops_integration
    ch13_freshforge
+   ch14_spades_integration
+   ch15_disturbance_modelling
+   ch16_supply_chain
 
 Chapter Structure
 =================
