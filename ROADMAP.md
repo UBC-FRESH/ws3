@@ -133,7 +133,7 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Scope: interactive notebooks, GUI wrapper, tutorial videos, FAQ section, migration guide
 
 ### Task 5.3 — Performance Optimization
-- Status: not_started
+- Status: in_progress
 - Scope: solver tuning, memory profiling, parallel processing, incremental solving, caching
 
 ### Task 5.4 — Integration Enhancements
