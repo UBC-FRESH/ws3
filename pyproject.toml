@@ -20,9 +20,6 @@ dependencies = [
   "dill",
   "highspy"
 ]
-authors = [
-  {name = "Gregory Paradis", email = "gregory.paradis@ubc.ca"}
-]
 maintainers = [
   {name = "Kathleen Coupland", email = "kathleen.coupland@ubc.ca"},
   {name = "Elaheh Ghasemi", email = "elaheh.ghasemi@ubc.ca"},
@@ -102,4 +99,3 @@ exclude_lines = [
     "if 0:",
     "if __name__ == .__main__.:",
 ]
->>>>>>> dev
