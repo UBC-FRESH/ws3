@@ -35,6 +35,9 @@ docs = [
     "sphinx-rtd-theme>=2",
     "nbsphinx>=0.9",
 ]
+github-mcp = [
+    "github-mcp-server",  # GitHub MCP server for enhanced GitHub integration
+]
 
 [tool.hatch.version]
 source = "code"

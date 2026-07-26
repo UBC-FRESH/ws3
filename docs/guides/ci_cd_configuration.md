@@ -1,6 +1,6 @@
 # CI/CD Configuration Guide
 
-**Version**: 2.0.0  
+**Version**: 1.1.0a1  
 **Date**: 2026-07-26  
 **Status**: Configuration Required  
 

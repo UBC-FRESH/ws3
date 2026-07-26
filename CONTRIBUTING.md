@@ -1,33 +1,45 @@
-# Contributing Guidelines
+# Contributing
 
 Thank you for contributing to `ws3`. This repository follows the same UBC-FRESH development workflow that is being used in `agent-workbench` and `freshforge`: work is planned and tracked through roadmap phases, tasks, and subtasks, with GitHub issues used as the durable coordination surface.
 
-## Project Workflow
+## Workflow
 
-All non-trivial work should be organized as follows:
+- Check `ROADMAP.md` before starting non-trivial work.
+- Use the active phase branch and linked GitHub issues.
+- Keep `CHANGELOG.md`, roadmap checklists, issue comments, and PR descriptions synchronized with completed work.
+- Use one parent GitHub issue per roadmap phase.
+- Use one child GitHub issue per roadmap task.
+- Track roadmap subtasks as checklist items in the child issue body.
+- Check off child issue checklist items as subtasks complete.
+- Close child issues before closing the parent issue.
+- Close the parent issue only after the phase PR merges to `main`.
 
-- One roadmap phase maps to one GitHub parent issue and one feature branch.
-- One roadmap task maps to one child GitHub issue linked from the parent issue body.
-- Subtasks should be tracked as checklist items in the child issue body unless they are large enough to warrant separate implementation issues.
-- `ROADMAP.md`, `CHANGELOG.md`, planning notes, issue bodies, and pull request descriptions should stay synchronized.
+## Public-Safety Rules
 
-Contributors should begin by reviewing the current roadmap and the active issue context before making substantive changes.
+- Do not commit raw agent transcripts, private project notes, credentials, generated local outputs, or machine-specific paths.
+- Keep `tmp/`, `runtime/`, `local/`, and `outputs/` as ignored local working areas.
+- Promote only sanitized and generally useful findings into tracked `planning/` notes.
+- Keep examples generic unless a roadmap phase explicitly introduces a public-safe case study.
 
-## Branching and Issue Hygiene
+## Local Checks
 
-- Create or use a branch that corresponds to the active roadmap phase.
+For governance-only changes, run:
+
+```bash
+git status --short --branch
+git diff --check
+```
+
+Also inspect changed Markdown files and search for accidental private paths, credentials, raw transcripts, and unrelated project-specific assumptions.
+
+## Development Workflow Constraints
+
+- Do not commit, push, create PRs, or mutate GitHub without approval.
+- Use a dedicated feature branch for each roadmap phase.
 - Prefer branch names such as `feature/ws3-<phase-id>-<short-name>`.
-- Before starting a new feature or substantial task, ensure the relevant GitHub issue exists and is linked to the roadmap.
-- Keep work scoped to the current phase and child task. Avoid broad side work unless the maintainer explicitly approves it.
-- When a roadmap task is completed, update the corresponding issue body and roadmap status so the repository reflects the current state.
-
-## Development Expectations
-
-- Keep changes small, reviewable, and clearly scoped.
-- Prefer evidence-based validation over assumptions.
-- Add or update tests when changing behaviour.
-- Update documentation when the change materially affects usage, contributor workflow, or package behaviour.
-- Keep public repository content free of private data, credentials, machine-specific paths, and unpublished notes.
+- Keep the implementation scoped to the current phase and child task.
+- Update the roadmap and changelog as progress is made.
+- Make verification part of the work rather than an afterthought.
 
 ## Verification
 
@@ -41,6 +53,29 @@ sphinx-build -b html docs _build/html -W
 ```
 
 For larger changes, use the same verification style expected in the UBC-FRESH ecosystem: provide evidence from the repo, tests, or runtime output rather than relying on informal statements.
+
+## GitHub Issue And Comment Formatting
+
+Formatting matters. GitHub issue bodies and comments must be readable as rendered Markdown, not flattened prose.
+
+Rules:
+
+- Use short section labels on their own lines, such as `Roadmap task: P3.1`, `Parent phase issue: #18`, `Status: active`, and `Checklist:`.
+- Use real GitHub task-list syntax, with one checklist item per line.
+- Never write inline pseudo-checklists such as `Checklist: [ ] first. [ ] second.`
+- Wrap branch names, file paths, commands, and commit hashes in backticks.
+- For parent phase issues, list child issues as task-list bullets with issue numbers and task IDs.
+- Before creating or editing several issues, prepare bodies as multi-line Markdown strings or temporary body files.
+
+## GitHub Issue Body Quality Standard
+
+Issue bodies are part of the project specification and onboarding material. Write them so a new lab student, external collaborator, or coding agent can understand the task, implement it, verify it, and close it without reading the original chat transcript.
+
+Parent phase issues must include phase identifier, status, branch name, roadmap links, goal, scope, out-of-scope boundaries, architecture notes, child task checklist, acceptance criteria, verification, and closeout requirements.
+
+Child task issues must include task identifier, parent phase issue, status, related planning links, goal, scope, out-of-scope boundaries, subtasks, acceptance criteria, verification commands, artifacts, risks, and completion metadata once closed.
+
+Do not create placeholder issue bodies with only a title and a short checklist unless the maintainer explicitly asks for a placeholder.
 
 ## Reporting Bugs and Proposing Features
 

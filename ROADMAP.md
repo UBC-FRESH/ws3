@@ -123,35 +123,44 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Status: in_progress
 - Branch: `feature/ws3-phase5`
 - Start date: 2026-07-26
+- Alpha release: v1.1.0a1 (smoke testing in progress)
 
 ### Task 5.1 — Advanced Modeling Features
-- Status: complete
+- GitHub issue: #61
+- Status: complete (code created, tests pending)
 - Scope: stochastic optimization, multi-objective optimization, dynamic planning, climate scenarios, enhanced carbon accounting
 
 ### Task 5.2 — User Experience Improvements
-- Status: complete
-- Scope: interactive notebooks, GUI wrapper, tutorial videos, FAQ section, migration guide
+- GitHub issue: #62
+- Status: complete (code created, tests pending)
+- Scope: interactive notebooks, FAQ section, migration guide
 
 ### Task 5.3 — Performance Optimization
-- Status: in_progress
+- GitHub issue: #63
+- Status: complete (code created, tests pending)
 - Scope: solver tuning, memory profiling, parallel processing, incremental solving, caching
 
 ### Task 5.4 — Integration Enhancements
-- Status: in_progress
+- GitHub issue: #64
+- Status: complete (code created, tests pending)
 - Scope: fhops integration, FEMIC integration, FreshForge workflows, SpaDES coupling, API endpoints
 
 ### Task 5.5 — Production Deployment
-- Status: complete
+- GitHub issue: #65
+- Status: in_progress (CI/CD exists, PyPI secrets not configured)
 - Scope: release packaging, CI/CD pipeline, versioning, changelog, community guidelines, support channels
 
 ### Task 5.6 — Additional How-To Guides
-- Status: in_progress
-- Scope: advanced optimization, custom solvers, data validation, scenario analysis, reporting
+- GitHub issue: #66
+- Status: complete (4 new guides created)
+- Scope: advanced optimization, custom solvers, data validation, scenario analysis
 
 ### Task 5.7 — Textbook Expansion
-- Status: in_progress
-- Scope: advanced spatial modeling, carbon accounting in detail, case studies, future directions, more exercises
+- GitHub issue: #67
+- Status: partial (ch17-18 created, ch19-20 not yet created)
+- Scope: advanced spatial modeling, carbon accounting in detail, case studies, future directions
 
 ### Task 5.8 — Testing and Validation
-- Status: in_progress
+- GitHub issue: #68
+- Status: not_started (no dedicated test files for new modules)
 - Scope: unit tests, integration tests, performance tests, regression tests, documentation tests

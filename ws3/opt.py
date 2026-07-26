@@ -275,17 +275,19 @@ class Problem:
 
         :returns:  STATUS_INFEASIBLE, STATUS_UNBOUNDED, STATUS_OPTIMAL, or None
         """
-        import pulp
-
         import ws3.opt
 
-        # Optional import: only if Gurobi used
+        # Optional imports
+        try:
+            import pulp
+        except ImportError:
+            pulp = None
+
         try:
             import gurobipy
         except ImportError:
             gurobipy = None
 
-        # Optional import: only if HiGHS used
         try:
             import highspy
         except ImportError:
@@ -567,8 +569,10 @@ class Problem:
             col_values = sol.col_value
             for i, var in enumerate(self._vars.values()):
                 var.val = col_values[i]
+            self._solution = {x: (self._vars[x].val or 0.0) for x in self._vars}
         else:
             for var in self._vars.values():
                 var.val = None
+            self._solution = None
 
         return status

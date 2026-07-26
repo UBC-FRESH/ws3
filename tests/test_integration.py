@@ -12,7 +12,6 @@ import pandas as pd
 import numpy as np
 from ws3.forest import ForestModel
 from ws3.opt import Problem, Variable, Constraint
-from ws3.core import interpolate_curves
 
 
 class TestForestOptIntegration:
@@ -21,10 +20,7 @@ class TestForestOptIntegration:
     def test_forest_to_opt_conversion(self):
         """Test converting ForestModel to optimization problem."""
         try:
-            fm = ForestModel(
-                model_name="test",
-                model_path="data/woodstock_model_files_tsa24"
-            )
+            fm = ForestModel(model_name="test", model_path="data/woodstock_model_files_tsa24", base_year=2024)
             fm.import_landscape_section()
             fm.import_areas_section(convert_periods_to_years=10)
             fm.import_yields_section(convert_periods_to_years=10)
@@ -53,10 +49,7 @@ class TestForestOptIntegration:
     def test_yield_curve_interpolation(self):
         """Test yield curve interpolation in optimization context."""
         try:
-            fm = ForestModel(
-                model_name="test",
-                model_path="data/woodstock_model_files_tsa24"
-            )
+            fm = ForestModel(model_name="test", model_path="data/woodstock_model_files_tsa24", base_year=2024)
             fm.import_yields_section(convert_periods_to_years=10)
             
             # Get a yield curve
@@ -82,10 +75,7 @@ class TestForestOptIntegration:
     def test_action_definitions(self):
         """Test action definitions in optimization context."""
         try:
-            fm = ForestModel(
-                model_name="test",
-                model_path="data/woodstock_model_files_tsa24"
-            )
+            fm = ForestModel(model_name="test", model_path="data/woodstock_model_files_tsa24", base_year=2024)
             fm.import_actions_section(convert_periods_to_years=10)
             
             # Check that actions are defined
@@ -104,26 +94,26 @@ class TestCoreOptIntegration:
     
     def test_variable_constraint_interaction(self):
         """Test that variables and constraints interact correctly."""
-        problem = Problem()
+        problem = Problem("test")
         
         # Add variables
         x = Variable("x", "continuous", 0, 100)
         y = Variable("y", "continuous", 0, 100)
         
-        problem.add_variable("x", "continuous", 0, 100)
-        problem.add_variable("y", "continuous", 0, 100)
+        problem.add_var("x", "continuous", 0, 100)
+        problem.add_var("y", "continuous", 0, 100)
         
         # Add constraint
         problem.add_constraint("con1", {"x": 1.0, "y": 1.0}, "<", 150)
         
         # Set objective
-        problem.set_objective({"x": 1.0, "y": 2.0})
+        problem.z({"x": 1.0, "y": 2.0})
         
         # Solve
-        problem.solve(solver="highs")
+        problem.solve()
         
         # Check solution
-        solution = problem.get_solution()
+        solution  = problem._solution
         assert "x" in solution, "Missing x in solution"
         assert "y" in solution, "Missing y in solution"
         
@@ -133,24 +123,24 @@ class TestCoreOptIntegration:
     
     def test_multiple_objectives(self):
         """Test optimization with multiple objectives."""
-        problem = Problem()
+        problem = Problem("test")
         
         for i in range(10):
-            problem.add_variable(f"x{i}", "continuous", 0, 100)
+            problem.add_var(f"x{i}", "continuous", 0, 100)
         
         problem.add_constraint("con1", {f"x{i}": 1.0 for i in range(10)}, "<", 200)
         
         # Set multi-objective (weighted sum)
         objective = {f"x{i}": float(i+1) for i in range(10)}
-        problem.set_objective(objective)
+        problem.z(objective)
         
-        problem.solve(solver="highs")
+        problem.solve()
         
         # Check that problem solved
         assert problem.status() == "optimal"
         
         # Check that solution is reasonable
-        solution = problem.get_solution()
+        solution  = problem._solution
         total = sum(solution.values())
         assert total > 0, "Total objective value should be positive"
 
@@ -186,10 +176,10 @@ class TestSpatialOptIntegration:
             adj_matrix[2, 0] = 1
             
             # Create optimization problem
-            problem = Problem()
+            problem = Problem("test")
             
             for i in range(3):
-                problem.add_variable(f"x{i}", "binary", 0, 1)
+                problem.add_var(f"x{i}", "binary", 0, 1)
             
             # Add adjacency constraints
             for i in range(3):
@@ -202,13 +192,13 @@ class TestSpatialOptIntegration:
                         )
             
             # Set objective
-            problem.set_objective({f"x{i}": float(i+1) for i in range(3)})
+            problem.z({f"x{i}": float(i+1) for i in range(3)})
             
             # Solve
-            problem.solve(solver="highs")
+            problem.solve()
             
             # Check solution
-            solution = problem.get_solution()
+            solution  = problem._solution
             assert problem.status() == "optimal"
             
             # Verify adjacency constraints
@@ -224,11 +214,11 @@ class TestFinancialOptIntegration:
     
     def test_financial_objective(self):
         """Test financial objective in optimization."""
-        problem = Problem()
+        problem = Problem("test")
         
         # Add variables for harvest in each period
         for t in range(5):
-            problem.add_variable(f"harvest_t{t}", "continuous", 0, 1000)
+            problem.add_var(f"harvest_t{t}", "continuous", 0, 1000)
         
         # Add even-flow constraint
         problem.add_constraint(
@@ -245,15 +235,15 @@ class TestFinancialOptIntegration:
             npv_factor = 1.0 / (1 + discount_rate) ** t
             objective[f"harvest_t{t}"] = npv_factor * 100  # $100 per unit
         
-        problem.set_objective(objective)
+        problem.z(objective)
         
         # Solve
-        problem.solve(solver="highs")
+        problem.solve()
         
         # Check solution
         assert problem.status() == "optimal"
         
-        solution = problem.get_solution()
+        solution  = problem._solution
         
         # Check even-flow constraint
         total_harvest = sum(solution[f"harvest_t{t}"] for t in range(5))
@@ -269,13 +259,13 @@ class TestReproducibility:
     
     def test_deterministic_solving(self):
         """Test that solving same problem gives same results."""
-        problem1 = Problem()
-        problem2 = Problem()
+        problem1 = Problem("test")
+        problem2 = Problem("test")
         
         # Add same variables
         for i in range(20):
-            problem1.add_variable(f"x{i}", "continuous", 0, 100)
-            problem2.add_variable(f"x{i}", "continuous", 0, 100)
+            problem1.add_var(f"x{i}", "continuous", 0, 100)
+            problem2.add_var(f"x{i}", "continuous", 0, 100)
         
         # Add same constraints
         for i in range(5):
@@ -285,16 +275,16 @@ class TestReproducibility:
         
         # Set same objective
         objective = {f"x{i}": float(i+1) for i in range(20)}
-        problem1.set_objective(objective)
-        problem2.set_objective(objective)
+        problem1.z(objective)
+        problem2.z(objective)
         
         # Solve both
-        problem1.solve(solver="highs")
-        problem2.solve(solver="highs")
+        problem1.solve()
+        problem2.solve()
         
         # Get solutions
-        sol1 = problem1.get_solution()
-        sol2 = problem2.get_solution()
+        sol1  = problem1._solution
+        sol2  = problem2._solution
         
         # Check that solutions are identical
         for var in sol1:

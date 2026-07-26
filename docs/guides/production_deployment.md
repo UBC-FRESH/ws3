@@ -1,6 +1,6 @@
 # Production Deployment Guide
 
-**Version**: 2.0.0  
+**Version**: 1.1.0a1  
 **Date**: 2026-07-26  
 **Status**: In Progress  
 
@@ -36,7 +36,7 @@ ws3/
 
 ### Version Management
 
-**Current Version**: 2.0.0
+**Current Version**: 1.1.0a1
 
 Version follows Semantic Versioning (SemVer):
 - **MAJOR**: Incompatible API changes (1.0.0 → 2.0.0)
