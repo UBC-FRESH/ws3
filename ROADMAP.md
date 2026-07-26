@@ -41,6 +41,7 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Status: complete
 - Scope: add reproducible checks that keep the refactor measurable and regression-resistant as the migration progresses.
 - Child issue: #56
+<<<<<<< HEAD
 
 ---
 
@@ -69,3 +70,5 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Status: planned
 - Scope: explore and implement additional features based on user feedback and project needs.
 - Child issue: to be created
+=======
+>>>>>>> origin/dev

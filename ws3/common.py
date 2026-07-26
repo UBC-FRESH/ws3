@@ -24,7 +24,8 @@
 ###################################################################################
 
 """
-This module contains definitions for global attributes, functions, and classes that might be used anywhere in the package.
+This module contains definitions for global attributes, functions, and classes
+that might be used anywhere in the package.
 
 Attributes:
     HORIZON_DEFAULT (int): Default value for ''.
@@ -33,14 +34,19 @@ Attributes:
     MAX_AGE_DEFAULT (int): Default value for `core.Curve.xmax`.
     CURVE_EPSILON_DEFAULT (float): Defalut value for `core.Curve.epsilon`.
     AREA_EPSILON_DEFAULT = 0.01
-    
+
 """
+
+from __future__ import annotations
+
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 PACAL_BROKEN = True
 
 import time
-import scipy
+
 import numpy as np
+
 #################################################################################################
 # PaCal breaks when trying to import numpy.fft.fftpack (names have changed or some such... yuck).
 # Note that this will breaks the folowing functions in this ws3.common
@@ -64,79 +70,109 @@ import numpy as np
 if not PACAL_BROKEN:
     import pacal
 #################################################################################################
-import rasterio
 import hashlib
 import re
-import binascii
+
+import rasterio
 
 try:
     import pickle as pickle
 except:
     import pickle
 import math
+
 #from math import exp, log
 import fiona
-from fiona.transform import transform_geom
 from fiona.crs import from_epsg
+from fiona.transform import transform_geom
 
-def hex_id(object, digest_size=10):
+
+def hex_id(obj: Any, digest_size: int = 10) -> str:
     """
-    This function converts an object to a hexadecimal string.
-    
+    Convert an object to a hexadecimal string via SHA-1 hashing.
+
+    :param obj: The object to hash.
+    :param digest_size: Number of digest bytes to truncate to (unused).
+    :return: Hexadecimal digest string.
     """
-    #return binascii.hexlify(hashlib.sha1(pickle.dumps(object)).digest(10))
-    return hashlib.sha1(pickle.dumps(object)).hexdigest()
-   
-def is_num(s):
+    # return binascii.hexlify(hashlib.sha1(pickle.dumps(obj)).digest(10))
+    return hashlib.sha1(pickle.dumps(obj)).hexdigest()
+
+
+def is_num(s: Any) -> bool:
     """
-    This function checks if a given input has a numerical value.
-        
+    Check whether the given input has a numerical value.
+
+    :param s: Input value to test.
+    :return: ``True`` if ``float(s)`` succeeds, ``False`` otherwise.
     """
     try:
         float(s)
         return True
-    except:
+    except Exception:
         return False
 
-def reproject(f, srs_crs, dst_crs):
+def reproject(
+    f: Dict[str, Any],
+    srs_crs: Dict[str, Any],
+    dst_crs: Dict[str, Any],
+) -> Dict[str, Any]:
     """
     Reproject a geometry from a source coordinate reference system (CRS) to a destination CRS.
-        
+
+    :param f: Feature dictionary with ``geometry`` and ``properties`` keys.
+    :param srs_crs: Source CRS dictionary.
+    :param dst_crs: Destination CRS dictionary.
+    :return: The feature dictionary with the reprojected geometry.
     """
-    f['geometry'] = transform_geom(srs_crs, dst_crs, f['geometry'],
-                          antimeridian_cutting=False,
-                          precision=-1)
+    f['geometry'] = transform_geom(
+        srs_crs,
+        dst_crs,
+        f['geometry'],
+        antimeridian_cutting=False,
+        precision=-1,
+    )
     return f
 
-def clean_vector_data(src_path, dst_path, dst_name, prop_names, clean=True, tolerance=0.,
-                      preserve_topology=True, logfn='clean_stand_shapefile.log', max_records=None,
-                      theme0=None, prop_types=None, driver='ESRI Shapefile', dst_epsg=None,
-                      update_area_prop=''):
+def clean_vector_data(
+    src_path: str,
+    dst_path: str,
+    dst_name: str,
+    prop_names: List[str],
+    clean: bool = True,
+    tolerance: float = 0.0,
+    preserve_topology: bool = True,
+    logfn: str = 'clean_stand_shapefile.log',
+    max_records: Optional[int] = None,
+    theme0: Optional[str] = None,
+    prop_types: Optional[List[Tuple[str, str]]] = None,
+    driver: str = 'ESRI Shapefile',
+    dst_epsg: Optional[int] = None,
+    update_area_prop: str = '',
+) -> Tuple[str, str]:
     """
-    The function cleans a vector data obtained form shapefile and reprojects to a destination shapefile.
-    The output of the function is the path for cleaned shapefile and uncleaned shapefile.
+    Clean vector data obtained from a shapefile and reproject to a destination shapefile.
 
-    :param str src_path: Path to the source shapefile.
-    :param str dst_path: Path to the destination shapefile.
-    :param str dst_name: The name for the destination shapefile.
-    :param list prop_names: List of property names.
-    :param bool clean: If the value of clean is True, the function will do cleaning; otherwise, it will do only reprojecting.
-    :param float tolerance: This tolerance adjust the level of geometry modifications.
-    :param bool preserve_topology: If the value of preserve_topology is True, it will perserve the topology.
-    :param str logfn: The filename for the log file to store the cleaned info.
-    :param int max_records: If required, the user can define the maximum number of records for processing the source shapefile.
-    :param str theme0: If required, the user can define theme0 for the cleaned shapefile.
-    :param list prop_types: List of tuples showing the property types for the cleaned shapefile.
-    :param str driver: The driver for writing the shapfiles.
-    :param int dst_epsg: If the user specifies dst_epsg, the geometries will be reprojected to the specific CRS.
-    :param str update_area_prop: The property that includes updated area information.
-
+    :param src_path: Path to the source shapefile.
+    :param dst_path: Path to the destination shapefile.
+    :param dst_name: The name for the destination shapefile.
+    :param prop_names: List of property names.
+    :param clean: If True, performs cleaning; otherwise only reprojects.
+    :param tolerance: Adjusts the level of geometry modifications.
+    :param preserve_topology: If True, preserves topology.
+    :param logfn: Filename for the log file to store cleaned info.
+    :param max_records: Maximum number of records to process.
+    :param theme0: Theme value for the cleaned shapefile.
+    :param prop_types: List of tuples showing property types.
+    :param driver: Driver for writing shapefiles.
+    :param dst_epsg: EPSG code for the destination CRS.
+    :param update_area_prop: Property that includes updated area information.
+    :return: Tuple of paths (cleaned shapefile path, error shapefile path).
     """
     import logging
-    import sys
-    from shapely.geometry import mapping, shape, Polygon, MultiPolygon
-    import fiona
     from collections import OrderedDict
+
+    from shapely.geometry import MultiPolygon, mapping, shape
     logging.basicConfig(filename=logfn, level=logging.INFO)
     snk1_path = '%s/%s.shp' % (dst_path, dst_name) 
     #snk2_path = dst_path[:-4]+'_error.shp' 
@@ -201,24 +237,28 @@ def clean_vector_data(src_path, dst_path, dst_name, prop_names, clean=True, tole
                     if update_area_prop:
                         f['properties'][update_area_prop] = shape(f['geometry']).area
                     snk1.write(f)
-                except Exception as e: # log exception and write uncleanable feature a separate shapefile
+                except Exception: # log exception and write uncleanable feature a separate shapefile
                     logging.exception("Error cleaning feature %s:", f['id'])
                     snk2.write(f)
     return snk1_path, snk2_path
 
 
-def reproject_vector_data(src_path, snk_path, snk_epsg, driver='ESRI Shapefile'):
+def reproject_vector_data(
+    src_path: str,
+    snk_path: str,
+    snk_epsg: int,
+    driver: str = 'ESRI Shapefile',
+) -> None:
     """
-    When a specific ESPG is defined, this function reprojects vector data from a source shapefile to a destinaiton shapefile using ESRI shapefile as the default driver.
+    Reproject vector data from a source shapefile to a destination shapefile using ESRI Shapefile as the default driver.
 
-    :param str src_path: Path to the source shapefile.
-    :param str snk_path: Path to the destination shapefile.
-    :param int snk_epsg: EPSG code for the destination CRS.
-    :param str driver: The driver for writing the shapfiles.        
+    :param src_path: Path to the source shapefile.
+    :param snk_path: Path to the destination shapefile.
+    :param snk_epsg: EPSG code for the destination CRS.
+    :param driver: The driver for writing the shapefiles.
     """
-    import fiona
     from fiona.crs import from_epsg
-    from pyproj import Proj, transform
+    from pyproj import Proj
     with fiona.open(src_path, 'r') as src:
         snk_crs = from_epsg(snk_epsg)
         src_proj, snk_proj = Proj(src.crs), Proj(snk_crs)
@@ -230,37 +270,48 @@ def reproject_vector_data(src_path, snk_path, snk_epsg, driver='ESRI Shapefile')
             for f in src: snk.write(reproject(f, src.crs, snk_crs))
 
                           
-def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_divisor=1., d=100.,
-                     dtype=rasterio.int32, compress='lzw', round_coords=True,
-                     value_func=lambda x: re.sub(r'(-| )+', '_', str(x).lower()), cap_age=None,
-                     verbose=False):
+def rasterize_stands(
+    shp_path: str,
+    tif_path: str,
+    theme_cols: List[str],
+    age_col: str,
+    blk_col: str = '',
+    age_divisor: float = 1.0,
+    d: float = 100.0,
+    dtype: rasterio.dtype = rasterio.int32,
+    compress: str = 'lzw',
+    round_coords: bool = True,
+    value_func: Callable[[Any], str] = lambda x: re.sub(r'(-| )+', '_', str(x).lower()),
+    cap_age: Optional[int] = None,
+    verbose: bool = False,
+) -> Dict[int, Tuple[str, ...]]:
     """
-    The function rasterizes stands data and stores the data as TIFF file.
+    Rasterize stand data and store the data as a TIFF file.
 
-    :param str shp_path: Path to the source shapefile.
-    :param str tif_path: Path to the resulted TIFF file.
-    :param list theme_cols: List of themes.
-    :param int age_col: Age column.
-    :param str blk_col: 
-    :param float age_divisor: A number to scale stand age values.
-    :param float d: The pixel size of the raster.
-    :param rasterio.dtype dtype: The type of the output file (default type is rasterio.int32).
-    :param str compress: The compression method (The default one is lzw)
-    :param bool round_coords: If ture, the function rounds the coordinates of the ouput file.
-    :param function value_func: A function that is applied to theme columns (in this case, the function replaces hyphens and spaces with underscores and changes all letters to lowercase)
-    :param int cap_age: Maximum stand age defined by usder that will be considered as a cap age for stands (optional)
-    :param bool verbose: (Optional) Verbosity flag. Defaults to False
+    :param shp_path: Path to the source shapefile.
+    :param tif_path: Path to the resulting TIFF file.
+    :param theme_cols: List of theme columns.
+    :param age_col: Age column name.
+    :param blk_col: Block identifier column name.
+    :param age_divisor: A number to scale stand age values.
+    :param d: The pixel size of the raster.
+    :param dtype: The type of the output file (default is rasterio.int32).
+    :param compress: The compression method (default is lzw).
+    :param round_coords: If True, rounds the coordinates of the output file.
+    :param value_func: A function applied to theme columns.
+    :param cap_age: Maximum stand age (optional).
+    :param verbose: Verbosity flag (defaults to False).
+    :return: Dictionary mapping hash values to development type tuples.
     """
-    import fiona
     from rasterio.features import rasterize
     if verbose: print('rasterizing', shp_path)
     if dtype == rasterio.int32: 
         nbytes = 4
     else:
         raise TypeError('Data type not implemented: %s' % dtype)
-    hdt = {}
-    shapes = [[], [], []]
-    crs = None
+    hdt: Dict[int, Tuple[str, ...]] = {}
+    shapes: List[List[Tuple[Any, Any]]] = [[], [], []]
+    crs: Optional[Dict[str, Any]] = None
     with fiona.open(shp_path, 'r') as src:
         crs = src.crs
         b = src.bounds #(x_min, y_min, x_max, y_max)
@@ -321,31 +372,39 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_di
     return hdt
         
 
-def hash_dt(dt, dtype=rasterio.int32, nbytes=4):
+def hash_dt(
+    dt: Tuple[Any, ...],
+    dtype: rasterio.dtype = rasterio.int32,
+    nbytes: int = 4,
+) -> int:
     """
-    The function hashes the development type and returns an integer value.
+    Hash the development type and return an integer value.
 
-    :param str dt: Development type.
-    :param rasterio.dtype dtype: The type of the output file (default type is rasterio.int32).
-    :param int nbytes: The number of bytes to consider from the hash (The default value is 4).
-
+    :param dt: Development type tuple.
+    :param dtype: The type of the output file (default is rasterio.int32).
+    :param nbytes: The number of bytes to consider from the hash (default is 4).
+    :return: Integer hash value.
     """
     import struct
     s = '.'.join(map(str, dt)).encode('utf-8')
     d = hashlib.md5(s).digest() # first n bytes of md5 digest
-    #return np.dtype(dtype).type(int(binascii.hexlify(d[:4]), 16))
+    # return np.dtype(dtype).type(int(binascii.hexlify(d[:4]), 16))
     return np.dtype(dtype).type(struct.unpack('<i', d[:4])[0])
 
-def warp_raster(src, dst_path, dst_crs={'init':'EPSG:4326'}):
+def warp_raster(
+    src: rasterio.DatasetReader,
+    dst_path: str,
+    dst_crs: Dict[str, str] = {'init': 'EPSG:4326'},
+) -> None:
     """
-    The function warpes a raster from its original CRS to a new CRS.
+    Warp a raster from its original CRS to a new CRS.
 
-    :param raserio.DatasetReader src: The source rasterio dataset to be warped.
-    :param str dst_path: The path to save the warped raster
-    :param dict dst_crs: The destination CRS in rasterio format (Default is init':'EPSG:4326')
+    :param src: The source rasterio dataset to be warped.
+    :param dst_path: The path to save the warped raster.
+    :param dst_crs: The destination CRS in rasterio format (default is EPSG:4326).
     """
-    from rasterio.warp import calculate_default_transform, reproject
     from rasterio.enums import Resampling
+    from rasterio.warp import calculate_default_transform, reproject
     dst_t, dst_w, dst_h = calculate_default_transform(src.crs, dst_crs, src.width, src.height, *src.bounds)
     profile = src.profile.copy()
     profile.update({'crs':dst_crs, 'transform':dst_t, 'width':dst_w, 'height':dst_h})
@@ -360,13 +419,14 @@ def warp_raster(src, dst_path, dst_crs={'init':'EPSG:4326'}):
                       resampling=Resampling.nearest)
 
 
-def timed(func):
+def timed(func: Callable[..., Any]) -> Callable[..., Any]:
     """
-    The function records the execution time of a function.
+    Record the execution time of a function.
 
-    :param function func: The function to be timed.
+    :param func: The function to be timed.
+    :return: Wrapped function that prints execution time.
     """
-    def wrapper(*args):
+    def wrapper(*args: Any) -> Any:
         t = time.time()
         result = func(*args)
         t = time.time() - t
@@ -496,18 +556,6 @@ SPECIES_GROUPS_WOODSTOCK_QC  = {
 #     '120+':MAX_AGE_DEFAULT
 # }
 ##########################################
-    
-
-def is_num(s):
-    """
-    This function checks if a given input has a numerical value.
-        
-    """
-    try:
-        float(s)
-        return True
-    except:
-        return False
 
     
 def _sylv_cred_f1(P,
