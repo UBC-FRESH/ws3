@@ -87,20 +87,23 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Scope: installation guide, quickstart tutorial, first model walkthrough, architecture overview.
 
 ### Task 4.3 — Create textbook for forest estate modelling
-- Status: not_started
+- Status: in_progress
 - Scope: 9-chapter textbook covering forest inventory, growth/yield, actions/transitions, optimization, spatial allocation, financial analysis, uncertainty, and advanced topics. Each chapter includes learning objectives, worked examples, and exercises.
+- Progress: Chapter 1 (forest estate models) complete. Remaining chapters ch02-ch09 pending.
 
 ### Task 4.4 — Create how-to guides
 - Status: not_started
 - Scope: operational guides for data preparation, curve definition, action definition, optimization, parallel optimization, spatial allocation, libcbm callbacks, financial scenarios, custom selectors, custom growth functions, model validation, and reproducibility.
 
 ### Task 4.5 — Create agent-friendly contract pages
-- Status: not_started
+- Status: in_progress
 - Scope: compact technical contracts for LLM coding agents: repo/runtime invariants, module responsibilities, class hierarchy, solver options. Follow femic/fhops pattern.
+- Progress: Coding agent onboarding guide complete. Additional contract pages (module details, solver options) pending.
 
 ### Task 4.6 — Create coding agent onboarding guide
-- Status: not_started
+- Status: complete
 - Scope: guide for LLM coding agents to understand ws3 architecture, data flows, and conventions. Include purpose, use cases, quick contract table, and platform-specific notes.
+- Verification: Guide includes module map, class hierarchy (mermaid), data flow diagram, common patterns, and platform notes.
 
 ### Task 4.7 — Create troubleshooting and limitations guides
 - Status: not_started
