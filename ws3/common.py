@@ -44,8 +44,9 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 PACAL_BROKEN = True
 
 import time
-import scipy
+
 import numpy as np
+
 #################################################################################################
 # PaCal breaks when trying to import numpy.fft.fftpack (names have changed or some such... yuck).
 # Note that this will breaks the folowing functions in this ws3.common
@@ -69,20 +70,22 @@ import numpy as np
 if not PACAL_BROKEN:
     import pacal
 #################################################################################################
-import rasterio
 import hashlib
 import re
-import binascii
+
+import rasterio
 
 try:
     import pickle as pickle
 except:
     import pickle
 import math
+
 #from math import exp, log
 import fiona
-from fiona.transform import transform_geom
 from fiona.crs import from_epsg
+from fiona.transform import transform_geom
+
 
 def hex_id(obj: Any, digest_size: int = 10) -> str:
     """
@@ -167,10 +170,9 @@ def clean_vector_data(
     :return: Tuple of paths (cleaned shapefile path, error shapefile path).
     """
     import logging
-    import sys
-    from shapely.geometry import mapping, shape, Polygon, MultiPolygon
-    import fiona
     from collections import OrderedDict
+
+    from shapely.geometry import MultiPolygon, mapping, shape
     logging.basicConfig(filename=logfn, level=logging.INFO)
     snk1_path = '%s/%s.shp' % (dst_path, dst_name) 
     #snk2_path = dst_path[:-4]+'_error.shp' 
@@ -235,7 +237,7 @@ def clean_vector_data(
                     if update_area_prop:
                         f['properties'][update_area_prop] = shape(f['geometry']).area
                     snk1.write(f)
-                except Exception as e: # log exception and write uncleanable feature a separate shapefile
+                except Exception: # log exception and write uncleanable feature a separate shapefile
                     logging.exception("Error cleaning feature %s:", f['id'])
                     snk2.write(f)
     return snk1_path, snk2_path
@@ -255,9 +257,8 @@ def reproject_vector_data(
     :param snk_epsg: EPSG code for the destination CRS.
     :param driver: The driver for writing the shapefiles.
     """
-    import fiona
     from fiona.crs import from_epsg
-    from pyproj import Proj, transform
+    from pyproj import Proj
     with fiona.open(src_path, 'r') as src:
         snk_crs = from_epsg(snk_epsg)
         src_proj, snk_proj = Proj(src.crs), Proj(snk_crs)
@@ -302,7 +303,6 @@ def rasterize_stands(
     :param verbose: Verbosity flag (defaults to False).
     :return: Dictionary mapping hash values to development type tuples.
     """
-    import fiona
     from rasterio.features import rasterize
     if verbose: print('rasterizing', shp_path)
     if dtype == rasterio.int32: 
@@ -403,8 +403,8 @@ def warp_raster(
     :param dst_path: The path to save the warped raster.
     :param dst_crs: The destination CRS in rasterio format (default is EPSG:4326).
     """
-    from rasterio.warp import calculate_default_transform, reproject
     from rasterio.enums import Resampling
+    from rasterio.warp import calculate_default_transform, reproject
     dst_t, dst_w, dst_h = calculate_default_transform(src.crs, dst_crs, src.width, src.height, *src.bounds)
     profile = src.profile.copy()
     profile.update({'crs':dst_crs, 'transform':dst_t, 'width':dst_w, 'height':dst_h})

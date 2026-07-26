@@ -6,13 +6,12 @@ state trees.
 
 from __future__ import annotations
 
-from bisect import bisect_left
-from itertools import repeat
 import copy
-import math
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from bisect import bisect_left
+from typing import List, Optional, Tuple, Union
 
 from ws3 import common
+
 
 class Interpolator:
     """

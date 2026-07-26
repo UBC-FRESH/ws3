@@ -29,58 +29,70 @@ models.
 The ``ForestModel`` and ``DevelopmentType`` classes constitute the core functional units of this module, and of the ``ws3`` package in general.
 """
 
-import math
-import sys
-import re
+from __future__ import annotations
+
 import copy
-import operator
-import random
 import itertools
-from itertools import chain
+import operator
+import re
+import sys
 from functools import reduce
-from typing import Any
+from itertools import chain
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    Union,
+)
+
 _cfi = chain.from_iterable
 from collections import defaultdict as dd
-import pandas as pd
-#from numba import njit
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
-from multiprocessing import get_context
-import dill
-from collections import defaultdict
 
+#from numba import njit
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from multiprocessing import get_context
+
+import dill
+import pandas as pd
 
 try:
-    from ws3 import common
-    from ws3 import core
-    from ws3 import opt
+    from ws3 import common, core, opt
 except: # "__main__" case
-    from ws3 import common
-    from ws3 import core
-    from ws3 import opt
-from ws3.common import timed
+    from ws3 import common, core, opt
 
-from pdb import set_trace
-import types
-import functools
-from itertools import islice
 
-from ws3.forest_helper import MP_CONTEXT, _GLOBAL_MODEL_GEN_VARS, _GLOBAL_COEFF_FUNCS_GEN_VARS, _GLOBAL_WORKERS_GEN_VARS
-from ws3.forest_helper import choose_max_batch_factor, auto_batch, worker_summarize_tree_batch, sanitize_func
-from ws3.forest_helper import init_worker_gen_vars, worker_gen_vars
-from ws3.forest_helper import worker_cmp_cflw_batch, worker_cmp_cflw_phase3, worker_cmp_cflw_phase3_batch
-from ws3.forest_helper import worker_cmp_cgen_batch, worker_cmp_cgen_phase3, worker_cmp_cgen_phase3_batch
-from ws3.forest_helper import PersistentWorkerPool
+from ws3.forest_helper import (
+    MP_CONTEXT,
+    PersistentWorkerPool,
+    auto_batch,
+    init_worker_gen_vars,
+    sanitize_func,
+    worker_cmp_cflw_batch,
+    worker_cmp_cflw_phase3,
+    worker_cmp_cflw_phase3_batch,
+    worker_cmp_cgen_phase3,
+    worker_cmp_cgen_phase3_batch,
+    worker_gen_vars,
+    worker_summarize_tree_batch,
+)
 
 
 class GreedyAreaSelector:
     """
     Default AreaSelector implementation. Selects areas for treatment from oldest age classes.
     """
-    def __init__(self, parent):
+    parent: ForestModel
+    
+    def __init__(self, parent: ForestModel):
         self.parent = parent
         
-    def operate(self, period, acode, target_area, mask=None,
-                commit_actions=True, verbose=False):
+    def operate(self, period: int, acode: str, target_area: float, mask: Optional[Tuple] = None,
+                commit_actions: bool = True, verbose: bool = False) -> float:
         """
         Greedily operate on oldest operable age classes.
         Returns missing area (i.e., difference between target and operated areas).
@@ -129,15 +141,28 @@ class Action:
     Encapsulates data for an action.
     
     """
+    code: str
+    targetage: Optional[int]
+    descr: str
+    lockexempt: bool
+    oper_a: Optional[Any]
+    oper_p: Optional[Any]
+    components: List[str]
+    partial: List[str]
+    is_compiled: bool
+    is_harvest: int
+    is_sticky: int
+    treatment_type: Optional[Any]
+    
     def __init__(self,
-                 code,
-                 targetage=None,
-                 descr='',
-                 lockexempt=False,
-                 components=None,
-                 partial=None,
-                 is_harvest=0,
-                 is_sticky=0):
+                 code: str,
+                 targetage: Optional[int] = None,
+                 descr: str = '',
+                 lockexempt: bool = False,
+                 components: Optional[List[str]] = None,
+                 partial: Optional[List[str]] = None,
+                 is_harvest: int = 0,
+                 is_sticky: int = 0):
         self.code = code
         self.targetage = targetage
         self.descr = descr
@@ -155,11 +180,26 @@ class DevelopmentType:
     """
     Encapsulates Forest development type data (curves, age, area), and provides methods to operate on the data.
     """
-    _bo = {'AND':operator.and_, '&':operator.and_, 'OR':operator.or_, '|':operator.or_}
+    _bo: Dict[str, Callable[[Any, Any], Any]] = {'AND':operator.and_, '&':operator.and_, 'OR':operator.or_, '|':operator.or_}
+    
+    key: Tuple[str, ...]
+    parent: ForestModel
+    _rc: Callable[[core.Curve], core.Curve]
+    _max_age: int
+    _ycomps: Dict[str, Optional[core.Curve]]
+    _complex_ycomps: Dict[str, str]
+    _zero_curve: core.Curve
+    _unit_curve: core.Curve
+    _ages_curve: core.Curve
+    _resolvers: Dict[str, Callable[[str, str], Tuple[str, core.Curve]]]
+    transitions: Dict[Tuple[str, int], List[Any]]
+    _areas: Dict[int, dd[float]]  # type: ignore[type-arg]
+    oper_expr: dd[list]  # type: ignore[type-arg]
+    operability: Dict[str, Dict[int, Optional[Tuple[int, int]]]]
     
     def __init__(self,
-                 key,
-                 parent):
+                 key: Tuple[str, ...],
+                 parent: ForestModel):
         """
         The key is basically the fully expanded mask (expressed as a tuple of values). 
         The parent is a reference to the ForestModel object in which self is embedded.
@@ -188,7 +228,7 @@ class DevelopmentType:
         self.oper_expr = dd(list)
         self.operability = {}        
 
-    def operable_ages(self, acode, period):
+    def operable_ages(self, acode: str, period: int) -> Optional[List[int]]:
         """
         Finds list of ages at which self is operable, given an action code and period index.
         """
@@ -199,10 +239,13 @@ class DevelopmentType:
         if period not in self.operability[acode]:
             return None
         else:
-            lo, hi = self.operability[acode][period]
-            return list(set(range(lo, hi+1)).intersection(list(self._areas[period].keys())))        
-    
-    def is_operable(self, acode, period, age=None, verbose=False):
+            period_oper = self.operability[acode][period]
+            if period_oper is None:
+                return None
+            lo, hi = period_oper
+            return list(set(range(lo, hi+1)).intersection(list(self._areas[period].keys())))
+
+    def is_operable(self, acode: str, period: int, age: Optional[int] = None, verbose: bool = False) -> Union[bool, Tuple[int, int]]:
         """
         Test hypothetical operability.
         Does not imply that there is any operable area in current inventory.
@@ -222,13 +265,16 @@ class DevelopmentType:
         if period not in self.operability[acode]:
             return False
         else:
-            lo, hi = self.operability[acode][period]
+            period_oper = self.operability[acode][period]
+            if period_oper is None:
+                return False
+            lo, hi = period_oper
             if age is not None:
                 return age >= lo and age <= hi
             else:
                 return lo, hi
             
-    def operable_area(self, acode, period, age=None, cleanup=True):
+    def operable_area(self, acode: str, period: int, age: Optional[int] = None, cleanup: bool = True) -> float:
         """
         Returns 0 if inoperable or no current inventory, operable area given action code and period 
         (and optionally age) index otherwise.
@@ -250,15 +296,15 @@ class DevelopmentType:
         elif abs(self._areas[period][age]) < self.parent.area_epsilon: # negligible area
             if cleanup: # remove ageclass from dict (frees up memory)
                 del self._areas[period][age]
-            return 0.
+            return 0.0  # type: ignore[no-any-return]
         elif self.is_operable(acode, period, age):
-            return self._areas[period][age]
+            return self._areas[period][age]  # type: ignore[no-any-return]
         else:
-            return 0.
-        assert False
-
+            return 0.0  # type: ignore[no-any-return]
+        assert False  # type: ignore[unreachable]
         
-    def area(self, period, age=None, area=None, delta=True):
+        
+    def area(self, period: int, age: Optional[int] = None, area: Optional[float] = None, delta: bool = True) -> Optional[float]:
         """
         If area not specified, returns area inventory for period (optionally age), else sets area for period and age. 
         If delta switch active (default True), area value is interpreted as an increment on current inventory.
@@ -272,25 +318,27 @@ class DevelopmentType:
         if area is None: # return area for period and age
             if age is not None:
                 try:
-                    return self._areas[period][age]
+                    return float(self._areas[period][age])  # type: ignore[no-any-return]
                 except Exception as e:
                     print(e)
-                    return 0.
+                    return 0.0  # type: ignore[no-any-return]
             else: # return total area
-                return sum(self._areas[period][a] for a in self._areas[period])
+                return float(sum(self._areas[period][a] for a in self._areas[period]))  # type: ignore[no-any-return]
         else: 
             if delta:
                 self._areas[period][age] += area
             else:
                 self._areas[period][age] = area
+            return None
+        return None
         
-    def resolve_condition(self, yname, lo, hi):
+    def resolve_condition(self, yname: str, lo: float, hi: float) -> List[int]:
         """
         Find lower and upper ages that correspond to lo and hi values of yname (interpreted as first occurence of yield value, reading curve from left and right, respectively).
         """
-        return [x for x, y in enumerate(self.ycomp(yname)) if y >= lo and y <= hi]
+        return [x for x, y in enumerate(self.ycomp(yname)) if y >= lo and y <= hi]  # type: ignore[arg-type]
        
-    def reset_areas(self, period=None):
+    def reset_areas(self, period: Optional[int] = None) -> None:
         """
         Reset areas dictionary.
         """
@@ -298,14 +346,14 @@ class DevelopmentType:
         for period in periods:
             self._areas[period] = dd(float)
 
-    def ycomps(self):
+    def ycomps(self) -> List[str]:
         """
         Returns list of yield component keys.
         """
         return list(self._ycomps.keys())
             
             
-    def ycomp(self, yname, silent_fail=True):
+    def ycomp(self, yname: str, silent_fail: bool = True) -> Optional[core.Curve]:
         """
         Returns the yield components associated with the given yield name. Returns None if the yield name is not found and silent_fail is True.
 
@@ -2084,7 +2132,7 @@ class ForestModel:
                     if area < self.area_epsilon and not import_empty: continue
                     if key not in self.dtypes: self.dtypes[key] = DevelopmentType(key, self)
                     self.dtypes[key].area(0, age, area)
-                except Exception as e:
+                except Exception:
                     print('Failed AREAS import on line: \n%s' % l)
                     return 1
         return 0

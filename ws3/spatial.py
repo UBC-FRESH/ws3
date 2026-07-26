@@ -7,14 +7,12 @@ representation of the forest inventory.
 
 from __future__ import annotations
 
-import pandas as pd
+import copy
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
 import numpy as np
 import rasterio
-import os
-from profilehooks import profile
-import random
-import copy
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+
 
 class ForestRaster:
     """

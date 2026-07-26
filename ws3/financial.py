@@ -6,7 +6,7 @@ silviculture credits and harvest costs.
 from __future__ import annotations
 
 import math
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional
 
 import numpy as np
 from scipy.stats import norm
@@ -35,7 +35,6 @@ PACAL_BROKEN = True
 if not PACAL_BROKEN:
     import pacal
 #################################################################################################
-import math
 
     
 def _sylv_cred_f1(P: float,

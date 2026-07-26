@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
-
-from ws3 import common
-from ws3 import opt
-from concurrent.futures import ProcessPoolExecutor #, as_completed
+from concurrent.futures import ProcessPoolExecutor  #, as_completed
 from multiprocessing import get_context
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
+from ws3 import common, opt
 
 MP_CONTEXT = "fork"
 
@@ -153,7 +151,6 @@ def sanitize_func(f: Any) -> Any:
         return new_f
     raise TypeError(f"Don't know how to sanitize function of type {type(f)}")
 
-    from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def init_worker_gen_vars(blob_bytes_local: bytes, serialized_funcs_local: Dict[str, bytes], workers: int = 1) -> None:
     """Initializer for `_gen_vars_m1` workers: load model and coefficient functions once.

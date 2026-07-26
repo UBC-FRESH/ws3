@@ -34,7 +34,7 @@ Note that we implemented a modular design that decouples the implementation from
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional
 
 SENSE_MINIMIZE = +1 # same as GRB.MINIMIZE
 SENSE_MAXIMIZE = -1 # same as GRB.MAXIMIZE
@@ -270,8 +270,9 @@ class Problem:
 
         :returns:  STATUS_INFEASIBLE, STATUS_UNBOUNDED, STATUS_OPTIMAL, or None
         """
-        import ws3.opt
         import pulp
+
+        import ws3.opt
 
         # Optional import: only if Gurobi used
         try:
@@ -336,7 +337,6 @@ class Problem:
             raise ValueError("The problem has not been solved yet.")           
         lhs_values = {}
         if self._solver == SOLVER_PULP:
-            import pulp
             for constraint_name, constraint in self._constraints.items():
                 lhs_value = sum(constraint.coeffs[v] * self._vars[v].val for v in constraint.coeffs)
                 lhs_values[constraint_name] = lhs_value
@@ -480,8 +480,9 @@ class Problem:
         status : highspy.HighsStatus
             HiGHS solver status.
         """
-        import highspy
         from collections import defaultdict
+
+        import highspy
         import numpy as np
 
         highs = highspy.Highs()
