@@ -8,10 +8,7 @@
    common
    core
    forest
-<<<<<<< HEAD
-=======
    forest_helper
->>>>>>> dev
    financial
    opt
    spatial

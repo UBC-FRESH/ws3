@@ -15,12 +15,7 @@ ws3 Package Documentation
   Chapt1
   aboutws3
   examples
-<<<<<<< HEAD
-..  libCBM
-..  SpaDES
-=======
   appendices
->>>>>>> dev
 
 Indices and Tables
 ==================

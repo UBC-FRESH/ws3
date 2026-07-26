@@ -11,12 +11,8 @@ import numpy as np
 import seaborn as sns
 import pickle 
 import os
-<<<<<<< HEAD
-import ws3.opt
-=======
 from ws3 import opt
 import ws3
->>>>>>> dev
 ##########################################################
 # Implement a priority queue heuristic harvest scheduler
 ##########################################################
@@ -222,9 +218,6 @@ def plot_scenario(df):
     ax[2].set_title('Growing Stock (m3)')
     return fig, ax
 
-<<<<<<< HEAD
-def run_scenario(fm, scenario_name='base', solver=ws3.opt.SOLVER_PULP):
-=======
 def run_scenario(fm, scenario_name='base', solver=ws3.opt.SOLVER_HIGHS, verbose=False, workers=1, print_df=False):
     """
     Runs a specified scenario on the given ForestModel instance and solves it using an LP solver.
@@ -243,7 +236,6 @@ def run_scenario(fm, scenario_name='base', solver=ws3.opt.SOLVER_HIGHS, verbose=
             - df: pandas DataFrame with compiled scenario results.
             - p: Problem instance that was created and solved.
     """
->>>>>>> dev
     import sys
     cflw_ha = {}
     cflw_hv = {}
@@ -279,19 +271,11 @@ def run_scenario(fm, scenario_name='base', solver=ws3.opt.SOLVER_HIGHS, verbose=
                      cflw_hv=cflw_hv,
                      cgen_ha=cgen_ha,
                      cgen_hv=cgen_hv,
-<<<<<<< HEAD
-                     cgen_gs=cgen_gs)
-    p.solver(solver)
-
-    fm.reset()
-    p.solve()
-=======
                      cgen_gs=cgen_gs,
                      workers=workers)
     p.solver(solver)
     fm.reset()
     p.solve(verbose=verbose)
->>>>>>> dev
 
     if p.status() != ws3.opt.STATUS_OPTIMAL:
         print('Model not optimal.')
@@ -306,11 +290,8 @@ def run_scenario(fm, scenario_name='base', solver=ws3.opt.SOLVER_HIGHS, verbose=
                         verbose=False,
                         compile_c_ycomps=True)
         df = compile_scenario(fm)
-<<<<<<< HEAD
-=======
         if print_df:
             print(df)
->>>>>>> dev
         fig, ax = plot_scenario(df)
     return fig, df, p
 
