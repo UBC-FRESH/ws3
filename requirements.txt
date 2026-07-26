@@ -6,3 +6,10 @@ rasterio
 fiona
 profilehooks
 pytest
+<<<<<<< HEAD
+=======
+dill
+highspy
+gurobipy
+pulp
+>>>>>>> dev

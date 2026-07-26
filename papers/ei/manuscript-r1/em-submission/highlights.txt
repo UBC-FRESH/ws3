@@ -1,0 +1,6 @@
+Highlights:
+- Open-source, reproducible Python framework for forest planning workflows.
+- Solver-agnostic Model I scheduling with explicit data model and LP build.
+- libCBM linkage enables carbon stock and flux accounting.
+- Aspatial-to-spatial allocation produces reproducible raster outputs.
+- Scaling benchmarks characterize runtime and memory across platforms.

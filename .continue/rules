@@ -1,0 +1,18 @@
+# Project Architecture
+
+This is a Python package named Wood Supply Simulation System (ws3) with:
+
+- Python package code in `/ws3`
+- Examples (Jupyter notebooks) in `/examples`
+- Tests in `/tests`
+- Documentation (Sphinx, linked with ReadTheDocs via GitHub release trigger) in `/docs`
+- Draft manuscripts describing this software under `/papers`
+
+## Coding Standards
+
+- Use Python for all code under `/ws3` and for examples under `/examples`
+- Use Sphinx for documentation
+- Use Markdown for the manuscript under `/papers/joss`
+- Use LaTeX for the manuscript under `/papers/ems`
+- Follow the existing naming conventions
+- Write tests for all new features

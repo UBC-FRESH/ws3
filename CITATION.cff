@@ -1,12 +1,12 @@
-cff-version: 1.0.0
+cff-version: 1.1.0
 message: "If you use this code, please cite it as below."
 authors: 
   - family-names: Paradis
     given-names: Gregory
     orcid: https://orcid.org/0000-0001-9618-8797
 title: "ws3: a Wood Supply Simulation System"
-version: 1.0.0-alpha
-date-released: 2021-11-01
+version: 1.0.5
+date-released: 2025-10-12
 license: MIT
-repository-code: https://github.com/gparadis/ws3
-doi: https://doi.org/10.5281/zenodo.5579778
+url: https://github.com/UBC-FRESH/ws3
+doi: 10.5281/zenodo.17331213

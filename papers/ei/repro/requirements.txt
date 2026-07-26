@@ -1,0 +1,15 @@
+# Minimal pinned dependencies for EMS case study repro
+# Use system python3.11+ if possible; otherwise adapt make_repro.sh
+
+ws3==1.0.4
+pulp>=2.7.0
+numpy>=1.26
+pandas>=2.0
+matplotlib>=3.7
+seaborn>=0.13
+rasterio>=1.3
+fiona>=1.9
+geopandas>=0.14
+# libcbm is installed from PyPI as libcbm
+libcbm>=2.8.1
+psutil>=5.9

@@ -1,4 +1,5 @@
 """
+<<<<<<< HEAD
 This module contains definitions for global attributes, functions, and classes that 
 might be used anywhere in the package.
 
@@ -27,13 +28,62 @@ might be used anywhere in the package.
 """
 
 from scipy.stats import norm
+=======
+This module contains definitions for global attributes, functions, and classes
+that might be used anywhere in the package.
+
+Attributes:
+    HORIZON_DEFAULT (int): Default value for ''.
+    PERIOD_LENGTH_DEFAULT (int): Default number of years per period.
+    MIN_AGE_DEFAULT (int): Default value for `core.Curve.xmin`.
+    MAX_AGE_DEFAULT (int): Default value for `core.Curve.xmax`.
+    CURVE_EPSILON_DEFAULT (float): Defalut value for `core.Curve.epsilon`.
+    AREA_EPSILON_DEFAULT = 0.01
+
+"""
+
+from __future__ import annotations
+
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
+PACAL_BROKEN = True
+
+>>>>>>> dev
 import time
-import scipy
+
 import numpy as np
+<<<<<<< HEAD
 import rasterio
+=======
+
+#################################################################################################
+# PaCal breaks when trying to import numpy.fft.fftpack (names have changed or some such... yuck).
+# Note that this will breaks the folowing functions in this ws3.common
+#   _sylv_credit_f1
+#   _sylv_credit_f2
+#   _sylv_credit_f3
+#   _sylv_credit_f4
+#   g
+#   _sylv_credit_f6
+#   _sylv_credit_f7
+#   sylv_cred_rv
+#   harv_cost_rv
+# TO DO:
+#   Patch PaCal 1.6, maybe using pypatch (as part of the ws3 build process, in setup.py).
+# The fix:
+#   Patch line 29 in pacal/utils.py from
+#     from numpy.fft.fftpack import fft, ifft
+#   to
+#     from numpy.fft import fft, ifft 
+# 
+if not PACAL_BROKEN:
+    import pacal
+#################################################################################################
+>>>>>>> dev
 import hashlib
 import re
-import binascii
+
+import rasterio
 
 try:
     import pickle as pickle
@@ -41,10 +91,16 @@ except:
     import pickle
 
 import math
-import fiona
-from fiona.transform import transform_geom
-from fiona.crs import from_epsg
+<<<<<<< HEAD
+=======
 
+#from math import exp, log
+>>>>>>> dev
+import fiona
+from fiona.crs import from_epsg
+from fiona.transform import transform_geom
+
+<<<<<<< HEAD
 HORIZON_DEFAULT = 30
 PERIOD_LENGTH_DEFAULT = 10
 MIN_AGE_DEFAULT = 0
@@ -76,13 +132,35 @@ def is_num(s):
 
     :return: ``True`` or ``False`` depending on whether the input was numeric or other.
         
+=======
+
+def hex_id(obj: Any, digest_size: int = 10) -> str:
+    """
+    Convert an object to a hexadecimal string via SHA-1 hashing.
+
+    :param obj: The object to hash.
+    :param digest_size: Number of digest bytes to truncate to (unused).
+    :return: Hexadecimal digest string.
+    """
+    # return binascii.hexlify(hashlib.sha1(pickle.dumps(obj)).digest(10))
+    return hashlib.sha1(pickle.dumps(obj)).hexdigest()
+
+
+def is_num(s: Any) -> bool:
+    """
+    Check whether the given input has a numerical value.
+
+    :param s: Input value to test.
+    :return: ``True`` if ``float(s)`` succeeds, ``False`` otherwise.
+>>>>>>> dev
     """
     try:
         float(s)
         return True
-    except:
+    except Exception:
         return False
 
+<<<<<<< HEAD
 
 def reproject(f, srs_crs, dst_crs):
     """
@@ -95,12 +173,31 @@ def reproject(f, srs_crs, dst_crs):
 
     :return: A reprojected geometry feature in the destination CRS.
 
+=======
+def reproject(
+    f: Dict[str, Any],
+    srs_crs: Dict[str, Any],
+    dst_crs: Dict[str, Any],
+) -> Dict[str, Any]:
     """
-    f['geometry'] = transform_geom(srs_crs, dst_crs, f['geometry'],
-                          antimeridian_cutting=False,
-                          precision=-1)
+    Reproject a geometry from a source coordinate reference system (CRS) to a destination CRS.
+
+    :param f: Feature dictionary with ``geometry`` and ``properties`` keys.
+    :param srs_crs: Source CRS dictionary.
+    :param dst_crs: Destination CRS dictionary.
+    :return: The feature dictionary with the reprojected geometry.
+>>>>>>> dev
+    """
+    f['geometry'] = transform_geom(
+        srs_crs,
+        dst_crs,
+        f['geometry'],
+        antimeridian_cutting=False,
+        precision=-1,
+    )
     return f
 
+<<<<<<< HEAD
 
 def clean_vector_data(src_path, dst_path, dst_name, prop_names, clean=True, tolerance=0.,
                       preserve_topology=True, logfn='clean_stand_shapefile.log', max_records=None,
@@ -127,12 +224,47 @@ def clean_vector_data(src_path, dst_path, dst_name, prop_names, clean=True, tole
 
     :return: A tuple of two paths to the cleaned and uncleaned shapefiles.
 
+=======
+def clean_vector_data(
+    src_path: str,
+    dst_path: str,
+    dst_name: str,
+    prop_names: List[str],
+    clean: bool = True,
+    tolerance: float = 0.0,
+    preserve_topology: bool = True,
+    logfn: str = 'clean_stand_shapefile.log',
+    max_records: Optional[int] = None,
+    theme0: Optional[str] = None,
+    prop_types: Optional[List[Tuple[str, str]]] = None,
+    driver: str = 'ESRI Shapefile',
+    dst_epsg: Optional[int] = None,
+    update_area_prop: str = '',
+) -> Tuple[str, str]:
+    """
+    Clean vector data obtained from a shapefile and reproject to a destination shapefile.
+
+    :param src_path: Path to the source shapefile.
+    :param dst_path: Path to the destination shapefile.
+    :param dst_name: The name for the destination shapefile.
+    :param prop_names: List of property names.
+    :param clean: If True, performs cleaning; otherwise only reprojects.
+    :param tolerance: Adjusts the level of geometry modifications.
+    :param preserve_topology: If True, preserves topology.
+    :param logfn: Filename for the log file to store cleaned info.
+    :param max_records: Maximum number of records to process.
+    :param theme0: Theme value for the cleaned shapefile.
+    :param prop_types: List of tuples showing property types.
+    :param driver: Driver for writing shapefiles.
+    :param dst_epsg: EPSG code for the destination CRS.
+    :param update_area_prop: Property that includes updated area information.
+    :return: Tuple of paths (cleaned shapefile path, error shapefile path).
+>>>>>>> dev
     """
     import logging
-    import sys
-    from shapely.geometry import mapping, shape, Polygon, MultiPolygon
-    import fiona
     from collections import OrderedDict
+
+    from shapely.geometry import MultiPolygon, mapping, shape
     logging.basicConfig(filename=logfn, level=logging.INFO)
     snk1_path = '%s/%s.shp' % (dst_path, dst_name) 
     #snk2_path = dst_path[:-4]+'_error.shp' 
@@ -197,14 +329,20 @@ def clean_vector_data(src_path, dst_path, dst_name, prop_names, clean=True, tole
                     if update_area_prop:
                         f['properties'][update_area_prop] = shape(f['geometry']).area
                     snk1.write(f)
-                except Exception as e: # log exception and write uncleanable feature a separate shapefile
+                except Exception: # log exception and write uncleanable feature a separate shapefile
                     logging.exception("Error cleaning feature %s:", f['id'])
                     snk2.write(f)
     return snk1_path, snk2_path
 
 
-def reproject_vector_data(src_path, snk_path, snk_epsg, driver='ESRI Shapefile'):
+def reproject_vector_data(
+    src_path: str,
+    snk_path: str,
+    snk_epsg: int,
+    driver: str = 'ESRI Shapefile',
+) -> None:
     """
+<<<<<<< HEAD
     When a specific ESPG is defined, this function reprojects vector data from a source 
     shapefile to a destinaiton shapefile using ESRI shapefile as the default driver.
 
@@ -215,10 +353,17 @@ def reproject_vector_data(src_path, snk_path, snk_epsg, driver='ESRI Shapefile')
 
     :return: None (output written directly to ``snk_path``).
 
+=======
+    Reproject vector data from a source shapefile to a destination shapefile using ESRI Shapefile as the default driver.
+
+    :param src_path: Path to the source shapefile.
+    :param snk_path: Path to the destination shapefile.
+    :param snk_epsg: EPSG code for the destination CRS.
+    :param driver: The driver for writing the shapefiles.
+>>>>>>> dev
     """
-    import fiona
     from fiona.crs import from_epsg
-    from pyproj import Proj, transform
+    from pyproj import Proj
     with fiona.open(src_path, 'r') as src:
         snk_crs = from_epsg(snk_epsg)
         src_proj, snk_proj = Proj(src.crs), Proj(snk_crs)
@@ -230,11 +375,23 @@ def reproject_vector_data(src_path, snk_path, snk_epsg, driver='ESRI Shapefile')
             for f in src: snk.write(reproject(f, src.crs, snk_crs))
 
                           
-def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_divisor=1., d=100.,
-                     dtype=rasterio.int32, compress='lzw', round_coords=True,
-                     value_func=lambda x: re.sub(r'(-| )+', '_', str(x).lower()), cap_age=None,
-                     verbose=False):
+def rasterize_stands(
+    shp_path: str,
+    tif_path: str,
+    theme_cols: List[str],
+    age_col: str,
+    blk_col: str = '',
+    age_divisor: float = 1.0,
+    d: float = 100.0,
+    dtype: rasterio.dtype = rasterio.int32,
+    compress: str = 'lzw',
+    round_coords: bool = True,
+    value_func: Callable[[Any], str] = lambda x: re.sub(r'(-| )+', '_', str(x).lower()),
+    cap_age: Optional[int] = None,
+    verbose: bool = False,
+) -> Dict[int, Tuple[str, ...]]:
     """
+<<<<<<< HEAD
     The function rasterizes stands data and writes output to a geoTIFF file.
 
     :param str shp_path: Path to the source shapefile.
@@ -258,17 +415,34 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_di
       :py:mod:`ws3.spatial` module), this dictionary is used to map the hashed values back to the original values 
       (i.e., to "unhash" the hashed values).
     :rtype: dict
+=======
+    Rasterize stand data and store the data as a TIFF file.
+
+    :param shp_path: Path to the source shapefile.
+    :param tif_path: Path to the resulting TIFF file.
+    :param theme_cols: List of theme columns.
+    :param age_col: Age column name.
+    :param blk_col: Block identifier column name.
+    :param age_divisor: A number to scale stand age values.
+    :param d: The pixel size of the raster.
+    :param dtype: The type of the output file (default is rasterio.int32).
+    :param compress: The compression method (default is lzw).
+    :param round_coords: If True, rounds the coordinates of the output file.
+    :param value_func: A function applied to theme columns.
+    :param cap_age: Maximum stand age (optional).
+    :param verbose: Verbosity flag (defaults to False).
+    :return: Dictionary mapping hash values to development type tuples.
+>>>>>>> dev
     """
-    import fiona
     from rasterio.features import rasterize
     if verbose: print('rasterizing', shp_path)
     if dtype == rasterio.int32: 
         nbytes = 4
     else:
         raise TypeError('Data type not implemented: %s' % dtype)
-    hdt = {}
-    shapes = [[], [], []]
-    crs = None
+    hdt: Dict[int, Tuple[str, ...]] = {}
+    shapes: List[List[Tuple[Any, Any]]] = [[], [], []]
+    crs: Optional[Dict[str, Any]] = None
     with fiona.open(shp_path, 'r') as src:
         crs = src.crs
         b = src.bounds #(x_min, y_min, x_max, y_max)
@@ -321,28 +495,43 @@ def rasterize_stands(shp_path, tif_path, theme_cols, age_col, blk_col='', age_di
     return hdt
         
 
-def hash_dt(dt, dtype=rasterio.int32, nbytes=4):
+def hash_dt(
+    dt: Tuple[Any, ...],
+    dtype: rasterio.dtype = rasterio.int32,
+    nbytes: int = 4,
+) -> int:
     """
-    The function hashes the development type and returns an integer value.
+    Hash the development type and return an integer value.
 
-    :param str dt: Development type.
-    :param rasterio.dtype dtype: The type of the output file (default type is rasterio.int32).
-    :param int nbytes: The number of bytes to consider from the hash (The default value is 4).
-
+<<<<<<< HEAD
     :return int: The integer value of the hash.
     :rtype: Data type specified in ``dtype`` argument (defaults to :py:class:`rasterio.int32`).
 
+=======
+    :param dt: Development type tuple.
+    :param dtype: The type of the output file (default is rasterio.int32).
+    :param nbytes: The number of bytes to consider from the hash (default is 4).
+    :return: Integer hash value.
+>>>>>>> dev
     """
     import struct
     s = '.'.join(map(str, dt)).encode('utf-8')
     d = hashlib.md5(s).digest() # first n bytes of md5 digest
+<<<<<<< HEAD
+=======
+    # return np.dtype(dtype).type(int(binascii.hexlify(d[:4]), 16))
+>>>>>>> dev
     return np.dtype(dtype).type(struct.unpack('<i', d[:4])[0])
 
-
-def warp_raster(src, dst_path, dst_crs={'init':'EPSG:4326'}):
+def warp_raster(
+    src: rasterio.DatasetReader,
+    dst_path: str,
+    dst_crs: Dict[str, str] = {'init': 'EPSG:4326'},
+) -> None:
     """
-    The function warpes a raster from its original CRS to a new CRS.
+    Warp a raster from its original CRS to a new CRS.
 
+<<<<<<< HEAD
     :param raserio.DatasetReader src: The source rasterio dataset to be warped.
     :param str dst_path: The path to save the warped raster
     :param dict dst_crs: The destination CRS in rasterio format 
@@ -350,9 +539,14 @@ def warp_raster(src, dst_path, dst_crs={'init':'EPSG:4326'}):
 
     :return: None. The warped raster is saved to the path specified in ``dst_path``.
 
+=======
+    :param src: The source rasterio dataset to be warped.
+    :param dst_path: The path to save the warped raster.
+    :param dst_crs: The destination CRS in rasterio format (default is EPSG:4326).
+>>>>>>> dev
     """
-    from rasterio.warp import calculate_default_transform, reproject
     from rasterio.enums import Resampling
+    from rasterio.warp import calculate_default_transform, reproject
     dst_t, dst_w, dst_h = calculate_default_transform(src.crs, dst_crs, src.width, src.height, *src.bounds)
     profile = src.profile.copy()
     profile.update({'crs':dst_crs, 'transform':dst_t, 'width':dst_w, 'height':dst_h})
@@ -367,17 +561,544 @@ def warp_raster(src, dst_path, dst_crs={'init':'EPSG:4326'}):
                       resampling=Resampling.nearest)
 
 
-def timed(func):
+def timed(func: Callable[..., Any]) -> Callable[..., Any]:
     """
-    The function records the execution time of a function.
+    Record the execution time of a function.
 
+<<<<<<< HEAD
     :param function func: The function to be timed.
     :return: The wrapped function.
+=======
+    :param func: The function to be timed.
+    :return: Wrapped function that prints execution time.
+>>>>>>> dev
     """
-    def wrapper(*args):
+    def wrapper(*args: Any) -> Any:
         t = time.time()
         result = func(*args)
         t = time.time() - t
         print('%s took %.3f seconds.' % (func.__name__, t))
         return result
     return wrapper
+<<<<<<< HEAD
+=======
+from scipy.stats import norm
+
+HORIZON_DEFAULT = 30
+PERIOD_LENGTH_DEFAULT = 10
+MIN_AGE_DEFAULT = 0
+MAX_AGE_DEFAULT = 1000
+CURVE_EPSILON_DEFAULT = 0.01
+AREA_EPSILON_DEFAULT = 0.01
+
+##################################################
+# not used (delete) [commenting out]
+SPECIES_GROUPS_QC  = {
+    'ERR':'ERR',
+    'ERS':'ERS',
+    'BOP':'BOP',
+    'EPR':'SEP',
+    'CHB':'FTO',
+    'EPN':'SEP',
+    'EPO':'SEP',
+    'BOJ':'BOJ',
+    'PEH':'PEU',
+    'ERA':'ERR',
+    'CAC':'FTO',
+    'ERN':'ERR',
+    'PEG':'PEU',
+    'EPB':'SEP',
+    'CAF':'FTO',
+    'PEB':'PEU',
+    'BOG':'BOP',
+    'SOA':'NCO',
+    'SAL':'NCO',
+    'SAB':'SAB',
+    'PIB':'PIN',
+    'PIG':'SEP',
+    'PRU':'AUR',
+    'PET':'PEU',
+    'CET':'FTO',
+    'PRP':'NCO',
+    'PIR':'PIN',
+    'PIS':'SEP',
+    'PED':'PEU',
+    'FRA':'FTO',
+    'CHE':'FTO',
+    'CHG':'FTO',
+    'FRN':'FTO',
+    'THO':'AUR',
+    'CHR':'FTO',
+    'FRP':'FTO',
+    'TIL':'FTO',
+    'MEL':'AUR',
+    'ORT':'FTO',
+    'ORR':'FTO',
+    'MEH':'AUR',
+    'NOC':'FTO',
+    'HEG':'HEG',
+    'OSV':'FTO',
+    'ORA':'FTO'
+}
+
+##################################################
+# not used (delete) [commenting out]
+SPECIES_GROUPS_WOODSTOCK_QC  = {
+    'ERR':'ERR',
+    'ERS':'ERS',
+    'BOP':'BOP',
+    'EPR':'SEP',
+    'CHB':'FTO',
+    'EPN':'SEP',
+    'EPO':'SEP',
+    'BOJ':'BOJ',
+    'PEH':'PEU',
+    'ERA':'ERR',
+    'CAC':'FTO',
+    'ERN':'ERR',
+    'PEG':'PEU',
+    'EPB':'SEP',
+    'CAF':'FTO',
+    'PEB':'PEU',
+    'BOG':'BOP',
+    'SOA':'NCO',
+    'SAL':'NCO',
+    'SAB':'SAB',
+    'PIB':'PIN',
+    'PIG':'SEP',
+    'PRU':'AUR',
+    'PET':'PEU',
+    'CET':'FTO',
+    'PRP':'NCO',
+    'PIR':'PIN',
+    'PIS':'SEP',
+    'PED':'PEU',
+    'FRA':'FTO',
+    'CHE':'FTO',
+    'CHG':'FTO',
+    'FRN':'FTO',
+    'THO':'AUR',
+    'CHR':'FTO',
+    'FRP':'FTO',
+    'TIL':'FTO',
+    'MEL':'AUR',
+    'ORT':'FTO',
+    'ORR':'FTO',
+    'MEH':'AUR',
+    'NOC':'FTO',
+    'HEG':'HEG',
+    'OSV':'FTO',
+    'ORA':'FTO'
+}
+
+##################################################
+# not used (delete) [commenting out]
+##########################################
+# keys correspond to bin labels
+# values correspond to bin upper bounds (inclusive)
+# AGE_CLASS_BINS_DEFAULT = {
+#     '10':20,
+#     '30':40,
+#     '50':60,
+#     '70':80,
+#     '90':100,
+#     '120+':MAX_AGE_DEFAULT
+# }
+##########################################
+
+    
+def _sylv_cred_f1(P,
+                  vr,
+                  vp,
+                  rv=False,
+                  C1a=4.511,
+                  C2a=-0.628,
+                  C7d=-0.391,
+                  C8d=1.939,
+                  C15h=3.912,
+                  C16h=-0.0094,
+                  C17i=0.0698,
+                  C18j=9.2529,
+                  Kmult=1.,
+                  Kplus=0.):
+    exp = pacal.exp if rv else math.exp
+    log = pacal.log if rv else math.exp
+    sc = (C1a*vr**C2a-exp(C7d*log(vp)+C8d)+C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus
+    if rv:
+        return sc.mean() # expected value, given random variates
+    else:
+        return sc
+
+    
+def _sylv_cred_f2(P,
+                  vr,
+                  vp,
+                  rv=False,
+                  C3b=-0.237,
+                  C4b=2.592,
+                  C7d=-0.237,
+                  C8d=2.247,
+                  C11f=4.3546,
+                  C12f=0.34,
+                  C13g=4.3543,
+                  C14g=0.34,
+                  C15h=3.912,
+                  C16h=-0.0094,
+                  C17i=0.0698,
+                  C18j=7.1029,
+                  Kmult=1.,
+                  Kplus=0.):
+    exp = pacal.exp if rv else math.exp
+    log = pacal.log if rv else math.exp
+    sc = ((exp(C3b*log(vr)+C4b)-exp(C7d*log(vp)+C8d)+C11f/vr**C12f-C13g/vp**C14g
+           +C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus)
+    if rv:
+        return sc.mean() # expected value, given random variates
+    else:
+        return sc
+
+
+def _sylv_cred_f3(P,
+                  vr,
+                  vp,
+                  rv=False,
+                  C3b=-0.237,
+                  C4b=2.247,
+                  C7d=-0.237,
+                  C8d=2.247,
+                  C15h=3.912,
+                  C16h=-0.0094,
+                  C17i=0.0698,
+                  C18j=7.1029,
+                  Kmult=1.,
+                  Kplus=0.):
+    exp = pacal.exp if rv else math.exp
+    log = pacal.log if rv else math.exp
+    sc = (exp(C3b*log(vr)+C4b)-exp(C7d*log(vp)+C8d)+C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus
+    if rv:
+        return sc.mean() # expected value, given random variates
+    else:
+        return sc
+
+
+def _sylv_cred_f4(P,
+                  vr,
+                  vp,
+                  rv=False,
+                  C3b=-0.237,
+                  C4b=2.592,
+                  C7d=-0.237,
+                  C8d=2.247,
+                  C11f=4.3546,
+                  C12f=0.34,
+                  C13g=4.3546,
+                  C14g=0.34,
+                  C15h=3.912,
+                  C16h=-0.0069,
+                  C17i=0.0517,
+                  C18j=7.1029,
+                  Kmult=1.,
+                  Kplus=0.):
+    exp = pacal.exp if rv else math.exp
+    log = pacal.log if rv else math.exp
+    sc = ((exp(C3b*log(vr)+C4b)-exp(C7d*log(vp)+C8d)+C11f/vr**C12f-C13g/vp**C14g
+           +C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus)
+    if rv:
+        return sc.mean() # expected value, given random variates
+    else:
+        return sc
+
+
+def _sylv_cred_f5(P,
+                  vr,
+                  vp,
+                  rv=False,
+                  C3b=-0.237,
+                  C4b=2.519,
+                  C7d=-0.237,
+                  C8d=2.247,
+                  C11f=4.3546,
+                  C12f=0.34,
+                  C13g=4.3546,
+                  C14g=0.34,
+                  C15h=3.912,
+                  C16h=-0.0069,
+                  C17i=0.0517,
+                  C18j=7.1029,
+                  Kmult=1.,
+                  Kplus=0.):
+    exp = pacal.exp if rv else math.exp
+    log = pacal.log if rv else math.exp
+    sc = ((exp(C3b*log(vr)+C4b)-exp(C7d*log(vp)+C8d)+C11f/vr**C12f-C13g/vp**C14g
+           +C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus)
+    if rv:
+        return sc.mean() # expected value, given random variates
+    else:
+        return sc
+
+
+def _sylv_cred_f6(P,
+                  vr,
+                  vp,
+                  rv=False,
+                  C3b=-0.237,
+                  C4b=2.519,
+                  C5c=-0.391,
+                  C6c=2.017,
+                  C7d=-0.237,
+                  C8d=2.247,
+                  C9e=-0.391,
+                  C10e=1.939,
+                  C11f=4.3546,
+                  C12f=0.34,
+                  C13g=4.3546,
+                  C14g=0.34,
+                  C15h=3.912,
+                  C16h=-0.0069,
+                  C17i=0.0517,
+                  C18j=7.1029,
+                  Kmult=1.,
+                  Kplus=0.):
+    exp = pacal.exp if rv else math.exp
+    log = pacal.log if rv else math.exp
+    sc = (((exp(C3b*log(vr)+C4b)+exp(C5c*log(vr)+C6c)-exp(C7d*log(vp)+C8d)-exp(C9e*log(vp)+C10e))/2
+            +C11f/vr**C12f-C13g/vp**C14g+C15h*exp(C16h*P)-C17i*P+C18j*P)*Kmult+Kplus)
+    if rv:
+        return sc.mean() # expected value, given random variates
+    else:
+        return sc
+
+
+def _sylv_cred_f7(P,
+                  vr,
+                  vp,
+                  rv=False,
+                  C3b=-0.391,
+                  C4b=2.2,
+                  C7d=-0.391,
+                  C8d=1.939,
+                  C15h=3.912,
+                  C16h=-0.0069,
+                  C17i=0.0517,
+                  C18j=7.1029,
+                  Kmult=1.,
+                  Kplus=0.):
+    exp = pacal.exp if rv else math.exp
+    log = pacal.log if rv else math.exp
+    sc = (exp(C3b*log(vr)+C4b)-exp(C7d*log(vp)+C8d)+C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus
+    if rv:
+        return sc.mean() # expected value, given random variates
+    else:
+        return sc
+
+
+def sylv_cred(P, vr, vp, formula):
+    """
+    This function returns sylviculture credit ($ per hectare).
+
+    :param float P: Volume harvested per hectare.
+    :param float vr: Mean piece size of harvested stems.
+    :param float vp: mean piece size of stand before harvesting.
+    :param formula: formula index (1 to 7).        
+    """
+    f = {1:_sylv_cred_f1,
+         2:_sylv_cred_f2,
+         3:_sylv_cred_f3,
+         4:_sylv_cred_f4,
+         5:_sylv_cred_f5,
+         6:_sylv_cred_f6,
+         7:_sylv_cred_f7}
+    return f[formula](P, vr, vp)
+
+
+def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
+                 treatment_type=None, cover_type=None, formula=None,
+                 P_min=20., tv_min=50., N_min=200., ps_min=0.05,
+                 E_fromintegral=False, e=0.01, n=1000):
+    
+    """
+    This function returns sylviculture credit ($ per hectare).
+
+    :param float P: Volume harvested per hectare.
+    :param float vr: Mean piece size of harvested stems.
+    :param float vp: mean piece size of stand before harvesting.
+    :param formula: formula index (1 to 7).
+
+    .. Note:: Assumes that variables (P, vr, vp) are random variates (returns expected value of function, using PaCAL packages to model random variates, assuming normal distribution for all three variables).
+        Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).   
+    """
+    if treatment_type and cover_type:
+        formula = sylv_cred_formula(treatment_type, cover_type)
+    assert formula
+    # PaCAL overrides the | operator to implement conditional distributions
+    P = pacal.NormalDistr(P_mu, P_sigma) | pacal.Gt(P_min)
+    tv = pacal.NormalDistr(tv_mu, tv_sigma) | pacal.Gt(tv_min)
+    N = pacal.NormalDistr(N_mu, N_sigma) | pacal.Gt(N_min)
+    vp = (tv / N) | pacal.Gt(ps_min)
+    #vr = vp + (vp.mean() * (1 - psr))
+    # truncate again in case psr < 1 (shifts distn to the left)
+    vr = (vp + (vp.mean() * (psr - 1.))) | pacal.Gt(ps_min)  
+    f = {1:_sylv_cred_f1,
+         2:_sylv_cred_f2,
+         3:_sylv_cred_f3,
+         4:_sylv_cred_f4,
+         5:_sylv_cred_f5,
+         6:_sylv_cred_f6,
+         7:_sylv_cred_f7}
+    #print ' formula', formula
+    if E_fromintegral:
+        # estimate expected value E(f(P, vr, vp)) using PaCAL numerical integration functions (sssssslow!) 
+        E = f[formula](P, vr, vp, rv=True)
+    else:
+        # estimate expected value E(f(P, vr, vp)) using Monte Carlo simulation (until convergence to E_tol)
+        E = 0.
+        dE = np.inf
+        i = 1
+        while dE > e:
+            args = list(zip(P.rand(n), vr.rand(n), vp.rand(n)))
+            while len(args) > 0: # process random args in in n-length chunks
+                _E = E
+                E = ((i - 1) * E + f[formula](*args.pop())) / i
+                dE = abs((E - _E) / _E) if _E else np.inf
+                i += 1
+    return E
+
+
+def sylv_cred_formula(treatment_type, cover_type):
+    """
+    Returns sylviculture credit formula index.
+
+    :param str treatment_type: Treatment type.
+    :param str cover_type: Cover type.
+    """
+    if treatment_type == 'ec':
+        return 1 if cover_type.lower() in ['r', 'm'] else 2
+    if treatment_type == 'cj':
+        return 4
+    if treatment_type == 'cprog':
+        return 7 if cover_type.lower() in ['r', 'm'] else 4        
+    return 0
+
+
+def piece_size_ratio(treatment_type, cover_type, piece_size_ratios):
+    """
+    Returns piece size ratio.
+    
+    Assume Action.is_harvest in [0, 1, 2, 3]
+    
+    Assume cover_type in ['r', 'm', 'f']
+    
+    Return vr/vp ratio, where
+      - vr is mean piece size of harvested stems, and
+      - vp is mean piece size of stand before harvesting.
+    """
+    if treatment_type in [1, 2, 3] and cover_type in ['r', 'm', 'f']:
+        if piece_size_ratios:
+            return piece_size_ratios[treatment_type][cover_type]
+        else:
+            return 1.
+    else:
+        return 0.
+
+
+def harv_cost(piece_size,
+              is_finalcut,
+              is_toleranthw,
+              partialcut_extracare=False,              
+              A=1.97, B=0.405, C=0.169, D=0.164, E=0.202, F=13.6, G=8.83, K=0.,
+              rv=False):
+    """
+    Returns harvest cost.
+
+    :param float piece_size: Piece size.
+    :param bool is_finalcut: Treatment type (final cut or not).
+    :param bool is_toleranthw: Stand type (tolerant hardwood or not).
+    :param bool partialcut_extracare: Partialcut "extra care" flag.
+    :param float A: Series of regression coefficients (A, B, C, D, E, F, G, K, all with defaults that are extracted from MERIS technical documentation; also see Sebastien Lacroix, BMMB).
+    :param bool rv: Types of variables (default: Variables are deterministic).        
+    """
+
+    _ifc = float(is_finalcut)
+    _ith = float(is_toleranthw)
+    _pce = float(partialcut_extracare)
+    log = pacal.log if rv else math.log
+    exp = pacal.exp if rv else math.exp
+    _exp = A - (B * log(piece_size)) + (C * _pce) + (D * _ifc) - (E * (1 - _ith))
+    hc = exp(_exp) + ((F * _ith) + (G * (1 - _ith))) + K
+    if rv:
+        return hc.mean()
+    else:
+        return hc
+
+    
+def harv_cost_rv(tv_mu, tv_sigma, N_mu, N_sigma, psr,
+                 is_finalcut,
+                 is_toleranthw,
+                 partialcut_extracare=False,
+                 tv_min=50., N_min=200., ps_min=0.05,
+                 E_fromintegral=False, e=0.01, n=1000):
+
+    """
+    Returns harvest cost.
+
+    :param bool is_finalcut: Treatment type (final cut or not).
+    :param bool is_toleranthw: Stand type (tolerant hardwood or not).
+    :param bool partialcut_extracare: Partialcut "extra care" flag.
+    :param float A: Series of regression coefficients (A, B, C, D, E, F, G, K, all with defaults that are extracted from MERIS technical documentation; also see Sebastien Lacroix, BMMB).
+    :param bool rv: Types of variables (default: Variables random variates).
+
+    Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).       
+    """
+    
+
+    # PaCAL overrides the | operator to implement conditional distributions
+    tv = pacal.NormalDistr(tv_mu, tv_sigma) | pacal.Gt(tv_min)
+    N = pacal.NormalDistr(N_mu, N_sigma) | pacal.Gt(N_min)
+    vp = (tv / N) | pacal.Gt(ps_min)
+    #vr = vp + (vp.mean() * (1 - psr))
+    # truncate again in case psr < 1 (shifts distn to the left)
+    vr = (vp + (vp.mean() * (psr - 1.))) | pacal.Gt(ps_min)
+    if E_fromintegral:
+        # estimate expected value E(f(vr)) using PaCAL numerical integration functions (sssssslow!) 
+        E = harv_cost(vr, is_finalcut, is_toleranthw, rv=True)
+    else:
+        # estimate expected value E(f(vr)) using Monte Carlo simulation (until convergence to E_tol)
+        E = 0.
+        dE = np.inf
+        i = 1
+        while dE > e:
+            args = list(vr.rand(n))
+            while len(args) > 0: # process random args in in n-length chunks
+                _E = E
+                E = ((i - 1) * E + harv_cost(args.pop(), is_finalcut, is_toleranthw)) / i
+                dE = abs((E - _E) / _E) if _E else np.inf
+                i += 1
+    return E
+
+
+def harv_cost_wec(piece_size,
+                  is_finalcut,
+                  is_toleranthw,
+                  sigma,
+                  nsigmas=3,
+                  **kwargs):
+    """
+    Estimate harvest cost with error correction.
+
+    :param float piece_size: Mean piece size.
+    :param bool is_finalcut: True if harvest treatment is final cut, False otherwise.
+    :param bool is_toleranthw: True if tolerant hardwood cover type, False otherwise.
+    :param bool sigma: Standard deviation of piece size estimator.
+    :param int nsigmas: Number of standard deviations to model on either side of the mean (default 3).
+    :param float binw: Width of bins for weighted numerical integration, in multiples of sigma (default 1.0).       
+    """
+
+    # bin centerpoints
+    rv = norm(loc=piece_size, scale=sigma)
+    X = sorted([(piece_size + (sigma * (i - (1. * 0.5)) * sign)) 
+               for i in range(1, nsigmas+1) for sign in [-1, +1]])
+    return sum(harv_cost(x, is_finalcut, is_toleranthw, **kwargs) * sigma * rv.pdf(x) for x in X)
+        
+
+ 
+>>>>>>> dev

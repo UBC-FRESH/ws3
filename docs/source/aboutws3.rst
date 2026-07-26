@@ -6,9 +6,13 @@
    :maxdepth: 5
 
    Chapt2
+<<<<<<< HEAD
    common
    core
    forest
    financial
    opt
    spatial
+=======
+   modules
+>>>>>>> dev
