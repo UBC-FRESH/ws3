@@ -120,60 +120,34 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 ## Phase 5 — Advanced Features and Production Deployment
 
 - Parent issue: #60
-- Status: complete
+- Status: in_progress
 - Branch: `feature/ws3-phase5`
 - Start date: 2026-07-26
-- Alpha release: v1.1.0a1 (published to PyPI)
+- Alpha release: v1.1.0a1 (smoke testing in progress)
 
 ### Task 5.1 — Advanced Modeling Features
 - GitHub issue: #61
-- Status: complete
+- Status: complete (code created, tests pending)
 - Scope: stochastic optimization, multi-objective optimization, dynamic planning, climate scenarios, enhanced carbon accounting
 
 ### Task 5.2 — User Experience Improvements
 - GitHub issue: #62
-- Status: complete
+- Status: complete (code created, tests pending)
 - Scope: interactive notebooks, FAQ section, migration guide
 
 ### Task 5.3 — Performance Optimization
 - GitHub issue: #63
-- Status: complete
+- Status: complete (code created, tests pending)
 - Scope: solver tuning, memory profiling, parallel processing, incremental solving, caching
 
 ### Task 5.4 — Integration Enhancements
 - GitHub issue: #64
-- Status: complete
+- Status: complete (code created, tests pending)
 - Scope: fhops integration, FEMIC integration, FreshForge workflows, SpaDES coupling, API endpoints
 
 ### Task 5.5 — Production Deployment
 - GitHub issue: #65
-- Status: complete (v1.1.0a1 published to PyPI via trusted publisher)
-
-## Phase 6 — Documentation Cleanup and Integration
-
-- Parent issue: #69
-- Status: not_started
-- Branch: `feature/ws3-phase6-docs-cleanup`
-
-### Task 6.1 — Audit documentation for AI slop
-- GitHub issue: #70
-- Status: not_started
-- Scope: read every .rst and .md file, identify verbose filler, redundant explanations, overly casual language
-
-### Task 6.2 — Integrate legacy chapters
-- GitHub issue: #71
-- Status: not_started
-- Scope: merge legacy flat chapters into structured sections or remove if obsolete, remove "Old Documentation" section from index.rst
-
-### Task 6.3 — Purge AI slop
-- GitHub issue: #72
-- Status: not_started
-- Scope: remove filler sentences, tighten verbose explanations, ensure consistent tight technical tone
-
-### Task 6.4 — Verify docs build
-- GitHub issue: #73
-- Status: not_started
-- Scope: ensure sphinx-build succeeds with zero errors and zero warnings
+- Status: in_progress (CI/CD exists, PyPI secrets not configured)
 - Scope: release packaging, CI/CD pipeline, versioning, changelog, community guidelines, support channels
 
 ### Task 5.6 — Additional How-To Guides
