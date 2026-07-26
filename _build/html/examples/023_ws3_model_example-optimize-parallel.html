@@ -1,0 +1,1564 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ws3 Parallel Model Building + HiGHS (highspy) — Hands-On &mdash; ws3 1.0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d55fa986"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Spatially allocating a ws3 harvest schedule to raster grids" href="024_ws3_model_example-spatial-allocate-schedule.html" />
+    <link rel="prev" title="Using the ws3 optimization modelling function (advanced)" href="022_ws3_model_example-optimize-advanced.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ws3
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../textbook/index.html">The ws3 Textbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples Gallery</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="000_venv_python_kernel_setup.html">Setting up a venv-sandboxed Python kernel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="010_ws3_model_example-fromscratch.html">Building a <code class="docutils literal notranslate"><span class="pre">ws3</span></code> model from scratch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="020_ws3_model_example-woodstock.html">Build a <code class="docutils literal notranslate"><span class="pre">ws3</span></code> model from Woodstock-format text input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="021_ws3_model_example-optimize-basic.html">Using the <code class="docutils literal notranslate"><span class="pre">ws3</span></code> optimization modelling funtions (basic)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="022_ws3_model_example-optimize-advanced.html">Using the <code class="docutils literal notranslate"><span class="pre">ws3</span></code> optimization modelling function (advanced)</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Parallel Model Building + HiGHS (<code class="docutils literal notranslate"><span class="pre">highspy</span></code>) — Hands-On</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Set-up-environment">Set up environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Step-0:-Setup">Step 0: Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Step-1:-Load-data-and-configure-model">Step 1: Load data and configure model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Picking-max_workers-in-ws3:-quick-guidance-+-deeper-dive">Picking <code class="docutils literal notranslate"><span class="pre">max_workers</span></code> in <code class="docutils literal notranslate"><span class="pre">ws3</span></code>: quick guidance + deeper dive</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Part-A-—-Quick-start-(what-number-should-I-use?)">Part A — Quick start (what number should I use?)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Part-B-—-Deep-dive-(reading-the-profile,-tuning,-and-hacking)">Part B — Deep dive (reading the profile, tuning, and hacking)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#1)-Interpreting-the-profiles">1) Interpreting the profiles</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#2)-Choosing-max_workers-methodically">2) Choosing <code class="docutils literal notranslate"><span class="pre">max_workers</span></code> methodically</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#3)-Batch-sizing">3) Batch sizing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="024_ws3_model_example-spatial-allocate-schedule.html">Spatially allocating a <code class="docutils literal notranslate"><span class="pre">ws3</span></code> harvest schedule to raster grids</a></li>
+<li class="toctree-l2"><a class="reference internal" href="030_ws3_libcbm_sequential-fromscratch.html">Running <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> as a two-stage sequential pipeline (from scratch)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="031_ws3_libcbm_sequential-builtin.html">Running <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> as a two-stage sequential pipeline (using built-in functions)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="040_ws3_libcbm_neilsonhack-fromscratch.html">Implement the <em>Neilson hack</em> using <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> (from scratch)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="050_dss_avoided_fire.html">DSS Example: Avoided Fire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="060_dss_avoid_harvest.html">DSS Example: Avoided Harvesting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ws3</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html">Examples Gallery</a></li>
+      <li class="breadcrumb-item active"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Parallel Model Building + HiGHS (<code class="docutils literal notranslate"><span class="pre">highspy</span></code>) — Hands-On</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/023_ws3_model_example-optimize-parallel.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ws3-Parallel-Model-Building-+-HiGHS-(highspy)-—-Hands-On">
+<h1><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Parallel Model Building + HiGHS (<code class="docutils literal notranslate"><span class="pre">highspy</span></code>) — Hands-On<a class="headerlink" href="#ws3-Parallel-Model-Building-+-HiGHS-(highspy)-—-Hands-On" title="Link to this heading"></a></h1>
+<p>This notebook shows how to:</p>
+<ol class="arabic simple">
+<li><p>Build a <code class="docutils literal notranslate"><span class="pre">ws3</span></code> optimization problem model in both <strong>serial</strong> and <strong>parallel</strong> modes.</p></li>
+<li><p>Solve the problem with <strong>HiGHS</strong> via the <code class="docutils literal notranslate"><span class="pre">highspy</span></code> bindings.</p></li>
+<li><p>Measure <strong>wall time</strong> to find the parallel parameter <strong>sweet spot</strong>.</p></li>
+</ol>
+<p>Note that we test building and solving a <code class="docutils literal notranslate"><span class="pre">ws3</span></code> optimization on up to 64 cores in this notebook. Obviously this will not work as intended if you have fewer than 64 cores available in the environment in which you run this code. Use common sense in interpreting output.</p>
+<section id="Set-up-environment">
+<h2>Set up environment<a class="headerlink" href="#Set-up-environment" title="Link to this heading"></a></h2>
+<p>Below we (optionally) install the <code class="docutils literal notranslate"><span class="pre">ws3</span></code> package from the local source code in this repository using the <code class="docutils literal notranslate"><span class="pre">-e</span></code> flag to ensure that the package is installed in editable mode (i.e., any changes you make to the source code immediately affect <code class="docutils literal notranslate"><span class="pre">ws3</span></code> behaviour the next time you run the notebook). This is is not necessary if you have installed <code class="docutils literal notranslate"><span class="pre">ws3</span></code> using pip or another method.</p>
+<p>Note that the code in this notebook has been tested with the version of the <code class="docutils literal notranslate"><span class="pre">ws3</span></code> package that is included in this repository.</p>
+<p>Set auto-reload to reload modules when they are changed.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clobber_ws3</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="k">if</span> <span class="n">clobber_ws3</span><span class="p">:</span>
+    <span class="o">%</span><span class="k">pip</span> uninstall -y ws3
+    <span class="o">%</span><span class="k">pip</span> install -e ..
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Step-0:-Setup">
+<h2>Step 0: Setup<a class="headerlink" href="#Step-0:-Setup" title="Link to this heading"></a></h2>
+<p>On Linux, <code class="docutils literal notranslate"><span class="pre">fork</span></code> is the default (fastest). For Windows/macOS (and portable scripts), set <code class="docutils literal notranslate"><span class="pre">spawn</span></code>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">time</span><span class="o">,</span><span class="w"> </span><span class="nn">platform</span><span class="o">,</span><span class="w"> </span><span class="nn">cProfile</span><span class="o">,</span><span class="w"> </span><span class="nn">pstats</span><span class="o">,</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ws3</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ws3</span><span class="w"> </span><span class="kn">import</span> <span class="n">opt</span><span class="p">,</span> <span class="n">forest</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">highspy</span>
+
+
+<span class="c1"># (Optional) force a portable start method in your launcher if needed:</span>
+<span class="c1"># ws3.forest.MP_CONTEXT = &quot;spawn&quot;</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Step-1:-Load-data-and-configure-model">
+<h2>Step 1: Load data and configure model<a class="headerlink" href="#Step-1:-Load-data-and-configure-model" title="Link to this heading"></a></h2>
+<p>Set some reasonable model parameters.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">base_year</span> <span class="o">=</span> <span class="mi">2020</span>    <span class="c1"># base year for the problem</span>
+<span class="n">horizon</span> <span class="o">=</span> <span class="mi">20</span>        <span class="c1"># number of periods in the simulation horizon</span>
+<span class="n">period_length</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># period length (in years)</span>
+<span class="n">max_age</span> <span class="o">=</span> <span class="mi">1000</span>      <span class="c1"># maximum age of a stand (in years)</span>
+<span class="n">tvy_name</span> <span class="o">=</span> <span class="s2">&quot;totvol&quot;</span> <span class="c1"># name for total volume yield component</span>
+<br/></pre></div>
+</div>
+</div>
+<p>Create a new <code class="docutils literal notranslate"><span class="pre">ForestModel</span></code> object and import a model dataset from the <code class="docutils literal notranslate"><span class="pre">data</span></code> directory.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span> <span class="o">=</span> <span class="n">ws3</span><span class="o">.</span><span class="n">forest</span><span class="o">.</span><span class="n">ForestModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;tsa24&quot;</span><span class="p">,</span>
+                            <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;data/woodstock_model_files_tsa24&quot;</span><span class="p">,</span>
+                            <span class="n">base_year</span><span class="o">=</span><span class="n">base_year</span><span class="p">,</span>
+                            <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span>
+                            <span class="n">period_length</span><span class="o">=</span><span class="n">period_length</span><span class="p">,</span>
+                            <span class="n">max_age</span><span class="o">=</span><span class="n">max_age</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_landscape_section</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_areas_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_yields_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_actions_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_transitions_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">initialize_areas</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">add_null_action</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">reset_actions</span><span class="p">()</span>
+
+<span class="n">fm</span><span class="o">.</span><span class="n">actions</span><span class="p">[</span><span class="s2">&quot;harvest&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">is_harvest</span> <span class="o">=</span> <span class="kc">True</span> <span class="c1"># set harvest action to be a harvest action (needed for `cmp_c_z` to work correctly)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">util</span><span class="w"> </span><span class="kn">import</span> <span class="n">cmp_c_z</span><span class="p">,</span> <span class="n">cmp_c_caa</span><span class="p">,</span> <span class="n">cmp_c_ci</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">util</span><span class="w"> </span><span class="kn">import</span> <span class="n">compile_scenario</span><span class="p">,</span> <span class="n">plot_scenario</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">acodes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;null&quot;</span><span class="p">,</span> <span class="s2">&quot;harvest&quot;</span><span class="p">)</span>
+<span class="n">expr</span> <span class="o">=</span> <span class="s2">&quot;0.85 * totvol&quot;</span>
+
+<span class="c1"># Row builders / coefficient functions (project-specific)</span>
+<span class="n">coeff_funcs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">cmp_c_z</span><span class="p">,</span> <span class="n">expr</span><span class="o">=</span><span class="n">expr</span><span class="p">),</span>
+    <span class="s2">&quot;cflw_hv&quot;</span><span class="p">:</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">cmp_c_caa</span><span class="p">,</span> <span class="n">expr</span><span class="o">=</span><span class="n">expr</span><span class="p">,</span> <span class="n">acodes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;harvest&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;cflw_ha&quot;</span><span class="p">:</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">cmp_c_caa</span><span class="p">,</span> <span class="n">expr</span><span class="o">=</span><span class="s2">&quot;1.&quot;</span><span class="p">,</span> <span class="n">acodes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;harvest&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;cgen_gs&quot;</span> <span class="p">:</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">cmp_c_ci</span><span class="p">,</span> <span class="n">yname</span><span class="o">=</span><span class="n">tvy_name</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1"># Flow-constraint epsilons and reference period</span>
+<span class="n">cflw_e</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;cflw_hv&quot;</span><span class="p">:</span> <span class="p">({</span><span class="n">p</span><span class="p">:</span><span class="mf">0.05</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">periods</span><span class="p">},</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="s2">&quot;cflw_ha&quot;</span><span class="p">:</span> <span class="p">({</span><span class="n">p</span><span class="p">:</span><span class="mf">0.05</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">periods</span><span class="p">},</span> <span class="mi">1</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="c1"># General bounds (per period)</span>
+<span class="n">gs_lb_rhs</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">inventory</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;totvol&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.90</span> <span class="c1"># 90% of initial growing stock level</span>
+<span class="n">cgen_data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;cgen_gs&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;lb&quot;</span><span class="p">:{</span><span class="mi">10</span><span class="p">:</span><span class="n">gs_lb_rhs</span><span class="p">},</span> <span class="s2">&quot;ub&quot;</span><span class="p">:{</span><span class="mi">10</span><span class="p">:</span><span class="mf">999999999.</span><span class="p">}}}</span>
+</pre></div>
+</div>
+</div>
+<p>Build and solve the problem with 1 core. You might want to open an interactive system terminal shell before running the rest of this notebook and keep an eye on memory allocation and CPU core activity while the model builds and solves (to get a realtime view of system resource utilization under different parameter values).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workers</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">problem</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">add_problem</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span>
+    <span class="n">coeff_funcs</span><span class="o">=</span><span class="n">coeff_funcs</span><span class="p">,</span>
+    <span class="n">cflw_e</span><span class="o">=</span><span class="n">cflw_e</span><span class="p">,</span>
+    <span class="n">cgen_data</span><span class="o">=</span><span class="n">cgen_data</span><span class="p">,</span>
+    <span class="n">acodes</span><span class="o">=</span><span class="n">acodes</span><span class="p">,</span>
+    <span class="n">sense</span><span class="o">=</span><span class="n">ws3</span><span class="o">.</span><span class="n">opt</span><span class="o">.</span><span class="n">SENSE_MAXIMIZE</span><span class="p">,</span>
+    <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">workers</span><span class="o">=</span><span class="n">workers</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Build time: </span><span class="si">{</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+add_problem: build problem
+generate trees using 1 workers
+process trees
+_bld_p_m1: build problem
+_bld_p_m1: done building problem
+add_problem: compile flow constraints
+_cmp_cflw_m1: phase 1
+_cmp_cflw_m1: phase 2
+_cmp_cflw_m1: phase 3
+add_problem: compile general constraints
+Build time: 205.91s
+</pre></div></div>
+</div>
+<p>Now we have a reference time for building the problem in serial mode.</p>
+<p>We will also solve the problem with 1 core and compile and display the solution just to make sure the model is working correctly before proceeding to test various parallel model parameter values.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">threads</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Running HiGHS 1.11.0 (git hash: 364c83a): Copyright (c) 2025 HiGHS under MIT licence terms
+WARNING: LP matrix packed vector contains 3 |values| in [1.45519e-11, 1.45519e-11] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 2 |values| in [4.54747e-13, 4.54747e-13] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 1 |values| in [7.27596e-12, 7.27596e-12] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 1 |values| in [1.45519e-11, 1.45519e-11] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 2 |values| in [4.54747e-13, 1.45519e-11] less than or equal to 1e-09: ignored
+LP   has 7778 rows; 461956 cols; 10014103 nonzeros
+Coefficient ranges:
+  Matrix [1e-03, 1e+07]
+  Cost   [3e+00, 2e+07]
+  Bound  [1e+00, 1e+00]
+  RHS    [1e+00, 1e+09]
+Presolving model
+4476 rows, 458658 cols, 9697481 nonzeros  3s
+Dependent equations search running on 4398 equations with time limit of 1000.00s
+Dependent equations search removed 0 rows and 0 nonzeros in 0.02s (limit = 1000.00s)
+4475 rows, 458658 cols, 9413474 nonzeros  5s
+Presolve : Reductions: rows 4475(-3303); columns 458658(-3298); elements 9413474(-600629)
+Solving the presolved LP
+WARNING: Number of threads available = 1 &lt; 8 = Simplex concurrency to be used: Parallel performance may be less than anticipated
+Using EKK parallel dual simplex solver - SIP with concurrency of 8
+  Iteration        Objective     Infeasibilities num(sum)
+          0     0.0000000000e+00 Ph1: 0(0) 7s
+         72    -1.0611783165e+10 Pr: 4434(1.52937e+09); Du: 0(1.72505e-07) 133s
+        144    -8.3945478108e+09 Pr: 4386(2.55624e+08) 160s
+        447    -7.5791507202e+09 Pr: 4186(1.16792e+08) 165s
+       1374    -6.4218954439e+09 Pr: 3702(1.01576e+08) 170s
+       2441    -5.3558475700e+09 Pr: 3528(6.53618e+07) 176s
+       3299    -4.7823649957e+09 Pr: 3415(1.09355e+08) 181s
+       4183    -3.9937973149e+09 Pr: 3586(9.95246e+07) 186s
+       5945    -3.3607201147e+09 Pr: 3442(1.1896e+08) 191s
+       8392    -2.4218065109e+09 Pr: 2861(6.12309e+07); Du: 0(3.2306e-08) 197s
+      10886    -1.9272268074e+09 Pr: 2453(3.86569e+07) 202s
+      12740    -1.7360223742e+09 Pr: 2455(2.60278e+07) 208s
+      15022    -1.7049224331e+09 Pr: 2251(6.11247e+07); Du: 0(8.4082e-08) 213s
+      16937    -1.6728486671e+09 Pr: 2153(3.21198e+07) 218s
+      18965    -1.6112238062e+09 Pr: 2182(2.64841e+07) 224s
+      21024    -1.5777114067e+09 Pr: 1900(2.30809e+07) 229s
+      23368    -1.5647453176e+09 Pr: 1867(8.2494e+07); Du: 0(2.13932e-08) 235s
+      25893    -1.5499435701e+09 Pr: 1790(1.33966e+07) 240s
+      28123    -1.4933861118e+09 Pr: 1601(5.46795e+06); Du: 0(4.15042e-09) 246s
+      29835    -1.4659928811e+09 Pr: 1221(3.05762e+06); Du: 0(7.24469e-09) 252s
+      31567    -1.4461292456e+09 Pr: 506(1.81901e+06); Du: 0(1.28772e-08) 259s
+      32297    -1.4441396268e+09 Pr: 174(36813.7); Du: 0(8.41078e-08) 264s
+      32478    -1.4440246751e+09 Pr: 0(0); Du: 0(5.81036e-07) 265s
+WARNING: Using concurrency of 1 for parallel strategy rather than minimum number (2) specified in options
+Using EKK primal simplex solver
+  Iteration        Objective     Infeasibilities num(sum)
+      32478    -1.4440293920e+09 Pr: 0(0); Du: 3663(0.00175359) 265s
+      32507    -1.4440246751e+09 Pr: 0(0); Du: 0(8.1066e-06) 266s
+Solving the original LP from the solution after postsolve
+Model status        : Optimal
+Simplex   iterations: 32507
+Objective value     : -1.4440246751e+09
+P-D objective error :  1.6510699791e-15
+HiGHS run time      :        266.48
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">problem</span><span class="o">.</span><span class="n">status</span><span class="p">()</span> <span class="o">!=</span> <span class="n">ws3</span><span class="o">.</span><span class="n">opt</span><span class="o">.</span><span class="n">STATUS_OPTIMAL</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Model not optimal.&#39;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">sch</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">compile_schedule</span><span class="p">(</span><span class="n">problem</span><span class="p">)</span>
+    <span class="n">fm</span><span class="o">.</span><span class="n">apply_schedule</span><span class="p">(</span><span class="n">sch</span><span class="p">,</span>
+        <span class="n">force_integral_area</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">override_operability</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">fuzzy_age</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">recourse_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">compile_c_ycomps</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">compile_scenario</span><span class="p">(</span><span class="n">fm</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plot_scenario</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+    period            oha           ohv           ogs
+0        1  323917.431871  7.202118e+07  6.927929e+08
+1        2  307721.560278  6.842012e+07  6.798218e+08
+2        3  307721.560278  6.842012e+07  6.760743e+08
+3        4  307721.560278  6.842012e+07  6.789138e+08
+4        5  340113.303465  6.842012e+07  6.827610e+08
+5        6  340113.303465  6.842012e+07  6.854458e+08
+6        7  340113.303465  6.842012e+07  6.901670e+08
+7        8  333083.385036  6.842012e+07  6.975081e+08
+8        9  307721.560278  6.842012e+07  7.018079e+08
+9       10  307721.560278  6.842012e+07  6.997713e+08
+10      11  307721.560278  7.562224e+07  6.761588e+08
+11      12  340113.303465  7.562224e+07  6.450464e+08
+12      13  340113.303465  7.562224e+07  6.144736e+08
+13      14  340113.303465  7.562224e+07  5.893272e+08
+14      15  340113.303465  7.562224e+07  5.739232e+08
+15      16  340113.303465  7.562224e+07  5.680156e+08
+16      17  340113.303465  7.562224e+07  5.648146e+08
+17      18  340113.303465  7.562224e+07  5.603040e+08
+18      19  340113.303465  7.562224e+07  5.530622e+08
+19      20  340113.303465  7.562224e+07  5.426653e+08
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_023_ws3_model_example-optimize-parallel_20_1.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_023_ws3_model_example-optimize-parallel_20_1.png" />
+</div>
+</div>
+<p>Rebuild and solve the same problem, but with 2 cores.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workers</span> <span class="o">=</span> <span class="mi">2</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">problem</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">add_problem</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span>
+    <span class="n">coeff_funcs</span><span class="o">=</span><span class="n">coeff_funcs</span><span class="p">,</span>
+    <span class="n">cflw_e</span><span class="o">=</span><span class="n">cflw_e</span><span class="p">,</span>
+    <span class="n">cgen_data</span><span class="o">=</span><span class="n">cgen_data</span><span class="p">,</span>
+    <span class="n">acodes</span><span class="o">=</span><span class="n">acodes</span><span class="p">,</span>
+    <span class="n">sense</span><span class="o">=</span><span class="n">ws3</span><span class="o">.</span><span class="n">opt</span><span class="o">.</span><span class="n">SENSE_MAXIMIZE</span><span class="p">,</span>
+    <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">workers</span><span class="o">=</span><span class="n">workers</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Build time: </span><span class="si">{</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+add_problem: build problem
+generate trees using 2 workers
+process trees
+_bld_p_m1: build problem
+_bld_p_m1: done building problem
+add_problem: compile flow constraints
+_cmp_cflw_m1: phase 1
+_cmp_cflw_m1: phase 2
+_cmp_cflw_m1: phase 3
+add_problem: compile general constraints
+Build time: 224.74s
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">threads</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Running HiGHS 1.11.0 (git hash: 364c83a): Copyright (c) 2025 HiGHS under MIT licence terms
+WARNING: LP matrix packed vector contains 3 |values| in [1.45519e-11, 1.45519e-11] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 1 |values| in [1.45519e-11, 1.45519e-11] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 2 |values| in [4.54747e-13, 4.54747e-13] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 1 |values| in [7.27596e-12, 7.27596e-12] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 2 |values| in [4.54747e-13, 1.45519e-11] less than or equal to 1e-09: ignored
+LP   has 7778 rows; 461956 cols; 10014103 nonzeros
+Coefficient ranges:
+  Matrix [1e-03, 1e+07]
+  Cost   [3e+00, 2e+07]
+  Bound  [1e+00, 1e+00]
+  RHS    [1e+00, 1e+09]
+Presolving model
+4476 rows, 458658 cols, 9697481 nonzeros  3s
+Dependent equations search running on 4398 equations with time limit of 1000.00s
+Dependent equations search removed 0 rows and 0 nonzeros in 0.02s (limit = 1000.00s)
+4475 rows, 458658 cols, 9413474 nonzeros  5s
+Presolve : Reductions: rows 4475(-3303); columns 458658(-3298); elements 9413474(-600629)
+Solving the presolved LP
+WARNING: Number of threads available = 2 &lt; 8 = Simplex concurrency to be used: Parallel performance may be less than anticipated
+Using EKK parallel dual simplex solver - SIP with concurrency of 8
+  Iteration        Objective     Infeasibilities num(sum)
+          0     0.0000000000e+00 Ph1: 0(0) 7s
+         62    -9.3778657921e+09 Pr: 4412(6.28471e+08) 146s
+        127    -8.1932871410e+09 Pr: 4203(4.61045e+08); Du: 0(9.41877e-08) 158s
+        489    -7.4080343917e+09 Pr: 4081(7.61578e+07); Du: 0(2.55574e-09) 164s
+       1788    -5.9517248380e+09 Pr: 3633(8.25822e+07); Du: 0(2.98644e-08) 169s
+       2754    -5.1174280373e+09 Pr: 3403(9.00023e+07); Du: 0(3.30517e-08) 175s
+       3935    -4.0599762397e+09 Pr: 3524(9.52876e+07) 181s
+       6048    -3.1846461666e+09 Pr: 3531(1.18075e+08) 186s
+       8802    -2.2111406738e+09 Pr: 2864(3.54672e+07) 191s
+      11645    -1.8548556807e+09 Pr: 2452(6.9844e+07) 196s
+      14859    -1.6961273901e+09 Pr: 2289(2.0375e+07) 202s
+      17684    -1.6239667123e+09 Pr: 2082(1.86446e+07) 207s
+      20715    -1.5689207037e+09 Pr: 1775(1.85489e+07); Du: 0(8.79974e-09) 212s
+      24110    -1.5624119647e+09 Pr: 1935(3.77035e+07) 218s
+      27254    -1.4958470606e+09 Pr: 1742(7.29301e+06); Du: 0(3.48364e-08) 224s
+      29916    -1.4647766851e+09 Pr: 1188(5.49377e+06); Du: 0(3.24601e-08) 229s
+      31827    -1.4461284711e+09 Pr: 510(337654); Du: 0(6.59284e-08) 236s
+      32675    -1.4440246751e+09 Pr: 0(0); Du: 0(4.25428e-09) 240s
+Solving the original LP from the solution after postsolve
+Model status        : Optimal
+Simplex   iterations: 32675
+Objective value     : -1.4440246751e+09
+P-D objective error :  2.0638374739e-15
+HiGHS run time      :        240.43
+</pre></div></div>
+</div>
+<p>Rebuild and solve the same problem, but with 4 cores.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workers</span> <span class="o">=</span> <span class="mi">4</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">problem</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">add_problem</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span>
+    <span class="n">coeff_funcs</span><span class="o">=</span><span class="n">coeff_funcs</span><span class="p">,</span>
+    <span class="n">cflw_e</span><span class="o">=</span><span class="n">cflw_e</span><span class="p">,</span>
+    <span class="n">cgen_data</span><span class="o">=</span><span class="n">cgen_data</span><span class="p">,</span>
+    <span class="n">acodes</span><span class="o">=</span><span class="n">acodes</span><span class="p">,</span>
+    <span class="n">sense</span><span class="o">=</span><span class="n">ws3</span><span class="o">.</span><span class="n">opt</span><span class="o">.</span><span class="n">SENSE_MAXIMIZE</span><span class="p">,</span>
+    <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">workers</span><span class="o">=</span><span class="n">workers</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Build time: </span><span class="si">{</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+add_problem: build problem
+generate trees using 4 workers
+process trees
+_bld_p_m1: build problem
+_bld_p_m1: done building problem
+add_problem: compile flow constraints
+_cmp_cflw_m1: phase 1
+_cmp_cflw_m1: phase 2
+_cmp_cflw_m1: phase 3
+add_problem: compile general constraints
+Build time: 180.17s
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">threads</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Running HiGHS 1.11.0 (git hash: 364c83a): Copyright (c) 2025 HiGHS under MIT licence terms
+WARNING: LP matrix packed vector contains 1 |values| in [7.27596e-12, 7.27596e-12] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 3 |values| in [1.45519e-11, 1.45519e-11] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 1 |values| in [1.45519e-11, 1.45519e-11] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 2 |values| in [4.54747e-13, 4.54747e-13] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 2 |values| in [4.54747e-13, 1.45519e-11] less than or equal to 1e-09: ignored
+LP   has 7778 rows; 461956 cols; 10014103 nonzeros
+Coefficient ranges:
+  Matrix [1e-03, 1e+07]
+  Cost   [3e+00, 2e+07]
+  Bound  [1e+00, 1e+00]
+  RHS    [1e+00, 1e+09]
+Presolving model
+4476 rows, 458658 cols, 9697481 nonzeros  3s
+Dependent equations search running on 4398 equations with time limit of 1000.00s
+Dependent equations search removed 0 rows and 0 nonzeros in 0.02s (limit = 1000.00s)
+4475 rows, 458658 cols, 9413474 nonzeros  5s
+Presolve : Reductions: rows 4475(-3303); columns 458658(-3298); elements 9413474(-600629)
+Solving the presolved LP
+WARNING: Number of threads available = 4 &lt; 8 = Simplex concurrency to be used: Parallel performance may be less than anticipated
+Using EKK parallel dual simplex solver - SIP with concurrency of 8
+  Iteration        Objective     Infeasibilities num(sum)
+          0     0.0000000000e+00 Ph1: 0(0) 7s
+         76    -1.0090968799e+10 Pr: 4435(5.65204e+08) 132s
+        134    -8.3735976761e+09 Pr: 4198(2.35676e+08) 142s
+        551    -7.3666232510e+09 Pr: 4085(7.74913e+07) 148s
+       1881    -5.9582324420e+09 Pr: 3658(7.05966e+07) 153s
+       3044    -5.0283147476e+09 Pr: 3442(9.61591e+07) 159s
+       3997    -4.0718214698e+09 Pr: 3463(8.85617e+07) 164s
+       6680    -3.0293157251e+09 Pr: 3469(1.21311e+08) 169s
+      10081    -2.0157907527e+09 Pr: 2749(7.67172e+07) 175s
+      13365    -1.7283759175e+09 Pr: 2391(4.09505e+07) 180s
+      16623    -1.6795285974e+09 Pr: 2133(3.02162e+07) 185s
+      19761    -1.5877275648e+09 Pr: 2154(1.78827e+07) 191s
+      22848    -1.5680189680e+09 Pr: 1940(5.94837e+07); Du: 0(7.01371e-08) 196s
+      26728    -1.4953484146e+09 Pr: 1641(4.0448e+06); Du: 0(6.26156e-08) 202s
+      29335    -1.4647734459e+09 Pr: 1212(2.73558e+06); Du: 0(2.48074e-07) 207s
+      31201    -1.4461285715e+09 Pr: 528(675780) 213s
+      32064    -1.4440246751e+09 Pr: 0(0); Du: 0(3.44383e-09) 216s
+Solving the original LP from the solution after postsolve
+Model status        : Optimal
+Simplex   iterations: 32064
+Objective value     : -1.4440246751e+09
+P-D objective error :  3.7974609520e-15
+HiGHS run time      :        217.26
+</pre></div></div>
+</div>
+<p>Rebuild and solve the same problem, but with 8 cores.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workers</span> <span class="o">=</span> <span class="mi">8</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">problem</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">add_problem</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span>
+    <span class="n">coeff_funcs</span><span class="o">=</span><span class="n">coeff_funcs</span><span class="p">,</span>
+    <span class="n">cflw_e</span><span class="o">=</span><span class="n">cflw_e</span><span class="p">,</span>
+    <span class="n">cgen_data</span><span class="o">=</span><span class="n">cgen_data</span><span class="p">,</span>
+    <span class="n">acodes</span><span class="o">=</span><span class="n">acodes</span><span class="p">,</span>
+    <span class="n">sense</span><span class="o">=</span><span class="n">ws3</span><span class="o">.</span><span class="n">opt</span><span class="o">.</span><span class="n">SENSE_MAXIMIZE</span><span class="p">,</span>
+    <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">workers</span><span class="o">=</span><span class="n">workers</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Build time: </span><span class="si">{</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+add_problem: build problem
+generate trees using 8 workers
+process trees
+_bld_p_m1: build problem
+_bld_p_m1: done building problem
+add_problem: compile flow constraints
+_cmp_cflw_m1: phase 1
+_cmp_cflw_m1: phase 2
+_cmp_cflw_m1: phase 3
+add_problem: compile general constraints
+Build time: 199.71s
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">threads</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Running HiGHS 1.11.0 (git hash: 364c83a): Copyright (c) 2025 HiGHS under MIT licence terms
+WARNING: LP matrix packed vector contains 1 |values| in [7.27596e-12, 7.27596e-12] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 3 |values| in [1.45519e-11, 1.45519e-11] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 1 |values| in [1.45519e-11, 1.45519e-11] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 2 |values| in [4.54747e-13, 4.54747e-13] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 2 |values| in [4.54747e-13, 1.45519e-11] less than or equal to 1e-09: ignored
+LP   has 7778 rows; 461956 cols; 10014103 nonzeros
+Coefficient ranges:
+  Matrix [1e-03, 1e+07]
+  Cost   [3e+00, 2e+07]
+  Bound  [1e+00, 1e+00]
+  RHS    [1e+00, 1e+09]
+Presolving model
+4476 rows, 458658 cols, 9697481 nonzeros  4s
+Dependent equations search running on 4398 equations with time limit of 1000.00s
+Dependent equations search removed 0 rows and 0 nonzeros in 0.02s (limit = 1000.00s)
+4475 rows, 458658 cols, 9413474 nonzeros  5s
+Presolve : Reductions: rows 4475(-3303); columns 458658(-3298); elements 9413474(-600629)
+Solving the presolved LP
+Using EKK parallel dual simplex solver - SIP with concurrency of 8
+  Iteration        Objective     Infeasibilities num(sum)
+          0     0.0000000000e+00 Ph1: 0(0) 7s
+         71    -9.1403711680e+09 Pr: 4398(7.6073e+08) 147s
+        129    -8.1701817935e+09 Pr: 4203(2.90735e+08) 155s
+       1144    -6.5908877337e+09 Pr: 3836(1.60856e+08) 161s
+       2370    -5.3544632983e+09 Pr: 3576(6.67971e+07) 166s
+       3529    -4.3716887834e+09 Pr: 3356(1.09251e+08) 173s
+       5293    -3.3461327758e+09 Pr: 3669(1.11313e+08) 178s
+       8607    -2.1856485784e+09 Pr: 2881(4.00959e+07); Du: 0(9.98316e-08) 183s
+      11756    -1.7688183088e+09 Pr: 2475(7.34996e+07) 188s
+      15545    -1.6829120005e+09 Pr: 2175(5.19987e+07); Du: 0(3.77496e-08) 194s
+      19078    -1.5857819348e+09 Pr: 2031(2.38788e+07) 199s
+      22510    -1.5685961999e+09 Pr: 1697(1.11435e+07) 204s
+      26509    -1.5164456066e+09 Pr: 1814(9.75099e+06); Du: 0(3.98685e-08) 209s
+      29621    -1.4613754431e+09 Pr: 930(1.98947e+06); Du: 0(1.65603e-09) 215s
+      31540    -1.4441720306e+09 Pr: 205(119988); Du: 0(1.24444e-07) 220s
+      31783    -1.4440246751e+09 Pr: 0(0); Du: 0(1.28472e-07) 221s
+WARNING: Using concurrency of 1 for parallel strategy rather than minimum number (2) specified in options
+Using EKK primal simplex solver
+  Iteration        Objective     Infeasibilities num(sum)
+      31783    -1.4440246751e+09 Pr: 0(0); Du: 715(0.000372316) 221s
+      31797    -1.4440246751e+09 Pr: 0(0); Du: 0(1.04817e-05) 222s
+Solving the original LP from the solution after postsolve
+Model status        : Optimal
+Simplex   iterations: 31797
+Objective value     : -1.4440246751e+09
+P-D objective error :  7.4298149061e-16
+HiGHS run time      :        222.54
+</pre></div></div>
+</div>
+<p>Rebuild and solve the same problem, but with 16 cores.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workers</span> <span class="o">=</span> <span class="mi">16</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">problem</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">add_problem</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span>
+    <span class="n">coeff_funcs</span><span class="o">=</span><span class="n">coeff_funcs</span><span class="p">,</span>
+    <span class="n">cflw_e</span><span class="o">=</span><span class="n">cflw_e</span><span class="p">,</span>
+    <span class="n">cgen_data</span><span class="o">=</span><span class="n">cgen_data</span><span class="p">,</span>
+    <span class="n">acodes</span><span class="o">=</span><span class="n">acodes</span><span class="p">,</span>
+    <span class="n">sense</span><span class="o">=</span><span class="n">ws3</span><span class="o">.</span><span class="n">opt</span><span class="o">.</span><span class="n">SENSE_MAXIMIZE</span><span class="p">,</span>
+    <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">workers</span><span class="o">=</span><span class="n">workers</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Build time: </span><span class="si">{</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+add_problem: build problem
+generate trees using 16 workers
+process trees
+_bld_p_m1: build problem
+_bld_p_m1: done building problem
+add_problem: compile flow constraints
+_cmp_cflw_m1: phase 1
+_cmp_cflw_m1: phase 2
+_cmp_cflw_m1: phase 3
+add_problem: compile general constraints
+Build time: 227.73s
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">threads</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Running HiGHS 1.11.0 (git hash: 364c83a): Copyright (c) 2025 HiGHS under MIT licence terms
+WARNING: LP matrix packed vector contains 1 |values| in [7.27596e-12, 7.27596e-12] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 1 |values| in [1.45519e-11, 1.45519e-11] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 2 |values| in [4.54747e-13, 1.45519e-11] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 3 |values| in [1.45519e-11, 1.45519e-11] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 2 |values| in [4.54747e-13, 4.54747e-13] less than or equal to 1e-09: ignored
+LP   has 7778 rows; 461956 cols; 10014103 nonzeros
+Coefficient ranges:
+  Matrix [1e-03, 1e+07]
+  Cost   [3e+00, 2e+07]
+  Bound  [1e+00, 1e+00]
+  RHS    [1e+00, 1e+09]
+Presolving model
+4476 rows, 458658 cols, 9697481 nonzeros  3s
+Dependent equations search running on 4398 equations with time limit of 1000.00s
+Dependent equations search removed 0 rows and 0 nonzeros in 0.02s (limit = 1000.00s)
+4475 rows, 458658 cols, 9413474 nonzeros  5s
+Presolve : Reductions: rows 4475(-3303); columns 458658(-3298); elements 9413474(-600629)
+Solving the presolved LP
+Using EKK parallel dual simplex solver - SIP with concurrency of 8
+  Iteration        Objective     Infeasibilities num(sum)
+          0     0.0000000000e+00 Ph1: 0(0) 7s
+         66    -1.1251912865e+10 Pr: 4375(1.73568e+09) 151s
+        121    -8.4309021230e+09 Pr: 4410(3.91691e+08) 179s
+        448    -7.5477651357e+09 Pr: 4106(1.65751e+08) 185s
+       1667    -6.0596936456e+09 Pr: 3561(9.06301e+07) 191s
+       2653    -5.1788871593e+09 Pr: 3488(1.07611e+08) 196s
+       3810    -4.3729156030e+09 Pr: 3536(7.98353e+07) 202s
+       5526    -3.5430741540e+09 Pr: 3520(6.83297e+07) 207s
+       8576    -2.2154244405e+09 Pr: 2872(5.07237e+07) 213s
+      11998    -1.7614115077e+09 Pr: 2395(4.49786e+07) 218s
+      15479    -1.6936998494e+09 Pr: 2020(1.84433e+07) 224s
+      19102    -1.6008342410e+09 Pr: 2075(2.84657e+07) 229s
+      22465    -1.5684003360e+09 Pr: 1740(1.46312e+07) 234s
+      26609    -1.5087149887e+09 Pr: 1828(5.55282e+06) 240s
+      29126    -1.4634396103e+09 Pr: 1130(1.56525e+06); Du: 0(5.75094e-08) 245s
+      30982    -1.4444263286e+09 Pr: 332(943478); Du: 0(2.00021e-08) 250s
+      31453    -1.4440246751e+09 Pr: 0(0); Du: 0(3.40625e-08) 252s
+WARNING: Using concurrency of 1 for parallel strategy rather than minimum number (2) specified in options
+Using EKK primal simplex solver
+  Iteration        Objective     Infeasibilities num(sum)
+      31453    -1.4440246751e+09 Pr: 0(0); Du: 132(0.000116388) 252s
+      31454    -1.4440246751e+09 Pr: 0(0); Du: 0(7.28502e-06) 252s
+Solving the original LP from the solution after postsolve
+Model status        : Optimal
+Simplex   iterations: 31454
+Objective value     : -1.4440246751e+09
+P-D objective error :  2.2289444718e-15
+HiGHS run time      :        253.24
+</pre></div></div>
+</div>
+<p>Rebuild and solve the same problem, but with 32 cores.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workers</span> <span class="o">=</span> <span class="mi">32</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">problem</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">add_problem</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span>
+    <span class="n">coeff_funcs</span><span class="o">=</span><span class="n">coeff_funcs</span><span class="p">,</span>
+    <span class="n">cflw_e</span><span class="o">=</span><span class="n">cflw_e</span><span class="p">,</span>
+    <span class="n">cgen_data</span><span class="o">=</span><span class="n">cgen_data</span><span class="p">,</span>
+    <span class="n">acodes</span><span class="o">=</span><span class="n">acodes</span><span class="p">,</span>
+    <span class="n">sense</span><span class="o">=</span><span class="n">ws3</span><span class="o">.</span><span class="n">opt</span><span class="o">.</span><span class="n">SENSE_MAXIMIZE</span><span class="p">,</span>
+    <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">workers</span><span class="o">=</span><span class="n">workers</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Build time: </span><span class="si">{</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+add_problem: build problem
+generate trees using 32 workers
+process trees
+_bld_p_m1: build problem
+_bld_p_m1: done building problem
+add_problem: compile flow constraints
+_cmp_cflw_m1: phase 1
+_cmp_cflw_m1: phase 2
+_cmp_cflw_m1: phase 3
+add_problem: compile general constraints
+Build time: 254.56s
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">threads</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Running HiGHS 1.11.0 (git hash: 364c83a): Copyright (c) 2025 HiGHS under MIT licence terms
+WARNING: LP matrix packed vector contains 3 |values| in [1.45519e-11, 1.45519e-11] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 2 |values| in [4.54747e-13, 4.54747e-13] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 1 |values| in [7.27596e-12, 7.27596e-12] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 1 |values| in [1.45519e-11, 1.45519e-11] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 2 |values| in [4.54747e-13, 1.45519e-11] less than or equal to 1e-09: ignored
+LP   has 7778 rows; 461956 cols; 10014103 nonzeros
+Coefficient ranges:
+  Matrix [1e-03, 1e+07]
+  Cost   [3e+00, 2e+07]
+  Bound  [1e+00, 1e+00]
+  RHS    [1e+00, 1e+09]
+Presolving model
+4476 rows, 458658 cols, 9697481 nonzeros  3s
+Dependent equations search running on 4398 equations with time limit of 1000.00s
+Dependent equations search removed 0 rows and 0 nonzeros in 0.02s (limit = 1000.00s)
+4475 rows, 458658 cols, 9413474 nonzeros  5s
+Presolve : Reductions: rows 4475(-3303); columns 458658(-3298); elements 9413474(-600629)
+Solving the presolved LP
+Using EKK parallel dual simplex solver - SIP with concurrency of 8
+  Iteration        Objective     Infeasibilities num(sum)
+          0     0.0000000000e+00 Ph1: 0(0) 7s
+         68    -9.8287125279e+09 Pr: 4436(4.32668e+08) 154s
+        128    -8.2487637044e+09 Pr: 4122(2.29633e+08) 173s
+        574    -7.2733102617e+09 Pr: 4108(8.02629e+07) 178s
+       1944    -5.8241401830e+09 Pr: 3519(7.09098e+07) 184s
+       3189    -4.8691855008e+09 Pr: 3283(8.24689e+07) 189s
+       4115    -4.0208477673e+09 Pr: 3543(1.4801e+08) 195s
+       6467    -3.0020163843e+09 Pr: 3480(1.08353e+08) 200s
+       9930    -1.9947083169e+09 Pr: 2704(2.31275e+08) 206s
+      13367    -1.7211583486e+09 Pr: 2322(4.99249e+07) 211s
+      16730    -1.6626995865e+09 Pr: 2198(2.38206e+07) 216s
+      20489    -1.5753482098e+09 Pr: 1964(6.11287e+07) 221s
+      24818    -1.5617086064e+09 Pr: 1933(1.5556e+07) 227s
+      29155    -1.4822839970e+09 Pr: 1387(4.64393e+06); Du: 0(4.05335e-08) 232s
+      31526    -1.4509350067e+09 Pr: 763(2.60451e+06); Du: 0(5.62414e-08) 238s
+      32923    -1.4440246751e+09 Pr: 0(0); Du: 0(3.45811e-08) 242s
+WARNING: Using concurrency of 1 for parallel strategy rather than minimum number (2) specified in options
+Using EKK primal simplex solver
+  Iteration        Objective     Infeasibilities num(sum)
+      32923    -1.4440246751e+09 Pr: 0(0); Du: 83(8.98855e-05) 242s
+      32929    -1.4440246751e+09 Pr: 0(0); Du: 0(5.31874e-06) 242s
+Solving the original LP from the solution after postsolve
+Model status        : Optimal
+Simplex   iterations: 32929
+Objective value     : -1.4440246751e+09
+P-D objective error :  1.3208559833e-15
+HiGHS run time      :        243.22
+</pre></div></div>
+</div>
+<p>Rebuild and solve the same problem, but with 64 cores.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workers</span> <span class="o">=</span> <span class="mi">64</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">problem</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">add_problem</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span>
+    <span class="n">coeff_funcs</span><span class="o">=</span><span class="n">coeff_funcs</span><span class="p">,</span>
+    <span class="n">cflw_e</span><span class="o">=</span><span class="n">cflw_e</span><span class="p">,</span>
+    <span class="n">cgen_data</span><span class="o">=</span><span class="n">cgen_data</span><span class="p">,</span>
+    <span class="n">acodes</span><span class="o">=</span><span class="n">acodes</span><span class="p">,</span>
+    <span class="n">sense</span><span class="o">=</span><span class="n">ws3</span><span class="o">.</span><span class="n">opt</span><span class="o">.</span><span class="n">SENSE_MAXIMIZE</span><span class="p">,</span>
+    <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">workers</span><span class="o">=</span><span class="n">workers</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Build time: </span><span class="si">{</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+add_problem: build problem
+generate trees using 64 workers
+process trees
+_bld_p_m1: build problem
+_bld_p_m1: done building problem
+add_problem: compile flow constraints
+_cmp_cflw_m1: phase 1
+_cmp_cflw_m1: phase 2
+_cmp_cflw_m1: phase 3
+add_problem: compile general constraints
+Build time: 284.35s
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">threads</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Running HiGHS 1.11.0 (git hash: 364c83a): Copyright (c) 2025 HiGHS under MIT licence terms
+WARNING: LP matrix packed vector contains 3 |values| in [1.45519e-11, 1.45519e-11] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 2 |values| in [4.54747e-13, 4.54747e-13] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 1 |values| in [7.27596e-12, 7.27596e-12] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 1 |values| in [1.45519e-11, 1.45519e-11] less than or equal to 1e-09: ignored
+WARNING: LP matrix packed vector contains 2 |values| in [4.54747e-13, 1.45519e-11] less than or equal to 1e-09: ignored
+LP   has 7778 rows; 461956 cols; 10014103 nonzeros
+Coefficient ranges:
+  Matrix [1e-03, 1e+07]
+  Cost   [3e+00, 2e+07]
+  Bound  [1e+00, 1e+00]
+  RHS    [1e+00, 1e+09]
+Presolving model
+4476 rows, 458658 cols, 9697481 nonzeros  4s
+Dependent equations search running on 4398 equations with time limit of 1000.00s
+Dependent equations search removed 0 rows and 0 nonzeros in 0.02s (limit = 1000.00s)
+4475 rows, 458658 cols, 9413474 nonzeros  5s
+Presolve : Reductions: rows 4475(-3303); columns 458658(-3298); elements 9413474(-600629)
+Solving the presolved LP
+Using EKK parallel dual simplex solver - SIP with concurrency of 8
+  Iteration        Objective     Infeasibilities num(sum)
+          0     0.0000000000e+00 Ph1: 0(0) 7s
+         67    -9.4437714651e+09 Pr: 4442(2.68216e+09) 173s
+        125    -8.2555413978e+09 Pr: 4145(2.33438e+08) 186s
+        545    -7.3750742902e+09 Pr: 4206(7.90811e+07) 192s
+       1851    -5.9849268130e+09 Pr: 3481(1.21812e+08); Du: 0(6.81872e-08) 197s
+       3023    -5.0439835211e+09 Pr: 3465(1.49353e+08) 202s
+       4045    -4.2461134672e+09 Pr: 3484(8.90032e+07) 207s
+       6646    -3.0152325529e+09 Pr: 3535(9.47888e+07) 212s
+      10192    -1.9960665728e+09 Pr: 2720(4.36531e+07) 218s
+      13704    -1.7268481182e+09 Pr: 2362(2.45244e+07) 223s
+      17530    -1.6369445728e+09 Pr: 2097(6.80344e+07) 228s
+      20812    -1.5764268782e+09 Pr: 1864(1.90361e+07) 233s
+      25475    -1.5336011536e+09 Pr: 1873(2.71848e+07); Du: 0(2.59463e-08) 239s
+      28624    -1.4757911322e+09 Pr: 1288(4.43103e+06) 244s
+      30905    -1.4506586473e+09 Pr: 719(788199); Du: 0(1.41957e-07) 250s
+      32465    -1.4440342403e+09 Pr: 0(0); Du: 0(4.43213e-07) 255s
+      32465    -1.4440246751e+09 Pr: 0(0); Du: 0(4.51458e-08) 255s
+WARNING: Using concurrency of 1 for parallel strategy rather than minimum number (2) specified in options
+Using EKK primal simplex solver
+  Iteration        Objective     Infeasibilities num(sum)
+      32465    -1.4440246751e+09 Pr: 0(0); Du: 191(0.000131132) 256s
+      32499    -1.4440246751e+09 Pr: 0(0); Du: 0(5.60054e-06) 256s
+Solving the original LP from the solution after postsolve
+Model status        : Optimal
+Simplex   iterations: 32499
+Objective value     : -1.4440246751e+09
+P-D objective error :  6.6042799166e-16
+HiGHS run time      :        256.79
+</pre></div></div>
+</div>
+<p>So we can see from these results that throwing more cores at this problem improves performance, we do not get a benefit past 8 cores. As with many parallel processing problems, performance benefits of adding more parallel cores eventually gets overpowered by the fixed cost of worker process initialization (i.e., IPC cost from serialization of data that needs to be sent to and from worker threads at the start and end of work batches). The current parallel implementation in <code class="docutils literal notranslate"><span class="pre">ws3</span></code> requires a
+substantial amount of data to be sent back and forth, so this equilibrium maxes out relatively quickly. Hopefully in a future release we can find a way to reduce IPC cost, and maybe squeeze benefits from adding more cores if they are available.</p>
+<p>Next, we run profiling on 4, 8, and 16 core model building runs to get some more insight into what exactly is dominating runtime for these three cases.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">workers</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Building problem with&quot;</span><span class="p">,</span> <span class="n">workers</span><span class="p">,</span> <span class="s2">&quot;workers&quot;</span><span class="p">)</span>
+    <span class="n">pr</span> <span class="o">=</span> <span class="n">cProfile</span><span class="o">.</span><span class="n">Profile</span><span class="p">()</span>
+    <span class="n">pr</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span>
+    <span class="n">problem</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">add_problem</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span>
+        <span class="n">coeff_funcs</span><span class="o">=</span><span class="n">coeff_funcs</span><span class="p">,</span>
+        <span class="n">cflw_e</span><span class="o">=</span><span class="n">cflw_e</span><span class="p">,</span>
+        <span class="n">cgen_data</span><span class="o">=</span><span class="n">cgen_data</span><span class="p">,</span>
+        <span class="n">acodes</span><span class="o">=</span><span class="n">acodes</span><span class="p">,</span>
+        <span class="n">sense</span><span class="o">=</span><span class="n">ws3</span><span class="o">.</span><span class="n">opt</span><span class="o">.</span><span class="n">SENSE_MAXIMIZE</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">workers</span><span class="o">=</span><span class="n">workers</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="n">pr</span><span class="o">.</span><span class="n">disable</span><span class="p">()</span>
+
+    <span class="n">s</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+    <span class="n">pstats</span><span class="o">.</span><span class="n">Stats</span><span class="p">(</span><span class="n">pr</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">sort_stats</span><span class="p">(</span><span class="s2">&quot;cumtime&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">print_stats</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Building problem with 1 workers
+         687767462 function calls (685741537 primitive calls) in 407.821 seconds
+
+   Ordered by: cumulative time
+   List reduced from 277 to 30 due to restriction &lt;30&gt;
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       81    5.150    0.064 1050.072   12.964 /usr/lib/python3.12/asyncio/base_events.py:1910(_run_once)
+        1    0.016    0.016  268.823  268.823 /home/gep/projects/ws3/ws3/forest.py:968(_bld_p_m1)
+2033458/7696   18.879    0.000  236.965    0.031 /home/gep/projects/ws3/ws3/forest.py:1103(_bld_tree_m1)
+       80   31.158    0.389  104.831    1.310 /usr/lib/python3.12/selectors.py:451(select)
+  2682351   11.983    0.000   74.048    0.000 /home/gep/projects/ws3/ws3/forest.py:1495(compile_product)
+      375   34.520    0.092   72.136    0.192 {built-in method time.sleep}
+      2/1    4.492    2.246   65.126   65.126 /home/gep/projects/ws3/ws3/forest.py:872(add_problem)
+  2487718   28.985    0.000   53.620    0.000 /home/gep/projects/ws3/ws3/forest.py:1664(apply_action)
+   923912    6.263    0.000   51.945    0.000 /home/gep/projects/ws3/examples/util.py:128(cmp_c_caa)
+    30784    0.461    0.000   39.164    0.001 /home/gep/projects/ws3/ws3/common.py:1109(paths)
+   461956    5.348    0.000   37.198    0.000 /home/gep/projects/ws3/examples/util.py:83(cmp_c_z)
+  2309780   23.139    0.000   35.454    0.000 /home/gep/projects/ws3/ws3/common.py:1093(path)
+   461956    6.659    0.000   31.380    0.000 /home/gep/projects/ws3/examples/util.py:152(cmp_c_ci)
+  2682351   27.895    0.000   29.770    0.000 {built-in method builtins.eval}
+  9239120   10.397    0.000   23.955    0.000 /home/gep/projects/ws3/ws3/forest.py:1420(inventory)
+       20    5.205    0.260   23.415    1.171 /home/gep/projects/ws3/ws3/forest_helper.py:285(worker_cmp_cgen_phase3)
+  9708772    5.224    0.000   23.274    0.000 /home/gep/projects/ws3/ws3/common.py:82(hex_id)
+       40   20.450    0.511   20.450    0.511 /home/gep/projects/ws3/ws3/forest_helper.py:220(worker_cmp_cflw_phase3)
+ 19189992    7.743    0.000   20.175    0.000 /home/gep/projects/ws3/ws3/core.py:324(__getitem__)
+  4502450   16.137    0.000   20.152    0.000 /home/gep/projects/ws3/ws3/forest.py:503(grow)
+        4    1.201    0.300   13.670    3.417 /home/gep/projects/ws3/ws3/forest_helper.py:105(worker_summarize_tree_batch)
+     7778    0.006    0.000   12.702    0.002 /home/gep/projects/ws3/ws3/opt.py:176(add_constraint)
+        1    0.027    0.027   12.623   12.623 /home/gep/projects/ws3/ws3/forest.py:1173(_cmp_cflw_m1)
+     7778    0.009    0.000   12.589    0.002 /home/gep/projects/ws3/ws3/opt.py:69(__init__)
+     7778    2.695    0.000   12.577    0.002 {built-in method builtins.all}
+ 19189992    7.848    0.000   12.432    0.000 /home/gep/projects/ws3/ws3/core.py:45(__call__)
+  9708772   10.735    0.000   10.735    0.000 {built-in method _pickle.dumps}
+ 38350126    6.527    0.000    9.963    0.000 /home/gep/projects/ws3/ws3/opt.py:72(&lt;genexpr&gt;)
+ 71675351    9.344    0.000    9.344    0.000 {method &#39;append&#39; of &#39;list&#39; objects}
+ 86847728    9.214    0.000    9.214    0.000 /home/gep/projects/ws3/ws3/common.py:996(data)
+
+
+
+Building problem with 2 workers
+         199808762 function calls (199680982 primitive calls) in 390.364 seconds
+
+   Ordered by: cumulative time
+   List reduced from 545 to 30 due to restriction &lt;30&gt;
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       83    1.429    0.017 1217.433   14.668 /usr/lib/python3.12/asyncio/base_events.py:1910(_run_once)
+       83   47.774    0.576  938.323   11.305 /usr/lib/python3.12/selectors.py:451(select)
+       83   11.567    0.139  414.717    4.997 {method &#39;poll&#39; of &#39;select.epoll&#39; objects}
+      2/1    0.000    0.000  390.363  390.363 /home/gep/projects/ws3/ws3/forest.py:872(add_problem)
+        1    0.000    0.000  390.042  390.042 /home/gep/projects/ws3/ws3/forest_helper.py:347(__exit__)
+        1    0.003    0.003  390.042  390.042 /usr/lib/python3.12/concurrent/futures/process.py:864(shutdown)
+  159/158    0.001    0.000  390.027    2.469 /usr/lib/python3.12/threading.py:1153(_wait_for_tstate_lock)
+      2/1    1.311    0.656  390.027  390.027 /usr/lib/python3.12/threading.py:1115(join)
+   474/73    0.002    0.000  388.935    5.328 {method &#39;acquire&#39; of &#39;_thread.lock&#39; objects}
+      2/1    0.000    0.000  388.934  388.934 /usr/lib/python3.12/threading.py:1016(_bootstrap)
+      2/1    0.000    0.000  388.934  388.934 /usr/lib/python3.12/threading.py:1056(_bootstrap_inner)
+        1    0.004    0.004  388.934  388.934 /usr/lib/python3.12/concurrent/futures/process.py:340(run)
+        1    0.000    0.000  388.929  388.929 /usr/lib/python3.12/concurrent/futures/process.py:574(join_executor_internals)
+        1    0.000    0.000  388.929  388.929 /usr/lib/python3.12/concurrent/futures/process.py:578(_join_executor_internals)
+        4    0.000    0.000  387.904   96.976 /usr/lib/python3.12/multiprocessing/util.py:208(__call__)
+        1    0.000    0.000  387.904  387.904 /usr/lib/python3.12/multiprocessing/queues.py:147(join_thread)
+      298  194.424    0.652  301.104    1.010 {built-in method time.sleep}
+        1    0.015    0.015  185.773  185.773 /home/gep/projects/ws3/ws3/forest.py:968(_bld_p_m1)
+       32    0.029    0.001  117.171    3.662 /usr/lib/python3.12/concurrent/futures/process.py:415(wait_result_broken_or_wakeup)
+       91    0.002    0.000   98.245    1.080 /usr/lib/python3.12/multiprocessing/connection.py:1122(wait)
+       91    0.036    0.000   97.502    1.071 /usr/lib/python3.12/selectors.py:402(select)
+        1    0.000    0.000   55.185   55.185 /usr/lib/python3.12/multiprocessing/queues.py:214(_finalize_join)
+       28   43.702    1.561   43.702    1.561 {method &#39;dump&#39; of &#39;_pickle.Pickler&#39; objects}
+       55    0.001    0.000   26.860    0.488 /usr/lib/python3.12/multiprocessing/connection.py:182(send_bytes)
+       55    0.014    0.000   26.591    0.483 /usr/lib/python3.12/multiprocessing/connection.py:406(_send_bytes)
+        1    0.075    0.075   24.116   24.116 /home/gep/projects/ws3/ws3/forest.py:1279(_cmp_cgen_m1)
+    15392    0.260    0.000   23.805    0.002 /home/gep/projects/ws3/ws3/common.py:1109(paths)
+       73    0.001    0.000   21.663    0.297 /usr/lib/python3.12/multiprocessing/connection.py:381(_send)
+   923912   13.205    0.000   21.373    0.000 /home/gep/projects/ws3/ws3/common.py:1093(path)
+       26   18.830    0.724   18.830    0.724 {built-in method _pickle.loads}
+
+
+
+Building problem with 4 workers
+         199820085 function calls (199692674 primitive calls) in 294.212 seconds
+
+   Ordered by: cumulative time
+   List reduced from 543 to 30 due to restriction &lt;30&gt;
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       68    0.992    0.015  687.612   10.112 /usr/lib/python3.12/asyncio/base_events.py:1910(_run_once)
+        1    0.000    0.000  294.211  294.211 /home/gep/projects/ws3/ws3/forest.py:872(add_problem)
+        1    0.000    0.000  293.884  293.884 /home/gep/projects/ws3/ws3/forest_helper.py:347(__exit__)
+        1    0.004    0.004  293.884  293.884 /usr/lib/python3.12/concurrent/futures/process.py:864(shutdown)
+  127/122    0.000    0.000  293.865    2.409 /usr/lib/python3.12/threading.py:1153(_wait_for_tstate_lock)
+      2/1    0.000    0.000  293.865  293.865 /usr/lib/python3.12/threading.py:1115(join)
+  789/169    0.004    0.000  291.478    1.725 {method &#39;acquire&#39; of &#39;_thread.lock&#39; objects}
+      2/1    0.000    0.000  291.474  291.474 /usr/lib/python3.12/threading.py:1016(_bootstrap)
+      2/1    0.000    0.000  291.474  291.474 /usr/lib/python3.12/threading.py:1056(_bootstrap_inner)
+        1    0.001    0.001  291.474  291.474 /usr/lib/python3.12/concurrent/futures/process.py:340(run)
+        1    0.000    0.000  291.474  291.474 /usr/lib/python3.12/concurrent/futures/process.py:574(join_executor_internals)
+        1    0.000    0.000  291.474  291.474 /usr/lib/python3.12/concurrent/futures/process.py:578(_join_executor_internals)
+        6    0.000    0.000  290.265   48.378 /usr/lib/python3.12/multiprocessing/util.py:208(__call__)
+        1    0.000    0.000  290.265  290.265 /usr/lib/python3.12/multiprocessing/queues.py:147(join_thread)
+       68   46.245    0.680  277.255    4.077 /usr/lib/python3.12/selectors.py:451(select)
+       66    0.695    0.011  152.453    2.310 /usr/lib/python3.12/concurrent/futures/process.py:415(wait_result_broken_or_wakeup)
+      214   99.358    0.464  142.185    0.664 {built-in method time.sleep}
+        1    0.019    0.019  112.891  112.891 /home/gep/projects/ws3/ws3/forest.py:968(_bld_p_m1)
+      193    0.003    0.000   58.819    0.305 /usr/lib/python3.12/multiprocessing/connection.py:1122(wait)
+      193    0.087    0.000   58.634    0.304 /usr/lib/python3.12/selectors.py:402(select)
+       64   50.125    0.783   50.125    0.783 {method &#39;dump&#39; of &#39;_pickle.Pickler&#39; objects}
+        1    0.000    0.000   24.129   24.129 /home/gep/projects/ws3/ws3/forest.py:1173(_cmp_cflw_m1)
+    15392    0.254    0.000   23.324    0.002 /home/gep/projects/ws3/ws3/common.py:1109(paths)
+       60    8.006    0.133   22.857    0.381 /usr/lib/python3.12/multiprocessing/connection.py:246(recv)
+   923912   13.283    0.000   21.281    0.000 /home/gep/projects/ws3/ws3/common.py:1093(path)
+       60   17.061    0.284   17.061    0.284 {built-in method _pickle.loads}
+       68    6.393    0.094   16.267    0.239 {method &#39;poll&#39; of &#39;select.epoll&#39; objects}
+      125    0.001    0.000   14.102    0.113 /usr/lib/python3.12/multiprocessing/connection.py:182(send_bytes)
+      125    0.001    0.000   14.101    0.113 /usr/lib/python3.12/multiprocessing/connection.py:406(_send_bytes)
+      169    0.002    0.000   14.100    0.083 /usr/lib/python3.12/multiprocessing/connection.py:381(_send)
+
+
+
+Building problem with 8 workers
+         199851201 function calls (199723359 primitive calls) in 301.239 seconds
+
+   Ordered by: cumulative time
+   List reduced from 545 to 30 due to restriction &lt;30&gt;
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       86    7.032    0.082  681.010    7.919 /usr/lib/python3.12/asyncio/base_events.py:1910(_run_once)
+        1    0.000    0.000  301.236  301.236 /home/gep/projects/ws3/ws3/forest.py:872(add_problem)
+        1    0.000    0.000  300.902  300.902 /home/gep/projects/ws3/ws3/forest_helper.py:347(__exit__)
+        1    0.004    0.004  300.902  300.902 /usr/lib/python3.12/concurrent/futures/process.py:864(shutdown)
+  155/154    0.001    0.000  300.881    1.954 /usr/lib/python3.12/threading.py:1153(_wait_for_tstate_lock)
+      2/1    0.000    0.000  300.881  300.881 /usr/lib/python3.12/threading.py:1115(join)
+ 1330/334    0.028    0.000  295.999    0.886 {method &#39;acquire&#39; of &#39;_thread.lock&#39; objects}
+      2/1    0.000    0.000  295.447  295.447 /usr/lib/python3.12/threading.py:1016(_bootstrap)
+      2/1    0.000    0.000  295.447  295.447 /usr/lib/python3.12/threading.py:1056(_bootstrap_inner)
+        1    0.001    0.001  295.446  295.446 /usr/lib/python3.12/concurrent/futures/process.py:340(run)
+        1    0.000    0.000  295.446  295.446 /usr/lib/python3.12/concurrent/futures/process.py:574(join_executor_internals)
+        1    0.000    0.000  295.446  295.446 /usr/lib/python3.12/concurrent/futures/process.py:578(_join_executor_internals)
+       10    0.000    0.000  293.868   29.387 /usr/lib/python3.12/multiprocessing/util.py:208(__call__)
+        1    0.000    0.000  293.868  293.868 /usr/lib/python3.12/multiprocessing/queues.py:147(join_thread)
+       86   57.895    0.673  191.861    2.231 /usr/lib/python3.12/selectors.py:451(select)
+      193   65.939    0.342  144.224    0.747 {built-in method time.sleep}
+      115    1.552    0.013  140.632    1.223 /usr/lib/python3.12/concurrent/futures/process.py:415(wait_result_broken_or_wakeup)
+      339    0.010    0.000   87.351    0.258 /usr/lib/python3.12/multiprocessing/connection.py:1122(wait)
+      339    0.016    0.000   86.429    0.255 /usr/lib/python3.12/selectors.py:402(select)
+      116   64.641    0.557   64.641    0.557 {method &#39;dump&#39; of &#39;_pickle.Pickler&#39; objects}
+        1    0.001    0.001   38.528   38.528 /home/gep/projects/ws3/ws3/forest.py:1173(_cmp_cflw_m1)
+      108    8.978    0.083   31.152    0.288 /usr/lib/python3.12/multiprocessing/connection.py:246(recv)
+      339    8.134    0.024   24.589    0.073 {method &#39;poll&#39; of &#39;select.poll&#39; objects}
+    15392    0.255    0.000   23.410    0.002 /home/gep/projects/ws3/ws3/common.py:1109(paths)
+   923912   12.962    0.000   20.943    0.000 /home/gep/projects/ws3/ws3/common.py:1093(path)
+      108   20.139    0.186   20.139    0.186 {built-in method _pickle.loads}
+      225    0.002    0.000   16.733    0.074 /usr/lib/python3.12/multiprocessing/connection.py:182(send_bytes)
+        1    0.000    0.000   16.463   16.463 /home/gep/projects/ws3/ws3/forest.py:1279(_cmp_cgen_m1)
+      225    0.002    0.000   16.425    0.073 /usr/lib/python3.12/multiprocessing/connection.py:406(_send_bytes)
+      301    0.003    0.000   16.418    0.055 /usr/lib/python3.12/multiprocessing/connection.py:381(_send)
+
+
+
+Building problem with 16 workers
+         199920526 function calls (199791902 primitive calls) in 276.475 seconds
+
+   Ordered by: cumulative time
+   List reduced from 543 to 30 due to restriction &lt;30&gt;
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      114    0.012    0.000  475.528    4.171 /usr/lib/python3.12/asyncio/base_events.py:1910(_run_once)
+      114   59.178    0.519  279.821    2.455 /usr/lib/python3.12/selectors.py:451(select)
+        1    0.000    0.000  276.474  276.474 /home/gep/projects/ws3/ws3/forest.py:872(add_problem)
+        1    0.000    0.000  276.143  276.143 /home/gep/projects/ws3/ws3/forest_helper.py:347(__exit__)
+        1    0.004    0.004  276.143  276.143 /usr/lib/python3.12/concurrent/futures/process.py:864(shutdown)
+  195/194    0.001    0.000  276.118    1.423 /usr/lib/python3.12/threading.py:1153(_wait_for_tstate_lock)
+      2/1    0.000    0.000  276.117  276.117 /usr/lib/python3.12/threading.py:1115(join)
+ 2347/681    0.191    0.000  267.994    0.394 {method &#39;acquire&#39; of &#39;_thread.lock&#39; objects}
+      2/1    0.000    0.000  265.797  265.797 /usr/lib/python3.12/threading.py:1016(_bootstrap)
+      2/1    0.000    0.000  265.797  265.797 /usr/lib/python3.12/threading.py:1056(_bootstrap_inner)
+        1    0.004    0.004  265.797  265.797 /usr/lib/python3.12/concurrent/futures/process.py:340(run)
+        1    0.000    0.000  265.793  265.793 /usr/lib/python3.12/concurrent/futures/process.py:574(join_executor_internals)
+        1    0.000    0.000  265.793  265.793 /usr/lib/python3.12/concurrent/futures/process.py:578(_join_executor_internals)
+       18    0.001    0.000  263.906   14.661 /usr/lib/python3.12/multiprocessing/util.py:208(__call__)
+        1    0.000    0.000  263.906  263.906 /usr/lib/python3.12/multiprocessing/queues.py:147(join_thread)
+      168   25.576    0.152  129.085    0.768 {built-in method time.sleep}
+      202    1.900    0.009   92.160    0.456 /usr/lib/python3.12/concurrent/futures/process.py:415(wait_result_broken_or_wakeup)
+      601    0.009    0.000   83.874    0.140 /usr/lib/python3.12/multiprocessing/connection.py:1122(wait)
+      212   80.261    0.379   80.261    0.379 {method &#39;dump&#39; of &#39;_pickle.Pickler&#39; objects}
+      601    0.012    0.000   80.223    0.133 /usr/lib/python3.12/selectors.py:402(select)
+        1    0.001    0.001   27.911   27.911 /home/gep/projects/ws3/ws3/forest.py:1173(_cmp_cflw_m1)
+      196    9.684    0.049   26.920    0.137 /usr/lib/python3.12/multiprocessing/connection.py:246(recv)
+      601    6.826    0.011   24.492    0.041 {method &#39;poll&#39; of &#39;select.poll&#39; objects}
+    15392    0.263    0.000   23.368    0.002 /home/gep/projects/ws3/ws3/common.py:1109(paths)
+      409    0.003    0.000   23.187    0.057 /usr/lib/python3.12/multiprocessing/connection.py:182(send_bytes)
+      409    0.029    0.000   22.783    0.056 /usr/lib/python3.12/multiprocessing/connection.py:406(_send_bytes)
+   923912   12.893    0.000   20.852    0.000 /home/gep/projects/ws3/ws3/common.py:1093(path)
+      541    0.340    0.001   19.535    0.036 /usr/lib/python3.12/multiprocessing/connection.py:381(_send)
+      196   19.088    0.097   19.088    0.097 {built-in method _pickle.loads}
+      541    9.699    0.018   12.911    0.024 {built-in method posix.write}
+
+
+
+Building problem with 32 workers
+         200065847 function calls (199936173 primitive calls) in 324.315 seconds
+
+   Ordered by: cumulative time
+   List reduced from 545 to 30 due to restriction &lt;30&gt;
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      184    0.036    0.000  551.675    2.998 /usr/lib/python3.12/asyncio/base_events.py:1910(_run_once)
+        1    0.000    0.000  324.311  324.311 /home/gep/projects/ws3/ws3/forest.py:872(add_problem)
+        1    0.000    0.000  323.968  323.968 /home/gep/projects/ws3/ws3/forest_helper.py:347(__exit__)
+        1    0.004    0.004  323.968  323.968 /usr/lib/python3.12/concurrent/futures/process.py:864(shutdown)
+  303/302    0.001    0.000  323.933    1.073 /usr/lib/python3.12/threading.py:1153(_wait_for_tstate_lock)
+      2/1    1.824    0.912  323.932  323.932 /usr/lib/python3.12/threading.py:1115(join)
+3966/1404    0.037    0.000  304.071    0.217 {method &#39;acquire&#39; of &#39;_thread.lock&#39; objects}
+      2/1    0.000    0.000  303.528  303.528 /usr/lib/python3.12/threading.py:1016(_bootstrap)
+      2/1    0.000    0.000  303.528  303.528 /usr/lib/python3.12/threading.py:1056(_bootstrap_inner)
+        1    0.002    0.002  303.528  303.528 /usr/lib/python3.12/concurrent/futures/process.py:340(run)
+        1    0.000    0.000  303.526  303.526 /usr/lib/python3.12/concurrent/futures/process.py:574(join_executor_internals)
+        1    0.000    0.000  303.526  303.526 /usr/lib/python3.12/concurrent/futures/process.py:578(_join_executor_internals)
+       34    0.001    0.000  300.907    8.850 /usr/lib/python3.12/multiprocessing/util.py:208(__call__)
+        1    0.000    0.000  300.906  300.906 /usr/lib/python3.12/multiprocessing/queues.py:147(join_thread)
+      354    1.587    0.004  188.595    0.533 /usr/lib/python3.12/concurrent/futures/process.py:415(wait_result_broken_or_wakeup)
+      184   62.645    0.340  128.705    0.699 /usr/lib/python3.12/selectors.py:451(select)
+     1057    0.017    0.000  110.747    0.105 /usr/lib/python3.12/multiprocessing/connection.py:1122(wait)
+     1057    0.025    0.000  108.046    0.102 /usr/lib/python3.12/selectors.py:402(select)
+      380   97.451    0.256   97.451    0.256 {method &#39;dump&#39; of &#39;_pickle.Pickler&#39; objects}
+      190   25.519    0.134   87.420    0.460 {built-in method time.sleep}
+      353    0.044    0.000   77.885    0.221 /usr/lib/python3.12/concurrent/futures/_base.py:199(as_completed)
+        1    1.872    1.872   58.850   58.850 /home/gep/projects/ws3/ws3/forest.py:1029(_gen_vars_m1)
+      348    6.866    0.020   46.064    0.132 /usr/lib/python3.12/multiprocessing/connection.py:246(recv)
+      729    0.009    0.000   38.524    0.053 /usr/lib/python3.12/multiprocessing/connection.py:182(send_bytes)
+     1057    6.164    0.006   36.126    0.034 {method &#39;poll&#39; of &#39;select.poll&#39; objects}
+      949    4.569    0.005   31.493    0.033 /usr/lib/python3.12/multiprocessing/connection.py:381(_send)
+      729    0.006    0.000   31.489    0.043 /usr/lib/python3.12/multiprocessing/connection.py:406(_send_bytes)
+        1    0.000    0.000   24.081   24.081 /usr/lib/python3.12/multiprocessing/queues.py:214(_finalize_join)
+    15392    0.262    0.000   23.443    0.002 /home/gep/projects/ws3/ws3/common.py:1109(paths)
+      348   22.085    0.063   22.085    0.063 {built-in method _pickle.loads}
+
+
+
+Building problem with 64 workers
+         200475142 function calls (200343762 primitive calls) in 385.793 seconds
+
+   Ordered by: cumulative time
+   List reduced from 543 to 30 due to restriction &lt;30&gt;
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      323    1.237    0.004  556.204    1.722 /usr/lib/python3.12/asyncio/base_events.py:1910(_run_once)
+        1    0.000    0.000  385.776  385.776 /home/gep/projects/ws3/ws3/forest.py:872(add_problem)
+        1    0.000    0.000  385.438  385.438 /home/gep/projects/ws3/ws3/forest_helper.py:347(__exit__)
+        1    0.019    0.019  385.438  385.438 /usr/lib/python3.12/concurrent/futures/process.py:864(shutdown)
+  519/514    0.002    0.000  385.385    0.750 /usr/lib/python3.12/threading.py:1153(_wait_for_tstate_lock)
+      2/1    1.965    0.982  385.383  385.383 /usr/lib/python3.12/threading.py:1115(join)
+6975/2952    0.064    0.000  342.594    0.116 {method &#39;acquire&#39; of &#39;_thread.lock&#39; objects}
+      2/1    0.000    0.000  341.896  341.896 /usr/lib/python3.12/threading.py:1016(_bootstrap)
+      2/1    0.001    0.000  341.896  341.896 /usr/lib/python3.12/threading.py:1056(_bootstrap_inner)
+        1    0.001    0.001  341.895  341.895 /usr/lib/python3.12/concurrent/futures/process.py:340(run)
+        1    0.000    0.000  341.895  341.895 /usr/lib/python3.12/concurrent/futures/process.py:574(join_executor_internals)
+        1    0.000    0.000  341.894  341.894 /usr/lib/python3.12/concurrent/futures/process.py:578(_join_executor_internals)
+       66    0.002    0.000  338.380    5.127 /usr/lib/python3.12/multiprocessing/util.py:208(__call__)
+        1    0.000    0.000  338.378  338.378 /usr/lib/python3.12/multiprocessing/queues.py:147(join_thread)
+      323   65.398    0.202  268.061    0.830 /usr/lib/python3.12/selectors.py:451(select)
+     1921    0.031    0.000  133.928    0.070 /usr/lib/python3.12/multiprocessing/connection.py:1122(wait)
+     1921    0.045    0.000  131.868    0.069 /usr/lib/python3.12/selectors.py:402(select)
+        1    1.052    1.052  126.511  126.511 /home/gep/projects/ws3/ws3/forest.py:1173(_cmp_cflw_m1)
+      642    0.585    0.001  116.736    0.182 /usr/lib/python3.12/concurrent/futures/process.py:415(wait_result_broken_or_wakeup)
+      700  104.076    0.149  104.076    0.149 {method &#39;dump&#39; of &#39;_pickle.Pickler&#39; objects}
+      223   30.212    0.135   90.084    0.404 {built-in method time.sleep}
+     1337    0.022    0.000   61.920    0.046 /usr/lib/python3.12/multiprocessing/connection.py:182(send_bytes)
+      636   25.215    0.040   55.017    0.087 /usr/lib/python3.12/multiprocessing/connection.py:246(recv)
+        1    0.000    0.000   50.587   50.587 /usr/lib/python3.12/multiprocessing/queues.py:214(_finalize_join)
+     1921    8.294    0.004   49.576    0.026 {method &#39;poll&#39; of &#39;select.poll&#39; objects}
+        1    0.001    0.001   43.486   43.486 /usr/lib/python3.12/concurrent/futures/process.py:791(_launch_processes)
+       64    0.004    0.000   43.485    0.679 /usr/lib/python3.12/concurrent/futures/process.py:799(_spawn_process)
+       64    0.005    0.000   43.471    0.679 /usr/lib/python3.12/multiprocessing/process.py:110(start)
+       64    0.004    0.000   43.452    0.679 /usr/lib/python3.12/multiprocessing/context.py:279(_Popen)
+       64    0.002    0.000   43.447    0.679 /usr/lib/python3.12/multiprocessing/popen_fork.py:15(__init__)
+
+
+
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Picking-max_workers-in-ws3:-quick-guidance-+-deeper-dive">
+<h1>Picking <code class="docutils literal notranslate"><span class="pre">max_workers</span></code> in <code class="docutils literal notranslate"><span class="pre">ws3</span></code>: quick guidance + deeper dive<a class="headerlink" href="#Picking-max_workers-in-ws3:-quick-guidance-+-deeper-dive" title="Link to this heading"></a></h1>
+<p>This note summarizes what we learned from running the build-phase under <code class="docutils literal notranslate"><span class="pre">cProfile</span></code> at 1, 2, 4, 8, 16, 32, 64 workers. It has two parts:</p>
+<ul class="simple">
+<li><p><strong>Part A (quick start)</strong>: practical advice for folks who just want a good <code class="docutils literal notranslate"><span class="pre">max_workers</span></code> value.</p></li>
+<li><p><strong>Part B (deep dive)</strong>: how to read the <code class="docutils literal notranslate"><span class="pre">cProfile</span></code> output, what’s actually fast vs slow, and what to tweak if you’re hacking on the parallel code.</p></li>
+</ul>
+<hr class="docutils" />
+<section id="Part-A-—-Quick-start-(what-number-should-I-use?)">
+<h2>Part A — Quick start (what number should I use?)<a class="headerlink" href="#Part-A-—-Quick-start-(what-number-should-I-use?)" title="Link to this heading"></a></h2>
+<div class="line-block">
+<div class="line"><strong>TL;DR for this dataset/machine</strong></div>
+<div class="line">Our wall-time results (build phase only):</div>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>workers</p></th>
+<th class="head"><p>build wall time (s)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>407.8</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>390.4</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>294.2</p></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>301.2</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>16</strong></p></td>
+<td><p><strong>276.5</strong> ← best here</p></td>
+</tr>
+<tr class="row-odd"><td><p>32</p></td>
+<td><p>324.3</p></td>
+</tr>
+<tr class="row-even"><td><p>64</p></td>
+<td><p>385.8</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Recommendation:</strong></p>
+<ul class="simple">
+<li><p>Start with <strong>``max_workers=16``</strong> on similar problem sizes/hardware.</p></li>
+<li><p>If you have fewer physical cores, try <strong>half your cores</strong> (e.g., 8 on a 16-core box).</p></li>
+<li><p>If you have many more cores (72–150), don’t jump straight to huge worker counts—<strong>diminishing returns</strong> and <strong>overhead</strong> kick in quickly.</p></li>
+</ul>
+<p><strong>When to reduce workers:</strong></p>
+<ul class="simple">
+<li><p>If you see <em>more</em> time spent with many workers than with fewer ones, drop to the smallest <code class="docutils literal notranslate"><span class="pre">N</span></code> near the best time (here, 16).</p></li>
+<li><p>If the model is small, <strong>stick with serial</strong> (<code class="docutils literal notranslate"><span class="pre">max_workers=1</span></code>)—parallel overhead can dominate.</p></li>
+</ul>
+<div class="line-block">
+<div class="line"><strong>HiGHS threads:</strong></div>
+<div class="line">If you build <strong>and</strong> solve in the same session, don’t give both the builder and HiGHS all cores. Example: <strong>16 build workers + 8 solver threads</strong> is often a good split.</div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="Part-B-—-Deep-dive-(reading-the-profile,-tuning,-and-hacking)">
+<h2>Part B — Deep dive (reading the profile, tuning, and hacking)<a class="headerlink" href="#Part-B-—-Deep-dive-(reading-the-profile,-tuning,-and-hacking)" title="Link to this heading"></a></h2>
+<section id="1)-Interpreting-the-profiles">
+<h3>1) Interpreting the profiles<a class="headerlink" href="#1)-Interpreting-the-profiles" title="Link to this heading"></a></h3>
+<p>In good scaling regions (e.g., 4–16 workers above), the top cumulative-time frames are <strong>productive compute</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">forest._bld_tree_m1</span></code> (DFS tree construction)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">forest.compile_product</span></code>, <code class="docutils literal notranslate"><span class="pre">forest.apply_action</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">common.paths</span></code> / <code class="docutils literal notranslate"><span class="pre">common.path</span></code></p></li>
+<li><p>Your coefficient functions (e.g., <code class="docutils literal notranslate"><span class="pre">examples.util.cmp_c_*</span></code>)</p></li>
+</ul>
+<p>As you <strong>overshoot</strong> the sweet spot (32–64 workers above), <strong>overhead</strong> climbs into the top slots:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">selectors.select</span></code>, <code class="docutils literal notranslate"><span class="pre">connection.wait</span></code>, <code class="docutils literal notranslate"><span class="pre">poll</span></code> (multiprocessing pipes/queues)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Pickler.dump</span></code> / <code class="docutils literal notranslate"><span class="pre">_pickle.loads</span></code> (task/result serialization)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">threading._wait_for_tstate_lock</span></code> / mass <code class="docutils literal notranslate"><span class="pre">acquire</span></code> calls (contention)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">concurrent.futures.process</span></code> join/shutdown</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">time.sleep</span></code> backoffs in the executor</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">asyncio.base_events._run_once</span></code> (Jupyter event loop noise)</p></li>
+</ul>
+<p>When overhead frames rival or exceed your compute frames in the <strong>top 10 cumulative</strong> list, you’ve passed the knee of the curve.</p>
+</section>
+<section id="2)-Choosing-max_workers-methodically">
+<h3>2) Choosing <code class="docutils literal notranslate"><span class="pre">max_workers</span></code> methodically<a class="headerlink" href="#2)-Choosing-max_workers-methodically" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Run a small sweep: <code class="docutils literal notranslate"><span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">4,</span> <span class="pre">8,</span> <span class="pre">16,</span> <span class="pre">32</span></code> (and 64 only if you must).</p></li>
+<li><p>Plot wall time vs workers (or just eyeball the printed numbers).</p></li>
+<li><p>Pick the <strong>smallest</strong> worker count near the <strong>lowest</strong> wall time where compute still dominates the top of the profile.</p>
+<ul class="simple">
+<li><p>In our run: <strong>16</strong>.</p></li>
+</ul>
+</li>
+</ol>
+<p>A simple heuristic for first tries:</p>
+<ul class="simple">
+<li><p><strong>Small models</strong>: 1 (serial).</p></li>
+<li><p><strong>Medium</strong>: 4–8.</p></li>
+<li><p><strong>Large</strong>: 8–16.</p></li>
+<li><p><strong>Very large</strong>: try 16 first; 32 only if you see clear gains (rare on single machine unless tasks are very chunky and memory is ample).</p></li>
+</ul>
+</section>
+<section id="3)-Batch-sizing">
+<h3>3) Batch sizing<a class="headerlink" href="#3)-Batch-sizing" title="Link to this heading"></a></h3>
+<p>We batch work per process to amortize scheduling and pickling costs. A practical rule:</p>
+<p>```text batch_size ≈ len(tasks) // (2–4 * max_workers) + 1</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="022_ws3_model_example-optimize-advanced.html" class="btn btn-neutral float-left" title="Using the ws3 optimization modelling function (advanced)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="024_ws3_model_example-spatial-allocate-schedule.html" class="btn btn-neutral float-right" title="Spatially allocating a ws3 harvest schedule to raster grids" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015--2025, Gregory Paradis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

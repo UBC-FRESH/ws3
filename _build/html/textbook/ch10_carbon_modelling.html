@@ -1,0 +1,799 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 10: Carbon Modelling &mdash; ws3 1.0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d55fa986"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
+    document.head.appendChild(defaultStyle);
+
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
+    document.head.appendChild(fullscreenStyle);
+}
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
+        return brightness < 128;
+    }
+    // console.log("No dark or light theme detected, defaulting to light theme");
+    return false;
+};
+
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
+
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
+        all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
+
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
+                setTimeout(() => runMermaid(false), 200);
+                return;
+            }
+            addZoomToSvgs(svgs);
+        }
+    } else if(mermaids_active.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(() => runMermaid(false), 200);
+        return;
+    }
+
+    // Stop here if not adding fullscreen capability
+    if (!true) return;
+
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scrollX, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+
+                if (false) {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        container.appendChild(fullscreenBtn);
+    });
+};
+
+
+
+const load = async () => {
+    initStyles();
+
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+    }
+);
+
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Chapter 11: Building Models with FEMIC" href="ch11_femic_models.html" />
+    <link rel="prev" title="Chapter 9: Advanced Topics" href="ch09_advanced_topics.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ws3
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/index.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">The ws3 Textbook</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#who-is-this-for">Who Is This For?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#how-to-use-this-textbook">How to Use This Textbook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#chapter-listing">Chapter Listing</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#textbook-introduction-to-forest-estate-modelling">Textbook: Introduction to Forest Estate Modelling</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="index.html#prerequisite-chain">Prerequisite Chain</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="index.html#contents">Contents</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="ch01_forest_estate_models.html">Chapter 1: Forest Estate Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch02_forest_inventory.html">Chapter 2: Forest Inventory and Data Preparation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch03_growth_and_yield.html">Chapter 3: Growth and Yield</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch04_actions_and_transitions.html">Chapter 4: Actions and Transitions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch05_optimization.html">Chapter 5: Optimization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch06_spatial_allocation.html">Chapter 6: Spatial Allocation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch07_financial_analysis.html">Chapter 7: Financial Analysis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch08_uncertainty_and_risk.html">Chapter 8: Uncertainty and Risk</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch09_advanced_topics.html">Chapter 9: Advanced Topics</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Chapter 10: Carbon Modelling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch11_femic_models.html">Chapter 11: Building Models with FEMIC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch12_fhops_integration.html">Chapter 12: Harvest Cost Curves with FHOPS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch13_freshforge.html">Chapter 13: Workflow Automation with FreshForge</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch14_spades_integration.html">Chapter 14: Integrating ws3 with SpaDES</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch15_disturbance_modelling.html">Chapter 15: Modelling Natural Disturbances</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch16_supply_chain.html">Chapter 16: Value-Creation and Forest Supply Chain Modelling</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#chapter-structure">Chapter Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#prerequisites-for-this-textbook">Prerequisites for This Textbook</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ws3</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">The ws3 Textbook</a></li>
+      <li class="breadcrumb-item active">Chapter 10: Carbon Modelling</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/textbook/ch10_carbon_modelling.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="chapter-10-carbon-modelling">
+<h1>Chapter 10: Carbon Modelling<a class="headerlink" href="#chapter-10-carbon-modelling" title="Link to this heading"></a></h1>
+<section id="learning-objectives">
+<h2>Learning Objectives<a class="headerlink" href="#learning-objectives" title="Link to this heading"></a></h2>
+<p>After reading this chapter, you should be able to:</p>
+<ul class="simple">
+<li><p>Explain the role of carbon accounting in modern forest management</p></li>
+<li><p>Calculate standing carbon stocks from forest inventory data</p></li>
+<li><p>Model carbon fluxes from harvest and decomposition</p></li>
+<li><p>Integrate carbon accounting into wood supply optimization</p></li>
+<li><p>Understand the policy context (BC Emissions Trading System, carbon credits)</p></li>
+</ul>
+</section>
+<section id="why-carbon-matters-in-forest-management">
+<h2>Why Carbon Matters in Forest Management<a class="headerlink" href="#why-carbon-matters-in-forest-management" title="Link to this heading"></a></h2>
+<p>Carbon accounting has become a central concern in forest management for
+several reasons:</p>
+<ol class="arabic simple">
+<li><p><strong>Climate policy</strong>: British Columbia’s Emissions Trading System (ETS)
+requires forest operators to report and offset emissions</p></li>
+<li><p><strong>Carbon credits</strong>: Forest carbon sequestration can generate revenue
+through carbon markets</p></li>
+<li><p><strong>Sustainability reporting</strong>: Stakeholders demand carbon-transparent
+management plans</p></li>
+<li><p><strong>Regulatory compliance</strong>: The BC Forest and Range Practices Act
+requires carbon considerations in planning</p></li>
+</ol>
+</section>
+<section id="carbon-in-the-forest-system">
+<h2>Carbon in the Forest System<a class="headerlink" href="#carbon-in-the-forest-system" title="Link to this heading"></a></h2>
+<p>Forest carbon exists in multiple pools:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 30.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Pool</p></th>
+<th class="head"><p>Location</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Above-ground biomass</p></td>
+<td><p>Living trees (bole, branches, foliage)</p></td>
+<td><p>Largest pool in most stands</p></td>
+</tr>
+<tr class="row-odd"><td><p>Below-ground biomass</p></td>
+<td><p>Roots</p></td>
+<td><p>Typically 15-25% of above-ground</p></td>
+</tr>
+<tr class="row-even"><td><p>Dead wood</p></td>
+<td><p>Standing dead trees, coarse woody debris</p></td>
+<td><p>Decomposes slowly (decades)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Litter</p></td>
+<td><p>Leaf litter, fine woody debris</p></td>
+<td><p>Decomposes moderately (years)</p></td>
+</tr>
+<tr class="row-even"><td><p>Soil organic matter</p></td>
+<td><p>Humus layer</p></td>
+<td><p>Largest but slowest-changing pool</p></td>
+</tr>
+</tbody>
+</table>
+<pre  class="mermaid">
+        graph TD
+  ATMOSPHERE[&quot;Atmosphere&lt;br/&gt;(CO₂)&quot;] --&gt; SEQUESTER[&quot;Photosynthesis&lt;br/&gt;(carbon uptake)&quot;]
+  SEQUESTER --&gt; TREES[&quot;Living trees&quot;]
+  TREES --&gt; ABOVE[&quot;Above-ground&lt;br/&gt;biomass&quot;]
+  TREES --&gt; BELOW[&quot;Below-ground&lt;br/&gt;biomass&quot;]
+  TREES --&gt; HARVEST[&quot;Harvest&quot;]
+  HARVEST --&gt; PRODUCTS[&quot;Wood products&lt;br/&gt;(long-term storage)&quot;]
+  HARVEST --&gt; DECOMP[&quot;Decomposition&lt;br/&gt;(CO₂ release)&quot;]
+  DECOMP --&gt; ATMOSPHERE
+  TREES --&gt; DEAD[&quot;Dead wood&quot;]
+  DEAD --&gt; DECOMP
+    </pre></section>
+<section id="carbon-calculation-basics">
+<h2>Carbon Calculation Basics<a class="headerlink" href="#carbon-calculation-basics" title="Link to this heading"></a></h2>
+<p>Carbon is approximately 50% of dry biomass. The conversion from biomass
+to carbon uses a simple factor:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\\text{Carbon (tonnes)} = \\text{Biomass (tonnes)} \\times 0.5\end{split}\]</div>
+<p>Biomass can be estimated from volume using species-specific factors:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\\text{Biomass (tonnes/ha)} = \\text{Volume (m³/ha)} \\times \\text{Bulk Density (tonnes/m³)} \\times (1 + \\text{Root-Shoot Ratio})\end{split}\]</div>
+</section>
+<section id="using-ws3-for-carbon-calculations">
+<h2>Using ws3 for Carbon Calculations<a class="headerlink" href="#using-ws3-for-carbon-calculations" title="Link to this heading"></a></h2>
+<p>ws3 doesn’t have built-in carbon functions, but you can calculate carbon
+stocks from the model output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.forest</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForestModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ws3.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Curve</span>
+
+<span class="c1"># Define biomass curves (tonnes/ha of carbon)</span>
+<span class="n">df_carbon</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
+    <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">65</span><span class="p">,</span> <span class="mi">78</span><span class="p">,</span> <span class="mi">88</span><span class="p">,</span> <span class="mi">95</span><span class="p">],</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DF-SI50_carbon&quot;</span>
+<span class="p">)</span>
+
+<span class="n">spruce_carbon</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
+    <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">38</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">68</span><span class="p">,</span> <span class="mi">73</span><span class="p">],</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;SP-SI40_carbon&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Calculate carbon stock for a development type</span>
+<span class="n">dt_area</span> <span class="o">=</span> <span class="mf">500.0</span>  <span class="c1"># hectares</span>
+<span class="n">dt_age</span> <span class="o">=</span> <span class="mi">60</span>  <span class="c1"># years</span>
+
+<span class="n">carbon_per_ha</span> <span class="o">=</span> <span class="n">df_carbon</span><span class="p">(</span><span class="n">dt_age</span><span class="p">)</span>
+<span class="n">total_carbon</span> <span class="o">=</span> <span class="n">carbon_per_ha</span> <span class="o">*</span> <span class="n">dt_area</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Carbon stock: </span><span class="si">{</span><span class="n">total_carbon</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> tonnes C&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CO₂ equivalent: </span><span class="si">{</span><span class="n">total_carbon</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">3.67</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> tonnes CO₂&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="carbon-fluxes-from-harvest">
+<h2>Carbon Fluxes from Harvest<a class="headerlink" href="#carbon-fluxes-from-harvest" title="Link to this heading"></a></h2>
+<p>When trees are harvested, carbon is released through:</p>
+<ol class="arabic simple">
+<li><p><strong>Immediate decomposition</strong>: Slash and residues decompose (5-20 year half-life)</p></li>
+<li><p><strong>Product decay</strong>: Wood products gradually release carbon (decades to centuries)</p></li>
+<li><p><strong>Soil disturbance</strong>: Harvesting disturbs soil organic matter</p></li>
+</ol>
+<pre  class="mermaid">
+        graph TD
+  HARVEST[&quot;Harvest&quot;] --&gt; SLASH[&quot;Slash decomposition&lt;br/&gt;(fast, 5-20 yr)&quot;]
+  HARVEST --&gt; PRODUCTS[&quot;Wood products&lt;br/&gt;(slow, decades)&quot;]
+  HARVEST --&gt; SOIL[&quot;Soil disturbance&lt;br/&gt;(very slow, centuries)&quot;]
+  SLASH --&gt; RELEASE[&quot;CO₂ release&quot;]
+  PRODUCTS --&gt; RELEASE
+  SOIL --&gt; RELEASE
+    </pre><p>A simple carbon accounting model:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">calculate_harvest_carbon_flux</span><span class="p">(</span><span class="n">volume_harvested_m3</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="s2">&quot;DF&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate carbon flux from a harvest event.&quot;&quot;&quot;</span>
+
+    <span class="c1"># Conversion: m³ to tonnes biomass (approximate)</span>
+    <span class="n">bulk_density</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;DF&quot;</span><span class="p">:</span> <span class="mf">0.45</span><span class="p">,</span> <span class="s2">&quot;SP&quot;</span><span class="p">:</span> <span class="mf">0.40</span><span class="p">,</span> <span class="s2">&quot;CE&quot;</span><span class="p">:</span> <span class="mf">0.35</span><span class="p">}</span>
+    <span class="n">biomass_factor</span> <span class="o">=</span> <span class="n">bulk_density</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">species</span><span class="p">,</span> <span class="mf">0.40</span><span class="p">)</span>
+
+    <span class="n">biomass_tonnes</span> <span class="o">=</span> <span class="n">volume_harvested_m3</span> <span class="o">*</span> <span class="n">biomass_factor</span>
+    <span class="n">carbon_tonnes</span> <span class="o">=</span> <span class="n">biomass_tonnes</span> <span class="o">*</span> <span class="mf">0.5</span>
+
+    <span class="c1"># Split into pools</span>
+    <span class="n">slash_fraction</span> <span class="o">=</span> <span class="mf">0.3</span>  <span class="c1"># 30% goes to slash (fast decomposition)</span>
+    <span class="n">product_fraction</span> <span class="o">=</span> <span class="mf">0.6</span>  <span class="c1"># 60% goes to products (slow decomposition)</span>
+    <span class="n">soil_fraction</span> <span class="o">=</span> <span class="mf">0.1</span>  <span class="c1"># 10% from soil disturbance</span>
+
+    <span class="n">slash_carbon</span> <span class="o">=</span> <span class="n">carbon_tonnes</span> <span class="o">*</span> <span class="n">slash_fraction</span>
+    <span class="n">product_carbon</span> <span class="o">=</span> <span class="n">carbon_tonnes</span> <span class="o">*</span> <span class="n">product_fraction</span>
+    <span class="n">soil_carbon</span> <span class="o">=</span> <span class="n">carbon_tonnes</span> <span class="o">*</span> <span class="n">soil_fraction</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;slash&quot;</span><span class="p">:</span> <span class="n">slash_carbon</span><span class="p">,</span>
+        <span class="s2">&quot;products&quot;</span><span class="p">:</span> <span class="n">product_carbon</span><span class="p">,</span>
+        <span class="s2">&quot;soil&quot;</span><span class="p">:</span> <span class="n">soil_carbon</span><span class="p">,</span>
+        <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="n">carbon_tonnes</span>
+    <span class="p">}</span>
+
+<span class="n">flux</span> <span class="o">=</span> <span class="n">calculate_harvest_carbon_flux</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="s2">&quot;DF&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Slash carbon: </span><span class="si">{</span><span class="n">flux</span><span class="p">[</span><span class="s1">&#39;slash&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> tonnes C&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Product carbon: </span><span class="si">{</span><span class="n">flux</span><span class="p">[</span><span class="s1">&#39;products&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> tonnes C&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Soil carbon: </span><span class="si">{</span><span class="n">flux</span><span class="p">[</span><span class="s1">&#39;soil&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> tonnes C&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total flux: </span><span class="si">{</span><span class="n">flux</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> tonnes C&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="carbon-in-optimization">
+<h2>Carbon in Optimization<a class="headerlink" href="#carbon-in-optimization" title="Link to this heading"></a></h2>
+<p>Carbon can be incorporated into the optimization objective:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.opt</span><span class="w"> </span><span class="kn">import</span> <span class="n">Problem</span>
+
+<span class="n">prob</span> <span class="o">=</span> <span class="n">Problem</span><span class="p">()</span>
+
+<span class="c1"># Decision variables</span>
+<span class="n">harvest_vars</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">dt_code</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;DF-SI50&quot;</span><span class="p">,</span> <span class="s2">&quot;SP-SI40&quot;</span><span class="p">]:</span>
+    <span class="k">for</span> <span class="n">period</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
+        <span class="n">var_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;harv_</span><span class="si">{</span><span class="n">dt_code</span><span class="si">}</span><span class="s2">_p</span><span class="si">{</span><span class="n">period</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">harvest_vars</span><span class="p">[(</span><span class="n">dt_code</span><span class="p">,</span> <span class="n">period</span><span class="p">)]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">var_name</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="s2">&quot;continuous&quot;</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+
+<span class="c1"># Objective: maximize NPV + carbon revenue</span>
+<span class="n">timber_price</span> <span class="o">=</span> <span class="mi">50</span>  <span class="c1"># $/m³</span>
+<span class="n">carbon_price</span> <span class="o">=</span> <span class="mi">50</span>  <span class="c1"># $/tonne CO₂ (ETS price)</span>
+<span class="n">discount_rate</span> <span class="o">=</span> <span class="mf">0.05</span>
+
+<span class="n">npv</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">dt_code</span><span class="p">,</span> <span class="n">period</span><span class="p">),</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">harvest_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">volume_per_ha</span> <span class="o">=</span> <span class="mi">200</span>  <span class="c1"># m³/ha</span>
+    <span class="n">timber_revenue</span> <span class="o">=</span> <span class="n">var</span> <span class="o">*</span> <span class="n">volume_per_ha</span> <span class="o">*</span> <span class="n">timber_price</span>
+    <span class="n">carbon_revenue</span> <span class="o">=</span> <span class="n">var</span> <span class="o">*</span> <span class="n">volume_per_ha</span> <span class="o">*</span> <span class="mf">0.45</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="mf">3.67</span> <span class="o">*</span> <span class="n">carbon_price</span>
+    <span class="n">npv</span> <span class="o">+=</span> <span class="p">(</span><span class="n">timber_revenue</span> <span class="o">+</span> <span class="n">carbon_revenue</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">discount_rate</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">period</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+
+<span class="n">prob</span><span class="o">.</span><span class="n">set_objective</span><span class="p">(</span><span class="n">npv</span><span class="p">,</span> <span class="n">sense</span><span class="o">=</span><span class="s2">&quot;maximize&quot;</span><span class="p">)</span>
+
+<span class="c1"># Constraint: carbon budget (max allowable emissions)</span>
+<span class="n">max_carbon_budget</span> <span class="o">=</span> <span class="mi">10000</span>  <span class="c1"># tonnes CO₂ over 100 years</span>
+<span class="n">total_carbon_flux</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">dt_code</span><span class="p">,</span> <span class="n">period</span><span class="p">),</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">harvest_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">carbon_per_m3</span> <span class="o">=</span> <span class="mf">0.45</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="mf">3.67</span>  <span class="c1"># tonnes CO₂ per m³</span>
+    <span class="n">total_carbon_flux</span> <span class="o">+=</span> <span class="n">var</span> <span class="o">*</span> <span class="mi">200</span> <span class="o">*</span> <span class="n">carbon_per_m3</span>
+
+<span class="n">prob</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="s2">&quot;carbon_budget&quot;</span><span class="p">,</span> <span class="n">expr</span><span class="o">=</span><span class="n">total_carbon_flux</span> <span class="o">&lt;=</span> <span class="n">max_carbon_budget</span><span class="p">)</span>
+
+<span class="n">prob</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s2">&quot;highs&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="carbon-reporting">
+<h2>Carbon Reporting<a class="headerlink" href="#carbon-reporting" title="Link to this heading"></a></h2>
+<p>For regulatory compliance, you need to report carbon stocks and fluxes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="c1"># Calculate carbon stocks by period</span>
+<span class="n">carbon_by_period</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">period</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
+    <span class="n">age</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">+</span> <span class="n">period</span> <span class="o">*</span> <span class="mi">5</span>  <span class="c1"># starting age + periods elapsed</span>
+    <span class="n">carbon_stock</span> <span class="o">=</span> <span class="n">df_carbon</span><span class="p">(</span><span class="n">age</span><span class="p">)</span> <span class="o">*</span> <span class="mi">500</span>  <span class="c1"># tonnes C</span>
+    <span class="n">carbon_by_period</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+        <span class="s2">&quot;period&quot;</span><span class="p">:</span> <span class="n">period</span><span class="p">,</span>
+        <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="n">age</span><span class="p">,</span>
+        <span class="s2">&quot;carbon_stock_tonnes_C&quot;</span><span class="p">:</span> <span class="n">carbon_stock</span><span class="p">,</span>
+        <span class="s2">&quot;carbon_stock_tonnes_CO2&quot;</span><span class="p">:</span> <span class="n">carbon_stock</span> <span class="o">*</span> <span class="mf">3.67</span>
+    <span class="p">})</span>
+
+<span class="n">df_carbon_report</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">carbon_by_period</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">df_carbon_report</span><span class="p">)</span>
+
+<span class="c1"># Export for reporting</span>
+<span class="n">df_carbon_report</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;carbon_report.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="policy-context">
+<h2>Policy Context<a class="headerlink" href="#policy-context" title="Link to this heading"></a></h2>
+<p>British Columbia’s carbon pricing framework:</p>
+<ul class="simple">
+<li><p><strong>Carbon tax</strong>: Applied to fossil fuel combustion (not directly to forestry)</p></li>
+<li><p><strong>Emissions Trading System (ETS)</strong>: Cap-and-trade for large emitters</p></li>
+<li><p><strong>Forest Management Carbon Budget</strong>: Each FMU has an allowable carbon
+budget based on projected stock changes</p></li>
+</ul>
+<p>Key references:</p>
+<ul class="simple">
+<li><p>BC Ministry of Forests: <em>Carbon Accounting Guidelines for Forest Management</em></p></li>
+<li><p>BC Emissions Trading Scheme: <em>Forest Sector Participation</em></p></li>
+<li><p>IPCC: <em>Good Practice Guidance for Land Use, Land-Use Change and Forestry</em></p></li>
+</ul>
+</section>
+<section id="limitations">
+<h2>Limitations<a class="headerlink" href="#limitations" title="Link to this heading"></a></h2>
+<p>Carbon modelling in ws3 has limitations:</p>
+<ol class="arabic simple">
+<li><p><strong>Simplified pools</strong>: Only above-ground biomass is typically modelled</p></li>
+<li><p><strong>No soil dynamics</strong>: Soil carbon changes are approximated</p></li>
+<li><p><strong>No product substitution</strong>: Benefits of wood substitution for concrete/steel
+are not modelled</p></li>
+<li><p><strong>Static prices</strong>: Carbon prices are assumed constant</p></li>
+</ol>
+<p>For more sophisticated carbon accounting, consider coupling ws3 with
+specialized tools like CO2STATS or the BC Forest Carbon Calculator.</p>
+</section>
+<section id="exercises">
+<h2>Exercises<a class="headerlink" href="#exercises" title="Link to this heading"></a></h2>
+<p><strong>Exercise 1 (Easy)</strong>: Calculate the carbon stock for a 500-hectare
+Douglas-fir stand at ages 40, 60, 80, and 100.</p>
+<p><strong>Exercise 2 (Medium)</strong>: Extend the carbon calculation to include below-ground
+biomass (assume root-shoot ratio of 0.2) and calculate total ecosystem carbon.</p>
+<p><strong>Exercise 3 (Hard)</strong>: Formulate an optimization problem that maximizes
+NPV subject to a carbon budget constraint. Compare the optimal harvest
+schedule with and without the carbon constraint.</p>
+</section>
+<section id="further-reading">
+<h2>Further Reading<a class="headerlink" href="#further-reading" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="ch07_financial_analysis.html"><span class="doc">Chapter 7: Financial Analysis</span></a> — Financial analysis</p></li>
+<li><p><a class="reference internal" href="ch05_optimization.html"><span class="doc">Chapter 5: Optimization</span></a> — Optimization fundamentals</p></li>
+<li><p><span class="xref std std-doc">/howto/financial-scenarios</span> — Financial scenario analysis</p></li>
+<li><p>IPCC Good Practice Guidance for Land Use, Land-Use Change and Forestry</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ch09_advanced_topics.html" class="btn btn-neutral float-left" title="Chapter 9: Advanced Topics" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ch11_femic_models.html" class="btn btn-neutral float-right" title="Chapter 11: Building Models with FEMIC" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015--2025, Gregory Paradis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

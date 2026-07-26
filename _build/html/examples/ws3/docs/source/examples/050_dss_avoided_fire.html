@@ -1,0 +1,299 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>4.12. DSS Example: Avoided Fire &mdash; ws3 1.0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=d55fa986"></script>
+      <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            ws3
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../getting_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../textbook/index.html">The ws3 Textbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../howto/index.html">How-To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../guides/index.html">Advanced Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../reference/index.html">Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../intro.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../Chapt1.html">Wood Supply Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples.html">Examples Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../appendices.html">Appendices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">ws3</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active"><span class="section-number">4.12. </span>DSS Example: Avoided Fire</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/examples/ws3/docs/source/examples/050_dss_avoided_fire.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="DSS-Example:-Avoided-Fire">
+<h1><span class="section-number">4.12. </span>DSS Example: Avoided Fire<a class="headerlink" href="#DSS-Example:-Avoided-Fire" title="Link to this heading"></a></h1>
+<p>This notebook is an example implementation of a notebook-based decision-support system (DSS) for evaluating the net system-level carbon emissions impact of an <em>avoided fire</em> type project.</p>
+<section id="DSS-implementation-notes">
+<h2><span class="section-number">4.12.1. </span>DSS implementation notes<a class="headerlink" href="#DSS-implementation-notes" title="Link to this heading"></a></h2>
+<p>At its core this DSS prototype uses ws3 and libcbm_py to do most of the heavy lifting in terms of simulating forest growth, simulating harvesting disturbances, and simulating forest ecosystem carbon stocks and fluxes. ws3 includes built-in functions that automate most of process of compiling CBM input data, importing this input data into CBM, running CBM, and extracting CBM output data in tablular format.</p>
+<p>This DSS assumes we are using the standard “alternative scenario net of baseline scenario” approach to defining net carbon emissions, so we include functions that automate the process of pushing a pair of (baseline, alternative) scenarios through the simulation pipeline, collecting the output from each scenario, calculating the difference across scenarios (alternative minus baseline) and displaying this contrast as a function of time.</p>
+<p>Note that most of the complex code that defines the behaviour of the DSS and underlying simulation engines is implemented in a companion <code class="docutils literal notranslate"><span class="pre">util</span></code> Python module. The functions we need from the <code class="docutils literal notranslate"><span class="pre">util</span></code> module are imported at the top of this notebook.</p>
+<p>It is also possible to further “hide” the code parts of a Jupyter notebook-based DSS dashboard application by linking <em>all</em> required parameters and controls to interactive widgets, and then running the notebook throught the Voilà dashboard interface (not tested here, but Voilà is part of the standard ecosystem of Jupyter software should not be a problem). For anyone more familiar with the R programming environment, Voilà is to JupyterLab as Shiny is to RStudio (if this analogy is lost on you,
+then it was not meant for you).</p>
+</section>
+<section id="Description-of-case">
+<h2><span class="section-number">4.12.2. </span>Description of case<a class="headerlink" href="#Description-of-case" title="Link to this heading"></a></h2>
+<p>The study area for this case is a small subset of timber supply area (TSA) 22 in British Columbia. There has been little or no harvesting in this area to date, but in this hypothetical case we are supposing that there is a substantial risk of wildfire burning part of this forest in the future (e.g., as a result of climate-change-induced drought, decades of fire suppression policy, etc). We are assuming that it is possible to reduce the risk of future fire by deploying effort toward various types
+of fire risk reducing treatments (e.g., collecting fuel, controlled burns, thinning, creating fire breaks to limit fire spread, etc). We do not have any good data in this hypothetical case on either the cost or the effectiveness of these hypothetical treatments, but we nonetheless want to try put some bounds on the solution space to get a better idea of what is possible in terms of hypothetical emissions reductions.</p>
+<p>To achieve this, we simulate a “maximum annual area burned” landscape level fire scenario based on the fire return internal of each stand type in the model. We then simulate ten reduced burning scenarios, in 10% increments (i.e., all the way down to “no fire”). This is not a “process-based” simulation, so we offer no mechanistic explanation for how the implicit “fire mitigation” treatments achieve these incremental reductions in burned area, or how much effort (cost) is required to implement the
+treatments at each increment (typically in the real world, one might expect a “diminishing marginal benefit” pattern for this sort of system, assuming that the next highest marginal return stands available are treated at each increment).</p>
+<p>The idea here is to skip over all of the details of the mitigation treatments (because there is no hope of modelling that at this stage, given the data we have available) and calculate the <em>net emission impact</em> of achieving a given incremental level of reduced annual burned area. Given a maximum unit emission reduction price one was willing to pay, it is possible to use the output from this DSS to estimate the maximum price one should be willing to pay to achive a given area-burned reduction
+effect. Obviously there are limitations to how far we can go with this analysis (given limited available input data), but running through this analysis can still perhaps help set some bounds on the maximum “credible” fire risk reduction we can hope to achieve for this forest, and use that as the starting point for developing and testing actual treatment plans.</p>
+<p>Note that most of the complex code that defines the behaviour of the DSS and underlying simulation engines is implemented in a companion <code class="docutils literal notranslate"><span class="pre">util</span></code> Python module. The functions we need from the <code class="docutils literal notranslate"><span class="pre">util</span></code> module are imported at the top of this notebook.</p>
+</section>
+<section id="Deterministic-versus-Stochastic-fire-simulation">
+<h2><span class="section-number">4.12.3. </span>Deterministic versus Stochastic fire simulation<a class="headerlink" href="#Deterministic-versus-Stochastic-fire-simulation" title="Link to this heading"></a></h2>
+<p>Note that DSS includes two versions of the fire simulation. The first and simplest version is a deterministic algorithm that burns the oldest stands first at every time step (with burning simulation stopping when a period area-burned target is achieved). The second and more complex version is a stochastic heuristic that selects random-aged stands to burn at each time step until the area-burned target is reached. We display results from both versions of the model in the graph at the bottom of the
+notebook. Interestingly both version of the model produce very similar results. Considering that the simpler deterministic version of the model runs several orders of magnitude faster than the stochastic version, we recommend using the simpler version in this case.</p>
+<p>The purpose of this demo is not specifically to prove that deterministic models are better than stochastic models (they are not… that would be a silly conclusion to draw from a sample size of one). Rather, we wanted to illustrate the flexibility of the modelling framework and the relative ease of testing and comparing multiple simulation approaches before committing to one approach for a given case or situation.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span>
+</pre></div>
+</div>
+</div>
+<p>Optionally, uninstall the <code class="docutils literal notranslate"><span class="pre">ws3</span></code> package and replace it with a pointer to <em>this local clone of the GitHub repository code</em> (useful if you want ot tweak the source code for whatever reason).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clobber_ws3</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">if</span> <span class="n">clobber_ws3</span><span class="p">:</span>
+    <span class="o">%</span><span class="k">pip</span> uninstall -y ws3
+    <span class="o">%</span><span class="k">pip</span> install -e ..
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Found existing installation: ws3 1.1.0.dev0
+Uninstalling ws3-1.1.0.dev0:
+  Successfully uninstalled ws3-1.1.0.dev0
+Note: you may need to restart the kernel to use updated packages.
+Obtaining file:///home/gep/tmp/ws3
+  Installing build dependencies ... done
+  Checking if build backend supports build_editable ... done
+  Getting requirements to build editable ... done
+  Installing backend dependencies ... done
+  Preparing editable metadata (pyproject.toml) ... done
+Requirement already satisfied: dill in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (0.4.0)
+Requirement already satisfied: fiona in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.10.1)
+Requirement already satisfied: gurobipy in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (12.0.3)
+Requirement already satisfied: highspy in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.11.0)
+Requirement already satisfied: libcbm in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (2.8.1)
+Requirement already satisfied: matplotlib in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (3.10.5)
+Requirement already satisfied: numpy&gt;=1.21 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (2.2.6)
+Requirement already satisfied: pandas&gt;=1.3 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (2.3.1)
+Requirement already satisfied: profilehooks in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.13.0)
+Requirement already satisfied: pulp in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (3.2.2)
+Requirement already satisfied: rasterio in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.4.3)
+Requirement already satisfied: scipy&gt;=1.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.16.1)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas&gt;=1.3-&gt;ws3==1.1.0.dev0) (2.9.0.post0)
+Requirement already satisfied: pytz&gt;=2020.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas&gt;=1.3-&gt;ws3==1.1.0.dev0) (2025.2)
+Requirement already satisfied: tzdata&gt;=2022.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas&gt;=1.3-&gt;ws3==1.1.0.dev0) (2025.2)
+Requirement already satisfied: six&gt;=1.5 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&gt;=1.3-&gt;ws3==1.1.0.dev0) (1.17.0)
+Requirement already satisfied: attrs&gt;=19.2.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona-&gt;ws3==1.1.0.dev0) (25.3.0)
+Requirement already satisfied: certifi in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona-&gt;ws3==1.1.0.dev0) (2025.8.3)
+Requirement already satisfied: click~=8.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona-&gt;ws3==1.1.0.dev0) (8.2.1)
+Requirement already satisfied: click-plugins&gt;=1.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona-&gt;ws3==1.1.0.dev0) (1.1.1.2)
+Requirement already satisfied: cligj&gt;=0.5 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona-&gt;ws3==1.1.0.dev0) (0.7.2)
+Requirement already satisfied: numexpr&gt;=2.8.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm-&gt;ws3==1.1.0.dev0) (2.11.0)
+Requirement already satisfied: numba in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm-&gt;ws3==1.1.0.dev0) (0.61.2)
+Requirement already satisfied: pyyaml in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm-&gt;ws3==1.1.0.dev0) (6.0.2)
+Requirement already satisfied: mock in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm-&gt;ws3==1.1.0.dev0) (5.2.0)
+Requirement already satisfied: openpyxl in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm-&gt;ws3==1.1.0.dev0) (3.1.5)
+Requirement already satisfied: contourpy&gt;=1.0.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (1.3.3)
+Requirement already satisfied: cycler&gt;=0.10 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (0.12.1)
+Requirement already satisfied: fonttools&gt;=4.22.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (4.59.0)
+Requirement already satisfied: kiwisolver&gt;=1.3.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (1.4.8)
+Requirement already satisfied: packaging&gt;=20.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (25.0)
+Requirement already satisfied: pillow&gt;=8 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (11.3.0)
+Requirement already satisfied: pyparsing&gt;=2.3.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (3.2.3)
+Requirement already satisfied: llvmlite&lt;0.45,&gt;=0.44.0dev0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from numba-&gt;libcbm-&gt;ws3==1.1.0.dev0) (0.44.0)
+Requirement already satisfied: et-xmlfile in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from openpyxl-&gt;libcbm-&gt;ws3==1.1.0.dev0) (2.0.0)
+Requirement already satisfied: affine in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from rasterio-&gt;ws3==1.1.0.dev0) (2.4.0)
+Building wheels for collected packages: ws3
+  Building editable for ws3 (pyproject.toml) ... done
+  Created wheel for ws3: filename=ws3-1.1.0.dev0-py3-none-any.whl size=4136 sha256=5df49d1809d2f15004f3046010971c142390fb47fb3bfa7620b09e11903424a7
+  Stored in directory: /tmp/pip-ephem-wheel-cache-v9qe22uf/wheels/fa/4b/10/3fe4b92a02fb87987a6fe53a10fad0a22a781bf98cd7b63f17
+Successfully built ws3
+Installing collected packages: ws3
+Successfully installed ws3-1.1.0.dev0
+Note: you may need to restart the kernel to use updated packages.
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ws3.forest</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">util</span><span class="w"> </span><span class="kn">import</span> <span class="n">schedule_fire_areacontrol</span><span class="p">,</span> <span class="n">compile_scenario</span><span class="p">,</span> <span class="n">plot_scenario</span><span class="p">,</span> <span class="n">run_cbm_fire</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">util</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomAreaSelector</span><span class="p">,</span> <span class="n">GreedyAreaSelector</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">util</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_resultsFuelMitigate_deter_stoch</span><span class="p">,</span> <span class="n">resultsFuelMitigate_deter_stoch</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">base_year</span> <span class="o">=</span> <span class="mi">2020</span>
+<span class="n">horizon</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">period_length</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">max_age</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">tvy_name</span> <span class="o">=</span> <span class="s2">&quot;totvol&quot;</span>
+<span class="n">intensity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">n_rep</span> <span class="o">=</span> <span class="mi">30</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span> <span class="o">=</span> <span class="n">ws3</span><span class="o">.</span><span class="n">forest</span><span class="o">.</span><span class="n">ForestModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;tsa22&quot;</span><span class="p">,</span>
+                            <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;data/woodstock_model_files_tsa22&quot;</span><span class="p">,</span>
+                            <span class="n">base_year</span><span class="o">=</span><span class="n">base_year</span><span class="p">,</span>
+                            <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span>
+                            <span class="n">period_length</span><span class="o">=</span><span class="n">period_length</span><span class="p">,</span>
+                            <span class="n">max_age</span><span class="o">=</span><span class="n">max_age</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_landscape_section</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_areas_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_yields_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_actions_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_transitions_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">initialize_areas</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">add_null_action</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">reset_actions</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_deter_stoch</span>  <span class="o">=</span> <span class="n">resultsFuelMitigate_deter_stoch</span><span class="p">(</span><span class="n">fm</span><span class="p">,</span> <span class="n">intensity</span><span class="p">,</span> <span class="n">n_rep</span><span class="p">,</span> <span class="n">is_use_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_resultsFuelMitigate_deter_stoch</span><span class="p">(</span><span class="n">df_deter_stoch</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../../../_build/html/.doctrees/nbsphinx/examples_ws3_docs_source_examples_050_dss_avoided_fire_8_0.png" src="../../../../../../_build/html/.doctrees/nbsphinx/examples_ws3_docs_source_examples_050_dss_avoided_fire_8_0.png" />
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015--2025, Gregory Paradis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

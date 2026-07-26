@@ -1,0 +1,223 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation &mdash; ws3 1.0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d55fa986"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ws3
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../textbook/index.html">The ws3 Textbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ws3</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/getting_started/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
+<p>This page covers how to install ws3 and its dependencies for development.</p>
+<section id="system-requirements">
+<h2>System Requirements<a class="headerlink" href="#system-requirements" title="Link to this heading"></a></h2>
+<p>ws3 requires:</p>
+<ul class="simple">
+<li><p><strong>Python</strong>: 3.9 or later (3.12 recommended)</p></li>
+<li><p><strong>Operating System</strong>: Linux, macOS, or Windows</p></li>
+<li><p><strong>Disk Space</strong>: ~500 MB for package + dependencies</p></li>
+<li><p><strong>RAM</strong>: 4+ GB recommended for large models</p></li>
+</ul>
+</section>
+<section id="optional-dependencies">
+<h2>Optional Dependencies<a class="headerlink" href="#optional-dependencies" title="Link to this heading"></a></h2>
+<p>ws3 has several optional dependency groups. Install only what you need:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Core package (required)</span>
+pip<span class="w"> </span>install<span class="w"> </span>ws3
+
+<span class="c1"># Development dependencies (testing, linting)</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;ws3[dev]&quot;</span>
+
+<span class="c1"># Documentation (Sphinx, napoleon, nbsphinx)</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;ws3[docs]&quot;</span>
+
+<span class="c1"># Gurobi solver (commercial license required)</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;ws3[gurobi]&quot;</span>
+
+<span class="c1"># All optional dependencies</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;ws3[dev,docs,gurobi]&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="installation-from-source">
+<h2>Installation from Source<a class="headerlink" href="#installation-from-source" title="Link to this heading"></a></h2>
+<p>For development, install from the repository:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Clone the repository</span>
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/UBC-FRESH/ws3.git
+<span class="nb">cd</span><span class="w"> </span>ws3
+
+<span class="c1"># Create a virtual environment</span>
+python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate<span class="w">   </span><span class="c1"># On Windows: .venv\Scripts\activate</span>
+
+<span class="c1"># Install in development mode with all extras</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev,docs]&quot;</span>
+
+<span class="c1"># Verify installation</span>
+python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import ws3; print(f&#39;ws3 {ws3.__version__}&#39;)&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="platform-specific-notes">
+<h2>Platform-Specific Notes<a class="headerlink" href="#platform-specific-notes" title="Link to this heading"></a></h2>
+<section id="linux">
+<h3>Linux<a class="headerlink" href="#linux" title="Link to this heading"></a></h3>
+<p>On Ubuntu/Debian, you may need system packages for geospatial dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>libgdal-dev<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>libgeos-dev<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>libproj-dev<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>pandoc
+</pre></div>
+</div>
+</section>
+<section id="macos">
+<h3>macOS<a class="headerlink" href="#macos" title="Link to this heading"></a></h3>
+<p>On macOS, install Homebrew dependencies first:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>brew<span class="w"> </span>install<span class="w"> </span>gdal<span class="w"> </span>geos<span class="w"> </span>proj<span class="w"> </span>pandoc
+</pre></div>
+</div>
+</section>
+<section id="windows">
+<h3>Windows<a class="headerlink" href="#windows" title="Link to this heading"></a></h3>
+<p>On Windows, use conda for geospatial dependencies:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="n">-n</span> <span class="n">ws3</span> <span class="n">python</span><span class="p">=</span><span class="n">3</span><span class="p">.</span><span class="n">12</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">ws3</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="n">-c</span> <span class="n">conda-forge</span> <span class="n">gdal</span> <span class="n">geos</span> <span class="n">proj</span> <span class="n">pandoc</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">-e</span> <span class="s2">&quot;.[dev,docs]&quot;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="known-compatibility-issues">
+<h2>Known Compatibility Issues<a class="headerlink" href="#known-compatibility-issues" title="Link to this heading"></a></h2>
+<section id="pacal-library">
+<h3>PaCal Library<a class="headerlink" href="#pacal-library" title="Link to this heading"></a></h3>
+<p>The PaCal library (used for some growth curve calculations) has known
+compatibility issues with newer numpy versions. ws3 sets
+<code class="docutils literal notranslate"><span class="pre">PACAL_BROKEN</span> <span class="pre">=</span> <span class="pre">True</span></code> in <code class="docutils literal notranslate"><span class="pre">ws3.common</span></code> to work around this.</p>
+<p>Functions that depend on PaCal will not work without a patched version.
+If you need PaCal functionality, use numpy &lt; 2.0 or apply the ws3
+workaround.</p>
+</section>
+<section id="gurobi-license">
+<h3>Gurobi License<a class="headerlink" href="#gurobi-license" title="Link to this heading"></a></h3>
+<p>The Gurobi solver requires a commercial license. If you don’t have one,
+ws3 will fall back to HiGHS (via PuLP) as the default solver.</p>
+<p>To use Gurobi:</p>
+<ol class="arabic simple">
+<li><p>Install Gurobi: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">gurobi</span></code></p></li>
+<li><p>Set your Gurobi license key: <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">GRB_LICENSE_FILE=/path/to/license</span></code></p></li>
+<li><p>Install ws3 with Gurobi support: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">&quot;ws3[gurobi]&quot;</span></code></p></li>
+</ol>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015--2025, Gregory Paradis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

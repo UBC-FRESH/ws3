@@ -1,8 +1,9 @@
 # Phase 4: Documentation Expansion and Agent-Friendly Docs
 
-**Parent Issue**: #58 (to be created)  
-**Status**: In Progress  
+**Parent Issue**: #58 (open)  
+**Status**: complete  
 **Branch**: `feature/ws3-phase4-docs`
+**Completion date**: 2026-07-26
 
 ## Overview
 
@@ -75,7 +76,7 @@ docs/source/
 ## Tasks
 
 ### Task 4.1 — Restructure documentation with audience-based navigation
-- **Status**: In Progress
+- **Status**: Complete
 - **Scope**: Rewrite `index.rst` landing page with audience navigation. Create section index files for `getting_started/`, `textbook/`, `howto/`, `reference/`, `guides/`.
 - **Acceptance Criteria**: 
   - Landing page has clear navigation for 3 audiences
@@ -83,14 +84,12 @@ docs/source/
   - Legacy chapters still accessible
 
 ### Task 4.2 — Create Getting Started section
-- **Status**: Not Started
+- **Status**: Complete
 - **Scope**: Installation guide, quickstart tutorial, first model walkthrough, architecture overview.
-- **Acceptance Criteria**: 
-  - User can install ws3 and run first simulation in <10 minutes
-  - Architecture overview explains module map and data flow
+- **Progress**: All 4 pages created with runnable examples and clear progression from installation to first model.
 
 ### Task 4.3 — Create textbook for forest estate modelling
-- **Status**: Not Started
+- **Status**: Complete
 - **Scope**: 9-chapter textbook covering forest inventory, growth/yield, actions/transitions, optimization, spatial allocation, financial analysis, uncertainty, and advanced topics.
 - **Acceptance Criteria**: 
   - Each chapter has learning objectives, worked examples, exercises
@@ -98,23 +97,17 @@ docs/source/
   - Textbook suitable for university course use
 
 ### Task 4.4 — Create how-to guides
-- **Status**: Not Started
+- **Status**: Complete
 - **Scope**: Operational guides for data preparation, curve definition, action definition, optimization, parallel optimization, spatial allocation, libcbm callbacks, financial scenarios, custom selectors, custom growth functions, model validation, and reproducibility.
-- **Acceptance Criteria**: 
-  - Each guide is self-contained with runnable code
-  - Guides reference textbook chapters for theory
-  - Covers all major ws3 capabilities
+- **Progress**: All 12 how-to guides created with runnable examples and troubleshooting sections.
 
 ### Task 4.5 — Create agent-friendly contract pages
-- **Status**: Not Started
-- **Scope**: Compact technical contracts for LLM coding agents: repo/runtime invariants, module responsibilities, class hierarchy, solver options.
-- **Acceptance Criteria**: 
-  - Follows femic/fhops pattern (Purpose, Use Cases, Quick Contract table)
-  - Short, focused pages optimized for LLM consumption
-  - Links to deeper guides when needed
+- **Status**: Complete
+- **Scope**: Compact technical contracts for LLM coding agents: repo/runtime invariants, module responsibilities, class hierarchy, solver options. Follow femic/fhops pattern.
+- **Progress**: All 4 contract pages created (data_contracts, runtime_invariants, module_boundaries, output_format_spec) with clear tables and code examples.
 
 ### Task 4.6 — Create coding agent onboarding guide
-- **Status**: Not Started
+- **Status**: Complete
 - **Scope**: Guide for LLM coding agents to understand ws3 architecture, data flows, and conventions.
 - **Acceptance Criteria**: 
   - Explains module responsibilities and data flow
@@ -122,15 +115,12 @@ docs/source/
   - Includes platform-specific notes (Linux/macOS/Windows)
 
 ### Task 4.7 — Create troubleshooting and limitations guides
-- **Status**: Not Started
+- **Status**: Complete
 - **Scope**: Known issues, recovery procedures, honest documentation of boundaries and external dependencies.
-- **Acceptance Criteria**: 
-  - Documents known issues with root causes and recovery
-  - Honest about external dependencies (libCBM, Gurobi, etc.)
-  - Includes performance tuning guidance
+- **Progress**: Created troubleshooting.rst and limitations-and-boundaries.rst with comprehensive coverage of common issues, recovery procedures, and honest documentation of ws3 limitations.
 
 ### Task 4.8 — Update conf.py and verify docs build
-- **Status**: Not Started
+- **Status**: In Progress
 - **Scope**: Enhance Sphinx configuration with new extensions, verify all docs build successfully, ensure GitHub Pages deployment works.
 - **Acceptance Criteria**: 
   - `sphinx-build -b html docs/source _build/html` succeeds

@@ -1,0 +1,300 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How-To Guides &mdash; ws3 1.0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d55fa986"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Data Preparation" href="data-preparation.html" />
+    <link rel="prev" title="Chapter 16: Value-Creation and Forest Supply Chain Modelling" href="../textbook/ch16_supply_chain.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ws3
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../textbook/index.html">The ws3 Textbook</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">How-To Guides</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">How-To Guides</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data-preparation.html">Data Preparation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="curve-definition.html">Growth Curve Definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="action-definition.html">Action Definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="running-optimization.html">Running Optimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="parallel-optimization.html">Parallel Optimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="spatial-schedule-allocation.html">Spatial Schedule Allocation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="libcbm-callbacks.html">libCBM Callbacks Integration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="financial-scenarios.html">Financial Scenarios</a></li>
+<li class="toctree-l3"><a class="reference internal" href="custom-area-selector.html">Custom Area Selector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="custom-growth-function.html">Custom Growth Function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="model-validation.html">Model Validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reproducibility.html">Reproducibility Workflows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#what-you-will-find-here">What You Will Find Here</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#common-tasks-covered">Common Tasks Covered</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ws3</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">How-To Guides</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/howto/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="how-to-guides">
+<span id="howto"></span><h1>How-To Guides<a class="headerlink" href="#how-to-guides" title="Link to this heading"></a></h1>
+<p>Step-by-step guides for common modelling tasks in ws3. These pages assume you
+are already familiar with the basics covered in the Getting Started section
+and the textbook.</p>
+<section id="id1">
+<h2>How-To Guides<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p>Operational guides for common ws3 tasks. Each guide is self-contained and
+includes runnable code examples.</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">How-To Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="data-preparation.html">Data Preparation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data-preparation.html#goal">Goal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data-preparation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data-preparation.html#step-by-step-instructions">Step-by-Step Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data-preparation.html#expected-output">Expected Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data-preparation.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data-preparation.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="curve-definition.html">Growth Curve Definition</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="curve-definition.html#goal">Goal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="curve-definition.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="curve-definition.html#step-by-step-instructions">Step-by-Step Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="curve-definition.html#expected-output">Expected Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="curve-definition.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="curve-definition.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="action-definition.html">Action Definition</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="action-definition.html#goal">Goal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="action-definition.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="action-definition.html#step-by-step-instructions">Step-by-Step Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="action-definition.html#expected-output">Expected Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="action-definition.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="action-definition.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="running-optimization.html">Running Optimization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="running-optimization.html#goal">Goal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="running-optimization.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="running-optimization.html#step-by-step-instructions">Step-by-Step Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="running-optimization.html#expected-output">Expected Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="running-optimization.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="running-optimization.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="parallel-optimization.html">Parallel Optimization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="parallel-optimization.html#goal">Goal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parallel-optimization.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parallel-optimization.html#step-by-step-instructions">Step-by-Step Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parallel-optimization.html#expected-output">Expected Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parallel-optimization.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parallel-optimization.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="spatial-schedule-allocation.html">Spatial Schedule Allocation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spatial-schedule-allocation.html#goal">Goal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spatial-schedule-allocation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spatial-schedule-allocation.html#step-by-step-instructions">Step-by-Step Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spatial-schedule-allocation.html#expected-output">Expected Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spatial-schedule-allocation.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spatial-schedule-allocation.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="libcbm-callbacks.html">libCBM Callbacks Integration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="libcbm-callbacks.html#goal">Goal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="libcbm-callbacks.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="libcbm-callbacks.html#step-by-step-instructions">Step-by-Step Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="libcbm-callbacks.html#expected-output">Expected Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="libcbm-callbacks.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="libcbm-callbacks.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="financial-scenarios.html">Financial Scenarios</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="financial-scenarios.html#goal">Goal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="financial-scenarios.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="financial-scenarios.html#step-by-step-instructions">Step-by-Step Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="financial-scenarios.html#expected-output">Expected Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="financial-scenarios.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="financial-scenarios.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="custom-area-selector.html">Custom Area Selector</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="custom-area-selector.html#goal">Goal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-area-selector.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-area-selector.html#step-by-step-instructions">Step-by-Step Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-area-selector.html#expected-output">Expected Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-area-selector.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-area-selector.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="custom-growth-function.html">Custom Growth Function</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="custom-growth-function.html#goal">Goal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-growth-function.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-growth-function.html#step-by-step-instructions">Step-by-Step Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-growth-function.html#expected-output">Expected Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-growth-function.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-growth-function.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="model-validation.html">Model Validation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="model-validation.html#goal">Goal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model-validation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model-validation.html#step-by-step-instructions">Step-by-Step Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model-validation.html#expected-output">Expected Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model-validation.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model-validation.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reproducibility.html">Reproducibility Workflows</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reproducibility.html#goal">Goal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reproducibility.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reproducibility.html#step-by-step-instructions">Step-by-Step Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reproducibility.html#expected-output">Expected Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reproducibility.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reproducibility.html#next-steps">Next Steps</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="what-you-will-find-here">
+<h2>What You Will Find Here<a class="headerlink" href="#what-you-will-find-here" title="Link to this heading"></a></h2>
+<p>Each how-to guide follows a consistent format:</p>
+<ul class="simple">
+<li><p><strong>Goal</strong> — what you will accomplish by the end of the guide.</p></li>
+<li><p><strong>Prerequisites</strong> — what you need to know or have set up first.</p></li>
+<li><p><strong>Step-by-Step Instructions</strong> — numbered steps with code examples.</p></li>
+<li><p><strong>Expected Output</strong> — what the results should look like.</p></li>
+<li><p><strong>Troubleshooting</strong> — common pitfalls and how to fix them.</p></li>
+</ul>
+</section>
+<section id="common-tasks-covered">
+<h2>Common Tasks Covered<a class="headerlink" href="#common-tasks-covered" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Defining custom forest management actions and transition rules.</p></li>
+<li><p>Linking ws3 to libCMB for carbon accounting.</p></li>
+<li><p>Linking ws3 to SpaDES for spatially-explicit disturbance modelling.</p></li>
+<li><p>Integrating ws3 with optimization solvers for automatic schedule generation.</p></li>
+<li><p>Running and comparing multiple scenarios in batch.</p></li>
+<li><p>Post-processing simulation output for reporting and visualization.</p></li>
+<li><p>Adding custom growth-and-yield curves.</p></li>
+<li><p>Building multi-region models that share data across landscapes.</p></li>
+<li><p>Setting up reproducible workflows with version-controlled inputs and
+automated validation.</p></li>
+</ul>
+</section>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before tackling these guides, you should have:</p>
+<ul class="simple">
+<li><p>Completed the <a class="reference internal" href="../getting_started/index.html"><span class="doc">Getting Started</span></a> section.</p></li>
+<li><p>Read at least the first four chapters of the <a class="reference internal" href="../textbook/index.html"><span class="doc">The ws3 Textbook</span></a>.</p></li>
+<li><p>A working ws3 installation with sample data available.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../textbook/ch16_supply_chain.html" class="btn btn-neutral float-left" title="Chapter 16: Value-Creation and Forest Supply Chain Modelling" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="data-preparation.html" class="btn btn-neutral float-right" title="Data Preparation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015--2025, Gregory Paradis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

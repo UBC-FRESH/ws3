@@ -1,0 +1,821 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 1: Forest Estate Models &mdash; ws3 1.0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d55fa986"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
+    document.head.appendChild(defaultStyle);
+
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
+    document.head.appendChild(fullscreenStyle);
+}
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
+        return brightness < 128;
+    }
+    // console.log("No dark or light theme detected, defaulting to light theme");
+    return false;
+};
+
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
+
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
+        all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
+
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
+                setTimeout(() => runMermaid(false), 200);
+                return;
+            }
+            addZoomToSvgs(svgs);
+        }
+    } else if(mermaids_active.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(() => runMermaid(false), 200);
+        return;
+    }
+
+    // Stop here if not adding fullscreen capability
+    if (!true) return;
+
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scrollX, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+
+                if (false) {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        container.appendChild(fullscreenBtn);
+    });
+};
+
+
+
+const load = async () => {
+    initStyles();
+
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+    }
+);
+
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Chapter 2: Forest Inventory and Data Preparation" href="ch02_forest_inventory.html" />
+    <link rel="prev" title="The ws3 Textbook" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ws3
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/index.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">The ws3 Textbook</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#who-is-this-for">Who Is This For?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#how-to-use-this-textbook">How to Use This Textbook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#chapter-listing">Chapter Listing</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#textbook-introduction-to-forest-estate-modelling">Textbook: Introduction to Forest Estate Modelling</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="index.html#prerequisite-chain">Prerequisite Chain</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="index.html#contents">Contents</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Chapter 1: Forest Estate Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch02_forest_inventory.html">Chapter 2: Forest Inventory and Data Preparation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch03_growth_and_yield.html">Chapter 3: Growth and Yield</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch04_actions_and_transitions.html">Chapter 4: Actions and Transitions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch05_optimization.html">Chapter 5: Optimization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch06_spatial_allocation.html">Chapter 6: Spatial Allocation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch07_financial_analysis.html">Chapter 7: Financial Analysis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch08_uncertainty_and_risk.html">Chapter 8: Uncertainty and Risk</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch09_advanced_topics.html">Chapter 9: Advanced Topics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch10_carbon_modelling.html">Chapter 10: Carbon Modelling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch11_femic_models.html">Chapter 11: Building Models with FEMIC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch12_fhops_integration.html">Chapter 12: Harvest Cost Curves with FHOPS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch13_freshforge.html">Chapter 13: Workflow Automation with FreshForge</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch14_spades_integration.html">Chapter 14: Integrating ws3 with SpaDES</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch15_disturbance_modelling.html">Chapter 15: Modelling Natural Disturbances</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch16_supply_chain.html">Chapter 16: Value-Creation and Forest Supply Chain Modelling</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#chapter-structure">Chapter Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#prerequisites-for-this-textbook">Prerequisites for This Textbook</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ws3</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">The ws3 Textbook</a></li>
+      <li class="breadcrumb-item active">Chapter 1: Forest Estate Models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/textbook/ch01_forest_estate_models.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="chapter-1-forest-estate-models">
+<h1>Chapter 1: Forest Estate Models<a class="headerlink" href="#chapter-1-forest-estate-models" title="Link to this heading"></a></h1>
+<section id="learning-objectives">
+<h2>Learning Objectives<a class="headerlink" href="#learning-objectives" title="Link to this heading"></a></h2>
+<p>After reading this chapter, you should be able to:</p>
+<ul class="simple">
+<li><p>Explain what a wood supply model (WSM) is and why forest managers use them</p></li>
+<li><p>Describe the key components of a forest estate model: area of interest,
+development types, age classes, actions, and growth curves</p></li>
+<li><p>Build a minimal ws3 model from scratch</p></li>
+<li><p>Run a simulation and interpret the output</p></li>
+<li><p>Understand how ws3 fits into the broader forest planning workflow</p></li>
+</ul>
+</section>
+<section id="what-is-a-wood-supply-model">
+<h2>What Is a Wood Supply Model?<a class="headerlink" href="#what-is-a-wood-supply-model" title="Link to this heading"></a></h2>
+<p>Imagine you manage a 50,000-hectare forest. You want to know: <em>What happens
+if we harvest 500 hectares per year for the next 100 years?</em> Or: <em>How much
+wood can we sustainably harvest while keeping the forest healthy?</em></p>
+<p>These are <strong>wood supply planning problems</strong> (WSPP). A <strong>wood supply model</strong>
+(WSM) is a computer program that simulates how a forest changes over time
+given a set of management activities.</p>
+<p>Think of it like a flight simulator for forests. Just as a flight simulator
+lets pilots practice scenarios without risking real aircraft, a wood supply
+model lets forest managers explore “what if” scenarios without committing
+to expensive real-world experiments.</p>
+</section>
+<section id="why-do-we-need-them">
+<h2>Why Do We Need Them?<a class="headerlink" href="#why-do-we-need-them" title="Link to this heading"></a></h2>
+<p>Forest management operates on timescales that dwarf human lifespans. A
+typical timber rotation lasts 50-200 years. Decisions made today affect
+the forest for generations.</p>
+<p>Human beings are terrible at intuitively reasoning about compound growth,
+nonlinear dynamics, and multi-decade consequences. We tend to:</p>
+<ul class="simple">
+<li><p><strong>Underestimate exponential growth</strong>: A forest that doubles every 20
+years seems manageable until you realize it will cover the Earth in
+400 years.</p></li>
+<li><p><strong>Overlook feedback loops</strong>: Harvesting changes future growth rates,
+which changes future harvest capacity, which changes future revenue.</p></li>
+<li><p><strong>Ignore spatial constraints</strong>: You can’t harvest a hectare today if
+it will be needed for watershed protection next year.</p></li>
+</ul>
+<p>Wood supply models handle this complexity by:</p>
+<ol class="arabic simple">
+<li><p><strong>Tracking inventory explicitly</strong>: Every hectare is classified by
+species, age class, and site quality. The model knows exactly what
+grows where.</p></li>
+<li><p><strong>Simulating growth realistically</strong>: Growth curves capture how volume,
+biomass, and value change with age for each species-site combination.</p></li>
+<li><p><strong>Enforcing constraints</strong>: Minimum rotation ages, habitat requirements,
+and sustainable yield targets are built into the simulation.</p></li>
+<li><p><strong>Optimizing decisions</strong>: Given multiple possible actions, the model
+finds the schedule that maximizes your objective (profit, sustained
+yield, carbon sequestration, etc.).</p></li>
+</ol>
+</section>
+<section id="key-concepts">
+<h2>Key Concepts<a class="headerlink" href="#key-concepts" title="Link to this heading"></a></h2>
+<p>Before we dive into ws3, let’s define the core vocabulary.</p>
+<section id="area-of-interest-aoi">
+<h3>Area of Interest (AOI)<a class="headerlink" href="#area-of-interest-aoi" title="Link to this heading"></a></h3>
+<p>The <strong>area of interest</strong> is the geographic boundary of your modelling
+study. It could be:</p>
+<ul class="simple">
+<li><p>A entire forest management unit (FMU)</p></li>
+<li><p>A single timber harvest block</p></li>
+<li><p>A watershed</p></li>
+<li><p>A private landholding</p></li>
+</ul>
+<p>Everything outside the AOI is ignored. Everything inside is modelled.</p>
+<figure class="align-center" id="id1">
+<img alt="Example area of interest" src="../../examples/images/aoi_example.png" />
+<figcaption>
+<p><span class="caption-text">An AOI might be defined by administrative boundaries, ownership, or
+natural features.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="development-types">
+<h3>Development Types<a class="headerlink" href="#development-types" title="Link to this heading"></a></h3>
+<p>A <strong>development type</strong> (DT) is a unique combination of forest attributes
+that determines how the stand will grow and respond to management. Common
+attributes include:</p>
+<ul class="simple">
+<li><p><strong>Species</strong>: Douglas-fir, western red cedar, spruce, etc.</p></li>
+<li><p><strong>Site Index (SI)</strong>: A measure of site productivity (how tall trees
+grow on this site)</p></li>
+<li><p><strong>Stocking</strong>: Number of stems per hectare</p></li>
+<li><p><strong>Canopy cover</strong>: Closed, open, or bare</p></li>
+</ul>
+<p>Each development type represents a homogeneous group of stands that will
+respond identically to the same management action.</p>
+<p>In ws3, development types are the fundamental unit of inventory. The model
+tracks area (in hectares) for each development type at each time step.</p>
+</section>
+<section id="age-classes">
+<h3>Age Classes<a class="headerlink" href="#age-classes" title="Link to this heading"></a></h3>
+<p><strong>Age classes</strong> divide the planning horizon into discrete time steps. Each
+age class represents a period (typically 5-20 years) during which growth
+and management actions are assumed constant.</p>
+<p>For example, with a 100-year horizon and 10-year age classes:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 80.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Age Class</p></th>
+<th class="head"><p>Years</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>0-10</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>10-20</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>20-30</p></td>
+</tr>
+<tr class="row-odd"><td><p>…</p></td>
+<td><p>…</p></td>
+</tr>
+<tr class="row-even"><td><p>10</p></td>
+<td><p>90-100</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="actions">
+<h3>Actions<a class="headerlink" href="#actions" title="Link to this heading"></a></h3>
+<p>An <strong>action</strong> is a management intervention applied to a development type
+in a specific age class. Common actions include:</p>
+<ul class="simple">
+<li><p><strong>Harvest</strong>: Clearcut, selection cut, shelterwood cut</p></li>
+<li><p><strong>Thinning</strong>: Commercial thin, pre-commercial thin</p></li>
+<li><p><strong>Planting</strong>: Replant after harvest</p></li>
+<li><p><strong>Prescribe</strong>: Do nothing (let nature take its course)</p></li>
+</ul>
+<p>Each action has:</p>
+<ul class="simple">
+<li><p>A <strong>code</strong> (e.g., “HARV”, “THIN”, “PLNT”)</p></li>
+<li><p>A <strong>description</strong></p></li>
+<li><p>A set of <strong>components</strong> (what attributes change)</p></li>
+<li><p>A set of <strong>transitions</strong> (what happens after the action)</p></li>
+</ul>
+</section>
+<section id="transitions">
+<h3>Transitions<a class="headerlink" href="#transitions" title="Link to this heading"></a></h3>
+<p>A <strong>transition</strong> defines what happens to a development type after an action
+is applied. For example:</p>
+<ul class="simple">
+<li><p>A clearcut harvest (action “HARV”) on a Douglas-fir stand (DT “DF-SI50”)
+transitions to a bare site (DT “BARE”)</p></li>
+<li><p>A thinning (action “THIN”) on a young Douglas-fir stand reduces stem
+density but keeps the stand as Douglas-fir</p></li>
+</ul>
+<p>Transitions are the bridge between actions and growth. They answer the
+question: <em>After I do X to this stand, what does it become?</em></p>
+</section>
+<section id="growth-curves">
+<h3>Growth Curves<a class="headerlink" href="#growth-curves" title="Link to this heading"></a></h3>
+<p><strong>Growth curves</strong> describe how forest attributes change with age. The most
+common curves are:</p>
+<ul class="simple">
+<li><p><strong>Volume curves</strong>: Total merchantable volume (m³/ha) vs. age</p></li>
+<li><p><strong>Basal area curves</strong>: Cross-sectional area of tree trunks vs. age</p></li>
+<li><p><strong>Height curves</strong>: Dominant height vs. age</p></li>
+<li><p><strong>Value curves</strong>: Dollar value per unit volume vs. age</p></li>
+</ul>
+<p>Curves are typically fitted to sample plot data or derived from provincial
+growth-and-yield tables. In ws3, the <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.core.Curve</span></code> class
+handles curve definition, interpolation, and algebra.</p>
+<figure class="align-center" id="id2">
+<img alt="Example volume curve" src="../../examples/images/growth_curve_example.png" />
+<figcaption>
+<p><span class="caption-text">A typical volume curve shows sigmoidal growth: slow initially, rapid
+in middle ages, then asymptoting.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="how-ws3-implements-this">
+<h2>How ws3 Implements This<a class="headerlink" href="#how-ws3-implements-this" title="Link to this heading"></a></h2>
+<p>Now let’s see how these concepts map to ws3 classes.</p>
+<pre  class="mermaid">
+        graph TD
+  FM[&quot;ForestModel&quot;] --&gt; DT[&quot;DevelopmentType&quot;]
+  FM --&gt; ACT[&quot;Action&quot;]
+  FM --&gt; CURVE[&quot;Curve&quot;]
+  FM --&gt; SEL[&quot;AreaSelector&quot;]
+  CURVE --&gt; INTERP[&quot;Interpolator&quot;]
+    </pre><p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.forest.ForestModel</span></code> class is the central hub. It
+contains:</p>
+<ul class="simple">
+<li><p>A collection of <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.forest.DevelopmentType</span></code> objects</p></li>
+<li><p>A collection of <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.forest.Action</span></code> objects</p></li>
+<li><p>Growth curves (via <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.core.Curve</span></code>)</p></li>
+<li><p>An area selector for distributing harvest targets</p></li>
+</ul>
+<section id="a-minimal-ws3-model">
+<h3>A Minimal ws3 Model<a class="headerlink" href="#a-minimal-ws3-model" title="Link to this heading"></a></h3>
+<p>Let’s build a simple model. Suppose we have:</p>
+<ul class="simple">
+<li><p>1,000 hectares of Douglas-fir on Site Index 50</p></li>
+<li><p>We want to harvest 50 hectares per year for 20 years</p></li>
+<li><p>Growth follows a standard Douglas-fir volume curve</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.forest</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForestModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ws3.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Curve</span>
+
+<span class="c1"># Create model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">()</span>
+
+<span class="c1"># Add a development type: 1000 ha of DF-SI50 at age 0</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_development_type</span><span class="p">(</span>
+    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;DF-SI50&quot;</span><span class="p">,</span>
+    <span class="n">area</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span>
+    <span class="n">age</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">species</span><span class="o">=</span><span class="s2">&quot;Pseudotsuga menziesii&quot;</span><span class="p">,</span>
+    <span class="n">site_index</span><span class="o">=</span><span class="mi">50</span>
+<span class="p">)</span>
+
+<span class="c1"># Add a volume curve (simplified)</span>
+<span class="n">volume_curve</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
+    <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">280</span><span class="p">,</span> <span class="mi">380</span><span class="p">,</span> <span class="mi">450</span><span class="p">,</span> <span class="mi">480</span><span class="p">,</span> <span class="mi">490</span><span class="p">],</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DF-SI50_volume&quot;</span>
+<span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_curve</span><span class="p">(</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="n">volume_curve</span><span class="p">)</span>
+
+<span class="c1"># Add a harvest action</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span>
+    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;HARV&quot;</span><span class="p">,</span>
+    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Clearcut harvest&quot;</span><span class="p">,</span>
+    <span class="n">components</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;volume&quot;</span><span class="p">],</span>
+    <span class="n">transitions</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;DF-SI50&quot;</span><span class="p">:</span> <span class="s2">&quot;BARE&quot;</span><span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># Add a bare site development type</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_development_type</span><span class="p">(</span>
+    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;BARE&quot;</span><span class="p">,</span>
+    <span class="n">area</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">age</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">species</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">site_index</span><span class="o">=</span><span class="mi">0</span>
+<span class="p">)</span>
+
+<span class="c1"># Run simulation for 20 periods (100 years)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_simulation</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+
+<span class="c1"># Print results</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>The output will show how area moves between development types over time
+as the harvest action is applied.</p>
+</section>
+</section>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading"></a></h2>
+<p>In this chapter, we covered:</p>
+<ul class="simple">
+<li><p><strong>Wood supply models</strong> simulate forest growth and management over
+multi-decade horizons</p></li>
+<li><p><strong>Development types</strong> are homogeneous groups of stands that respond
+identically to management</p></li>
+<li><p><strong>Age classes</strong> divide time into discrete periods</p></li>
+<li><p><strong>Actions</strong> are management interventions (harvest, thin, plant)</p></li>
+<li><p><strong>Transitions</strong> define what happens after an action</p></li>
+<li><p><strong>Growth curves</strong> describe how attributes change with age</p></li>
+<li><p><strong>ForestModel</strong> is ws3’s central class that ties everything together</p></li>
+</ul>
+</section>
+<section id="exercises">
+<h2>Exercises<a class="headerlink" href="#exercises" title="Link to this heading"></a></h2>
+<p><strong>Exercise 1 (Easy)</strong>: Install ws3 and run the following code to verify
+your setup:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ws3</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ws3 version: </span><span class="si">{</span><span class="n">ws3</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Exercise 2 (Medium)</strong>: Modify the minimal model above to:</p>
+<ol class="arabic simple">
+<li><p>Add a second development type: 500 hectares of Spruce on Site Index 40</p></li>
+<li><p>Add a separate volume curve for Spruce-SI40</p></li>
+<li><p>Run the simulation and compare the volume trajectories</p></li>
+</ol>
+<p><strong>Exercise 3 (Hard)</strong>: The current model assumes all 50 hectares harvested
+each year come from the same development type. Modify the code to:</p>
+<ol class="arabic simple">
+<li><p>Add a greedy area selector that always harvests from the oldest stands</p></li>
+<li><p>Track which development type was harvested each period</p></li>
+<li><p>Plot the area remaining in each development type over time</p></li>
+</ol>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>Look at the <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.forest.GreedyAreaSelector</span></code> class and the
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.forest.ForestModel.operate()</span></code> method.</p>
+</div>
+</section>
+<section id="further-reading">
+<h2>Further Reading<a class="headerlink" href="#further-reading" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="ch02_forest_inventory.html"><span class="doc">Chapter 2: Forest Inventory and Data Preparation</span></a> — How to prepare forest inventory data for ws3</p></li>
+<li><p><a class="reference internal" href="ch03_growth_and_yield.html"><span class="doc">Chapter 3: Growth and Yield</span></a> — Growth curve fitting and interpolation</p></li>
+<li><p><span class="xref std std-doc">/reference/modules/forest</span> — ForestModel API reference</p></li>
+<li><p><a class="reference internal" href="../getting_started/quickstart.html"><span class="doc">Quickstart Tutorial</span></a> — Hands-on quickstart tutorial</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="The ws3 Textbook" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ch02_forest_inventory.html" class="btn btn-neutral float-right" title="Chapter 2: Forest Inventory and Data Preparation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015--2025, Gregory Paradis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

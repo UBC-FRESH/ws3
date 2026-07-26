@@ -1,0 +1,380 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>forest_helper module &mdash; ws3 1.0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=d55fa986"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="financial module" href="financial.html" />
+    <link rel="prev" title="forest module" href="forest.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            ws3
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="textbook/index.html">The ws3 Textbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="howto/index.html">How-To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/index.html">Advanced Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/index.html">Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Chapt1.html">Wood Supply Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appendices.html">Appendices</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="common.html"><code class="docutils literal notranslate"><span class="pre">common</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.html"><code class="docutils literal notranslate"><span class="pre">core</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="forest.html"><code class="docutils literal notranslate"><span class="pre">forest</span></code> module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">forest_helper</span></code> module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#forest_helper.PersistentWorkerPool"><code class="docutils literal notranslate"><span class="pre">PersistentWorkerPool</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#forest_helper.auto_batch"><code class="docutils literal notranslate"><span class="pre">auto_batch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#forest_helper.choose_max_batch_factor"><code class="docutils literal notranslate"><span class="pre">choose_max_batch_factor()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#forest_helper.init_worker_gen_vars"><code class="docutils literal notranslate"><span class="pre">init_worker_gen_vars()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#forest_helper.sanitize_func"><code class="docutils literal notranslate"><span class="pre">sanitize_func()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#forest_helper.worker_cmp_cflw_batch"><code class="docutils literal notranslate"><span class="pre">worker_cmp_cflw_batch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#forest_helper.worker_cmp_cflw_phase3"><code class="docutils literal notranslate"><span class="pre">worker_cmp_cflw_phase3()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#forest_helper.worker_cmp_cflw_phase3_batch"><code class="docutils literal notranslate"><span class="pre">worker_cmp_cflw_phase3_batch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#forest_helper.worker_cmp_cgen_batch"><code class="docutils literal notranslate"><span class="pre">worker_cmp_cgen_batch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#forest_helper.worker_cmp_cgen_phase3"><code class="docutils literal notranslate"><span class="pre">worker_cmp_cgen_phase3()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#forest_helper.worker_cmp_cgen_phase3_batch"><code class="docutils literal notranslate"><span class="pre">worker_cmp_cgen_phase3_batch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#forest_helper.worker_gen_vars"><code class="docutils literal notranslate"><span class="pre">worker_gen_vars()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#forest_helper.worker_summarize_tree_batch"><code class="docutils literal notranslate"><span class="pre">worker_summarize_tree_batch()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="financial.html"><code class="docutils literal notranslate"><span class="pre">financial</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="opt.html"><code class="docutils literal notranslate"><span class="pre">opt</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spatial.html"><code class="docutils literal notranslate"><span class="pre">spatial</span></code> module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ws3</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
+          <li class="breadcrumb-item"><a href="modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
+      <li class="breadcrumb-item active"><code class="docutils literal notranslate"><span class="pre">forest_helper</span></code> module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/forest_helper.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-forest_helper">
+<span id="forest-helper-module"></span><h1><code class="docutils literal notranslate"><span class="pre">forest_helper</span></code> module<a class="headerlink" href="#module-forest_helper" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="forest_helper.PersistentWorkerPool">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">forest_helper.</span></span><span class="sig-name descname"><span class="pre">PersistentWorkerPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blob_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">serialized_funcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/forest_helper.html#PersistentWorkerPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#forest_helper.PersistentWorkerPool" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Context manager for a persistent ProcessPoolExecutor that initializes
+workers with ForestModel and coeff_funcs.</p>
+<p>Constructor</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>workers</strong> (<em>int</em>) – Number of workers</p></li>
+<li><p><strong>blob_bytes</strong> (<em>bytes</em><em>, </em><em>optional</em>) – Serialized <cite>ForestModel</cite> objects, defaults to None</p></li>
+<li><p><strong>serialized_funcs</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>function</em><em>]</em><em>, </em><em>optional</em>) – dict of serialzed <cite>coeff_funcs</cite> functions, defaults to None</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="forest_helper.auto_batch">
+<span class="sig-prename descclassname"><span class="pre">forest_helper.</span></span><span class="sig-name descname"><span class="pre">auto_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_batch_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/forest_helper.html#auto_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#forest_helper.auto_batch" title="Link to this definition"></a></dt>
+<dd><p>Split tasks into batches for parallel processing. Optionally sorts tasks by size (descending) and greedily fills batches.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tasks</strong> (<em>list</em>) – List of tasks to batch</p></li>
+<li><p><strong>workers</strong> (<em>int</em>) – Number of workers (cores) that will be used later to process batches</p></li>
+<li><p><strong>max_batch_factor</strong> (<em>int</em><em>, </em><em>optional</em>) – Scaling parameter (larger value yields more smaller batches), defaults to None</p></li>
+<li><p><strong>size_fn</strong> (<em>function</em><em>, </em><em>optional</em>) – Task size estimation function returning float for greedy task sort, defaults to <cite>lambda x: 1.</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of task batches</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[list]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="forest_helper.choose_max_batch_factor">
+<span class="sig-prename descclassname"><span class="pre">forest_helper.</span></span><span class="sig-name descname"><span class="pre">choose_max_batch_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="_modules/forest_helper.html#choose_max_batch_factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#forest_helper.choose_max_batch_factor" title="Link to this definition"></a></dt>
+<dd><p>Adaptive max_batch_factor for auto_batch based on number of workers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>workers</strong> (<em>int</em>) – Number of worker processes. Integer value representing the number of worker processes available.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Optimized max_batch_factor value. An integer value that represents the optimized max_batch_factor value based on the number of workers.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+<p>Usage notes:</p>
+<ul class="simple">
+<li><p>This function is designed to work with auto_batch, which controls batch sizes
+for parallel processing.</p></li>
+<li><p>The function’s output is an integer representing the optimal max_batch_factor
+value for a given number of worker processes.</p></li>
+</ul>
+<dl>
+<dt>Examples:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">choose_max_batch_factor</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">choose_max_batch_factor</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+<span class="go">4</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<p>Edge case warnings:</p>
+<ul class="simple">
+<li><p>If workers &lt;= 0, this function will raise a ValueError.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="forest_helper.init_worker_gen_vars">
+<span class="sig-prename descclassname"><span class="pre">forest_helper.</span></span><span class="sig-name descname"><span class="pre">init_worker_gen_vars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blob_bytes_local</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">serialized_funcs_local</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/forest_helper.html#init_worker_gen_vars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#forest_helper.init_worker_gen_vars" title="Link to this definition"></a></dt>
+<dd><p>Initializer for <cite>_gen_vars_m1</cite> workers: load model and coefficient functions once.
+Also stores desired worker count for <cite>_bld_tree_m1</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>blob_bytes_local</strong> (<em>bytes</em>) – Serialized <cite>ForestModel</cite> object</p></li>
+<li><p><strong>serialized_funcs_local</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>bytes</em><em>]</em>) – dict of serialized functions keyed on <cite>coeff_funcs</cite> keys</p></li>
+<li><p><strong>workers</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of workers, defaults to 1</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="forest_helper.sanitize_func">
+<span class="sig-prename descclassname"><span class="pre">forest_helper.</span></span><span class="sig-name descname"><span class="pre">sanitize_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/forest_helper.html#sanitize_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#forest_helper.sanitize_func" title="Link to this definition"></a></dt>
+<dd><p>Make a version of f that is safe to serialize via dill in <cite>spawn</cite> mode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>f</strong> (<em>function</em>) – Function to sanitize</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Sanitized function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>function</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="forest_helper.worker_cmp_cflw_batch">
+<span class="sig-prename descclassname"><span class="pre">forest_helper.</span></span><span class="sig-name descname"><span class="pre">worker_cmp_cflw_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/forest_helper.html#worker_cmp_cflw_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#forest_helper.worker_cmp_cflw_batch" title="Link to this definition"></a></dt>
+<dd><p>Worker function to process batches of tasks for <cite>_cmp_cflw_m1</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<em>list</em><em>[</em><em>list</em><em>, </em><em>dict</em><em>, </em><em>list</em><em>]</em>) – (batch, cflw_keys, periods)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of (t, o, i, j, value) tuples</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[int, str, tuple, tuple, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="forest_helper.worker_cmp_cflw_phase3">
+<span class="sig-prename descclassname"><span class="pre">forest_helper.</span></span><span class="sig-name descname"><span class="pre">worker_cmp_cflw_phase3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/forest_helper.html#worker_cmp_cflw_phase3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#forest_helper.worker_cmp_cflw_phase3" title="Link to this definition"></a></dt>
+<dd><p>Worker function to compute (name, coeffs, sense, rhs) tuples for Phase 3 of <cite>_cmp_cflw_m1</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<em>tuple</em><em>(</em><em>int</em><em>, </em><em>str</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>list</em><em>[</em><em>str</em><em>]</em><em>)</em>) – (t, o, mu_t_o, mu_ref_o, eps, xnames)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of (constraint_name, mu_lb, sense, 0.) tuples</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[(str, float, str, float)]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="forest_helper.worker_cmp_cflw_phase3_batch">
+<span class="sig-prename descclassname"><span class="pre">forest_helper.</span></span><span class="sig-name descname"><span class="pre">worker_cmp_cflw_phase3_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/forest_helper.html#worker_cmp_cflw_phase3_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#forest_helper.worker_cmp_cflw_phase3_batch" title="Link to this definition"></a></dt>
+<dd><p>Worker function to process batches of phase 3 tasks for <cite>_cmp_cflw_m1</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>list</em><em>[</em><em>tuple</em><em>]</em>) – list of tasks (tuples)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of results</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[tuple]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="forest_helper.worker_cmp_cgen_batch">
+<span class="sig-prename descclassname"><span class="pre">forest_helper.</span></span><span class="sig-name descname"><span class="pre">worker_cmp_cgen_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/forest_helper.html#worker_cmp_cgen_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#forest_helper.worker_cmp_cgen_batch" title="Link to this definition"></a></dt>
+<dd><p>Worker function to process batches of tasks for <cite>_cmp_cgen_m1</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<em>list</em><em>[</em><em>list</em><em>, </em><em>dict</em><em>, </em><em>list</em><em>]</em>) – (batch, cgen_keys, periods)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of (t, o, i, j, value) tuples</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[int, str, tuple, tuple, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="forest_helper.worker_cmp_cgen_phase3">
+<span class="sig-prename descclassname"><span class="pre">forest_helper.</span></span><span class="sig-name descname"><span class="pre">worker_cmp_cgen_phase3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/forest_helper.html#worker_cmp_cgen_phase3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#forest_helper.worker_cmp_cgen_phase3" title="Link to this definition"></a></dt>
+<dd><p>Args: (t, o, mu_t_o, lb, ub)
+Returns: [(name, coeffs, sense, rhs), …]</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="forest_helper.worker_cmp_cgen_phase3_batch">
+<span class="sig-prename descclassname"><span class="pre">forest_helper.</span></span><span class="sig-name descname"><span class="pre">worker_cmp_cgen_phase3_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/forest_helper.html#worker_cmp_cgen_phase3_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#forest_helper.worker_cmp_cgen_phase3_batch" title="Link to this definition"></a></dt>
+<dd><p>Process a batch of Phase 3 CGEN tasks.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="forest_helper.worker_gen_vars">
+<span class="sig-prename descclassname"><span class="pre">forest_helper.</span></span><span class="sig-name descname"><span class="pre">worker_gen_vars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">acodes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/forest_helper.html#worker_gen_vars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#forest_helper.worker_gen_vars" title="Link to this definition"></a></dt>
+<dd><p>Worker for building trees in <cite>_gen_vars_m1</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tasks</strong> (<em>list</em><em>[</em><em>(</em><em>str</em><em>, </em><em>...</em><em>)</em><em>, </em><em>int</em><em>)</em><em>]</em>) – list of (dtk, age) tuples to process</p></li>
+<li><p><strong>acodes</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – list of action codes to use when building trees</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of (dtk, age, tree) tuples</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[(str, …), int, <a class="reference internal" href="examples/ws3/docs/source/core.html#core.Tree" title="core.Tree">Tree</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="forest_helper.worker_summarize_tree_batch">
+<span class="sig-prename descclassname"><span class="pre">forest_helper.</span></span><span class="sig-name descname"><span class="pre">worker_summarize_tree_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/forest_helper.html#worker_summarize_tree_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#forest_helper.worker_summarize_tree_batch" title="Link to this definition"></a></dt>
+<dd><p>Summarize a batch of trees into coverage constraints and leaf outputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<em>list</em>) – [batch, z_coeff_key]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>[(cname, coeffs, z_coeffs), …]</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[list]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="forest.html" class="btn btn-neutral float-left" title="forest module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="financial.html" class="btn btn-neutral float-right" title="financial module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015--2025, Gregory Paradis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

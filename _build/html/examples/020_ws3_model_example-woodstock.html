@@ -1,0 +1,770 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Build a ws3 model from Woodstock-format text input files &mdash; ws3 1.0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d55fa986"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Using the ws3 optimization modelling funtions (basic)" href="021_ws3_model_example-optimize-basic.html" />
+    <link rel="prev" title="Building a ws3 model from scratch" href="010_ws3_model_example-fromscratch.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ws3
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../textbook/index.html">The ws3 Textbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples Gallery</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="000_venv_python_kernel_setup.html">Setting up a venv-sandboxed Python kernel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="010_ws3_model_example-fromscratch.html">Building a <code class="docutils literal notranslate"><span class="pre">ws3</span></code> model from scratch</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Build a <code class="docutils literal notranslate"><span class="pre">ws3</span></code> model from Woodstock-format text input files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#LANDSCAPE-section"><code class="docutils literal notranslate"><span class="pre">LANDSCAPE</span></code> section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#AREAS-section"><code class="docutils literal notranslate"><span class="pre">AREAS</span></code> section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#YIELDS-section"><code class="docutils literal notranslate"><span class="pre">YIELDS</span></code> section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ACTIONS-section"><code class="docutils literal notranslate"><span class="pre">ACTIONS</span></code> section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#TRANSITIONS-section"><code class="docutils literal notranslate"><span class="pre">TRANSITIONS</span></code> section</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Create-and-run-ForestModel-instance">Create and run <code class="docutils literal notranslate"><span class="pre">ForestModel</span></code> instance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Run-a-priority-queue-harvest-scheduling-heuristic">Run a priority queue harvest scheduling heuristic</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="021_ws3_model_example-optimize-basic.html">Using the <code class="docutils literal notranslate"><span class="pre">ws3</span></code> optimization modelling funtions (basic)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="022_ws3_model_example-optimize-advanced.html">Using the <code class="docutils literal notranslate"><span class="pre">ws3</span></code> optimization modelling function (advanced)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="023_ws3_model_example-optimize-parallel.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Parallel Model Building + HiGHS (<code class="docutils literal notranslate"><span class="pre">highspy</span></code>) — Hands-On</a></li>
+<li class="toctree-l2"><a class="reference internal" href="023_ws3_model_example-optimize-parallel.html#Picking-max_workers-in-ws3:-quick-guidance-+-deeper-dive">Picking <code class="docutils literal notranslate"><span class="pre">max_workers</span></code> in <code class="docutils literal notranslate"><span class="pre">ws3</span></code>: quick guidance + deeper dive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="024_ws3_model_example-spatial-allocate-schedule.html">Spatially allocating a <code class="docutils literal notranslate"><span class="pre">ws3</span></code> harvest schedule to raster grids</a></li>
+<li class="toctree-l2"><a class="reference internal" href="030_ws3_libcbm_sequential-fromscratch.html">Running <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> as a two-stage sequential pipeline (from scratch)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="031_ws3_libcbm_sequential-builtin.html">Running <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> as a two-stage sequential pipeline (using built-in functions)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="040_ws3_libcbm_neilsonhack-fromscratch.html">Implement the <em>Neilson hack</em> using <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> (from scratch)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="050_dss_avoided_fire.html">DSS Example: Avoided Fire</a></li>
+<li class="toctree-l2"><a class="reference internal" href="060_dss_avoid_harvest.html">DSS Example: Avoided Harvesting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ws3</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../examples.html">Examples Gallery</a></li>
+      <li class="breadcrumb-item active">Build a <code class="docutils literal notranslate"><span class="pre">ws3</span></code> model from Woodstock-format text input files</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/020_ws3_model_example-woodstock.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Build-a-ws3-model-from-Woodstock-format-text-input-files">
+<h1>Build a <code class="docutils literal notranslate"><span class="pre">ws3</span></code> model from Woodstock-format text input files<a class="headerlink" href="#Build-a-ws3-model-from-Woodstock-format-text-input-files" title="Link to this heading"></a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">ws3</span></code> has built-in functions that can parse Woodstock-formatted model definition text files. Here we build an equivalent model to the direct-code model defined in <code class="docutils literal notranslate"><span class="pre">ws3_model_example</span></code>, but using Woodstock-foratted input files (as an alternative to the pure Python code implementation above).</p>
+<p>The Woodstock-formatted input files are just flat text files, containing special Woodstock code.</p>
+<p>Woodstock models are defined in terms of a number of <em>sections</em>. The sections can be defined in a single text file, or in separate text files. We will use separate text files for each section in this example.</p>
+<p>Our model will include the following sections:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">LANDSCAPE</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">AREAS</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">YIELD</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ACTIONS</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TRANSITIONS</span></code></p></li>
+</ul>
+<p>There are other possible sections that one can include in a Woodstock model, which will not include here. This is not intended to be a comprehensive overview of Woodstock-format model definition. Refer to the Woodstock technical documentation for the complete story.</p>
+<p>The model input files for this example are located in <code class="docutils literal notranslate"><span class="pre">data/woodstock_model_files_tsa24_clipped</span></code>.</p>
+<p>Optionally, uninstall the <code class="docutils literal notranslate"><span class="pre">ws3</span></code> package and replace it with a pointer to <em>this local clone of the GitHub repository code</em> (useful if you want ot tweak the source code for whatever reason).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clobber_ws3</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">if</span> <span class="n">clobber_ws3</span><span class="p">:</span>
+    <span class="o">%</span><span class="k">pip</span> uninstall -y ws3
+    <span class="o">%</span><span class="k">pip</span> install -e ..
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Found existing installation: ws3 1.0.5
+Uninstalling ws3-1.0.5:
+  Successfully uninstalled ws3-1.0.5
+Note: you may need to restart the kernel to use updated packages.
+Obtaining file:///srv/shared-data/gep/jupyterhub04-projects/ws3
+  Installing build dependencies ... - \ done
+  Checking if build backend supports build_editable ... done
+  Getting requirements to build editable ... done
+  Installing backend dependencies ... - \ done
+  Preparing editable metadata (pyproject.toml) ... done
+Requirement already satisfied: dill in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ws3==1.0.5) (0.4.1)
+Requirement already satisfied: fiona in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ws3==1.0.5) (1.10.1)
+Requirement already satisfied: highspy in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ws3==1.0.5) (1.15.1)
+Requirement already satisfied: matplotlib in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ws3==1.0.5) (3.11.1)
+Requirement already satisfied: numpy&gt;=1.21 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ws3==1.0.5) (2.5.1)
+Requirement already satisfied: pandas&gt;=1.3 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ws3==1.0.5) (3.0.5)
+Requirement already satisfied: profilehooks in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ws3==1.0.5) (1.13.0)
+Requirement already satisfied: rasterio in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ws3==1.0.5) (1.5.0)
+Requirement already satisfied: scipy&gt;=1.7 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ws3==1.0.5) (1.18.0)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from pandas&gt;=1.3-&gt;ws3==1.0.5) (2.9.0.post0)
+Requirement already satisfied: six&gt;=1.5 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&gt;=1.3-&gt;ws3==1.0.5) (1.17.0)
+Requirement already satisfied: attrs&gt;=19.2.0 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from fiona-&gt;ws3==1.0.5) (26.1.0)
+Requirement already satisfied: certifi in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from fiona-&gt;ws3==1.0.5) (2026.7.22)
+Requirement already satisfied: click~=8.0 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from fiona-&gt;ws3==1.0.5) (8.4.2)
+Requirement already satisfied: click-plugins&gt;=1.0 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from fiona-&gt;ws3==1.0.5) (1.1.1.2)
+Requirement already satisfied: cligj&gt;=0.5 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from fiona-&gt;ws3==1.0.5) (0.7.2)
+Requirement already satisfied: contourpy&gt;=1.0.1 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.0.5) (1.3.3)
+Requirement already satisfied: cycler&gt;=0.10 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.0.5) (0.12.1)
+Requirement already satisfied: fonttools&gt;=4.28.2 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.0.5) (4.63.0)
+Requirement already satisfied: kiwisolver&gt;=1.3.1 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.0.5) (1.5.0)
+Requirement already satisfied: packaging&gt;=20.0 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.0.5) (26.2)
+Requirement already satisfied: pillow&gt;=9 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.0.5) (12.3.0)
+Requirement already satisfied: pyparsing&gt;=3 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.0.5) (3.3.2)
+Requirement already satisfied: affine in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from rasterio-&gt;ws3==1.0.5) (2.4.0)
+Building wheels for collected packages: ws3
+  Building editable for ws3 (pyproject.toml) ... done
+  Created wheel for ws3: filename=ws3-1.0.5-py3-none-any.whl size=4311 sha256=5bc6ed0fe6ed1a83fc53946b68bbdc6d193a69f80dba0958bb0faa11f76bc346
+  Stored in directory: /tmp/pip-ephem-wheel-cache-dhyi2_jw/wheels/48/0d/9f/70e0b2acc2b6dde783e36c6697e8c7f8497a1796cbc7aedcfb
+Successfully built ws3
+Installing collected packages: ws3
+Successfully installed ws3-1.0.5
+Note: you may need to restart the kernel to use updated packages.
+</pre></div></div>
+</div>
+<p>Use <code class="docutils literal notranslate"><span class="pre">pip</span></code> to install Python packages listed in <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> (some extra packages needed for example notebooks to run correctly).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">pip</span> install -r requirements.txt
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Requirement already satisfied: seaborn in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from -r requirements.txt (line 1)) (0.13.2)
+Requirement already satisfied: geopandas in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from -r requirements.txt (line 2)) (1.1.4)
+Requirement already satisfied: ipywidgets in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from -r requirements.txt (line 3)) (8.1.8)
+Requirement already satisfied: numpy!=1.24.0,&gt;=1.20 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from seaborn-&gt;-r requirements.txt (line 1)) (2.5.1)
+Requirement already satisfied: pandas&gt;=1.2 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from seaborn-&gt;-r requirements.txt (line 1)) (3.0.5)
+Requirement already satisfied: matplotlib!=3.6.1,&gt;=3.4 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from seaborn-&gt;-r requirements.txt (line 1)) (3.11.1)
+Requirement already satisfied: pyogrio&gt;=0.7.2 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from geopandas-&gt;-r requirements.txt (line 2)) (0.13.0)
+Requirement already satisfied: packaging in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from geopandas-&gt;-r requirements.txt (line 2)) (26.2)
+Requirement already satisfied: pyproj&gt;=3.5.0 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from geopandas-&gt;-r requirements.txt (line 2)) (3.7.2)
+Requirement already satisfied: shapely&gt;=2.0.0 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from geopandas-&gt;-r requirements.txt (line 2)) (2.1.2)
+Requirement already satisfied: comm&gt;=0.1.3 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ipywidgets-&gt;-r requirements.txt (line 3)) (0.2.3)
+Requirement already satisfied: ipython&gt;=6.1.0 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ipywidgets-&gt;-r requirements.txt (line 3)) (9.15.0)
+Requirement already satisfied: traitlets&gt;=4.3.1 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ipywidgets-&gt;-r requirements.txt (line 3)) (5.15.1)
+Requirement already satisfied: widgetsnbextension~=4.0.14 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ipywidgets-&gt;-r requirements.txt (line 3)) (4.0.15)
+Requirement already satisfied: jupyterlab_widgets~=3.0.15 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ipywidgets-&gt;-r requirements.txt (line 3)) (3.0.16)
+Requirement already satisfied: decorator&gt;=5.1.0 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (5.3.1)
+Requirement already satisfied: ipython-pygments-lexers&gt;=1.0.0 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (1.1.1)
+Requirement already satisfied: jedi&gt;=0.18.2 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.20.0)
+Requirement already satisfied: matplotlib-inline&gt;=0.1.6 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.2.2)
+Requirement already satisfied: pexpect&gt;4.6 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (4.9.0)
+Requirement already satisfied: prompt_toolkit&lt;3.1.0,&gt;=3.0.41 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (3.0.52)
+Requirement already satisfied: psutil&gt;=7 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (7.2.2)
+Requirement already satisfied: pygments&gt;=2.14.0 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (2.20.0)
+Requirement already satisfied: stack_data&gt;=0.6.0 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.6.3)
+Requirement already satisfied: wcwidth in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from prompt_toolkit&lt;3.1.0,&gt;=3.0.41-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.8.2)
+Requirement already satisfied: parso&lt;0.9.0,&gt;=0.8.6 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from jedi&gt;=0.18.2-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.8.7)
+Requirement already satisfied: contourpy&gt;=1.0.1 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (1.3.3)
+Requirement already satisfied: cycler&gt;=0.10 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (0.12.1)
+Requirement already satisfied: fonttools&gt;=4.28.2 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (4.63.0)
+Requirement already satisfied: kiwisolver&gt;=1.3.1 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (1.5.0)
+Requirement already satisfied: pillow&gt;=9 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (12.3.0)
+Requirement already satisfied: pyparsing&gt;=3 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (3.3.2)
+Requirement already satisfied: python-dateutil&gt;=2.7 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (2.9.0.post0)
+Requirement already satisfied: ptyprocess&gt;=0.5 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from pexpect&gt;4.6-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.7.0)
+Requirement already satisfied: certifi in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from pyogrio&gt;=0.7.2-&gt;geopandas-&gt;-r requirements.txt (line 2)) (2026.7.22)
+Requirement already satisfied: six&gt;=1.5 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from python-dateutil&gt;=2.7-&gt;matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (1.17.0)
+Requirement already satisfied: executing&gt;=1.2.0 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from stack_data&gt;=0.6.0-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (2.2.1)
+Requirement already satisfied: asttokens&gt;=2.1.0 in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from stack_data&gt;=0.6.0-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (3.0.2)
+Requirement already satisfied: pure-eval in /srv/shared-data/gep/jupyterhub04-projects/ws3/.venv-mcp/lib/python3.12/site-packages (from stack_data&gt;=0.6.0-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.2.3)
+Note: you may need to restart the kernel to use updated packages.
+</pre></div></div>
+</div>
+<section id="LANDSCAPE-section">
+<h2><code class="docutils literal notranslate"><span class="pre">LANDSCAPE</span></code> section<a class="headerlink" href="#LANDSCAPE-section" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">LANDSCAPE</span></code> section defines themes (i.e., state variables), theme basecodes (i.e., valid state variable values), and theme aggregates (i.e., groups of state variable values within a given theme, which can include aggregates with no [documented] limit on recursion depth).</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">LANDSCAPE</span></code> section for this example is defined in file <code class="docutils literal notranslate"><span class="pre">data/woodstock_model_files_tsa24_clipped/tsa24_clipped.lan</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>cat<span class="w"> </span>data/woodstock_model_files_tsa24_clipped/tsa24_clipped.lan
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+*THEME Timber Supply Area (TSA)
+tsa24_clipped
+
+*THEME Timber Harvesting Land Base (THLB)
+0
+1
+
+*THEME Analysis Unit (AU)
+2402002
+2401007
+2402001
+2401005
+2402000
+2403004
+2403006
+2401004
+2401006
+2402004
+2402007
+2403005
+2401002
+2403007
+2403003
+2401000
+2402005
+2402006
+2401003
+2403002
+2402003
+2403000
+2401001
+2403001
+
+*THEME Leading tree species (CANFI species code)
+304
+100
+1201
+204
+104
+
+*THEME Yield curve ID
+2402002
+2401007
+2422007
+2402001
+2401005
+2422003
+2402000
+2403004
+2423004
+2403006
+2421007
+2423003
+2401004
+2401006
+2402004
+2421002
+2422004
+2423002
+2422002
+2402007
+2403005
+2401002
+2403007
+2423007
+2403003
+2401000
+2402005
+2402006
+2401003
+2423001
+2403002
+2402003
+2422000
+2403000
+2401001
+2423000
+2403001
+</pre></div></div>
+</div>
+</section>
+<section id="AREAS-section">
+<h2><code class="docutils literal notranslate"><span class="pre">AREAS</span></code> section<a class="headerlink" href="#AREAS-section" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">AREAS</span></code> section defines the initial inventory, as area by development type and age.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AREAS</span></code> section for this example is defined in file <code class="docutils literal notranslate"><span class="pre">data/woodstock_model_files_tsa24_clipped/tsa24_clipped.are</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>cat<span class="w"> </span>data/woodstock_model_files_tsa24_clipped/tsa24_clipped.are
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+*A tsa24_clipped 0 2401000 100 2401000 8 15.182274886
+*A tsa24_clipped 0 2401000 100 2401000 9 20.653788843
+*A tsa24_clipped 0 2401000 100 2401000 10 1.10937449
+*A tsa24_clipped 0 2401000 100 2401000 12 25.731748335
+*A tsa24_clipped 0 2401000 100 2401000 13 62.023827597
+*A tsa24_clipped 0 2401000 100 2401000 14 45.32228955
+*A tsa24_clipped 0 2401000 100 2401000 15 3.052804425
+*A tsa24_clipped 0 2402005 1201 2402005 8 1.812979326
+*A tsa24_clipped 1 2401002 204 2401002 7 103.767403235
+*A tsa24_clipped 1 2401002 204 2401002 8 286.302782523
+*A tsa24_clipped 1 2401002 204 2401002 9 196.428482482
+*A tsa24_clipped 1 2401002 204 2401002 10 32.175418532
+*A tsa24_clipped 1 2401002 204 2401002 11 54.215643189
+*A tsa24_clipped 1 2401002 204 2401002 12 78.16612132
+*A tsa24_clipped 1 2401002 204 2401002 13 72.244219194
+*A tsa24_clipped 1 2401002 204 2401002 14 96.384426855
+*A tsa24_clipped 1 2401002 204 2401002 15 43.917761824
+*A tsa24_clipped 1 2401002 204 2421002 2 0.422054121
+*A tsa24_clipped 1 2402000 100 2402000 16 0.638005469
+*A tsa24_clipped 1 2402002 204 2402002 7 32.641681831
+*A tsa24_clipped 1 2402002 204 2402002 9 82.113146973
+*A tsa24_clipped 1 2402002 204 2402002 11 3.195378955
+*A tsa24_clipped 1 2403000 100 2403000 9 14.811643287
+*A tsa24_clipped 1 2403002 204 2403002 7 2.24399059
+*A tsa24_clipped 1 2403002 204 2423002 1 59.814291194
+*A tsa24_clipped 1 2403002 204 2423002 1 32.366198551
+</pre></div></div>
+</div>
+</section>
+<section id="YIELDS-section">
+<h2><code class="docutils literal notranslate"><span class="pre">YIELDS</span></code> section<a class="headerlink" href="#YIELDS-section" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">YIELDS</span></code> section defines yield curves and links these to development types.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">YIELDS</span></code> section for this example is defined in file <code class="docutils literal notranslate"><span class="pre">data/woodstock_model_files_tsa24_clipped/tsa24_clipped.yld</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>cat<span class="w"> </span>data/woodstock_model_files_tsa24_clipped/tsa24_clipped.yld
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+*Y ? ? 2401000 ? 2401000
+s0100 1 0 1 5 10 16 24 33 43 54 64 75 85 95 104 113 121 127 133 138 143 146 148 150 151 151 150 149 147 145 145
+*Y ? ? 2401000 ? 2401000
+s0100 1 0 1 5 10 16 24 33 43 54 64 75 85 95 104 113 121 127 133 138 143 146 148 150 151 151 150 149 147 145 145
+*Y ? ? 2402000 ? 2402000
+s0100 1 4 13 27 42 58 76 93 110 126 141 156 169 182 193 203 211 219 225 231 235 238 240 242 242 242 241 240 238 235 235
+*Y ? ? 2402000 ? 2422000
+s0100 1 0 0 0 0 3 18 46 79 112 144 171 195 215 234 248 261 272 282 290 298 305 311 316 320 325 328 330 333 335 336
+*Y ? ? 2403000 ? 2403000
+s0100 1 3 15 37 67 99 133 166 197 225 250 272 290 305 316 325 330 333 333 331 328 322 316 308 299 289 279 268 257 246 246
+*Y ? ? 2403000 ? 2423000
+s0100 1 0 0 0 5 38 88 142 190 231 265 293 315 334 350 365 377 388 396 403 410 416 420 424 427 429 431 433 433 433 433
+*Y ? ? 2401001 ? 2401001
+s0304 1 0 0 0 0 0 0 2 5 11 18 25 32 40 47 54 62 66 70 75 79 83 88 92 94 95 97 97 97 97 97
+*Y ? ? 2401001 ? 2401001
+s0304 1 0 0 0 0 0 0 2 5 11 18 25 32 40 47 54 62 66 70 75 79 83 88 92 94 95 97 97 97 97 97
+*Y ? ? 2402001 ? 2402001
+s0304 1 0 0 0 0 0 3 8 17 29 43 57 71 84 96 107 117 125 132 138 143 146 149 150 151 151 150 149 146 144 144
+*Y ? ? 2402001 ? 2402001
+s0304 1 0 0 0 0 0 3 8 17 29 43 57 71 84 96 107 117 125 132 138 143 146 149 150 151 151 150 149 146 144 144
+*Y ? ? 2403001 ? 2403001
+s0304 1 0 0 1 6 16 30 48 68 87 106 123 140 154 167 178 188 195 201 206 209 210 211 210 209 206 203 199 195 190 190
+*Y ? ? 2403001 ? 2423001
+s0304 1 0 0 0 0 0 0 6 21 43 70 97 126 152 176 199 218 236 252 265 277 288 297 306 314 321 326 331 336 339 340
+*Y ? ? 2401002 ? 2401002
+s0204 1 0 4 12 25 40 57 73 89 103 116 128 137 145 152 157 160 162 163 163 162 160 158 154 151 147 142 137 132 127 127
+*Y ? ? 2401002 ? 2421002
+s0204 1 0 0 0 0 1 7 23 47 71 94 114 132 146 157 166 173 179 183 187 190 191 192 193 194 195 195 195 196 196 196
+*Y ? ? 2402002 ? 2402002
+s0204 1 5 18 37 57 79 101 122 142 160 176 191 203 214 222 229 233 237 238 239 238 236 233 229 224 219 213 207 201 194 194
+*Y ? ? 2402002 ? 2422002
+s0204 1 0 0 0 1 16 55 100 143 180 208 231 247 261 271 278 282 286 288 289 290 291 292 292 293 293 293 293 293 293 293
+*Y ? ? 2403002 ? 2403002
+s0204 1 8 29 59 93 129 165 200 232 261 287 309 328 343 355 363 368 371 371 369 365 359 352 344 334 324 313 301 290 277 277
+*Y ? ? 2403002 ? 2423002
+s0204 1 0 0 0 24 98 184 257 312 353 380 400 413 422 428 433 435 436 437 436 434 433 431 430 429 428 428 428 428 428 428
+*Y ? ? 2401003 ? 2401003
+s0304 1 0 0 0 1 6 15 27 42 58 74 89 103 116 127 137 145 152 157 161 164 166 167 166 165 163 161 158 154 150 150
+*Y ? ? 2401003 ? 2401003
+s0304 1 0 0 0 1 6 15 27 42 58 74 89 103 116 127 137 145 152 157 161 164 166 167 166 165 163 161 158 154 150 150
+*Y ? ? 2402003 ? 2402003
+s0304 1 0 0 2 9 22 42 67 94 120 145 168 189 207 222 235 245 252 258 261 262 261 259 255 251 245 238 231 223 215 215
+*Y ? ? 2402003 ? 2422003
+s0304 1 0 0 0 0 0 6 25 52 84 117 150 180 206 228 247 263 277 290 301 311 319 327 333 338 342 347 350 353 357 358
+*Y ? ? 2403003 ? 2403003
+s0304 1 6 25 53 86 120 155 189 220 249 275 297 315 330 342 350 356 359 359 357 354 348 341 333 324 314 304 293 281 270 270
+*Y ? ? 2403003 ? 2423003
+s0304 1 0 0 0 1 17 60 114 170 221 264 299 327 352 372 390 404 416 426 435 443 450 456 461 466 469 471 473 474 475 476
+*Y ? ? 2401004 ? 2401004
+s0104 1 0 0 0 0 0 2 6 12 22 33 45 58 70 83 94 105 115 125 133 139 145 150 154 157 159 160 160 159 158 158
+*Y ? ? 2401004 ? 2401004
+s0104 1 0 0 0 0 0 2 6 12 22 33 45 58 70 83 94 105 115 125 133 139 145 150 154 157 159 160 160 159 158 158
+*Y ? ? 2402004 ? 2402004
+s0104 1 0 0 0 1 4 11 22 35 51 68 87 106 125 142 159 174 188 199 209 216 222 225 227 228 226 224 220 215 209 209
+*Y ? ? 2402004 ? 2422004
+s0104 1 0 0 0 0 0 0 5 18 37 60 85 111 134 156 176 194 210 224 236 247 257 265 273 280 286 291 296 300 303 304
+*Y ? ? 2403004 ? 2403004
+s0104 1 0 0 1 6 16 33 55 80 105 129 153 175 195 213 229 242 253 262 269 274 277 279 279 277 275 271 267 261 255 255
+*Y ? ? 2403004 ? 2423004
+s0104 1 0 0 0 0 1 10 33 63 98 133 165 195 222 245 266 284 301 316 329 341 351 360 368 374 380 384 387 390 393 394
+*Y ? ? 2401005 ? 2401005
+s1201 1 2 12 30 53 78 102 124 144 160 174 184 191 196 198 198 196 193 188 182 175 168 161 153 145 137 129 120 112 105 105
+*Y ? ? 2401005 ? 2401005
+s1201 1 2 12 30 53 78 102 124 144 160 174 184 191 196 198 198 196 193 188 182 175 168 161 153 145 137 129 120 112 105 105
+*Y ? ? 2402005 ? 2402005
+s1201 1 8 30 59 89 118 146 170 191 208 221 230 237 240 240 238 234 229 222 214 205 196 186 176 166 156 146 137 127 118 118
+*Y ? ? 2402005 ? 2402005
+s1201 1 8 30 59 89 118 146 170 191 208 221 230 237 240 240 238 234 229 222 214 205 196 186 176 166 156 146 137 127 118 118
+*Y ? ? 2403005 ? 2403005
+s1201 1 10 37 73 111 148 183 214 240 260 276 287 294 297 296 292 286 278 268 258 246 233 220 208 195 182 169 158 146 135 135
+*Y ? ? 2403005 ? 2403005
+s1201 1 10 37 73 111 148 183 214 240 260 276 287 294 297 296 292 286 278 268 258 246 233 220 208 195 182 169 158 146 135 135
+*Y ? ? 2401006 ? 2401006
+s1201 1 4 17 35 57 79 101 121 139 155 168 179 187 193 197 199 199 198 196 192 188 182 176 170 163 156 149 142 134 127 127
+*Y ? ? 2401006 ? 2401006
+s1201 1 4 17 35 57 79 101 121 139 155 168 179 187 193 197 199 199 198 196 192 188 182 176 170 163 156 149 142 134 127 127
+*Y ? ? 2402006 ? 2402006
+s1201 1 8 30 59 90 121 150 176 199 219 234 246 255 260 262 262 260 255 249 242 234 225 215 205 195 184 174 164 154 144 144
+*Y ? ? 2402006 ? 2402006
+s1201 1 8 30 59 90 121 150 176 199 219 234 246 255 260 262 262 260 255 249 242 234 225 215 205 195 184 174 164 154 144 144
+*Y ? ? 2403006 ? 2403006
+s1201 1 9 35 69 106 143 178 210 237 260 279 293 302 308 310 309 306 300 292 283 273 261 250 237 225 212 199 187 175 163 163
+*Y ? ? 2403006 ? 2403006
+s1201 1 9 35 69 106 143 178 210 237 260 279 293 302 308 310 309 306 300 292 283 273 261 250 237 225 212 199 187 175 163 163
+*Y ? ? 2401007 ? 2401007
+s0100 1 0 0 3 12 27 47 71 95 119 140 160 177 191 203 213 220 225 228 229 228 226 223 218 213 207 200 193 186 178 178
+*Y ? ? 2401007 ? 2421007
+s0100 1 0 0 0 0 3 19 49 83 118 151 180 205 226 245 261 275 286 296 305 313 320 327 332 337 341 344 347 350 352 353
+*Y ? ? 2402007 ? 2402007
+s0100 1 0 2 12 29 54 83 113 142 170 194 216 235 250 263 272 278 282 283 283 280 276 270 263 256 247 238 229 219 209 209
+*Y ? ? 2402007 ? 2422007
+s0100 1 0 0 0 2 24 65 114 161 201 235 264 288 307 323 338 351 362 371 379 385 391 396 401 405 407 410 412 413 414 415
+*Y ? ? 2403007 ? 2403007
+s0100 1 6 28 61 100 143 186 226 264 297 326 350 370 384 395 402 404 404 401 395 387 378 367 354 341 327 313 298 284 269 269
+*Y ? ? 2403007 ? 2423007
+s0100 1 0 0 0 30 99 177 244 300 343 378 407 432 452 468 483 495 505 513 519 523 526 529 531 534 535 535 535 535 536 535
+*YC ? ? ? ? ?
+totvol _SUM(s0100, s0204, s0304, s1201, s0104)
+swdvol _SUM(s0100, s0204, s0304, s0104)
+hwdvol _SUM(s1201)
+</pre></div></div>
+</div>
+</section>
+<section id="ACTIONS-section">
+<h2><code class="docutils literal notranslate"><span class="pre">ACTIONS</span></code> section<a class="headerlink" href="#ACTIONS-section" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">ACTIONS</span></code> section defines actions (i.e., treatments).</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ACTIONS</span></code> section for this example is defined in file <code class="docutils literal notranslate"><span class="pre">data/woodstock_model_files_tsa24_clipped/tsa24_clipped.act</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>cat<span class="w"> </span>data/woodstock_model_files_tsa24_clipped/tsa24_clipped.act
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+*ACTION harvest Y
+*OPERABLE harvest
+? 1 ? ? ? _AGE &gt;= 8 AND _AGE &lt;= 99
+</pre></div></div>
+</div>
+</section>
+<section id="TRANSITIONS-section">
+<h2><code class="docutils literal notranslate"><span class="pre">TRANSITIONS</span></code> section<a class="headerlink" href="#TRANSITIONS-section" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">TRANSITIONS</span></code> section defines transitions (i.e., change in theme-wise state variable values and age, induced by applying an action to an area of an age class within a development type).</p>
+<p>We have AU-wise transitions to specific TIPSY curves after harvesting action in this model.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">TRANSITIONS</span></code> section for this example is defined in file <code class="docutils literal notranslate"><span class="pre">data/woodstock_model_files_tsa24_clipped/tsa24_clipped.trn</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>cat<span class="w"> </span>data/woodstock_model_files_tsa24_clipped/tsa24_clipped.trn
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+*CASE harvest
+*SOURCE ? ? 2402000 ? ?
+*TARGET ? ? ? ? 2422000 100
+*SOURCE ? ? 2403000 ? ?
+*TARGET ? ? ? ? 2423000 100
+*SOURCE ? ? 2403001 ? ?
+*TARGET ? ? ? ? 2423001 100
+*SOURCE ? ? 2401002 ? ?
+*TARGET ? ? ? ? 2421002 100
+*SOURCE ? ? 2402002 ? ?
+*TARGET ? ? ? ? 2422002 100
+*SOURCE ? ? 2403002 ? ?
+*TARGET ? ? ? ? 2423002 100
+*SOURCE ? ? 2402003 ? ?
+*TARGET ? ? ? ? 2422003 100
+*SOURCE ? ? 2403003 ? ?
+*TARGET ? ? ? ? 2423003 100
+*SOURCE ? ? 2402004 ? ?
+*TARGET ? ? ? ? 2422004 100
+*SOURCE ? ? 2403004 ? ?
+*TARGET ? ? ? ? 2423004 100
+*SOURCE ? ? 2401007 ? ?
+*TARGET ? ? ? ? 2421007 100
+*SOURCE ? ? 2402007 ? ?
+*TARGET ? ? ? ? 2422007 100
+*SOURCE ? ? 2403007 ? ?
+*TARGET ? ? ? ? 2423007 100
+</pre></div></div>
+</div>
+</section>
+<section id="Create-and-run-ForestModel-instance">
+<h2>Create and run <code class="docutils literal notranslate"><span class="pre">ForestModel</span></code> instance<a class="headerlink" href="#Create-and-run-ForestModel-instance" title="Link to this heading"></a></h2>
+<p>The import files assume path and filename values based on <code class="docutils literal notranslate"><span class="pre">model_path</span></code> and <code class="docutils literal notranslate"><span class="pre">model_name</span></code> attributes set in the <code class="docutils literal notranslate"><span class="pre">ForestModel.__init__</span></code> method, combined with standard filename extensions for Woodstock model sections (i.e., <code class="docutils literal notranslate"><span class="pre">.lan</span></code>, <code class="docutils literal notranslate"><span class="pre">.are</span></code>, <code class="docutils literal notranslate"><span class="pre">.yld</span></code>, <code class="docutils literal notranslate"><span class="pre">.act</span></code>, <code class="docutils literal notranslate"><span class="pre">.trn</span></code>, etc.). See <code class="docutils literal notranslate"><span class="pre">ws3.forest</span></code> module source code for details.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ws3.forest</span><span class="o">,</span><span class="w"> </span><span class="nn">ws3.core</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">base_year</span> <span class="o">=</span> <span class="mi">2020</span>
+<span class="n">horizon</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">period_length</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">max_age</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">tvy_name</span> <span class="o">=</span> <span class="s2">&quot;totvol&quot;</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span> <span class="o">=</span> <span class="n">ws3</span><span class="o">.</span><span class="n">forest</span><span class="o">.</span><span class="n">ForestModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;tsa24_clipped&quot;</span><span class="p">,</span>
+                            <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;data/woodstock_model_files_tsa24_clipped&quot;</span><span class="p">,</span>
+                            <span class="n">base_year</span><span class="o">=</span><span class="n">base_year</span><span class="p">,</span>
+                            <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span>
+                            <span class="n">period_length</span><span class="o">=</span><span class="n">period_length</span><span class="p">,</span>
+                            <span class="n">max_age</span><span class="o">=</span><span class="n">max_age</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span><span class="o">.</span><span class="n">import_landscape_section</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span><span class="o">.</span><span class="n">import_areas_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+0
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span><span class="o">.</span><span class="n">import_yields_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span><span class="o">.</span><span class="n">import_actions_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span><span class="o">.</span><span class="n">import_transitions_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Run-a-priority-queue-harvest-scheduling-heuristic">
+<h2>Run a priority queue harvest scheduling heuristic<a class="headerlink" href="#Run-a-priority-queue-harvest-scheduling-heuristic" title="Link to this heading"></a></h2>
+<p>The local <code class="docutils literal notranslate"><span class="pre">util</span></code> module defines a <code class="docutils literal notranslate"><span class="pre">schedule_harvest_areacontrol</span></code> function that implements a old-stand-first priority queue harvest scheduling heuristic. To make this demo as n00b friendly as possible, we set this up to be self-parametrising, i.e., the model automatically figures out an appropriate “periodic harvest area target” parameter value, by analysing the shape of its own yield curves to estimate a landscape-level optimal rotation age.</p>
+<p>The local <code class="docutils literal notranslate"><span class="pre">util</span></code> module also defines a <code class="docutils literal notranslate"><span class="pre">compile_scenario</span></code> function that compiles some aggregate performance indicators from results of a harvesting and growth scenario, as well as a <code class="docutils literal notranslate"><span class="pre">plot_scenario</span></code> function that plots a grid of three bar charts so we can “see” the solution.</p>
+<p>Note that these are just local utility functions custom-coded to work with our test dataset an scenarios, that we defined in a side-car module for convenient re-use in other notebooks in this examples library to provide some visual feedback on the modelling process.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">util</span><span class="w"> </span><span class="kn">import</span> <span class="n">schedule_harvest_areacontrol</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">util</span><span class="w"> </span><span class="kn">import</span> <span class="n">compile_scenario</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">util</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_scenario</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span> <span class="c1"># flip to True if you want the harvest scheduler to get _really_ chatty while it works</span>
+<span class="n">sch</span> <span class="o">=</span> <span class="n">schedule_harvest_areacontrol</span><span class="p">(</span><span class="n">fm</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_scenario</span><span class="p">(</span><span class="n">compile_scenario</span><span class="p">(</span><span class="n">fm</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(&lt;Figure size 1200x400 with 3 Axes&gt;,
+ array([&lt;Axes: title={&#39;center&#39;: &#39;Harvested area (ha)&#39;}&gt;,
+        &lt;Axes: title={&#39;center&#39;: &#39;Harvested volume (m3)&#39;}&gt;,
+        &lt;Axes: title={&#39;center&#39;: &#39;Growing Stock (m3)&#39;}&gt;], dtype=object))
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_020_ws3_model_example-woodstock_36_1.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_020_ws3_model_example-woodstock_36_1.png" />
+</div>
+</div>
+<p>Ta da!</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="010_ws3_model_example-fromscratch.html" class="btn btn-neutral float-left" title="Building a ws3 model from scratch" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="021_ws3_model_example-optimize-basic.html" class="btn btn-neutral float-right" title="Using the ws3 optimization modelling funtions (basic)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015--2025, Gregory Paradis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

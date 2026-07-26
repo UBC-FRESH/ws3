@@ -1,0 +1,294 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quickstart Tutorial &mdash; ws3 1.0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d55fa986"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Your First Model" href="first_model.html" />
+    <link rel="prev" title="Getting Started" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ws3
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Getting Started</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#id2">Getting Started</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Quickstart Tutorial</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-1-import-ws3">Step 1: Import ws3</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-2-create-a-forest-model">Step 2: Create a Forest Model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-3-add-development-types">Step 3: Add Development Types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-4-define-growth-curves">Step 4: Define Growth Curves</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-5-define-actions">Step 5: Define Actions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-6-run-a-simulation">Step 6: Run a Simulation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-7-inspect-the-output">Step 7: Inspect the Output</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#what-s-next">What’s Next?</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="first_model.html">Your First Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="architecture_overview.html">Architecture Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#what-you-will-learn">What You Will Learn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#estimated-time">Estimated Time</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../textbook/index.html">The ws3 Textbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ws3</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Getting Started</a></li>
+      <li class="breadcrumb-item active">Quickstart Tutorial</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/getting_started/quickstart.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="quickstart-tutorial">
+<h1>Quickstart Tutorial<a class="headerlink" href="#quickstart-tutorial" title="Link to this heading"></a></h1>
+<p>This tutorial gets you up and running with ws3 in under 10 minutes.
+You’ll build a simple wood supply model, run a simulation, and inspect
+the output.</p>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>ws3 installed (see <a class="reference internal" href="installation.html"><span class="doc">Installation</span></a>)</p></li>
+<li><p>Python 3.9+ available in your terminal</p></li>
+</ul>
+</section>
+<section id="step-1-import-ws3">
+<h2>Step 1: Import ws3<a class="headerlink" href="#step-1-import-ws3" title="Link to this heading"></a></h2>
+<p>Open a Python interpreter or Jupyter notebook and import ws3:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ws3</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ws3 version: </span><span class="si">{</span><span class="n">ws3</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-2-create-a-forest-model">
+<h2>Step 2: Create a Forest Model<a class="headerlink" href="#step-2-create-a-forest-model" title="Link to this heading"></a></h2>
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.forest.ForestModel</span></code> class is the central hub for
+building a wood supply model.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.forest</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForestModel</span>
+
+<span class="c1"># Create a model with default settings</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model created: </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-3-add-development-types">
+<h2>Step 3: Add Development Types<a class="headerlink" href="#step-3-add-development-types" title="Link to this heading"></a></h2>
+<p>Development types represent homogeneous groups of forest stands. Each
+type has a code, area (hectares), age, and attributes.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add three development types representing different forest conditions</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_development_type</span><span class="p">(</span>
+    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;DF-SI50&quot;</span><span class="p">,</span>
+    <span class="n">area</span><span class="o">=</span><span class="mf">500.0</span><span class="p">,</span>
+    <span class="n">age</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">species</span><span class="o">=</span><span class="s2">&quot;Pseudotsuga menziesii&quot;</span><span class="p">,</span>
+    <span class="n">site_index</span><span class="o">=</span><span class="mi">50</span>
+<span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">add_development_type</span><span class="p">(</span>
+    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;Spruce-SI40&quot;</span><span class="p">,</span>
+    <span class="n">area</span><span class="o">=</span><span class="mf">300.0</span><span class="p">,</span>
+    <span class="n">age</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+    <span class="n">species</span><span class="o">=</span><span class="s2">&quot;Picea sitchensis&quot;</span><span class="p">,</span>
+    <span class="n">site_index</span><span class="o">=</span><span class="mi">40</span>
+<span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">add_development_type</span><span class="p">(</span>
+    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;Bare&quot;</span><span class="p">,</span>
+    <span class="n">area</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">age</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">species</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">site_index</span><span class="o">=</span><span class="mi">0</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added 3 development types&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total area: </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">total_area</span><span class="p">()</span><span class="si">}</span><span class="s2"> hectares&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-4-define-growth-curves">
+<h2>Step 4: Define Growth Curves<a class="headerlink" href="#step-4-define-growth-curves" title="Link to this heading"></a></h2>
+<p>Growth curves describe how forest attributes change with age.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Curve</span>
+
+<span class="c1"># Define a volume curve for Douglas-fir on SI 50</span>
+<span class="n">df_volume</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
+    <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">65</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">470</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">510</span><span class="p">],</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DF-SI50_volume&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Define a volume curve for Spruce on SI 40</span>
+<span class="n">spruce_volume</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
+    <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">140</span><span class="p">,</span> <span class="mi">210</span><span class="p">,</span> <span class="mi">280</span><span class="p">,</span> <span class="mi">340</span><span class="p">,</span> <span class="mi">380</span><span class="p">,</span> <span class="mi">400</span><span class="p">],</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Spruce-SI40_volume&quot;</span>
+<span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">add_curve</span><span class="p">(</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="n">df_volume</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_curve</span><span class="p">(</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="n">spruce_volume</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Added growth curves&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-5-define-actions">
+<h2>Step 5: Define Actions<a class="headerlink" href="#step-5-define-actions" title="Link to this heading"></a></h2>
+<p>Actions are management interventions. Each action has a code, description,
+and transitions.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define a harvest action</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span>
+    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;HARV&quot;</span><span class="p">,</span>
+    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Clearcut harvest&quot;</span><span class="p">,</span>
+    <span class="n">components</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;volume&quot;</span><span class="p">],</span>
+    <span class="n">transitions</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;DF-SI50&quot;</span><span class="p">:</span> <span class="s2">&quot;Bare&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Spruce-SI40&quot;</span><span class="p">:</span> <span class="s2">&quot;Bare&quot;</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Added harvest action&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-6-run-a-simulation">
+<h2>Step 6: Run a Simulation<a class="headerlink" href="#step-6-run-a-simulation" title="Link to this heading"></a></h2>
+<p>Now we can simulate the forest over time.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run simulation for 20 periods (100 years with 5-year periods)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_simulation</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+
+<span class="c1"># Print summary</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+
+<span class="c1"># Access specific results</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total volume at end: </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">total_volume</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> m³&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total harvest: </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">total_harvest</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> m³&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-7-inspect-the-output">
+<h2>Step 7: Inspect the Output<a class="headerlink" href="#step-7-inspect-the-output" title="Link to this heading"></a></h2>
+<p>The simulation results contain detailed information about each period:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get area by development type for each period</span>
+<span class="n">area_data</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">area_by_development_type</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">area_data</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+
+<span class="c1"># Get harvest volumes by period</span>
+<span class="n">harvest_data</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">harvest_by_period</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">harvest_data</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="what-s-next">
+<h2>What’s Next?<a class="headerlink" href="#what-s-next" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="first_model.html"><span class="doc">Your First Model</span></a> — Build a more complete model with optimization</p></li>
+<li><p><a class="reference internal" href="architecture_overview.html"><span class="doc">Architecture Overview</span></a> — Understand how ws3 components fit together</p></li>
+<li><p><a class="reference internal" href="../textbook/ch01_forest_estate_models.html"><span class="doc">Chapter 1: Forest Estate Models</span></a> — Learn the theory behind wood supply models</p></li>
+<li><p><span class="xref std std-doc">/howto/data-preparation</span> — Prepare real forest inventory data for ws3</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="first_model.html" class="btn btn-neutral float-right" title="Your First Model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015--2025, Gregory Paradis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
