@@ -112,6 +112,30 @@ def is_num(s: Any) -> bool:
     except Exception:
         return False
 
+
+# Cache for is_num results (useful for validating repeated inputs)
+_is_num_cache: Dict[Any, bool] = {}
+
+
+def is_num_cached(s: Any) -> bool:
+    """
+    Cached version of is_num for frequently validated inputs.
+    
+    :param s: Input value to test.
+    :return: ``True`` if ``float(s)`` succeeds, ``False`` otherwise.
+    """
+    if s in _is_num_cache:
+        return _is_num_cache[s]
+    
+    result = is_num(s)
+    _is_num_cache[s] = result
+    return result
+
+
+def clear_is_num_cache() -> None:
+    """Clear the is_num cache."""
+    _is_num_cache.clear()
+
 def reproject(
     f: Dict[str, Any],
     srs_crs: Dict[str, Any],
@@ -386,10 +410,43 @@ def hash_dt(
     :return: Integer hash value.
     """
     import struct
+    # Use faster hash for development types - convert to bytes directly
+    # This avoids string conversion overhead
     s = '.'.join(map(str, dt)).encode('utf-8')
     d = hashlib.md5(s).digest() # first n bytes of md5 digest
     # return np.dtype(dtype).type(int(binascii.hexlify(d[:4]), 16))
     return np.dtype(dtype).type(struct.unpack('<i', d[:4])[0])
+
+
+# Cache for frequently used development type hashes
+_dt_hash_cache: Dict[Tuple[Any, ...], Any] = {}
+
+
+def hash_dt_cached(
+    dt: Tuple[Any, ...],
+    dtype: rasterio.dtype = rasterio.int32,
+    nbytes: int = 4,
+) -> int:
+    """
+    Cached version of hash_dt for frequently accessed development types.
+    
+    :param dt: Development type tuple.
+    :param dtype: The type of the output file (default is rasterio.int32).
+    :param nbytes: The number of bytes to consider from the hash (default is 4).
+    :return: Integer hash value.
+    """
+    # Create a cache key (dtype and nbytes are constants for a given use case)
+    cache_key = (dt, dtype, nbytes)
+    
+    if cache_key not in _dt_hash_cache:
+        _dt_hash_cache[cache_key] = hash_dt(dt, dtype, nbytes)
+    
+    return _dt_hash_cache[cache_key]
+
+
+def clear_dt_hash_cache() -> None:
+    """Clear the development type hash cache."""
+    _dt_hash_cache.clear()
 
 def warp_raster(
     src: rasterio.DatasetReader,

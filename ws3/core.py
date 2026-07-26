@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import copy
 from bisect import bisect_left
-from typing import List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from ws3 import common
 
@@ -378,6 +378,34 @@ class Curve:
         Returns the y value of this curve at a given x-value ``x``.
         """
         return self._y[x] if self._y else self.interp(x)
+
+
+# Cache for frequently accessed curve values
+_curve_cache: Dict[Tuple[str, int], float] = {}
+
+
+def get_curve_value(curve: Curve, x: int) -> float:
+    """
+    Get curve value with caching for frequently accessed values.
+    
+    :param curve: The curve to query.
+    :param x: The x-value to look up.
+    :return: The y-value at x.
+    """
+    # Create cache key from curve id and x value
+    cache_key = (curve.id or str(id(curve)), x)
+    
+    if cache_key in _curve_cache:
+        return _curve_cache[cache_key]
+    
+    value = curve[x]
+    _curve_cache[cache_key] = value
+    return value
+
+
+def clear_curve_cache() -> None:
+    """Clear the curve value cache."""
+    _curve_cache.clear()
 
     def __and__(self, other: Curve) -> Curve:
         """
