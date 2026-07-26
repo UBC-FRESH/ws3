@@ -59,8 +59,8 @@ extensions = [
     'nbsphinx',
     'sphinx_rtd_theme']
 
-# Allow notebook execution errors (data files not available in CI)
-nbsphinx_allow_errors = True
+# Skip notebook execution entirely (data files not available in CI)
+nbsphinx_execute = 'never'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
