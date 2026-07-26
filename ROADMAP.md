@@ -87,13 +87,14 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Scope: installation guide, quickstart tutorial, first model walkthrough, architecture overview.
 
 ### Task 4.3 — Create textbook for forest estate modelling
-- Status: in_progress
+- Status: complete
 - Scope: 9-chapter textbook covering forest inventory, growth/yield, actions/transitions, optimization, spatial allocation, financial analysis, uncertainty, and advanced topics. Each chapter includes learning objectives, worked examples, and exercises.
-- Progress: Chapter 1 (forest estate models) complete. Remaining chapters ch02-ch09 pending.
+- Progress: All 9 chapters complete (ch01-ch09).
 
 ### Task 4.4 — Create how-to guides
-- Status: not_started
+- Status: in_progress
 - Scope: operational guides for data preparation, curve definition, action definition, optimization, parallel optimization, spatial allocation, libcbm callbacks, financial scenarios, custom selectors, custom growth functions, model validation, and reproducibility.
+- Progress: Guide index created. Individual guide content pending.
 
 ### Task 4.5 — Create agent-friendly contract pages
 - Status: in_progress
@@ -106,8 +107,9 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Verification: Guide includes module map, class hierarchy (mermaid), data flow diagram, common patterns, and platform notes.
 
 ### Task 4.7 — Create troubleshooting and limitations guides
-- Status: not_started
+- Status: in_progress
 - Scope: known issues, recovery procedures, honest documentation of boundaries and external dependencies.
+- Progress: Guide index created. Content pending.
 
 ### Task 4.8 — Update conf.py and verify docs build
 - Status: not_started
