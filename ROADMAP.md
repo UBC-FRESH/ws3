@@ -125,7 +125,7 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Start date: 2026-07-26
 
 ### Task 5.1 — Advanced Modeling Features
-- Status: not_started
+- Status: complete
 - Scope: stochastic optimization, multi-objective optimization, dynamic planning, climate scenarios, enhanced carbon accounting
 
 ### Task 5.2 — User Experience Improvements
