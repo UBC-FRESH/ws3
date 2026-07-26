@@ -1,0 +1,286 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>libCBM Callbacks Integration &mdash; ws3 1.0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d55fa986"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Financial Scenarios" href="financial-scenarios.html" />
+    <link rel="prev" title="Spatial Schedule Allocation" href="spatial-schedule-allocation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ws3
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../textbook/index.html">The ws3 Textbook</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">How-To Guides</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#id1">How-To Guides</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="data-preparation.html">Data Preparation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="curve-definition.html">Growth Curve Definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="action-definition.html">Action Definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="running-optimization.html">Running Optimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="parallel-optimization.html">Parallel Optimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="spatial-schedule-allocation.html">Spatial Schedule Allocation</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">libCBM Callbacks Integration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#goal">Goal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-by-step-instructions">Step-by-Step Instructions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#expected-output">Expected Output</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="financial-scenarios.html">Financial Scenarios</a></li>
+<li class="toctree-l3"><a class="reference internal" href="custom-area-selector.html">Custom Area Selector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="custom-growth-function.html">Custom Growth Function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="model-validation.html">Model Validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reproducibility.html">Reproducibility Workflows</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#what-you-will-find-here">What You Will Find Here</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#common-tasks-covered">Common Tasks Covered</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#prerequisites">Prerequisites</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ws3</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">How-To Guides</a></li>
+      <li class="breadcrumb-item active">libCBM Callbacks Integration</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/howto/libcbm-callbacks.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="libcbm-callbacks-integration">
+<span id="howto-libcbm-callbacks"></span><h1>libCBM Callbacks Integration<a class="headerlink" href="#libcbm-callbacks-integration" title="Link to this heading"></a></h1>
+<section id="goal">
+<h2>Goal<a class="headerlink" href="#goal" title="Link to this heading"></a></h2>
+<p>Integrate ws3 with libCBM for carbon accounting:</p>
+<ul class="simple">
+<li><p>Set up libCBM callbacks in ws3</p></li>
+<li><p>Track carbon stocks and fluxes</p></li>
+<li><p>Include carbon in optimization objectives</p></li>
+</ul>
+</section>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Completed <a class="reference internal" href="running-optimization.html"><span class="doc">Running Optimization</span></a></p></li>
+<li><p>Familiarity with carbon concepts from <a class="reference internal" href="../textbook/ch10_carbon_modelling.html"><span class="doc">Chapter 10: Carbon Modelling</span></a></p></li>
+<li><p>A working ws3 installation with libCBM</p></li>
+</ul>
+</section>
+<section id="step-by-step-instructions">
+<h2>Step-by-Step Instructions<a class="headerlink" href="#step-by-step-instructions" title="Link to this heading"></a></h2>
+<p><strong>Step 1: Initialize libCBM</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">libcbm</span><span class="w"> </span><span class="kn">import</span> <span class="n">State</span><span class="p">,</span> <span class="n">Simulator</span>
+
+<span class="c1"># Create libCBM state</span>
+<span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
+
+<span class="c1"># Add pools (optional)</span>
+<span class="c1"># state.add_pool(&#39;aboveground&#39;, &#39;vegetation&#39;)</span>
+</pre></div>
+</div>
+<p><strong>Step 2: Define Callback Function</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">libcbm_callback</span><span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="n">development_type</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">area_ha</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Callback function for libCBM integration.&quot;&quot;&quot;</span>
+
+    <span class="c1"># Get current carbon stock</span>
+    <span class="n">carbon_stock</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get_carbon</span><span class="p">(</span><span class="n">development_type</span><span class="p">)</span>
+
+    <span class="c1"># Apply harvest action</span>
+    <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;CLEARCUT&#39;</span><span class="p">:</span>
+        <span class="c1"># Remove all carbon</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">remove_carbon</span><span class="p">(</span><span class="n">development_type</span><span class="p">,</span> <span class="n">area_ha</span><span class="p">)</span>
+
+        <span class="c1"># Add regeneration carbon</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">add_carbon</span><span class="p">(</span><span class="n">development_type</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">area_ha</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">action</span> <span class="o">==</span> <span class="s1">&#39;COMM_THIN&#39;</span><span class="p">:</span>
+        <span class="c1"># Remove partial carbon</span>
+        <span class="n">carbon_removed</span> <span class="o">=</span> <span class="n">carbon_stock</span> <span class="o">*</span> <span class="mf">0.3</span>  <span class="c1"># 30% removal</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">remove_carbon</span><span class="p">(</span><span class="n">development_type</span><span class="p">,</span> <span class="n">area_ha</span><span class="p">,</span> <span class="n">carbon_removed</span><span class="p">)</span>
+
+    <span class="c1"># Advance state</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">advance</span><span class="p">(</span><span class="n">period</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">carbon_stock</span>
+</pre></div>
+</div>
+<p><strong>Step 3: Register Callback with ws3</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.forest</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForestModel</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">()</span>
+
+<span class="c1"># Add development types and actions</span>
+<span class="c1"># (see previous how-to guides)</span>
+
+<span class="c1"># Register libCBM callback</span>
+<span class="n">model</span><span class="o">.</span><span class="n">register_callback</span><span class="p">(</span><span class="s1">&#39;carbon&#39;</span><span class="p">,</span> <span class="n">libcbm_callback</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Step 4: Run Simulation with Carbon Tracking</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">simulate</span>
+
+<span class="c1"># Run simulation</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">simulate</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">horizon</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">schedule</span><span class="o">=</span><span class="n">schedule</span><span class="p">,</span>
+    <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;carbon&#39;</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Step 5: Extract Carbon Results</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get carbon time series</span>
+<span class="n">carbon_series</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">get_callback_results</span><span class="p">(</span><span class="s1">&#39;carbon&#39;</span><span class="p">)</span>
+
+<span class="c1"># Plot carbon stocks</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">carbon_series</span><span class="p">[</span><span class="s1">&#39;period&#39;</span><span class="p">],</span> <span class="n">carbon_series</span><span class="p">[</span><span class="s1">&#39;carbon_stock&#39;</span><span class="p">])</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Period&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Carbon Stock (tC/ha)&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Carbon Dynamics&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="expected-output">
+<h2>Expected Output<a class="headerlink" href="#expected-output" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Carbon stock time series</p></li>
+<li><p>Carbon flux from harvest actions</p></li>
+<li><p>Integration between ws3 and libCBM</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<p><strong>Issue: Callback not called</strong></p>
+<ul class="simple">
+<li><p>Check that callback is registered with correct name</p></li>
+<li><p>Verify callback signature matches expected format</p></li>
+<li><p>Ensure callbacks list includes ‘carbon’</p></li>
+</ul>
+<p><strong>Issue: libCBM errors</strong></p>
+<ul class="simple">
+<li><p>Check that libCBM is properly installed</p></li>
+<li><p>Verify pool definitions match your model</p></li>
+<li><p>Check state initialization</p></li>
+</ul>
+<p><strong>Issue: Carbon values unrealistic</strong></p>
+<ul class="simple">
+<li><p>Check pool definitions and initial stocks</p></li>
+<li><p>Verify carbon removal fractions</p></li>
+<li><p>Ensure state advancement is correct</p></li>
+</ul>
+</section>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="running-optimization.html"><span class="doc">Running Optimization</span></a> — Run optimization</p></li>
+<li><p><a class="reference internal" href="financial-scenarios.html"><span class="doc">Financial Scenarios</span></a> — Add financial analysis</p></li>
+<li><p><a class="reference internal" href="custom-area-selector.html"><span class="doc">Custom Area Selector</span></a> — Custom area selection</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="spatial-schedule-allocation.html" class="btn btn-neutral float-left" title="Spatial Schedule Allocation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="financial-scenarios.html" class="btn btn-neutral float-right" title="Financial Scenarios" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015--2025, Gregory Paradis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

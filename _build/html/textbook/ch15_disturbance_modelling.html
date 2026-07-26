@@ -1,0 +1,821 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 15: Modelling Natural Disturbances &mdash; ws3 1.0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d55fa986"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
+    document.head.appendChild(defaultStyle);
+
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
+    document.head.appendChild(fullscreenStyle);
+}
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
+        return brightness < 128;
+    }
+    // console.log("No dark or light theme detected, defaulting to light theme");
+    return false;
+};
+
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
+
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
+        all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
+
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
+                setTimeout(() => runMermaid(false), 200);
+                return;
+            }
+            addZoomToSvgs(svgs);
+        }
+    } else if(mermaids_active.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(() => runMermaid(false), 200);
+        return;
+    }
+
+    // Stop here if not adding fullscreen capability
+    if (!true) return;
+
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scrollX, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+
+                if (false) {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        container.appendChild(fullscreenBtn);
+    });
+};
+
+
+
+const load = async () => {
+    initStyles();
+
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+    }
+);
+
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Chapter 16: Value-Creation and Forest Supply Chain Modelling" href="ch16_supply_chain.html" />
+    <link rel="prev" title="Chapter 14: Integrating ws3 with SpaDES" href="ch14_spades_integration.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ws3
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/index.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">The ws3 Textbook</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#who-is-this-for">Who Is This For?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#how-to-use-this-textbook">How to Use This Textbook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#chapter-listing">Chapter Listing</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#textbook-introduction-to-forest-estate-modelling">Textbook: Introduction to Forest Estate Modelling</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="index.html#prerequisite-chain">Prerequisite Chain</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="index.html#contents">Contents</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="ch01_forest_estate_models.html">Chapter 1: Forest Estate Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch02_forest_inventory.html">Chapter 2: Forest Inventory and Data Preparation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch03_growth_and_yield.html">Chapter 3: Growth and Yield</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch04_actions_and_transitions.html">Chapter 4: Actions and Transitions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch05_optimization.html">Chapter 5: Optimization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch06_spatial_allocation.html">Chapter 6: Spatial Allocation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch07_financial_analysis.html">Chapter 7: Financial Analysis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch08_uncertainty_and_risk.html">Chapter 8: Uncertainty and Risk</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch09_advanced_topics.html">Chapter 9: Advanced Topics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch10_carbon_modelling.html">Chapter 10: Carbon Modelling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch11_femic_models.html">Chapter 11: Building Models with FEMIC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch12_fhops_integration.html">Chapter 12: Harvest Cost Curves with FHOPS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch13_freshforge.html">Chapter 13: Workflow Automation with FreshForge</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch14_spades_integration.html">Chapter 14: Integrating ws3 with SpaDES</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Chapter 15: Modelling Natural Disturbances</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch16_supply_chain.html">Chapter 16: Value-Creation and Forest Supply Chain Modelling</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#chapter-structure">Chapter Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#prerequisites-for-this-textbook">Prerequisites for This Textbook</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ws3</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">The ws3 Textbook</a></li>
+      <li class="breadcrumb-item active">Chapter 15: Modelling Natural Disturbances</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/textbook/ch15_disturbance_modelling.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="chapter-15-modelling-natural-disturbances">
+<h1>Chapter 15: Modelling Natural Disturbances<a class="headerlink" href="#chapter-15-modelling-natural-disturbances" title="Link to this heading"></a></h1>
+<section id="learning-objectives">
+<h2>Learning Objectives<a class="headerlink" href="#learning-objectives" title="Link to this heading"></a></h2>
+<p>After reading this chapter, you should be able to:</p>
+<ul class="simple">
+<li><p>Explain the role of natural disturbances in forest estate modelling</p></li>
+<li><p>Distinguish deterministic, stochastic, and scenario-based disturbance approaches</p></li>
+<li><p>Implement disturbance transitions and salvage logic in a ws3-style model</p></li>
+<li><p>Design resilience-oriented indicators for plans under disturbance uncertainty</p></li>
+<li><p>Connect disturbance outputs to downstream spatial and supply-chain analysis</p></li>
+</ul>
+</section>
+<section id="why-model-disturbances">
+<h2>Why Model Disturbances?<a class="headerlink" href="#why-model-disturbances" title="Link to this heading"></a></h2>
+<p>Natural disturbances (wildfire, insect outbreaks, windthrow, drought-related
+mortality) are first-order drivers of long-term forest dynamics. Strategic plans
+that ignore disturbance dynamics often overstate sustainable harvest and
+understate system risk.</p>
+<p>Ignoring disturbance can lead to:</p>
+<ul class="simple">
+<li><p><strong>Over-optimistic harvest schedules</strong>: Models assume all inventory
+remains intact, but disturbances regularly remove it</p></li>
+<li><p><strong>Inadequate reserve planning</strong>: No buffer for disturbance-related
+inventory losses</p></li>
+<li><p><strong>Poor risk assessment</strong>: Cannot quantify the probability of meeting
+harvest targets</p></li>
+<li><p><strong>Weak adaptation planning</strong>: Silviculture and salvage decisions are not
+stress-tested against plausible disturbance regimes</p></li>
+</ul>
+<pre  class="mermaid">
+        graph TD
+ FOREST[&quot;Forest landscape state&quot;] --&gt; FIRE[&quot;Wildfire&quot;]
+ FOREST --&gt; INSECT[&quot;Insects/pathogens&quot;]
+ FOREST --&gt; WIND[&quot;Wind/ice events&quot;]
+ FOREST --&gt; DROUGHT[&quot;Drought stress&quot;]
+ FIRE --&gt; IMPACT[&quot;Mortality, quality loss, access constraints&quot;]
+ INSECT --&gt; IMPACT
+ WIND --&gt; IMPACT
+ DROUGHT --&gt; IMPACT
+ IMPACT --&gt; TRANSITIONS[&quot;New transitions + salvage options&quot;]
+ TRANSITIONS --&gt; PLAN[&quot;Updated harvest, risk, and regeneration plan&quot;]
+    </pre></section>
+<section id="disturbance-modelling-paradigms">
+<h2>Disturbance Modelling Paradigms<a class="headerlink" href="#disturbance-modelling-paradigms" title="Link to this heading"></a></h2>
+<p>Three common paradigms are used in strategic forest modelling.</p>
+<ol class="arabic simple">
+<li><p>Deterministic deductions
+A fixed annual loss percentage is applied to affected strata. This is simple
+and fast, but masks volatility and spatial clustering.</p></li>
+<li><p>Stochastic event simulation
+Random events are sampled from probability distributions (occurrence, size,
+severity). This captures variability and tail risk but is computationally heavier.</p></li>
+<li><p>Scenario envelopes
+Several plausible disturbance futures are imposed (e.g., low/medium/high
+fire pressure). This is practical for policy communication and sensitivity analysis.</p></li>
+</ol>
+<p>In practice, organizations often combine 2 and 3: stochastic simulation inside
+named scenario envelopes.</p>
+</section>
+<section id="disturbance-types">
+<h2>Disturbance Types<a class="headerlink" href="#disturbance-types" title="Link to this heading"></a></h2>
+<p><strong>Wildfire</strong></p>
+<p>Wildfire is often modelled as a hazard process with event size and severity
+sub-models.</p>
+<p>Key dimensions:</p>
+<ul class="simple">
+<li><p><strong>Probability</strong>: Annual probability of ignition per hectare</p></li>
+<li><p><strong>Spread/size</strong>: Distribution of fire sizes and weather-conditioned spread</p></li>
+<li><p><strong>Severity</strong>: Surface vs crown effects with class-specific mortality</p></li>
+<li><p><strong>Seasonality</strong>: Higher risk in dry, hot periods</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example hazard proxy for scenario screening.</span>
+<span class="c1"># Use calibrated regional models in production.</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">wildfire_probability</span><span class="p">(</span><span class="n">age</span><span class="p">,</span> <span class="n">moisture_index</span><span class="p">,</span> <span class="n">slope_aspect</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate annual wildfire probability.&quot;&quot;&quot;</span>
+    <span class="c1"># Fuel load proxy rises with stand age.</span>
+    <span class="n">base_prob</span> <span class="o">=</span> <span class="mf">0.001</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">age</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span>
+
+    <span class="c1"># Moisture reduces risk.</span>
+    <span class="n">moisture_factor</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">moisture_index</span><span class="p">)</span>
+
+    <span class="c1"># South/west aspects are often drier.</span>
+    <span class="n">aspect_factor</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;S&quot;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span> <span class="s2">&quot;SW&quot;</span><span class="p">:</span> <span class="mf">1.1</span><span class="p">,</span> <span class="s2">&quot;W&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+                     <span class="s2">&quot;NW&quot;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span> <span class="s2">&quot;NE&quot;</span><span class="p">:</span> <span class="mf">0.85</span><span class="p">,</span>
+                     <span class="s2">&quot;E&quot;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span> <span class="s2">&quot;SE&quot;</span><span class="p">:</span> <span class="mf">0.95</span><span class="p">}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slope_aspect</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">base_prob</span> <span class="o">*</span> <span class="n">moisture_factor</span> <span class="o">*</span> <span class="n">aspect_factor</span>
+</pre></div>
+</div>
+<p><strong>Insect Outbreaks</strong></p>
+<p>Insects and pathogens can generate multi-year mortality pulses and quality
+degradation.</p>
+<p>Typical features:</p>
+<ul class="simple">
+<li><p><strong>Host specificity</strong>: Some insects attack specific species</p></li>
+<li><p><strong>Cyclicity</strong>: Outbreak cycles can repeat over decades</p></li>
+<li><p><strong>Threshold effects</strong>: Damage can accelerate beyond density/age thresholds</p></li>
+<li><p><strong>Climate sensitivity</strong>: Warmer winters reduce insect mortality</p></li>
+</ul>
+<p><strong>Windthrow</strong></p>
+<p>Wind and ice damage produce abrupt structural loss, especially in exposed stands.</p>
+<p>Important predictors:</p>
+<ul class="simple">
+<li><p><strong>Exposure</strong>: Coastal and ridge-top stands are more vulnerable</p></li>
+<li><p><strong>Soil depth</strong>: Shallow soils increase uprooting risk</p></li>
+<li><p><strong>Tree height</strong>: Taller trees are more susceptible</p></li>
+<li><p><strong>Frequency</strong>: Return intervals of 50-200 years for major events</p></li>
+</ul>
+</section>
+<section id="from-disturbance-to-transition-logic">
+<h2>From Disturbance to Transition Logic<a class="headerlink" href="#from-disturbance-to-transition-logic" title="Link to this heading"></a></h2>
+<p>In an aspatial strategic model, disturbance effects are typically represented by
+area transfers between development types, with optional salvage pathways.</p>
+<p>Conceptually, for development type <span class="math notranslate nohighlight">\(d\)</span> in period <span class="math notranslate nohighlight">\(t\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[A_{d,t+1} = A_{d,t} - H_{d,t} - D_{d,t} + R_{d,t} + S_{d,t}\]</div>
+<p>where:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(A_{d,t}\)</span> is standing area,</p></li>
+<li><p><span class="math notranslate nohighlight">\(H_{d,t}\)</span> is planned harvest,</p></li>
+<li><p><span class="math notranslate nohighlight">\(D_{d,t}\)</span> is disturbed area,</p></li>
+<li><p><span class="math notranslate nohighlight">\(R_{d,t}\)</span> is regeneration inflow,</p></li>
+<li><p><span class="math notranslate nohighlight">\(S_{d,t}\)</span> is salvage-related transfer.</p></li>
+</ul>
+<p>This bookkeeping is the core of disturbance-aware planning.</p>
+</section>
+<section id="integrating-disturbances-with-ws3">
+<h2>Integrating Disturbances with ws3<a class="headerlink" href="#integrating-disturbances-with-ws3" title="Link to this heading"></a></h2>
+<p>ws3 can represent disturbance through actions, transitions, and yield impacts.
+The exact API varies by project conventions, but the pattern is stable.</p>
+<p>Common implementation pattern:</p>
+<ol class="arabic simple">
+<li><p><strong>State classes</strong>: Add post-disturbance development types</p></li>
+<li><p><strong>Disturbance actions</strong>: Define FIRE/INSECT/WIND actions that transfer area</p></li>
+<li><p><strong>Salvage actions</strong>: Define optional salvage transitions with reduced yields</p></li>
+<li><p><strong>Regeneration pathways</strong>: Route disturbed classes into managed recovery</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.forest</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForestModel</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">()</span>
+
+<span class="c1"># Add post-disturbance state class.</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_development_type</span><span class="p">(</span>
+    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;DF-SI50-disturbed&quot;</span><span class="p">,</span>
+    <span class="n">area</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">age</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">species</span><span class="o">=</span><span class="s2">&quot;Pseudotsuga menziesii&quot;</span><span class="p">,</span>
+    <span class="n">site_index</span><span class="o">=</span><span class="mi">50</span>
+<span class="p">)</span>
+
+<span class="c1"># Disturbance transition.</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span>
+    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;FIRE&quot;</span><span class="p">,</span>
+    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Wildfire disturbance&quot;</span><span class="p">,</span>
+    <span class="n">components</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;volume&quot;</span><span class="p">],</span>
+    <span class="n">transitions</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;DF-SI50&quot;</span><span class="p">:</span> <span class="s2">&quot;DF-SI50-disturbed&quot;</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># Optional salvage pathway.</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span>
+    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;SALVAGE&quot;</span><span class="p">,</span>
+    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Salvage harvest after disturbance&quot;</span><span class="p">,</span>
+    <span class="n">components</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;volume&quot;</span><span class="p">],</span>
+    <span class="n">transitions</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;DF-SI50-disturbed&quot;</span><span class="p">:</span> <span class="s2">&quot;DF-SI50-regen&quot;</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># The simulation controller applies FIRE stochastically and SALVAGE</span>
+<span class="c1"># according to policy and operational constraints.</span>
+</pre></div>
+</div>
+</section>
+<section id="scenario-design-for-disturbance-planning">
+<h2>Scenario Design for Disturbance Planning<a class="headerlink" href="#scenario-design-for-disturbance-planning" title="Link to this heading"></a></h2>
+<p>A useful strategic experiment set usually varies four levers:</p>
+<ul class="simple">
+<li><p><strong>Disturbance intensity</strong>: expected annual disturbed area</p></li>
+<li><p><strong>Disturbance severity</strong>: merchantability loss and regeneration delay</p></li>
+<li><p><strong>Operational response</strong>: salvage capacity, access constraints, replanting lag</p></li>
+<li><p><strong>Climate trend</strong>: non-stationary shift in disturbance frequency/severity</p></li>
+</ul>
+<p>Example scenario matrix:</p>
+<table class="docutils align-default" id="id1">
+<caption><span class="caption-text">Disturbance Scenario Envelope</span><a class="headerlink" href="#id1" title="Link to this table"></a></caption>
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 20.0%" />
+<col style="width: 20.0%" />
+<col style="width: 40.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Scenario</p></th>
+<th class="head"><p>Disturbance rate</p></th>
+<th class="head"><p>Salvage capacity</p></th>
+<th class="head"><p>Interpretation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>S1 Baseline</p></td>
+<td><p>Historical mean</p></td>
+<td><p>Current</p></td>
+<td><p>Continuation of recent regime</p></td>
+</tr>
+<tr class="row-odd"><td><p>S2 Elevated fire</p></td>
+<td><p>+30%</p></td>
+<td><p>Current</p></td>
+<td><p>Stress-test under warmer/drier conditions</p></td>
+</tr>
+<tr class="row-even"><td><p>S3 Elevated + response</p></td>
+<td><p>+30%</p></td>
+<td><p>Expanded</p></td>
+<td><p>Tests operational adaptation investment</p></td>
+</tr>
+<tr class="row-odd"><td><p>S4 Compound risk</p></td>
+<td><p>+30% fire + outbreaks</p></td>
+<td><p>Expanded</p></td>
+<td><p>Multi-disturbance pressure case</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="resilience-metrics">
+<h2>Resilience Metrics<a class="headerlink" href="#resilience-metrics" title="Link to this heading"></a></h2>
+<p>Beyond total harvest, disturbance-aware plans should track resilience metrics:</p>
+<ul class="simple">
+<li><p><strong>Reliability</strong>: probability of meeting minimum harvest commitments</p></li>
+<li><p><strong>Recovery time</strong>: years to return to baseline harvest capacity after shock</p></li>
+<li><p><strong>Structural diversity</strong>: area balance across age/species cohorts</p></li>
+<li><p><strong>Salvage dependence</strong>: share of realized harvest from salvage rather than planned entries</p></li>
+<li><p><strong>Regeneration debt</strong>: deferred re-establishment area</p></li>
+</ul>
+<p>These metrics often reveal plan fragility that average-volume indicators hide.</p>
+</section>
+<section id="challenges">
+<h2>Challenges<a class="headerlink" href="#challenges" title="Link to this heading"></a></h2>
+<p>Disturbance modelling remains difficult because:</p>
+<ol class="arabic simple">
+<li><p><strong>Stochasticity</strong>: Disturbances are inherently random</p></li>
+<li><p><strong>Scale mismatch</strong>: Strategic models are often aspatial while disturbance is spatially clustered</p></li>
+<li><p><strong>Data sparsity</strong>: Long clean time series are rare for many regions and agents</p></li>
+<li><p><strong>Non-stationarity</strong>: Climate trend breaks historical frequency assumptions</p></li>
+<li><p><strong>Compounding effects</strong>: Fire-after-beetle, drought-after-thinning, and access failures interact</p></li>
+</ol>
+</section>
+<section id="worked-example-simple-disturbance-stress-test">
+<h2>Worked Example: Simple Disturbance Stress Test<a class="headerlink" href="#worked-example-simple-disturbance-stress-test" title="Link to this heading"></a></h2>
+<p>Assume a planning unit with 100,000 ha operable area and baseline planned
+harvest capacity of 2,000 ha/year.</p>
+<ul class="simple">
+<li><p>Baseline disturbance: 1.0%/year (1,000 ha/year)</p></li>
+<li><p>Elevated disturbance: 1.5%/year (1,500 ha/year)</p></li>
+<li><p>Salvageable fraction: 40% of disturbed area</p></li>
+<li><p>Salvage utilization: 70% of salvageable area</p></li>
+</ul>
+<p>Under elevated disturbance:</p>
+<ol class="arabic simple">
+<li><p>Disturbed area increases by 500 ha/year.</p></li>
+<li><p>Salvage recovered area is <span class="math notranslate nohighlight">\(500 * 0.4 * 0.7 = 140\)</span> ha/year.</p></li>
+<li><p>Net additional unavailable area is approximately 360 ha/year.</p></li>
+</ol>
+<p>If this persists, the model should test whether regeneration and treatment
+programs can offset this gap fast enough to maintain medium-term flow targets.</p>
+</section>
+<section id="link-to-spatial-and-supply-chain-modules">
+<h2>Link to Spatial and Supply-Chain Modules<a class="headerlink" href="#link-to-spatial-and-supply-chain-modules" title="Link to this heading"></a></h2>
+<p>This chapter connects directly to:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="ch14_spades_integration.html"><span class="doc">Chapter 14: Integrating ws3 with SpaDES</span></a> for spatially explicit event simulation</p></li>
+<li><p><a class="reference internal" href="ch16_supply_chain.html"><span class="doc">Chapter 16: Value-Creation and Forest Supply Chain Modelling</span></a> for downstream value/consumption effects</p></li>
+</ul>
+<p>A key practical insight is that disturbance is not only an ecological risk; it is
+also a fibre quality, timing, and logistics risk for the supply chain.</p>
+</section>
+<section id="future-directions">
+<h2>Future Directions<a class="headerlink" href="#future-directions" title="Link to this heading"></a></h2>
+<p>Potential extensions to ws3 for disturbance modelling:</p>
+<ul class="simple">
+<li><p><strong>Risk-constrained optimization</strong>: add reliability constraints on key outputs</p></li>
+<li><p><strong>Adaptive re-planning</strong>: periodic parameter updates from monitoring streams</p></li>
+<li><p><strong>Coupled models</strong>: integrate with SpaDES for event realism and feedback</p></li>
+<li><p><strong>Policy levers</strong>: explicit salvage, reserve, and regeneration investment controls</p></li>
+</ul>
+</section>
+<section id="exercises">
+<h2>Exercises<a class="headerlink" href="#exercises" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Easy: Add a disturbed state class and define FIRE and SALVAGE transitions
+for one species/site class in a toy model.</p></li>
+<li><p>Medium: Build three disturbance scenarios (baseline, elevated, elevated with
+increased salvage) and compare reliability and recovery time.</p></li>
+<li><p>Hard: Formulate a planning objective that maximizes discounted harvest value
+subject to a minimum probability of meeting flow commitments under
+stochastic disturbance.</p></li>
+</ol>
+</section>
+<section id="further-reading">
+<h2>Further Reading<a class="headerlink" href="#further-reading" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="ch14_spades_integration.html"><span class="doc">Chapter 14: Integrating ws3 with SpaDES</span></a> — Integrating ws3 with SpaDES</p></li>
+<li><p><a class="reference internal" href="ch08_uncertainty_and_risk.html"><span class="doc">Chapter 8: Uncertainty and Risk</span></a> — Uncertainty and risk analysis</p></li>
+<li><p><a class="reference internal" href="ch16_supply_chain.html"><span class="doc">Chapter 16: Value-Creation and Forest Supply Chain Modelling</span></a> — Value-creation and supply-chain response to shocks</p></li>
+<li><p>Government and agency disturbance atlases for your planning region (fire,
+insects, and wind events)</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ch14_spades_integration.html" class="btn btn-neutral float-left" title="Chapter 14: Integrating ws3 with SpaDES" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ch16_supply_chain.html" class="btn btn-neutral float-right" title="Chapter 16: Value-Creation and Forest Supply Chain Modelling" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015--2025, Gregory Paradis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

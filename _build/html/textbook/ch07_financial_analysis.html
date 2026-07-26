@@ -1,0 +1,704 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 7: Financial Analysis &mdash; ws3 1.0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d55fa986"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
+    document.head.appendChild(defaultStyle);
+
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
+    document.head.appendChild(fullscreenStyle);
+}
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
+        return brightness < 128;
+    }
+    // console.log("No dark or light theme detected, defaulting to light theme");
+    return false;
+};
+
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
+
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
+        all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
+
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
+                setTimeout(() => runMermaid(false), 200);
+                return;
+            }
+            addZoomToSvgs(svgs);
+        }
+    } else if(mermaids_active.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(() => runMermaid(false), 200);
+        return;
+    }
+
+    // Stop here if not adding fullscreen capability
+    if (!true) return;
+
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scrollX, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+
+                if (false) {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        container.appendChild(fullscreenBtn);
+    });
+};
+
+
+
+const load = async () => {
+    initStyles();
+
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+    }
+);
+
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Chapter 8: Uncertainty and Risk" href="ch08_uncertainty_and_risk.html" />
+    <link rel="prev" title="Chapter 6: Spatial Allocation" href="ch06_spatial_allocation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ws3
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/index.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">The ws3 Textbook</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#who-is-this-for">Who Is This For?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#how-to-use-this-textbook">How to Use This Textbook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#chapter-listing">Chapter Listing</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#textbook-introduction-to-forest-estate-modelling">Textbook: Introduction to Forest Estate Modelling</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="index.html#prerequisite-chain">Prerequisite Chain</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="index.html#contents">Contents</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="ch01_forest_estate_models.html">Chapter 1: Forest Estate Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch02_forest_inventory.html">Chapter 2: Forest Inventory and Data Preparation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch03_growth_and_yield.html">Chapter 3: Growth and Yield</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch04_actions_and_transitions.html">Chapter 4: Actions and Transitions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch05_optimization.html">Chapter 5: Optimization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch06_spatial_allocation.html">Chapter 6: Spatial Allocation</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Chapter 7: Financial Analysis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch08_uncertainty_and_risk.html">Chapter 8: Uncertainty and Risk</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch09_advanced_topics.html">Chapter 9: Advanced Topics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch10_carbon_modelling.html">Chapter 10: Carbon Modelling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch11_femic_models.html">Chapter 11: Building Models with FEMIC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch12_fhops_integration.html">Chapter 12: Harvest Cost Curves with FHOPS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch13_freshforge.html">Chapter 13: Workflow Automation with FreshForge</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch14_spades_integration.html">Chapter 14: Integrating ws3 with SpaDES</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch15_disturbance_modelling.html">Chapter 15: Modelling Natural Disturbances</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch16_supply_chain.html">Chapter 16: Value-Creation and Forest Supply Chain Modelling</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#chapter-structure">Chapter Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#prerequisites-for-this-textbook">Prerequisites for This Textbook</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ws3</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">The ws3 Textbook</a></li>
+      <li class="breadcrumb-item active">Chapter 7: Financial Analysis</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/textbook/ch07_financial_analysis.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="chapter-7-financial-analysis">
+<h1>Chapter 7: Financial Analysis<a class="headerlink" href="#chapter-7-financial-analysis" title="Link to this heading"></a></h1>
+<section id="learning-objectives">
+<h2>Learning Objectives<a class="headerlink" href="#learning-objectives" title="Link to this heading"></a></h2>
+<p>After reading this chapter, you should be able to:</p>
+<ul class="simple">
+<li><p>Calculate net present value (NPV) for forest management scenarios</p></li>
+<li><p>Understand the components of forest financial analysis</p></li>
+<li><p>Use ws3’s financial functions to evaluate management plans</p></li>
+<li><p>Compare alternative management strategies using financial metrics</p></li>
+</ul>
+</section>
+<section id="what-is-financial-analysis-in-forest-planning">
+<h2>What Is Financial Analysis in Forest Planning?<a class="headerlink" href="#what-is-financial-analysis-in-forest-planning" title="Link to this heading"></a></h2>
+<p>Financial analysis evaluates the economic viability of forest management
+plans. It answers questions like:</p>
+<ul class="simple">
+<li><p>Is this harvest schedule profitable?</p></li>
+<li><p>Which management strategy maximizes returns?</p></li>
+<li><p>How sensitive is the plan to changes in timber prices?</p></li>
+<li><p>What is the optimal rotation age?</p></li>
+</ul>
+<p>Key financial metrics:</p>
+<ul class="simple">
+<li><p><strong>Net Present Value (NPV)</strong>: Total value of all cash flows, discounted to present</p></li>
+<li><p><strong>Internal Rate of Return (IRR)</strong>: Discount rate that makes NPV = 0</p></li>
+<li><p><strong>Benefit-Cost Ratio (BCR)</strong>: Total benefits divided by total costs</p></li>
+<li><p><strong>Rotation Age</strong>: Age that maximizes NPV per hectare</p></li>
+</ul>
+</section>
+<section id="net-present-value">
+<h2>Net Present Value<a class="headerlink" href="#net-present-value" title="Link to this heading"></a></h2>
+<p><strong>Net Present Value (NPV)</strong> is the most important financial metric in
+forest planning. It accounts for the time value of money: a dollar today
+is worth more than a dollar tomorrow.</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}NPV = \\sum_{t=0}^{T} \\frac{R_t - C_t}{(1 + r)^t}\end{split}\]</div>
+<p>Where:
+- <span class="math notranslate nohighlight">\(R_t\)</span> = Revenue in period <span class="math notranslate nohighlight">\(t\)</span>
+- <span class="math notranslate nohighlight">\(C_t\)</span> = Cost in period <span class="math notranslate nohighlight">\(t\)</span>
+- <span class="math notranslate nohighlight">\(r\)</span> = Discount rate
+- <span class="math notranslate nohighlight">\(T\)</span> = Planning horizon</p>
+<pre  class="mermaid">
+        graph TD
+  REV[&quot;Revenue&lt;br/&gt;(harvest sales)&quot;] --&gt; NPV[&quot;NPV Calculation&quot;]
+  COST[&quot;Costs&lt;br/&gt;(harvesting, silviculture)&quot;] --&gt; NPV
+  DISC[&quot;Discount rate&lt;br/&gt;(time value of money)&quot;] --&gt; NPV
+  NPV --&gt; PROF[&quot;Profitability&lt;br/&gt;decision&quot;]
+    </pre></section>
+<section id="using-ws3-s-financial-functions">
+<h2>Using ws3’s Financial Functions<a class="headerlink" href="#using-ws3-s-financial-functions" title="Link to this heading"></a></h2>
+<p>ws3 provides financial analysis functions in the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.financial</span></code>
+module.</p>
+<section id="calculating-npv">
+<h3>Calculating NPV<a class="headerlink" href="#calculating-npv" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.financial</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculate_npv</span>
+
+<span class="c1"># Define cash flows for each period</span>
+<span class="n">revenues</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">50000</span><span class="p">,</span> <span class="mi">80000</span><span class="p">,</span> <span class="mi">100000</span><span class="p">,</span> <span class="mi">120000</span><span class="p">,</span> <span class="mi">110000</span><span class="p">,</span> <span class="mi">90000</span><span class="p">,</span> <span class="mi">70000</span><span class="p">,</span> <span class="mi">50000</span><span class="p">]</span>
+<span class="n">costs</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">20000</span><span class="p">,</span> <span class="mi">25000</span><span class="p">,</span> <span class="mi">30000</span><span class="p">,</span> <span class="mi">35000</span><span class="p">,</span> <span class="mi">30000</span><span class="p">,</span> <span class="mi">25000</span><span class="p">,</span> <span class="mi">20000</span><span class="p">,</span> <span class="mi">15000</span><span class="p">]</span>
+
+<span class="c1"># Calculate NPV at 5% discount rate</span>
+<span class="n">npv</span> <span class="o">=</span> <span class="n">calculate_npv</span><span class="p">(</span><span class="n">revenues</span><span class="p">,</span> <span class="n">costs</span><span class="p">,</span> <span class="n">discount_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;NPV: $</span><span class="si">{</span><span class="n">npv</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Calculate NPV at different discount rates</span>
+<span class="k">for</span> <span class="n">rate</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">]:</span>
+    <span class="n">npv</span> <span class="o">=</span> <span class="n">calculate_npv</span><span class="p">(</span><span class="n">revenues</span><span class="p">,</span> <span class="n">costs</span><span class="p">,</span> <span class="n">discount_rate</span><span class="o">=</span><span class="n">rate</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;NPV at </span><span class="si">{</span><span class="n">rate</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">%: $</span><span class="si">{</span><span class="n">npv</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="calculating-irr">
+<h3>Calculating IRR<a class="headerlink" href="#calculating-irr" title="Link to this heading"></a></h3>
+<p>The <strong>Internal Rate of Return (IRR)</strong> is the discount rate that makes
+NPV equal to zero. It represents the inherent rate of return of the
+investment.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.financial</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculate_irr</span>
+
+<span class="c1"># Calculate IRR</span>
+<span class="n">irr</span> <span class="o">=</span> <span class="n">calculate_irr</span><span class="p">(</span><span class="n">revenues</span><span class="p">,</span> <span class="n">costs</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;IRR: </span><span class="si">{</span><span class="n">irr</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+
+<span class="c1"># Compare to discount rate</span>
+<span class="k">if</span> <span class="n">irr</span> <span class="o">&gt;</span> <span class="mf">0.05</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Project is profitable at 5</span><span class="si">% d</span><span class="s2">iscount rate&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Project is not profitable at 5</span><span class="si">% d</span><span class="s2">iscount rate&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="rotation-economics">
+<h2>Rotation Economics<a class="headerlink" href="#rotation-economics" title="Link to this heading"></a></h2>
+<p>The <strong>optimal rotation age</strong> is the age that maximizes NPV per hectare.
+This is a fundamental concept in forest economics.</p>
+<pre  class="mermaid">
+        graph TD
+  AGE[&quot;Rotation age&quot;] --&gt; VOL[&quot;Volume at harvest&quot;]
+  AGE --&gt; COST[&quot;Costs over rotation&quot;]
+  VOL --&gt; REV[&quot;Revenue at harvest&quot;]
+  COST --&gt; NPV[&quot;NPV&quot;]
+  REV --&gt; NPV
+  NPV --&gt; OPT[&quot;Optimal rotation age&lt;br/&gt;(max NPV)&quot;]
+    </pre><p>The Faustmann formula calculates the optimal rotation age:</p>
+<div class="math notranslate nohighlight">
+\[V'(T) / V(T) = r / (1 - e^{-rT})\]</div>
+<p>Where:
+- <span class="math notranslate nohighlight">\(V(T)\)</span> = Volume at age <span class="math notranslate nohighlight">\(T\)</span>
+- <span class="math notranslate nohighlight">\(V'(T)\)</span> = Marginal growth at age <span class="math notranslate nohighlight">\(T\)</span>
+- <span class="math notranslate nohighlight">\(r\)</span> = Discount rate</p>
+<section id="using-ws3-to-find-optimal-rotation">
+<h3>Using ws3 to Find Optimal Rotation<a class="headerlink" href="#using-ws3-to-find-optimal-rotation" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.forest</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForestModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ws3.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Curve</span>
+
+<span class="c1"># Define a volume curve</span>
+<span class="n">volume_curve</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">201</span><span class="p">,</span> <span class="mi">10</span><span class="p">)),</span>
+    <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">210</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">390</span><span class="p">,</span> <span class="mi">460</span><span class="p">,</span> <span class="mi">510</span><span class="p">,</span>
+       <span class="mi">540</span><span class="p">,</span> <span class="mi">560</span><span class="p">,</span> <span class="mi">575</span><span class="p">,</span> <span class="mi">585</span><span class="p">,</span> <span class="mi">590</span><span class="p">,</span> <span class="mi">595</span><span class="p">,</span> <span class="mi">598</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">601</span><span class="p">,</span> <span class="mi">602</span><span class="p">,</span> <span class="mi">602</span><span class="p">],</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DF_volume&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Calculate NPV for each rotation age</span>
+<span class="n">prices</span> <span class="o">=</span> <span class="mi">50</span>  <span class="c1"># $/m³</span>
+<span class="n">costs</span> <span class="o">=</span> <span class="mi">10000</span>  <span class="c1"># Fixed costs per hectare</span>
+<span class="n">discount_rate</span> <span class="o">=</span> <span class="mf">0.05</span>
+
+<span class="n">npv_by_age</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">age</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">201</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+    <span class="n">volume</span> <span class="o">=</span> <span class="n">volume_curve</span><span class="p">(</span><span class="n">age</span><span class="p">)</span>
+    <span class="n">revenue</span> <span class="o">=</span> <span class="n">volume</span> <span class="o">*</span> <span class="n">prices</span>
+    <span class="c1"># Discounted revenue minus costs</span>
+    <span class="n">npv</span> <span class="o">=</span> <span class="p">(</span><span class="n">revenue</span> <span class="o">-</span> <span class="n">costs</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">discount_rate</span><span class="p">)</span> <span class="o">**</span> <span class="n">age</span>
+    <span class="n">npv_by_age</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">age</span><span class="p">,</span> <span class="n">npv</span><span class="p">))</span>
+
+<span class="c1"># Find optimal rotation age</span>
+<span class="n">optimal_age</span><span class="p">,</span> <span class="n">max_npv</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">npv_by_age</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Optimal rotation age: </span><span class="si">{</span><span class="n">optimal_age</span><span class="si">}</span><span class="s2"> years&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Maximum NPV: $</span><span class="si">{</span><span class="n">max_npv</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="sensitivity-analysis">
+<h2>Sensitivity Analysis<a class="headerlink" href="#sensitivity-analysis" title="Link to this heading"></a></h2>
+<p>Financial analysis should include sensitivity analysis to understand
+how results change with different assumptions:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sensitivity to timber prices</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sensitivity to timber prices:&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">price</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">]:</span>
+    <span class="n">npv</span> <span class="o">=</span> <span class="n">calculate_npv</span><span class="p">(</span><span class="n">revenues</span><span class="p">,</span> <span class="n">costs</span><span class="p">,</span> <span class="n">discount_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+    <span class="c1"># Adjust revenues for new price</span>
+    <span class="n">adjusted_revenues</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="o">*</span> <span class="n">price</span> <span class="o">/</span> <span class="mi">50</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">revenues</span><span class="p">]</span>
+    <span class="n">npv_adj</span> <span class="o">=</span> <span class="n">calculate_npv</span><span class="p">(</span><span class="n">adjusted_revenues</span><span class="p">,</span> <span class="n">costs</span><span class="p">,</span> <span class="n">discount_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Price = $</span><span class="si">{</span><span class="n">price</span><span class="si">}</span><span class="s2">/m³: NPV = $</span><span class="si">{</span><span class="n">npv_adj</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Sensitivity to discount rates</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Sensitivity to discount rates:&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">rate</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">]:</span>
+    <span class="n">npv</span> <span class="o">=</span> <span class="n">calculate_npv</span><span class="p">(</span><span class="n">revenues</span><span class="p">,</span> <span class="n">costs</span><span class="p">,</span> <span class="n">discount_rate</span><span class="o">=</span><span class="n">rate</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Rate = </span><span class="si">{</span><span class="n">rate</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">%: NPV = $</span><span class="si">{</span><span class="n">npv</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="common-financial-mistakes">
+<h2>Common Financial Mistakes<a class="headerlink" href="#common-financial-mistakes" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>Ignoring discounting</strong>: Failing to account for the time value of money</p></li>
+<li><p><strong>Using nominal vs. real values</strong>: Mixing nominal and real prices</p></li>
+<li><p><strong>Ignoring costs</strong>: Only considering revenue, not harvesting/silviculture costs</p></li>
+<li><p><strong>Overlooking risk</strong>: Not accounting for uncertainty in prices and volumes</p></li>
+<li><p><strong>Incorrect rotation age</strong>: Using biological maturity instead of economic optimum</p></li>
+</ol>
+</section>
+<section id="exercises">
+<h2>Exercises<a class="headerlink" href="#exercises" title="Link to this heading"></a></h2>
+<p><strong>Exercise 1 (Easy)</strong>: Calculate the NPV of a simple harvest scenario
+with revenues of $100,000 in year 20 and costs of $10,000 in year 0.</p>
+<p><strong>Exercise 2 (Medium)</strong>: Find the optimal rotation age for a Douglas-fir
+stand with the volume curve defined in this chapter.</p>
+<p><strong>Exercise 3 (Hard)</strong>: Perform a sensitivity analysis on the optimal
+rotation age with respect to discount rate and timber price.</p>
+</section>
+<section id="further-reading">
+<h2>Further Reading<a class="headerlink" href="#further-reading" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="ch05_optimization.html"><span class="doc">Chapter 5: Optimization</span></a> — Optimization fundamentals</p></li>
+<li><p><span class="xref std std-doc">/howto/financial-scenarios</span> — Detailed financial analysis guide</p></li>
+<li><p><span class="xref std std-doc">/reference/modules/financial</span> — Financial functions API reference</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ch06_spatial_allocation.html" class="btn btn-neutral float-left" title="Chapter 6: Spatial Allocation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ch08_uncertainty_and_risk.html" class="btn btn-neutral float-right" title="Chapter 8: Uncertainty and Risk" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015--2025, Gregory Paradis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

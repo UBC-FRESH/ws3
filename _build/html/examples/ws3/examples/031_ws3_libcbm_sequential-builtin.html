@@ -1,0 +1,419 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Running ws3 and libcbm as a two-stage sequential pipeline (using built-in functions) &mdash; ws3 1.0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=d55fa986"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            ws3
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../textbook/index.html">The ws3 Textbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../howto/index.html">How-To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/index.html">Advanced Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Chapt1.html">Wood Supply Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../appendices.html">Appendices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ws3</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Running <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> as a two-stage sequential pipeline (using built-in functions)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/examples/ws3/examples/031_ws3_libcbm_sequential-builtin.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Running-ws3-and-libcbm-as-a-two-stage-sequential-pipeline-(using-built-in-functions)">
+<h1>Running <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> as a two-stage sequential pipeline (using built-in functions)<a class="headerlink" href="#Running-ws3-and-libcbm-as-a-two-stage-sequential-pipeline-(using-built-in-functions)" title="Link to this heading"></a></h1>
+<p>We run <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> in a two-stage sequential software pipeline, using the CBM linkage functions in <code class="docutils literal notranslate"><span class="pre">ws3</span></code>. See notebook <code class="docutils literal notranslate"><span class="pre">ws3_libcbm_sequential-fromscratch</span></code> for a more detailed discussion of these linkages.</p>
+<section id="Set-up-modelling-environment">
+<h2>Set up modelling environment<a class="headerlink" href="#Set-up-modelling-environment" title="Link to this heading"></a></h2>
+<p>First, make sure we have the correct versions of <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> installed. Both of these packages are relatively new and under active development, it is best we stick to known-working versions of each package from their respective GitHub repos.</p>
+<blockquote>
+<div><p>We <em>strongly recommend</em> that you run this notebook in venv-sandboxed Python kernel (see <code class="docutils literal notranslate"><span class="pre">venv_python_kernel_setup</span></code> notebook for an example of how to do this). This will ensure that you are working from a fresh Python package environment, and not wasting time debugging random interactions between this notebook and whatever mishmash of packages you have installed on your system in various parts of your Python path. You have been warned.</p>
+</div></blockquote>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span>
+</pre></div>
+</div>
+</div>
+<p>Optionally, uninstall the <code class="docutils literal notranslate"><span class="pre">ws3</span></code> package and replace it with a pointer to <em>this local clone of the GitHub repository code</em> (useful if you want ot tweak the source code for whatever reason).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clobber_ws3</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">if</span> <span class="n">clobber_ws3</span><span class="p">:</span>
+    <span class="o">%</span><span class="k">pip</span> uninstall -y ws3
+    <span class="o">%</span><span class="k">pip</span> install -e ..
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Found existing installation: ws3 1.1.0.dev0
+Uninstalling ws3-1.1.0.dev0:
+  Successfully uninstalled ws3-1.1.0.dev0
+Note: you may need to restart the kernel to use updated packages.
+Obtaining file:///home/gep/tmp/ws3
+  Installing build dependencies ... done
+  Checking if build backend supports build_editable ... done
+  Getting requirements to build editable ... done
+  Installing backend dependencies ... done
+  Preparing editable metadata (pyproject.toml) ... done
+Requirement already satisfied: dill in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (0.4.0)
+Requirement already satisfied: fiona in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.10.1)
+Requirement already satisfied: gurobipy in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (12.0.3)
+Requirement already satisfied: highspy in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.11.0)
+Requirement already satisfied: libcbm in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (2.8.1)
+Requirement already satisfied: matplotlib in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (3.10.5)
+Requirement already satisfied: numpy&gt;=1.21 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (2.2.6)
+Requirement already satisfied: pandas&gt;=1.3 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (2.3.1)
+Requirement already satisfied: profilehooks in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.13.0)
+Requirement already satisfied: pulp in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (3.2.2)
+Requirement already satisfied: rasterio in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.4.3)
+Requirement already satisfied: scipy&gt;=1.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.16.1)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas&gt;=1.3-&gt;ws3==1.1.0.dev0) (2.9.0.post0)
+Requirement already satisfied: pytz&gt;=2020.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas&gt;=1.3-&gt;ws3==1.1.0.dev0) (2025.2)
+Requirement already satisfied: tzdata&gt;=2022.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas&gt;=1.3-&gt;ws3==1.1.0.dev0) (2025.2)
+Requirement already satisfied: six&gt;=1.5 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&gt;=1.3-&gt;ws3==1.1.0.dev0) (1.17.0)
+Requirement already satisfied: attrs&gt;=19.2.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona-&gt;ws3==1.1.0.dev0) (25.3.0)
+Requirement already satisfied: certifi in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona-&gt;ws3==1.1.0.dev0) (2025.8.3)
+Requirement already satisfied: click~=8.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona-&gt;ws3==1.1.0.dev0) (8.2.1)
+Requirement already satisfied: click-plugins&gt;=1.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona-&gt;ws3==1.1.0.dev0) (1.1.1.2)
+Requirement already satisfied: cligj&gt;=0.5 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona-&gt;ws3==1.1.0.dev0) (0.7.2)
+Requirement already satisfied: numexpr&gt;=2.8.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm-&gt;ws3==1.1.0.dev0) (2.11.0)
+Requirement already satisfied: numba in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm-&gt;ws3==1.1.0.dev0) (0.61.2)
+Requirement already satisfied: pyyaml in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm-&gt;ws3==1.1.0.dev0) (6.0.2)
+Requirement already satisfied: mock in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm-&gt;ws3==1.1.0.dev0) (5.2.0)
+Requirement already satisfied: openpyxl in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm-&gt;ws3==1.1.0.dev0) (3.1.5)
+Requirement already satisfied: contourpy&gt;=1.0.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (1.3.3)
+Requirement already satisfied: cycler&gt;=0.10 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (0.12.1)
+Requirement already satisfied: fonttools&gt;=4.22.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (4.59.0)
+Requirement already satisfied: kiwisolver&gt;=1.3.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (1.4.8)
+Requirement already satisfied: packaging&gt;=20.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (25.0)
+Requirement already satisfied: pillow&gt;=8 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (11.3.0)
+Requirement already satisfied: pyparsing&gt;=2.3.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (3.2.3)
+Requirement already satisfied: llvmlite&lt;0.45,&gt;=0.44.0dev0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from numba-&gt;libcbm-&gt;ws3==1.1.0.dev0) (0.44.0)
+Requirement already satisfied: et-xmlfile in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from openpyxl-&gt;libcbm-&gt;ws3==1.1.0.dev0) (2.0.0)
+Requirement already satisfied: affine in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from rasterio-&gt;ws3==1.1.0.dev0) (2.4.0)
+Building wheels for collected packages: ws3
+  Building editable for ws3 (pyproject.toml) ... done
+  Created wheel for ws3: filename=ws3-1.1.0.dev0-py3-none-any.whl size=4136 sha256=5df49d1809d2f15004f3046010971c142390fb47fb3bfa7620b09e11903424a7
+  Stored in directory: /tmp/pip-ephem-wheel-cache-bww7qav3/wheels/fa/4b/10/3fe4b92a02fb87987a6fe53a10fad0a22a781bf98cd7b63f17
+Successfully built ws3
+Installing collected packages: ws3
+Successfully installed ws3-1.1.0.dev0
+Note: you may need to restart the kernel to use updated packages.
+</pre></div></div>
+</div>
+<p>Use <code class="docutils literal notranslate"><span class="pre">pip</span></code> to install Python packages listed in <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> (some extra packages needed for example notebooks to run correctly).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">pip</span> install -r requirements.txt
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Requirement already satisfied: seaborn in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from -r requirements.txt (line 1)) (0.13.2)
+Requirement already satisfied: geopandas in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from -r requirements.txt (line 2)) (1.1.1)
+Requirement already satisfied: ipywidgets in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from -r requirements.txt (line 3)) (8.1.7)
+Requirement already satisfied: numpy!=1.24.0,&gt;=1.20 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from seaborn-&gt;-r requirements.txt (line 1)) (2.2.6)
+Requirement already satisfied: pandas&gt;=1.2 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from seaborn-&gt;-r requirements.txt (line 1)) (2.3.1)
+Requirement already satisfied: matplotlib!=3.6.1,&gt;=3.4 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from seaborn-&gt;-r requirements.txt (line 1)) (3.10.5)
+Requirement already satisfied: pyogrio&gt;=0.7.2 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from geopandas-&gt;-r requirements.txt (line 2)) (0.11.1)
+Requirement already satisfied: packaging in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from geopandas-&gt;-r requirements.txt (line 2)) (25.0)
+Requirement already satisfied: pyproj&gt;=3.5.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from geopandas-&gt;-r requirements.txt (line 2)) (3.7.1)
+Requirement already satisfied: shapely&gt;=2.0.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from geopandas-&gt;-r requirements.txt (line 2)) (2.1.1)
+Requirement already satisfied: comm&gt;=0.1.3 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipywidgets-&gt;-r requirements.txt (line 3)) (0.2.3)
+Requirement already satisfied: ipython&gt;=6.1.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipywidgets-&gt;-r requirements.txt (line 3)) (9.4.0)
+Requirement already satisfied: traitlets&gt;=4.3.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipywidgets-&gt;-r requirements.txt (line 3)) (5.14.3)
+Requirement already satisfied: widgetsnbextension~=4.0.14 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipywidgets-&gt;-r requirements.txt (line 3)) (4.0.14)
+Requirement already satisfied: jupyterlab_widgets~=3.0.15 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipywidgets-&gt;-r requirements.txt (line 3)) (3.0.15)
+Requirement already satisfied: decorator in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (5.2.1)
+Requirement already satisfied: ipython-pygments-lexers in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (1.1.1)
+Requirement already satisfied: jedi&gt;=0.16 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.19.2)
+Requirement already satisfied: matplotlib-inline in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.1.7)
+Requirement already satisfied: pexpect&gt;4.3 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (4.9.0)
+Requirement already satisfied: prompt_toolkit&lt;3.1.0,&gt;=3.0.41 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (3.0.51)
+Requirement already satisfied: pygments&gt;=2.4.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (2.19.2)
+Requirement already satisfied: stack_data in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.6.3)
+Requirement already satisfied: wcwidth in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from prompt_toolkit&lt;3.1.0,&gt;=3.0.41-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.2.13)
+Requirement already satisfied: parso&lt;0.9.0,&gt;=0.8.4 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from jedi&gt;=0.16-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.8.4)
+Requirement already satisfied: contourpy&gt;=1.0.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (1.3.3)
+Requirement already satisfied: cycler&gt;=0.10 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (0.12.1)
+Requirement already satisfied: fonttools&gt;=4.22.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (4.59.0)
+Requirement already satisfied: kiwisolver&gt;=1.3.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (1.4.8)
+Requirement already satisfied: pillow&gt;=8 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (11.3.0)
+Requirement already satisfied: pyparsing&gt;=2.3.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (3.2.3)
+Requirement already satisfied: python-dateutil&gt;=2.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (2.9.0.post0)
+Requirement already satisfied: pytz&gt;=2020.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas&gt;=1.2-&gt;seaborn-&gt;-r requirements.txt (line 1)) (2025.2)
+Requirement already satisfied: tzdata&gt;=2022.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas&gt;=1.2-&gt;seaborn-&gt;-r requirements.txt (line 1)) (2025.2)
+Requirement already satisfied: ptyprocess&gt;=0.5 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pexpect&gt;4.3-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.7.0)
+Requirement already satisfied: certifi in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pyogrio&gt;=0.7.2-&gt;geopandas-&gt;-r requirements.txt (line 2)) (2025.8.3)
+Requirement already satisfied: six&gt;=1.5 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from python-dateutil&gt;=2.7-&gt;matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (1.17.0)
+Requirement already satisfied: executing&gt;=1.2.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from stack_data-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (2.2.0)
+Requirement already satisfied: asttokens&gt;=2.1.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from stack_data-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (3.0.0)
+Requirement already satisfied: pure-eval in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from stack_data-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.2.3)
+Note: you may need to restart the kernel to use updated packages.
+</pre></div></div>
+</div>
+<p>Create a <code class="docutils literal notranslate"><span class="pre">ForestModel</span></code> instance by loading Woodstock-formatted input files.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ws3.forest</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">base_year</span> <span class="o">=</span> <span class="mi">2020</span>
+<span class="n">horizon</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">period_length</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">max_age</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">tvy_name</span> <span class="o">=</span> <span class="s2">&quot;totvol&quot;</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span> <span class="o">=</span> <span class="n">ws3</span><span class="o">.</span><span class="n">forest</span><span class="o">.</span><span class="n">ForestModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;tsa24_clipped&quot;</span><span class="p">,</span>
+                            <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;data/woodstock_model_files_tsa24_clipped&quot;</span><span class="p">,</span>
+                            <span class="n">base_year</span><span class="o">=</span><span class="n">base_year</span><span class="p">,</span>
+                            <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span>
+                            <span class="n">period_length</span><span class="o">=</span><span class="n">period_length</span><span class="p">,</span>
+                            <span class="n">max_age</span><span class="o">=</span><span class="n">max_age</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_landscape_section</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_areas_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_yields_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_actions_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_transitions_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">initialize_areas</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">add_null_action</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">reset_actions</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>Schedule some harvesting in our <code class="docutils literal notranslate"><span class="pre">ws3.ForestModel</span></code> instance using the self-parametrising priority queue heuristic defined in the local <code class="docutils literal notranslate"><span class="pre">util</span></code> module (just so we have something interesting to push through <code class="docutils literal notranslate"><span class="pre">libcbm</span></code>).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">util</span><span class="w"> </span><span class="kn">import</span> <span class="n">schedule_harvest_areacontrol</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sch</span> <span class="o">=</span> <span class="n">schedule_harvest_areacontrol</span><span class="p">(</span><span class="n">fm</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">util</span><span class="w"> </span><span class="kn">import</span> <span class="n">compile_scenario</span><span class="p">,</span> <span class="n">plot_scenario</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">compile_scenario</span><span class="p">(</span><span class="n">fm</span><span class="p">)</span>
+<span class="n">plot_scenario</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(&lt;Figure size 1200x400 with 3 Axes&gt;,
+ array([&lt;Axes: title={&#39;center&#39;: &#39;Harvested area (ha)&#39;}&gt;,
+        &lt;Axes: title={&#39;center&#39;: &#39;Harvested volume (m3)&#39;}&gt;,
+        &lt;Axes: title={&#39;center&#39;: &#39;Growing Stock (m3)&#39;}&gt;], dtype=object))
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_031_ws3_libcbm_sequential-builtin_15_1.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_031_ws3_libcbm_sequential-builtin_15_1.png" />
+</div>
+</div>
+<p>All of the stuff above is just to set up a working <code class="docutils literal notranslate"><span class="pre">ws3</span></code> model environment. The actual linkage with <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> happens below and is quite simple.</p>
+</section>
+<section id="Hard-link-ForestModel-to-libcbm">
+<h2>Hard-link <code class="docutils literal notranslate"><span class="pre">ForestModel</span></code> to <code class="docutils literal notranslate"><span class="pre">libcbm</span></code><a class="headerlink" href="#Hard-link-ForestModel-to-libcbm" title="Link to this heading"></a></h2>
+<p>Next, we use <code class="docutils literal notranslate"><span class="pre">ws3</span></code> built-in CBM linkage functions to compile a <code class="docutils literal notranslate"><span class="pre">sit_config</span></code> object (a JSON-like dict namespace) and a <code class="docutils literal notranslate"><span class="pre">sit_tables</span></code> object (a dict of <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> objects) the SIT-compatible format expected by <code class="docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_cbm_factory</span></code>.</p>
+<p>Before calling the <code class="docutils literal notranslate"><span class="pre">ForestModel.to_cbm_sit</span></code> method, we need to compile <code class="docutils literal notranslate"><span class="pre">disturbance_type_mapping</span></code> (a list of dict objects of mapping the action codes in our <code class="docutils literal notranslate"><span class="pre">ws3</span></code> model to one of the standard disturbance types defined in the CBM database) and also add a <code class="docutils literal notranslate"><span class="pre">last_pass_disturbance</span></code> attribute to each developement type in our <code class="docutils literal notranslate"><span class="pre">ws3</span></code> model (else will default to <code class="docutils literal notranslate"><span class="pre">fire</span></code>, which would still run but might make the DOM spin-up in CBM a bit wonky).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">disturbance_type_mapping</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;user_dist_type&quot;</span><span class="p">:</span> <span class="s2">&quot;harvest&quot;</span><span class="p">,</span> <span class="s2">&quot;default_dist_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Clearcut harvesting without salvage&quot;</span><span class="p">},</span>
+                            <span class="p">{</span><span class="s2">&quot;user_dist_type&quot;</span><span class="p">:</span> <span class="s2">&quot;fire&quot;</span><span class="p">,</span> <span class="s2">&quot;default_dist_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Wildfire&quot;</span><span class="p">}]</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">dtype_key</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">dtypes</span><span class="p">:</span>
+    <span class="n">fm</span><span class="o">.</span><span class="n">dt</span><span class="p">(</span><span class="n">dtype_key</span><span class="p">)</span><span class="o">.</span><span class="n">last_pass_disturbance</span> <span class="o">=</span> <span class="s2">&quot;fire&quot;</span> <span class="k">if</span> <span class="n">dtype_key</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">dtype_key</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;harvest&quot;</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sit_config</span><span class="p">,</span> <span class="n">sit_tables</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">to_cbm_sit</span><span class="p">(</span><span class="n">softwood_volume_yname</span><span class="o">=</span><span class="s2">&quot;swdvol&quot;</span><span class="p">,</span>
+                                       <span class="n">hardwood_volume_yname</span><span class="o">=</span><span class="s2">&quot;hwdvol&quot;</span><span class="p">,</span>
+                                       <span class="n">admin_boundary</span><span class="o">=</span><span class="s2">&quot;British Columbia&quot;</span><span class="p">,</span>
+                                       <span class="n">eco_boundary</span><span class="o">=</span><span class="s2">&quot;Montane Cordillera&quot;</span><span class="p">,</span>
+                                       <span class="n">disturbance_type_mapping</span><span class="o">=</span><span class="n">disturbance_type_mapping</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">util</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_cbm</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#n_steps = fm.horizon * fm.period_length</span>
+<span class="n">n_steps</span> <span class="o">=</span> <span class="mi">200</span>
+<span class="n">cbm_output</span> <span class="o">=</span> <span class="n">run_cbm</span><span class="p">(</span><span class="n">sit_config</span><span class="p">,</span> <span class="n">sit_tables</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_031_ws3_libcbm_sequential-builtin_23_0.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_031_ws3_libcbm_sequential-builtin_23_0.png" />
+</div>
+</div>
+<p>If you contrast this workflow to the workflow from notebook <code class="docutils literal notranslate"><span class="pre">030_ws3_libcbm_sequential-fromscratch</span></code>, this is a lot simpler and more compact.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015--2025, Gregory Paradis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

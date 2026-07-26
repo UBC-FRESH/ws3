@@ -1,0 +1,887 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "fde58d65-ba6d-4c6b-b742-2e277efb71b4",
+   "metadata": {
+    "tags": []
+   },
+   "source": [
+    "# Build a `ws3` model from Woodstock-format text input files\n",
+    "\n",
+    "`ws3` has built-in functions that can parse Woodstock-formatted model definition text files. Here we build an equivalent model to the direct-code model defined in `ws3_model_example`, but using Woodstock-foratted input files (as an alternative to the pure Python code implementation above).\n",
+    "\n",
+    "The Woodstock-formatted input files are just flat text files, containing special Woodstock code."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "fc33af5b-497d-444a-8358-68917c0a40c0",
+   "metadata": {},
+   "source": [
+    "Woodstock models are defined in terms of a number of _sections_. The sections can be defined in a single text file, or in separate text files. We will use separate text files for each section in this example.\n",
+    "\n",
+    "Our model will include the following sections:\n",
+    "* `LANDSCAPE`\n",
+    "* `AREAS`\n",
+    "* `YIELD`\n",
+    "* `ACTIONS`\n",
+    "* `TRANSITIONS`\n",
+    "\n",
+    "There are other possible sections that one can include in a Woodstock model, which will not include here. This is not intended to be a comprehensive overview of Woodstock-format model definition. Refer to the Woodstock technical documentation for the complete story.\n",
+    "\n",
+    "The model input files for this example are located in `data/woodstock_model_files_tsa24_clipped`."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "67f0e0fa-4a38-4508-96c1-a8f322fa7071",
+   "metadata": {},
+   "source": [
+    "Optionally, uninstall the `ws3` package and replace it with a pointer to _this local clone of the GitHub repository code_ (useful if you want ot tweak the source code for whatever reason). "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "bc1a3370-33d8-4e8f-bde6-a77efb66c400",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Found existing installation: ws3 1.1.0.dev0\n",
+      "Uninstalling ws3-1.1.0.dev0:\n",
+      "  Successfully uninstalled ws3-1.1.0.dev0\n",
+      "Note: you may need to restart the kernel to use updated packages.\n",
+      "Obtaining file:///home/gep/tmp/ws3\n",
+      "  Installing build dependencies ... \u001b[?25ldone\n",
+      "\u001b[?25h  Checking if build backend supports build_editable ... \u001b[?25ldone\n",
+      "\u001b[?25h  Getting requirements to build editable ... \u001b[?25ldone\n",
+      "\u001b[?25h  Installing backend dependencies ... \u001b[?25ldone\n",
+      "\u001b[?25h  Preparing editable metadata (pyproject.toml) ... \u001b[?25ldone\n",
+      "\u001b[?25hRequirement already satisfied: dill in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (0.4.0)\n",
+      "Requirement already satisfied: fiona in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.10.1)\n",
+      "Requirement already satisfied: gurobipy in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (12.0.3)\n",
+      "Requirement already satisfied: highspy in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.11.0)\n",
+      "Requirement already satisfied: libcbm in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (2.8.1)\n",
+      "Requirement already satisfied: matplotlib in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (3.10.5)\n",
+      "Requirement already satisfied: numpy>=1.21 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (2.2.6)\n",
+      "Requirement already satisfied: pandas>=1.3 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (2.3.1)\n",
+      "Requirement already satisfied: profilehooks in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.13.0)\n",
+      "Requirement already satisfied: pulp in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (3.2.2)\n",
+      "Requirement already satisfied: rasterio in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.4.3)\n",
+      "Requirement already satisfied: scipy>=1.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.16.1)\n",
+      "Requirement already satisfied: python-dateutil>=2.8.2 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas>=1.3->ws3==1.1.0.dev0) (2.9.0.post0)\n",
+      "Requirement already satisfied: pytz>=2020.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas>=1.3->ws3==1.1.0.dev0) (2025.2)\n",
+      "Requirement already satisfied: tzdata>=2022.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas>=1.3->ws3==1.1.0.dev0) (2025.2)\n",
+      "Requirement already satisfied: six>=1.5 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from python-dateutil>=2.8.2->pandas>=1.3->ws3==1.1.0.dev0) (1.17.0)\n",
+      "Requirement already satisfied: attrs>=19.2.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona->ws3==1.1.0.dev0) (25.3.0)\n",
+      "Requirement already satisfied: certifi in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona->ws3==1.1.0.dev0) (2025.8.3)\n",
+      "Requirement already satisfied: click~=8.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona->ws3==1.1.0.dev0) (8.2.1)\n",
+      "Requirement already satisfied: click-plugins>=1.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona->ws3==1.1.0.dev0) (1.1.1.2)\n",
+      "Requirement already satisfied: cligj>=0.5 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona->ws3==1.1.0.dev0) (0.7.2)\n",
+      "Requirement already satisfied: numexpr>=2.8.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm->ws3==1.1.0.dev0) (2.11.0)\n",
+      "Requirement already satisfied: numba in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm->ws3==1.1.0.dev0) (0.61.2)\n",
+      "Requirement already satisfied: pyyaml in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm->ws3==1.1.0.dev0) (6.0.2)\n",
+      "Requirement already satisfied: mock in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm->ws3==1.1.0.dev0) (5.2.0)\n",
+      "Requirement already satisfied: openpyxl in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm->ws3==1.1.0.dev0) (3.1.5)\n",
+      "Requirement already satisfied: contourpy>=1.0.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib->ws3==1.1.0.dev0) (1.3.3)\n",
+      "Requirement already satisfied: cycler>=0.10 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib->ws3==1.1.0.dev0) (0.12.1)\n",
+      "Requirement already satisfied: fonttools>=4.22.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib->ws3==1.1.0.dev0) (4.59.0)\n",
+      "Requirement already satisfied: kiwisolver>=1.3.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib->ws3==1.1.0.dev0) (1.4.8)\n",
+      "Requirement already satisfied: packaging>=20.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib->ws3==1.1.0.dev0) (25.0)\n",
+      "Requirement already satisfied: pillow>=8 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib->ws3==1.1.0.dev0) (11.3.0)\n",
+      "Requirement already satisfied: pyparsing>=2.3.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib->ws3==1.1.0.dev0) (3.2.3)\n",
+      "Requirement already satisfied: llvmlite<0.45,>=0.44.0dev0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from numba->libcbm->ws3==1.1.0.dev0) (0.44.0)\n",
+      "Requirement already satisfied: et-xmlfile in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from openpyxl->libcbm->ws3==1.1.0.dev0) (2.0.0)\n",
+      "Requirement already satisfied: affine in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from rasterio->ws3==1.1.0.dev0) (2.4.0)\n",
+      "Building wheels for collected packages: ws3\n",
+      "  Building editable for ws3 (pyproject.toml) ... \u001b[?25ldone\n",
+      "\u001b[?25h  Created wheel for ws3: filename=ws3-1.1.0.dev0-py3-none-any.whl size=4136 sha256=5df49d1809d2f15004f3046010971c142390fb47fb3bfa7620b09e11903424a7\n",
+      "  Stored in directory: /tmp/pip-ephem-wheel-cache-dsvpsmjp/wheels/fa/4b/10/3fe4b92a02fb87987a6fe53a10fad0a22a781bf98cd7b63f17\n",
+      "Successfully built ws3\n",
+      "Installing collected packages: ws3\n",
+      "Successfully installed ws3-1.1.0.dev0\n",
+      "Note: you may need to restart the kernel to use updated packages.\n"
+     ]
+    }
+   ],
+   "source": [
+    "clobber_ws3 = True\n",
+    "if clobber_ws3:\n",
+    "    %pip uninstall -y ws3\n",
+    "    %pip install -e .."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "cf617eaf",
+   "metadata": {},
+   "source": [
+    "Use `pip` to install Python packages listed in `requirements.txt` (some extra packages needed for example notebooks to run correctly)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "70cbce22",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Requirement already satisfied: seaborn in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from -r requirements.txt (line 1)) (0.13.2)\n",
+      "Requirement already satisfied: geopandas in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from -r requirements.txt (line 2)) (1.1.1)\n",
+      "Requirement already satisfied: ipywidgets in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from -r requirements.txt (line 3)) (8.1.7)\n",
+      "Requirement already satisfied: numpy!=1.24.0,>=1.20 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from seaborn->-r requirements.txt (line 1)) (2.2.6)\n",
+      "Requirement already satisfied: pandas>=1.2 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from seaborn->-r requirements.txt (line 1)) (2.3.1)\n",
+      "Requirement already satisfied: matplotlib!=3.6.1,>=3.4 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from seaborn->-r requirements.txt (line 1)) (3.10.5)\n",
+      "Requirement already satisfied: pyogrio>=0.7.2 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from geopandas->-r requirements.txt (line 2)) (0.11.1)\n",
+      "Requirement already satisfied: packaging in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from geopandas->-r requirements.txt (line 2)) (25.0)\n",
+      "Requirement already satisfied: pyproj>=3.5.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from geopandas->-r requirements.txt (line 2)) (3.7.1)\n",
+      "Requirement already satisfied: shapely>=2.0.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from geopandas->-r requirements.txt (line 2)) (2.1.1)\n",
+      "Requirement already satisfied: comm>=0.1.3 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipywidgets->-r requirements.txt (line 3)) (0.2.3)\n",
+      "Requirement already satisfied: ipython>=6.1.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipywidgets->-r requirements.txt (line 3)) (9.4.0)\n",
+      "Requirement already satisfied: traitlets>=4.3.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipywidgets->-r requirements.txt (line 3)) (5.14.3)\n",
+      "Requirement already satisfied: widgetsnbextension~=4.0.14 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipywidgets->-r requirements.txt (line 3)) (4.0.14)\n",
+      "Requirement already satisfied: jupyterlab_widgets~=3.0.15 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipywidgets->-r requirements.txt (line 3)) (3.0.15)\n",
+      "Requirement already satisfied: decorator in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython>=6.1.0->ipywidgets->-r requirements.txt (line 3)) (5.2.1)\n",
+      "Requirement already satisfied: ipython-pygments-lexers in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython>=6.1.0->ipywidgets->-r requirements.txt (line 3)) (1.1.1)\n",
+      "Requirement already satisfied: jedi>=0.16 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython>=6.1.0->ipywidgets->-r requirements.txt (line 3)) (0.19.2)\n",
+      "Requirement already satisfied: matplotlib-inline in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython>=6.1.0->ipywidgets->-r requirements.txt (line 3)) (0.1.7)\n",
+      "Requirement already satisfied: pexpect>4.3 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython>=6.1.0->ipywidgets->-r requirements.txt (line 3)) (4.9.0)\n",
+      "Requirement already satisfied: prompt_toolkit<3.1.0,>=3.0.41 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython>=6.1.0->ipywidgets->-r requirements.txt (line 3)) (3.0.51)\n",
+      "Requirement already satisfied: pygments>=2.4.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython>=6.1.0->ipywidgets->-r requirements.txt (line 3)) (2.19.2)\n",
+      "Requirement already satisfied: stack_data in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython>=6.1.0->ipywidgets->-r requirements.txt (line 3)) (0.6.3)\n",
+      "Requirement already satisfied: wcwidth in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from prompt_toolkit<3.1.0,>=3.0.41->ipython>=6.1.0->ipywidgets->-r requirements.txt (line 3)) (0.2.13)\n",
+      "Requirement already satisfied: parso<0.9.0,>=0.8.4 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from jedi>=0.16->ipython>=6.1.0->ipywidgets->-r requirements.txt (line 3)) (0.8.4)\n",
+      "Requirement already satisfied: contourpy>=1.0.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,>=3.4->seaborn->-r requirements.txt (line 1)) (1.3.3)\n",
+      "Requirement already satisfied: cycler>=0.10 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,>=3.4->seaborn->-r requirements.txt (line 1)) (0.12.1)\n",
+      "Requirement already satisfied: fonttools>=4.22.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,>=3.4->seaborn->-r requirements.txt (line 1)) (4.59.0)\n",
+      "Requirement already satisfied: kiwisolver>=1.3.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,>=3.4->seaborn->-r requirements.txt (line 1)) (1.4.8)\n",
+      "Requirement already satisfied: pillow>=8 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,>=3.4->seaborn->-r requirements.txt (line 1)) (11.3.0)\n",
+      "Requirement already satisfied: pyparsing>=2.3.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,>=3.4->seaborn->-r requirements.txt (line 1)) (3.2.3)\n",
+      "Requirement already satisfied: python-dateutil>=2.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,>=3.4->seaborn->-r requirements.txt (line 1)) (2.9.0.post0)\n",
+      "Requirement already satisfied: pytz>=2020.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas>=1.2->seaborn->-r requirements.txt (line 1)) (2025.2)\n",
+      "Requirement already satisfied: tzdata>=2022.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas>=1.2->seaborn->-r requirements.txt (line 1)) (2025.2)\n",
+      "Requirement already satisfied: ptyprocess>=0.5 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pexpect>4.3->ipython>=6.1.0->ipywidgets->-r requirements.txt (line 3)) (0.7.0)\n",
+      "Requirement already satisfied: certifi in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pyogrio>=0.7.2->geopandas->-r requirements.txt (line 2)) (2025.8.3)\n",
+      "Requirement already satisfied: six>=1.5 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from python-dateutil>=2.7->matplotlib!=3.6.1,>=3.4->seaborn->-r requirements.txt (line 1)) (1.17.0)\n",
+      "Requirement already satisfied: executing>=1.2.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from stack_data->ipython>=6.1.0->ipywidgets->-r requirements.txt (line 3)) (2.2.0)\n",
+      "Requirement already satisfied: asttokens>=2.1.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from stack_data->ipython>=6.1.0->ipywidgets->-r requirements.txt (line 3)) (3.0.0)\n",
+      "Requirement already satisfied: pure-eval in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from stack_data->ipython>=6.1.0->ipywidgets->-r requirements.txt (line 3)) (0.2.3)\n",
+      "Note: you may need to restart the kernel to use updated packages.\n"
+     ]
+    }
+   ],
+   "source": [
+    "%pip install -r requirements.txt"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5d959ca3-248b-46c5-9341-8601f324a9f2",
+   "metadata": {},
+   "source": [
+    "## `LANDSCAPE` section"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "cc48c083-06bb-41d3-9dd5-e842b6d41859",
+   "metadata": {},
+   "source": [
+    "The `LANDSCAPE` section defines themes (i.e., state variables), theme basecodes (i.e., valid state variable values), and theme aggregates (i.e., groups of state variable values within a given theme, which can include aggregates with no [documented] limit on recursion depth)."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c8582b3d-d84e-43c6-9bf0-556bb1121f15",
+   "metadata": {},
+   "source": [
+    "The `LANDSCAPE` section for this example is defined in file `data/woodstock_model_files_tsa24_clipped/tsa24_clipped.lan`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "da14f678-6c5e-4e71-b68f-4e52308765ac",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "*THEME Timber Supply Area (TSA)\n",
+      "tsa24_clipped\n",
+      "\n",
+      "*THEME Timber Harvesting Land Base (THLB)\n",
+      "0\n",
+      "1\n",
+      "\n",
+      "*THEME Analysis Unit (AU)\n",
+      "2402002\n",
+      "2401007\n",
+      "2402001\n",
+      "2401005\n",
+      "2402000\n",
+      "2403004\n",
+      "2403006\n",
+      "2401004\n",
+      "2401006\n",
+      "2402004\n",
+      "2402007\n",
+      "2403005\n",
+      "2401002\n",
+      "2403007\n",
+      "2403003\n",
+      "2401000\n",
+      "2402005\n",
+      "2402006\n",
+      "2401003\n",
+      "2403002\n",
+      "2402003\n",
+      "2403000\n",
+      "2401001\n",
+      "2403001\n",
+      "\n",
+      "*THEME Leading tree species (CANFI species code)\n",
+      "304\n",
+      "100\n",
+      "1201\n",
+      "204\n",
+      "104\n",
+      "\n",
+      "*THEME Yield curve ID\n",
+      "2402002\n",
+      "2401007\n",
+      "2422007\n",
+      "2402001\n",
+      "2401005\n",
+      "2422003\n",
+      "2402000\n",
+      "2403004\n",
+      "2423004\n",
+      "2403006\n",
+      "2421007\n",
+      "2423003\n",
+      "2401004\n",
+      "2401006\n",
+      "2402004\n",
+      "2421002\n",
+      "2422004\n",
+      "2423002\n",
+      "2422002\n",
+      "2402007\n",
+      "2403005\n",
+      "2401002\n",
+      "2403007\n",
+      "2423007\n",
+      "2403003\n",
+      "2401000\n",
+      "2402005\n",
+      "2402006\n",
+      "2401003\n",
+      "2423001\n",
+      "2403002\n",
+      "2402003\n",
+      "2422000\n",
+      "2403000\n",
+      "2401001\n",
+      "2423000\n",
+      "2403001\n"
+     ]
+    }
+   ],
+   "source": [
+    "!cat data/woodstock_model_files_tsa24_clipped/tsa24_clipped.lan"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3b448b34-4784-4b97-9dfe-22b25f8feaaf",
+   "metadata": {},
+   "source": [
+    "## `AREAS` section\n",
+    "\n",
+    "The `AREAS` section defines the initial inventory, as area by development type and age. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "a2245d4b-bcee-487f-8437-083b671d9d11",
+   "metadata": {},
+   "source": [
+    "The `AREAS` section for this example is defined in file `data/woodstock_model_files_tsa24_clipped/tsa24_clipped.are`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "e4ba8c39-bf97-40c4-941b-810a12c0e8e4",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "*A tsa24_clipped 0 2401000 100 2401000 85 15.182274886309896\n",
+      "*A tsa24_clipped 0 2401000 100 2401000 95 20.653788842921458\n",
+      "*A tsa24_clipped 0 2401000 100 2401000 105 1.109374490200082\n",
+      "*A tsa24_clipped 0 2401000 100 2401000 125 25.73174833461312\n",
+      "*A tsa24_clipped 0 2401000 100 2401000 135 62.02382759721078\n",
+      "*A tsa24_clipped 0 2401000 100 2401000 145 45.32228954967691\n",
+      "*A tsa24_clipped 0 2401000 100 2401000 155 3.052804424896181\n",
+      "*A tsa24_clipped 0 2402005 1201 2402005 85 1.812979326195168\n",
+      "*A tsa24_clipped 1 2401002 204 2401002 78 103.76740323520823\n",
+      "*A tsa24_clipped 1 2401002 204 2401002 80 4.173147018452507\n",
+      "*A tsa24_clipped 1 2401002 204 2401002 85 282.1296355046733\n",
+      "*A tsa24_clipped 1 2401002 204 2401002 91 73.1021561503533\n",
+      "*A tsa24_clipped 1 2401002 204 2401002 93 28.37956666951611\n",
+      "*A tsa24_clipped 1 2401002 204 2401002 95 94.94675966211176\n",
+      "*A tsa24_clipped 1 2401002 204 2401002 105 32.175418531537815\n",
+      "*A tsa24_clipped 1 2401002 204 2401002 113 4.184826329641321\n",
+      "*A tsa24_clipped 1 2401002 204 2401002 115 50.030816858894816\n",
+      "*A tsa24_clipped 1 2401002 204 2401002 125 78.16612132001225\n",
+      "*A tsa24_clipped 1 2401002 204 2401002 135 72.24421919373785\n",
+      "*A tsa24_clipped 1 2401002 204 2401002 145 96.38442685503642\n",
+      "*A tsa24_clipped 1 2401002 204 2401002 153 9.591469412607397\n",
+      "*A tsa24_clipped 1 2401002 204 2401002 155 34.32629241113743\n",
+      "*A tsa24_clipped 1 2401002 204 2421002 20 0.422054121206099\n",
+      "*A tsa24_clipped 1 2402000 100 2402000 165 0.638005468748551\n",
+      "*A tsa24_clipped 1 2402002 204 2402002 78 32.64168183055375\n",
+      "*A tsa24_clipped 1 2402002 204 2402002 93 48.21816452980633\n",
+      "*A tsa24_clipped 1 2402002 204 2402002 95 33.89498244313859\n",
+      "*A tsa24_clipped 1 2402002 204 2402002 115 3.195378954654358\n",
+      "*A tsa24_clipped 1 2403000 100 2403000 93 14.811643286926836\n",
+      "*A tsa24_clipped 1 2403002 204 2403002 73 2.243990590272984\n",
+      "*A tsa24_clipped 1 2403002 204 2423002 9 59.81429119367274\n",
+      "*A tsa24_clipped 1 2403002 204 2423002 18 32.366198551219505\n"
+     ]
+    }
+   ],
+   "source": [
+    "!cat data/woodstock_model_files_tsa24_clipped/tsa24_clipped.are"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "f4f1f344-fec9-4f09-b71f-51f74d58430e",
+   "metadata": {
+    "tags": []
+   },
+   "source": [
+    "## `YIELDS` section\n",
+    "\n",
+    "The `YIELDS` section defines yield curves and links these to development types."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "9f34b014-4f4b-4b92-be7d-5b895463bdde",
+   "metadata": {},
+   "source": [
+    "The `YIELDS` section for this example is defined in file `data/woodstock_model_files_tsa24_clipped/tsa24_clipped.yld`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "518f8a33-feb8-423c-b180-745ee777f9d0",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "*Y ? ? 2401000 ? 2401000\n",
+      "s0100 1 0 1 5 10 16 24 33 43 54 64 75 85 95 104 113 121 127 133 138 143 146 148 150 151 151 150 149 147 145 145\n",
+      "*Y ? ? 2401000 ? 2401000\n",
+      "s0100 1 0 1 5 10 16 24 33 43 54 64 75 85 95 104 113 121 127 133 138 143 146 148 150 151 151 150 149 147 145 145\n",
+      "*Y ? ? 2402000 ? 2402000\n",
+      "s0100 1 4 13 27 42 58 76 93 110 126 141 156 169 182 193 203 211 219 225 231 235 238 240 242 242 242 241 240 238 235 235\n",
+      "*Y ? ? 2402000 ? 2422000\n",
+      "s0100 1 0 0 0 0 3 18 46 79 112 144 171 195 215 234 248 261 272 282 290 298 305 311 316 320 325 328 330 333 335 336\n",
+      "*Y ? ? 2403000 ? 2403000\n",
+      "s0100 1 3 15 37 67 99 133 166 197 225 250 272 290 305 316 325 330 333 333 331 328 322 316 308 299 289 279 268 257 246 246\n",
+      "*Y ? ? 2403000 ? 2423000\n",
+      "s0100 1 0 0 0 5 38 88 142 190 231 265 293 315 334 350 365 377 388 396 403 410 416 420 424 427 429 431 433 433 433 433\n",
+      "*Y ? ? 2401001 ? 2401001\n",
+      "s0304 1 0 0 0 0 0 0 2 5 11 18 25 32 40 47 54 62 66 70 75 79 83 88 92 94 95 97 97 97 97 97\n",
+      "*Y ? ? 2401001 ? 2401001\n",
+      "s0304 1 0 0 0 0 0 0 2 5 11 18 25 32 40 47 54 62 66 70 75 79 83 88 92 94 95 97 97 97 97 97\n",
+      "*Y ? ? 2402001 ? 2402001\n",
+      "s0304 1 0 0 0 0 0 3 8 17 29 43 57 71 84 96 107 117 125 132 138 143 146 149 150 151 151 150 149 146 144 144\n",
+      "*Y ? ? 2402001 ? 2402001\n",
+      "s0304 1 0 0 0 0 0 3 8 17 29 43 57 71 84 96 107 117 125 132 138 143 146 149 150 151 151 150 149 146 144 144\n",
+      "*Y ? ? 2403001 ? 2403001\n",
+      "s0304 1 0 0 1 6 16 30 48 68 87 106 123 140 154 167 178 188 195 201 206 209 210 211 210 209 206 203 199 195 190 190\n",
+      "*Y ? ? 2403001 ? 2423001\n",
+      "s0304 1 0 0 0 0 0 0 6 21 43 70 97 126 152 176 199 218 236 252 265 277 288 297 306 314 321 326 331 336 339 340\n",
+      "*Y ? ? 2401002 ? 2401002\n",
+      "s0204 1 0 4 12 25 40 57 73 89 103 116 128 137 145 152 157 160 162 163 163 162 160 158 154 151 147 142 137 132 127 127\n",
+      "*Y ? ? 2401002 ? 2421002\n",
+      "s0204 1 0 0 0 0 1 7 23 47 71 94 114 132 146 157 166 173 179 183 187 190 191 192 193 194 195 195 195 196 196 196\n",
+      "*Y ? ? 2402002 ? 2402002\n",
+      "s0204 1 5 18 37 57 79 101 122 142 160 176 191 203 214 222 229 233 237 238 239 238 236 233 229 224 219 213 207 201 194 194\n",
+      "*Y ? ? 2402002 ? 2422002\n",
+      "s0204 1 0 0 0 1 16 55 100 143 180 208 231 247 261 271 278 282 286 288 289 290 291 292 292 293 293 293 293 293 293 293\n",
+      "*Y ? ? 2403002 ? 2403002\n",
+      "s0204 1 8 29 59 93 129 165 200 232 261 287 309 328 343 355 363 368 371 371 369 365 359 352 344 334 324 313 301 290 277 277\n",
+      "*Y ? ? 2403002 ? 2423002\n",
+      "s0204 1 0 0 0 24 98 184 257 312 353 380 400 413 422 428 433 435 436 437 436 434 433 431 430 429 428 428 428 428 428 428\n",
+      "*Y ? ? 2401003 ? 2401003\n",
+      "s0304 1 0 0 0 1 6 15 27 42 58 74 89 103 116 127 137 145 152 157 161 164 166 167 166 165 163 161 158 154 150 150\n",
+      "*Y ? ? 2401003 ? 2401003\n",
+      "s0304 1 0 0 0 1 6 15 27 42 58 74 89 103 116 127 137 145 152 157 161 164 166 167 166 165 163 161 158 154 150 150\n",
+      "*Y ? ? 2402003 ? 2402003\n",
+      "s0304 1 0 0 2 9 22 42 67 94 120 145 168 189 207 222 235 245 252 258 261 262 261 259 255 251 245 238 231 223 215 215\n",
+      "*Y ? ? 2402003 ? 2422003\n",
+      "s0304 1 0 0 0 0 0 6 25 52 84 117 150 180 206 228 247 263 277 290 301 311 319 327 333 338 342 347 350 353 357 358\n",
+      "*Y ? ? 2403003 ? 2403003\n",
+      "s0304 1 6 25 53 86 120 155 189 220 249 275 297 315 330 342 350 356 359 359 357 354 348 341 333 324 314 304 293 281 270 270\n",
+      "*Y ? ? 2403003 ? 2423003\n",
+      "s0304 1 0 0 0 1 17 60 114 170 221 264 299 327 352 372 390 404 416 426 435 443 450 456 461 466 469 471 473 474 475 476\n",
+      "*Y ? ? 2401004 ? 2401004\n",
+      "s0104 1 0 0 0 0 0 2 6 12 22 33 45 58 70 83 94 105 115 125 133 139 145 150 154 157 159 160 160 159 158 158\n",
+      "*Y ? ? 2401004 ? 2401004\n",
+      "s0104 1 0 0 0 0 0 2 6 12 22 33 45 58 70 83 94 105 115 125 133 139 145 150 154 157 159 160 160 159 158 158\n",
+      "*Y ? ? 2402004 ? 2402004\n",
+      "s0104 1 0 0 0 1 4 11 22 35 51 68 87 106 125 142 159 174 188 199 209 216 222 225 227 228 226 224 220 215 209 209\n",
+      "*Y ? ? 2402004 ? 2422004\n",
+      "s0104 1 0 0 0 0 0 0 5 18 37 60 85 111 134 156 176 194 210 224 236 247 257 265 273 280 286 291 296 300 303 304\n",
+      "*Y ? ? 2403004 ? 2403004\n",
+      "s0104 1 0 0 1 6 16 33 55 80 105 129 153 175 195 213 229 242 253 262 269 274 277 279 279 277 275 271 267 261 255 255\n",
+      "*Y ? ? 2403004 ? 2423004\n",
+      "s0104 1 0 0 0 0 1 10 33 63 98 133 165 195 222 245 266 284 301 316 329 341 351 360 368 374 380 384 387 390 393 394\n",
+      "*Y ? ? 2401005 ? 2401005\n",
+      "s1201 1 2 12 30 53 78 102 124 144 160 174 184 191 196 198 198 196 193 188 182 175 168 161 153 145 137 129 120 112 105 105\n",
+      "*Y ? ? 2401005 ? 2401005\n",
+      "s1201 1 2 12 30 53 78 102 124 144 160 174 184 191 196 198 198 196 193 188 182 175 168 161 153 145 137 129 120 112 105 105\n",
+      "*Y ? ? 2402005 ? 2402005\n",
+      "s1201 1 8 30 59 89 118 146 170 191 208 221 230 237 240 240 238 234 229 222 214 205 196 186 176 166 156 146 137 127 118 118\n",
+      "*Y ? ? 2402005 ? 2402005\n",
+      "s1201 1 8 30 59 89 118 146 170 191 208 221 230 237 240 240 238 234 229 222 214 205 196 186 176 166 156 146 137 127 118 118\n",
+      "*Y ? ? 2403005 ? 2403005\n",
+      "s1201 1 10 37 73 111 148 183 214 240 260 276 287 294 297 296 292 286 278 268 258 246 233 220 208 195 182 169 158 146 135 135\n",
+      "*Y ? ? 2403005 ? 2403005\n",
+      "s1201 1 10 37 73 111 148 183 214 240 260 276 287 294 297 296 292 286 278 268 258 246 233 220 208 195 182 169 158 146 135 135\n",
+      "*Y ? ? 2401006 ? 2401006\n",
+      "s1201 1 4 17 35 57 79 101 121 139 155 168 179 187 193 197 199 199 198 196 192 188 182 176 170 163 156 149 142 134 127 127\n",
+      "*Y ? ? 2401006 ? 2401006\n",
+      "s1201 1 4 17 35 57 79 101 121 139 155 168 179 187 193 197 199 199 198 196 192 188 182 176 170 163 156 149 142 134 127 127\n",
+      "*Y ? ? 2402006 ? 2402006\n",
+      "s1201 1 8 30 59 90 121 150 176 199 219 234 246 255 260 262 262 260 255 249 242 234 225 215 205 195 184 174 164 154 144 144\n",
+      "*Y ? ? 2402006 ? 2402006\n",
+      "s1201 1 8 30 59 90 121 150 176 199 219 234 246 255 260 262 262 260 255 249 242 234 225 215 205 195 184 174 164 154 144 144\n",
+      "*Y ? ? 2403006 ? 2403006\n",
+      "s1201 1 9 35 69 106 143 178 210 237 260 279 293 302 308 310 309 306 300 292 283 273 261 250 237 225 212 199 187 175 163 163\n",
+      "*Y ? ? 2403006 ? 2403006\n",
+      "s1201 1 9 35 69 106 143 178 210 237 260 279 293 302 308 310 309 306 300 292 283 273 261 250 237 225 212 199 187 175 163 163\n",
+      "*Y ? ? 2401007 ? 2401007\n",
+      "s0100 1 0 0 3 12 27 47 71 95 119 140 160 177 191 203 213 220 225 228 229 228 226 223 218 213 207 200 193 186 178 178\n",
+      "*Y ? ? 2401007 ? 2421007\n",
+      "s0100 1 0 0 0 0 3 19 49 83 118 151 180 205 226 245 261 275 286 296 305 313 320 327 332 337 341 344 347 350 352 353\n",
+      "*Y ? ? 2402007 ? 2402007\n",
+      "s0100 1 0 2 12 29 54 83 113 142 170 194 216 235 250 263 272 278 282 283 283 280 276 270 263 256 247 238 229 219 209 209\n",
+      "*Y ? ? 2402007 ? 2422007\n",
+      "s0100 1 0 0 0 2 24 65 114 161 201 235 264 288 307 323 338 351 362 371 379 385 391 396 401 405 407 410 412 413 414 415\n",
+      "*Y ? ? 2403007 ? 2403007\n",
+      "s0100 1 6 28 61 100 143 186 226 264 297 326 350 370 384 395 402 404 404 401 395 387 378 367 354 341 327 313 298 284 269 269\n",
+      "*Y ? ? 2403007 ? 2423007\n",
+      "s0100 1 0 0 0 30 99 177 244 300 343 378 407 432 452 468 483 495 505 513 519 523 526 529 531 534 535 535 535 535 536 535\n",
+      "*YC ? ? ? ? ?\n",
+      "totvol _SUM(s0100, s0204, s0304, s1201, s0104)\n",
+      "swdvol _SUM(s0100, s0204, s0304, s0104)\n",
+      "hwdvol _SUM(s1201)\n"
+     ]
+    }
+   ],
+   "source": [
+    "!cat data/woodstock_model_files_tsa24_clipped/tsa24_clipped.yld"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "7d9fafef-2096-45fc-bf7f-b80a55c55559",
+   "metadata": {
+    "tags": []
+   },
+   "source": [
+    "## `ACTIONS` section\n",
+    "\n",
+    "The `ACTIONS` section defines actions (i.e., treatments). "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "85f79376-60ae-4503-baa1-f687da35a53c",
+   "metadata": {},
+   "source": [
+    "The `ACTIONS` section for this example is defined in file `data/woodstock_model_files_tsa24_clipped/tsa24_clipped.act`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "1411321c-5ada-4f74-8a80-b38a4b37ace7",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "ACTIONS\n",
+      "*ACTION harvest Y\n",
+      "*OPERABLE harvest\n",
+      "? 1 ? ? ? _AGE >= 80 AND _AGE <= 999\n"
+     ]
+    }
+   ],
+   "source": [
+    "!cat data/woodstock_model_files_tsa24_clipped/tsa24_clipped.act"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e0d8f691-b9c1-41f4-a33d-49e0c833f1ed",
+   "metadata": {
+    "tags": []
+   },
+   "source": [
+    "## `TRANSITIONS` section\n",
+    "\n",
+    "The `TRANSITIONS` section defines transitions (i.e., change in theme-wise state variable values and age, induced by applying an action to an area of an age class within a development type).\n",
+    "\n",
+    "We have AU-wise transitions to specific TIPSY curves after harvesting action in this model."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "4cd07a9a-7d76-4bd3-876b-e07fecc15d25",
+   "metadata": {},
+   "source": [
+    "The `TRANSITIONS` section for this example is defined in file `data/woodstock_model_files_tsa24_clipped/tsa24_clipped.trn`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "cc9d606d-83dd-4f1f-94df-2fd132eef2b4",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "*CASE harvest\n",
+      "*SOURCE ? ? 2402000 ? ?\n",
+      "*TARGET ? ? ? ? 2422000 100\n",
+      "*SOURCE ? ? 2403000 ? ?\n",
+      "*TARGET ? ? ? ? 2423000 100\n",
+      "*SOURCE ? ? 2403001 ? ?\n",
+      "*TARGET ? ? ? ? 2423001 100\n",
+      "*SOURCE ? ? 2401002 ? ?\n",
+      "*TARGET ? ? ? ? 2421002 100\n",
+      "*SOURCE ? ? 2402002 ? ?\n",
+      "*TARGET ? ? ? ? 2422002 100\n",
+      "*SOURCE ? ? 2403002 ? ?\n",
+      "*TARGET ? ? ? ? 2423002 100\n",
+      "*SOURCE ? ? 2402003 ? ?\n",
+      "*TARGET ? ? ? ? 2422003 100\n",
+      "*SOURCE ? ? 2403003 ? ?\n",
+      "*TARGET ? ? ? ? 2423003 100\n",
+      "*SOURCE ? ? 2402004 ? ?\n",
+      "*TARGET ? ? ? ? 2422004 100\n",
+      "*SOURCE ? ? 2403004 ? ?\n",
+      "*TARGET ? ? ? ? 2423004 100\n",
+      "*SOURCE ? ? 2401007 ? ?\n",
+      "*TARGET ? ? ? ? 2421007 100\n",
+      "*SOURCE ? ? 2402007 ? ?\n",
+      "*TARGET ? ? ? ? 2422007 100\n",
+      "*SOURCE ? ? 2403007 ? ?\n",
+      "*TARGET ? ? ? ? 2423007 100\n"
+     ]
+    }
+   ],
+   "source": [
+    "!cat data/woodstock_model_files_tsa24_clipped/tsa24_clipped.trn"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e4653089-9546-4d51-8b43-36a0b09ed4e4",
+   "metadata": {
+    "tags": []
+   },
+   "source": [
+    "## Create and run `ForestModel` instance"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "cb5a318b-6aa9-4e7e-a501-412a2d427ba5",
+   "metadata": {},
+   "source": [
+    "The import files assume path and filename values based on `model_path` and `model_name` attributes set in the `ForestModel.__init__` method, combined with standard filename extensions for Woodstock model sections (i.e., `.lan`, `.are`, `.yld`, `.act`, `.trn`, etc.). See `ws3.forest` module source code for details."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "a3903c9b-ec4f-487b-9c78-fe72258c508c",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "import matplotlib.pyplot as plt\n",
+    "import pandas as pd\n",
+    "import geopandas as gpd\n",
+    "import ws3.forest, ws3.core"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "9a75b67d-d7cc-47ad-8048-0836f69a6514",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "base_year = 2020\n",
+    "horizon = 10\n",
+    "period_length = 10\n",
+    "max_age = 1000\n",
+    "tvy_name = \"totvol\"\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "8bfa40e6-eafb-49d8-9f03-57c03987400b",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "fm = ws3.forest.ForestModel(model_name=\"tsa24_clipped\",\n",
+    "                            model_path=\"data/woodstock_model_files_tsa24_clipped\",\n",
+    "                            base_year=base_year,\n",
+    "                            horizon=horizon,\n",
+    "                            period_length=period_length,\n",
+    "                            max_age=max_age)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "8b4df6fd-aacf-4422-8f72-e8ec56d22071",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "fm.import_landscape_section()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "debc4d74-1adc-4f0e-afc8-c8ba6b8ea16e",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "fm.import_areas_section(convert_periods_to_years=period_length)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "c28690cf-0d25-4823-9f06-a1d4654dd781",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "fm.import_yields_section(convert_periods_to_years=period_length)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "4fe9adfd-3cd0-4ff8-9c9e-03c7a6236ee1",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "fm.import_actions_section(convert_periods_to_years=period_length)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "4231a279-5592-45c0-8c37-a1bd8b15673f",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "fm.import_transitions_section(convert_periods_to_years=period_length)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "bab23b55-d54d-4625-aebc-89ae7f9df458",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "fm.reset()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "26b16450-f014-42ba-96b7-97426a71611e",
+   "metadata": {
+    "tags": []
+   },
+   "source": [
+    "## Run a priority queue harvest scheduling heuristic\n",
+    "\n",
+    "The local `util` module defines a `schedule_harvest_areacontrol` function that implements a old-stand-first priority queue harvest scheduling heuristic. To make this demo as n00b friendly as possible, we set this up to be self-parametrising, i.e., the model automatically figures out an appropriate \"periodic harvest area target\" parameter value, by analysing the shape of its own yield curves to estimate a landscape-level optimal rotation age.\n",
+    "\n",
+    "The local `util` module also defines a `compile_scenario` function that compiles some aggregate performance indicators from results of a harvesting and growth scenario, as well as a `plot_scenario` function that plots a grid of three bar charts so we can \"see\" the solution. \n",
+    "\n",
+    "Note that these are just local utility functions custom-coded to work with our test dataset an scenarios, that we defined in a side-car module for convenient re-use in other notebooks in this examples library to provide some visual feedback on the modelling process. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "id": "2f37dafa-e8bc-4f04-9aab-5b49ec65dc43",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "from util import schedule_harvest_areacontrol\n",
+    "from util import compile_scenario\n",
+    "from util import plot_scenario"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "id": "5198b9ba-86fe-44b3-8258-3650e7c416a2",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "verbose = False # flip to True if you want the harvest scheduler to get _really_ chatty while it works\n",
+    "sch = schedule_harvest_areacontrol(fm, verbose=verbose)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "id": "e09fe036-97ec-43de-907a-37c9897ec309",
+   "metadata": {
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(<Figure size 1200x400 with 3 Axes>,\n",
+       " array([<Axes: title={'center': 'Harvested area (ha)'}>,\n",
+       "        <Axes: title={'center': 'Harvested volume (m3)'}>,\n",
+       "        <Axes: title={'center': 'Growing Stock (m3)'}>], dtype=object))"
+      ]
+     },
+     "execution_count": 19,
+     "metadata": {},
+     "output_type": "execute_result"
+    },
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAA9oAAAF2CAYAAACRVuD7AAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjEwLjUsIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvWftoOwAAAAlwSFlzAAAPYQAAD2EBqD+naQAAdChJREFUeJzt3Xtczvf/P/DHVbkq1FWhLlnSMKGcsiXnQyvk0LQMbYyctjLV5pCRHCYyhxwmtjns86mhjeb0ieQQyqHIWXMcw1XbqGtCpd6/P/x6f711pfDugMf9dnvfbq7X63m9X6/3FS/Xs/f79XopBEEQQERERERERESy0KvsDhARERERERG9TphoExEREREREcmIiTYRERERERGRjJhoExEREREREcmIiTYRERERERGRjJhoExEREREREcmIiTYRERERERGRjJhoExEREREREcmIiTYRERERERGRjJho02tp7dq1UCgUuHbtWmV3RVYbN26EhYUF7t27J5YpFAr4+/vL1kZcXBxq1qyJv/76S7ZzEpF8Kmt8Cw0NhUKhqNA25da7d2+MGjWqUtqOjIxE/fr1kZubWyntE1U1+/btg0KhwL59+yq7K5Wu6LP45ZdfXvgcR48ehVKpxB9//CFjz8omPz8fNjY2+O677yq87aqMiXYVVPQlKiUlRWd9165d4eDgUMG9kt/9+/cRGhrKAbaMCgoKMH36dIwbNw41a9Yst3Z69uyJRo0aISwsrNzaoDcXxzeqLIcOHcKuXbswadIkWc8bGBiINm3awMLCAtWrV0fTpk0RGhoq+YUoAHz66afIy8vDypUrZW2fSJerV6/C398f77zzDqpXr47q1aujWbNm8PPzw6lTpyq7e1XC6dOn8eGHH8LW1hZGRkaoV68e3n//fSxdulQSN2fOHMTGxlZOJ5/D119/jcGDB8PW1la2cyYmJqJfv36wsbGBkZER1Go1evbsiUOHDkniqlWrhqCgIHzzzTd4+PChbO2/6phoU6W5f/8+ZsyYwS+iZbR161akp6dj9OjR5d7WmDFjsHLlSvz777/l3hbR64jjW9Uzf/589OjRA40aNZL1vMeOHUOnTp0wY8YMREREoFu3bpg7dy569uyJwsJCMc7IyAjDhg3DwoULIQiCrH0getK2bdvg4OCA//znP3B1dcWiRYsQERGBXr16YceOHWjVqlWl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MBARERF466238MMPP0jGvo8++gh//fUXQkJCoNFo0KpVK8TFxRVbII2IqCpgok1EVEYXL16EtbU1jIyM4OLigrCwMNSvX7/U7W3atWtX4vY2n332Gc6ePYvWrVuXuL1NQEBARV0iEVGp9u3bJ3ltZGSE5cuXY/ny5SW+x9bWFjt27Hjmebt27YoTJ048M8bf3x/+/v5l7isRUWVhok1EVAbOzs5Yu3YtmjRpgtu3b2PGjBno1KkTzpw5U2Hb2xgbGxfrV25uLnJzc8XX3COWiIiIqPIx0SYiKoNevXqJf27RogWcnZ1ha2uLjRs36kyAKwr3iCUiIiKqerjqOBHRCzAzM8M777yDS5cuQa1WV8j2Nrpwj1giIiKiqoeJNhHRC7h37x4uX76MunXrwsnJqUK2t9GFe8QSERERVT1MtImIyuCrr77C/v37ce3aNSQlJeGDDz6Avr4+Bg8eDJVKJW5vs3fvXqSmpmL48OElbm9z8uRJ7Ny5U+f2NleuXMHEiRNx4cIFfPfdd9i4cSMCAwMr89KJiIiI6DlxjjYRURn8+eefGDx4MP755x/UqVMHHTt2xOHDh1GnTh0AFbe9DRERERFVfUy0iYjKYP369c+sr8jtbYiIiIioauOj40REREREREQyYqJNREREREREJCMm2kREREREREQyYqJNREREREREJCMm2kREREREREQyYqJNREREREREJCMm2kREREREREQyYqJNREREREREJCMm2kREREREREQyYqJNREREREREJCMm2kREREREREQyYqJNREREREREJCMm2kREREREREQyYqJNREREREREJCMm2kREREREREQyYqJNREREREREJCMm2kREREREREQykj3RDgsLw7vvvgsTExNYWlrC09MT6enpkpiHDx/Cz88PtWrVQs2aNeHl5YWMjAy5u0JERERERERU4WRPtPfv3w8/Pz8cPnwY8fHxyM/Ph5ubG3JycsSYwMBAbN26FTExMdi/fz9u3bqFAQMGyN0VIiIiIiIiogpnIPcJ4+LiJK/Xrl0LS0tLpKamonPnzsjOzsaPP/6I6OhodO/eHQCwZs0aNG3aFIcPH0a7du3k7hIRERERERFRhSn3OdrZ2dkAAAsLCwBAamoq8vPz4erqKsbY29ujfv36SE5OLu/uEBEREREREZUr2e9oP6mwsBABAQHo0KED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k9i5c6fOeYpXrlzBxIkTceHCBXz33XfYuHEjAgMDK+3aiYiIiOj5MNEmIiqDFStWIDs7G127dkXdunXFY8OGDQAer4i7e/duuLm5wd7eHl9++SW8vLywdetW8RxF8xT19fXh4uKCjz/+GEOHDtU5TzE+Ph4tW7bEggULis1TJCIiIqKqjXO0iYjKoLR5ijY2Nti/f3+p55FrniIRERERVV28o01EREREREQkIybaRERERERERDJiok1EREREREQkIybaRERERERERDJiok1EREREREQkIybaRERERERERDJiok1EREREREQkIybaRERERERERDJiok1EREREREQkIybaRERERERERDJiok1EREREREQkIybaRERERERERDJiok1EREREREQkIybaRERERERERDJiok1EREREREQkIybaRERERERERDJiok1EREREREQkIybaRERERERERDJiok1EREREREQkIybaRERERERERDJiok1EREREREQkIybaRERERERERDJiok1EREREREQkIybaRERERERERDJiok1EREREREQkIybaRERERERERDJiok1EREREREQkIybaRERERERERDJiok1EREREREQko0pNtJcvX44GDRrAyMgIzs7OOHr0aGV2h4ioyuD4SESkG8dHInoVVFqivWHDBgQFBWH69Ok4fvw4WrZsCXd3d2RmZlZWl4iIqgSOj0REunF8JKJXRaUl2gsXLsSoUaMwfPhwNGvWDJGRkahevTpWr15dWV0iIqoSOD4SEenG8ZGIXhUGldFoXl4eUlNTERwcLJbp6enB1dUVycnJxeJzc3ORm5srvs7OzgYAaLXa52q3MPf+C/ZYN13tv4ptVFQ7r0sbFdVOZbVRUe1U1LWUFi8Igqz9eFkcH1+ujYpq51Vso6LaeV3aqKh2OD6W3fOOj4A8Y+Sr+DOvqHZelzYqqh1eS9Vro6R2Sost0/goVIKbN28KAISkpCRJ+YQJE4T33nuvWPz06dMFADx48OAh+3Hjxo2KGvrKhOMjDx48qsrxqo+PgsAxkgcPHuVzlGV8rJQ72s8rODgYQUFB4uvCwkLcuXMHtWrVgkKhqMSevRitVgsbGxvcuHEDpqamld2dl8JrqXpel+sAyvdaBEHAv//+C2tra1nPW9E4PlZdvJaq6XW5Fo6PZcMxsmp6Xa4D4LVUVeV1Lc8zPlZKol27dm3o6+sjIyNDUp6RkQG1Wl0s3tDQEIaGhpIyMzOz8uxihTA1NX3l/xIX4bVUPa/LdQDldy0qlUr2c74sjo+P8e9v1cRrqXo4PpY8PgIcI6u61+U6AF5LVVUe11LW8bFSFkNTKpVwcnJCQkKCWFZYWIiEhAS4uLhURpeIiKoEjo9ERLpxfCSiV0mlPToeFBSEYcOGoW3btnjvvfewePFi5OTkYPjw4ZXVJSKiKoHjIxGRbhwfiehVUWmJ9kcffYS//voLISEh0Gg0aNWqFeLi4mBlZVVZXaowhoaGmD59erFHmV5FvJaq53W5DuD1upbnwfHx9fiZ81qqptflWl6X63heb/L4CLw+P/fX5ToAXktVVRWuRSEIVWzvBiIiIiIiIqJXWKXM0SYiIiIiIiJ6XTHRJiIiIiIiIpIRE20iIiIiIiIiGTHRJiIiIiIiIpIRE+0KFBYWhnfffRcmJiawtLSEp6cn0tPTK7tbL23u3LlQKBQICAio7K68kJs3b+Ljjz9GrVq1YGxsDEdHR6SkpFR2t55bQUEBpk2bBjs7OxgbG6Nhw4aYNWsWXoX1DhMTE9G3b19YW1tDoVAgNjZWUi8IAkJCQlC3bl0YGxvD1dUVFy9erJzOUrng+Fg1cXysfBwf6XUdHwGOkVUBx8fyw0S7Au3fvx9+fn44fPgw4uPjkZ+fDzc3N+Tk5FR2117YsWPHsHLlSrRo0aKyu/JC7t69iw4dOqBatWr43//+h3PnzmHBggUwNzev7K49t3nz5mHFihVYtmwZzp8/j3nz5iE8PBxLly6t7K6VKicnBy1btsTy5ct11oeHh2PJkiWIjIzEkSNHUKNGDbi7u+Phw4cV3FMqLxwfqx6Oj1UDx0d6HcdHgGNkVcHxsRwJVGkyMzMFAML+/fsruysv5N9//xUaN24sxMfHC126dBHGjx9f2V16bpMmTRI6duxY2d2QhYeHhzBixAhJ2YABAwQfH59K6tGLASBs3rxZfF1YWCio1Wph/vz5YllWVpZgaGgo/Pzzz5XQQ6oIHB8rH8fHqofjIwnCqz8+CgLHyKqE42P54R3tSpSdnQ0AsLCwqOSevBg/Pz94eHjA1dW1srvywrZs2YK2bdvC29sblpaWaN26Nb7//vvK7tYLad++PRISEvD7778DAE6ePImDBw+iV69eldyzl3P16lVoNBrJ3zOVSgVnZ2ckJydXYs+oPHF8rHwcH6s+jo9vpld9fAQ4RlYlHB/Lj0GFtELFFBYWIiAgAB06dICDg0Nld+e5rV+/HsePH8exY8cquysv5cqVK1ixYgWCgoIwZcoUHDt2DF988QWUSiWGDRtW2d17LpMnT4ZWq4W9vT309fVRUFCAb775Bj4+PpXdtZei0WgAAFZWVpJyKysrsY5eLxwfqwaOj1Ufx8c3z6s+PgIcI6sajo/lh4l2JfHz88OZM2dw8ODByu7Kc7tx4wbGjx+P+Ph4GBkZVXZ3XkphYSHatm2LOXPmAABat26NM2fOIDIy8pUaJAFg48aNiIqKQnR0NJo3b460tDQEBATA2tr6lbsWerNxfKwaOD4SVT2v8vgIcIysijg+lh8+Ol4J/P39sW3bNuzduxdvvfVWZXfnuaWmpiIzMxNt2rSBgYEBDAwMsH//fixZsgQGBgYoKCio7C6WWd26ddGsWTNJWdOmTXH9+vVK6tGLmzBhAiZPnoxBgwbB0dERn3zyCQIDAxEWFlbZXXsparUaAJCRkSEpz8jIEOvo9cHxserg+Fj1cXx8s7zq4yPAMbIq4vhYfphoVyBBEODv74/Nmzdjz549sLOzq+wuvZAePXrg9OnTSEtLE4+2bdvCx8cHaWlp0NfXr+wullmHDh2KbZHx+++/w9bWtpJ69OLu378PPT3pP2l9fX0UFhZWUo/kYWdnB7VajYSEBLFMq9XiyJEjcHFxqcSekZw4PlY9HB+rPo6Pb4bXZXwEOEZWRRwfyw8fHa9Afn5+iI6Oxm+//QYTExNxfoBKpYKxsXEl967sTExMis0LqlGjBmrVqvXKzRcKDAxE+/btMWfOHAwcOBBHjx7FqlWrsGrVqsru2nPr27cvvvnmG9SvXx/NmzfHiRMnsHDhQowYMaKyu1aqe/fu4dKlS+Lrq1evIi0tDRYWFqhfvz4CAgIwe/ZsNG7cGHZ2dpg2bRqsra3h6elZeZ0mWXF8rHo4PlYNHB/pdRkfAY6RVRHHx3JUIWubkyAIj5ed13WsWbOmsrv20l7VrRkEQRC2bt0qODg4CIaGhoK9vb2watWqyu7SC9FqtcL48eOF+vXrC0ZGRsLbb78tfP3110Jubm5ld61Ue/fu1flvY9iwYYIgPN6iYdq0aYKVlZVgaGgo9OjRQ0hPT6/cTpOsOD5WTRwfKx/HR3qdx0dB4BhZ2Tg+lh+FIAhCuWfzRERERERERG8IztEmIiIiIiIikhETbSIiIiIiIiIZMdEmIiIiIiIikhETbSIiIiIiIiIZMdEmIiIiIiIikhETbSIiIiIiIiIZMdEmIiIiIiIikhETbSIiIiIiIiIZMdEmIiIiIiIikhETbSIiIiIiIiIZMdEmIiIiIiIikhETbSIiIiIiIiIZ/T+hgOXk2VTw1QAAAABJRU5ErkJggg==",
+      "text/plain": [
+       "<Figure size 1200x400 with 3 Axes>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "plot_scenario(compile_scenario(fm))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "f583083b-0d06-4867-93a5-a43a3d3939d8",
+   "metadata": {},
+   "source": [
+    "Ta da!"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": ".venv",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.12.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

@@ -1,0 +1,3378 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Implement the Neilson hack using ws3 and libcbm (from scratch) &mdash; ws3 1.0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=d55fa986"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            ws3
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../textbook/index.html">The ws3 Textbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../howto/index.html">How-To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/index.html">Advanced Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Chapt1.html">Wood Supply Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../appendices.html">Appendices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ws3</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Implement the <em>Neilson hack</em> using <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> (from scratch)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/examples/ws3/examples/040_ws3_libcbm_neilsonhack-fromscratch.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Implement-the-Neilson-hack-using-ws3-and-libcbm-(from-scratch)">
+<h1>Implement the <em>Neilson hack</em> using <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> (from scratch)<a class="headerlink" href="#Implement-the-Neilson-hack-using-ws3-and-libcbm-(from-scratch)" title="Link to this heading"></a></h1>
+<p>In this notebook we show how to implement the <em>Neilson hack</em> (i.e., generate carbon yield curves from a CBM for use in a forest estate model) using <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code>.</p>
+<p>In a nutshell, the <em>Neilson hack</em> consists of running a CBM from forest estate model output (see example notebook 030 and 031 for details), except that the inventory table gets hacked to have one record per development type (with age set to 0 and area set to 1) and no disturabance events are simulated. Carbon stock and flux data exported from the CBM can then be reformatted and imported in the forest estate model as carbon yield curves. That is about it. Should work for just about any <code class="docutils literal notranslate"><span class="pre">ws3</span></code>
+model. See Neilson et al. (2006) for details.</p>
+<blockquote>
+<div><p>Neilson, E. T., MacLean, D. A., Arp, P. A., Meng, F. R., Bourque, C. P., &amp; Bhatti, J. S. (2006). Modeling carbon sequestration with CO2Fix and a timber supply model for use in forest management planning. Canadian journal of soil science, 86(Special Issue), 219-233.</p>
+</div></blockquote>
+<p>In this notebook, we implement the Neilson hack from scratch. In notebook 041 we show how to use built-in <code class="docutils literal notranslate"><span class="pre">ws3</span></code> functions to automate this.</p>
+<section id="Set-up-modelling-environment">
+<h2>Set up modelling environment<a class="headerlink" href="#Set-up-modelling-environment" title="Link to this heading"></a></h2>
+<p>First, make sure we have the correct versions of <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> installed. Both of these packages are relatively new and under active development, it is best we stick to known-working versions of each package from their respective GitHub repos.</p>
+<blockquote>
+<div><p>We <em>strongly recommend</em> that you run this notebook in venv-sandboxed Python kernel (see <code class="docutils literal notranslate"><span class="pre">venv_python_kernel_setup</span></code> notebook for an example of how to do this). This will ensure that you are working from a fresh Python package environment, and not wasting time debugging random interactions between this notebook and whatever mishmash of packages you have installed on your system in various parts of your Python path. You have been warned.</p>
+</div></blockquote>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+</pre></div>
+</div>
+</div>
+<p>Optionally, uninstall the <code class="docutils literal notranslate"><span class="pre">ws3</span></code> package and replace it with a pointer to <em>this local clone of the GitHub repository code</em> (useful if you want ot tweak the source code for whatever reason).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clobber_ws3</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">if</span> <span class="n">clobber_ws3</span><span class="p">:</span>
+    <span class="o">%</span><span class="k">pip</span> uninstall -y ws3
+    <span class="o">%</span><span class="k">pip</span> install -e ..
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Found existing installation: ws3 1.1.0.dev0
+Uninstalling ws3-1.1.0.dev0:
+  Successfully uninstalled ws3-1.1.0.dev0
+Note: you may need to restart the kernel to use updated packages.
+Obtaining file:///home/gep/tmp/ws3
+  Installing build dependencies ... done
+  Checking if build backend supports build_editable ... done
+  Getting requirements to build editable ... done
+  Installing backend dependencies ... done
+  Preparing editable metadata (pyproject.toml) ... done
+Requirement already satisfied: dill in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (0.4.0)
+Requirement already satisfied: fiona in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.10.1)
+Requirement already satisfied: gurobipy in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (12.0.3)
+Requirement already satisfied: highspy in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.11.0)
+Requirement already satisfied: libcbm in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (2.8.1)
+Requirement already satisfied: matplotlib in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (3.10.5)
+Requirement already satisfied: numpy&gt;=1.21 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (2.2.6)
+Requirement already satisfied: pandas&gt;=1.3 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (2.3.1)
+Requirement already satisfied: profilehooks in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.13.0)
+Requirement already satisfied: pulp in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (3.2.2)
+Requirement already satisfied: rasterio in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.4.3)
+Requirement already satisfied: scipy&gt;=1.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ws3==1.1.0.dev0) (1.16.1)
+Requirement already satisfied: python-dateutil&gt;=2.8.2 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas&gt;=1.3-&gt;ws3==1.1.0.dev0) (2.9.0.post0)
+Requirement already satisfied: pytz&gt;=2020.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas&gt;=1.3-&gt;ws3==1.1.0.dev0) (2025.2)
+Requirement already satisfied: tzdata&gt;=2022.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas&gt;=1.3-&gt;ws3==1.1.0.dev0) (2025.2)
+Requirement already satisfied: six&gt;=1.5 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&gt;=1.3-&gt;ws3==1.1.0.dev0) (1.17.0)
+Requirement already satisfied: attrs&gt;=19.2.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona-&gt;ws3==1.1.0.dev0) (25.3.0)
+Requirement already satisfied: certifi in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona-&gt;ws3==1.1.0.dev0) (2025.8.3)
+Requirement already satisfied: click~=8.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona-&gt;ws3==1.1.0.dev0) (8.2.1)
+Requirement already satisfied: click-plugins&gt;=1.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona-&gt;ws3==1.1.0.dev0) (1.1.1.2)
+Requirement already satisfied: cligj&gt;=0.5 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from fiona-&gt;ws3==1.1.0.dev0) (0.7.2)
+Requirement already satisfied: numexpr&gt;=2.8.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm-&gt;ws3==1.1.0.dev0) (2.11.0)
+Requirement already satisfied: numba in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm-&gt;ws3==1.1.0.dev0) (0.61.2)
+Requirement already satisfied: pyyaml in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm-&gt;ws3==1.1.0.dev0) (6.0.2)
+Requirement already satisfied: mock in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm-&gt;ws3==1.1.0.dev0) (5.2.0)
+Requirement already satisfied: openpyxl in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from libcbm-&gt;ws3==1.1.0.dev0) (3.1.5)
+Requirement already satisfied: contourpy&gt;=1.0.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (1.3.3)
+Requirement already satisfied: cycler&gt;=0.10 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (0.12.1)
+Requirement already satisfied: fonttools&gt;=4.22.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (4.59.0)
+Requirement already satisfied: kiwisolver&gt;=1.3.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (1.4.8)
+Requirement already satisfied: packaging&gt;=20.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (25.0)
+Requirement already satisfied: pillow&gt;=8 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (11.3.0)
+Requirement already satisfied: pyparsing&gt;=2.3.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib-&gt;ws3==1.1.0.dev0) (3.2.3)
+Requirement already satisfied: llvmlite&lt;0.45,&gt;=0.44.0dev0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from numba-&gt;libcbm-&gt;ws3==1.1.0.dev0) (0.44.0)
+Requirement already satisfied: et-xmlfile in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from openpyxl-&gt;libcbm-&gt;ws3==1.1.0.dev0) (2.0.0)
+Requirement already satisfied: affine in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from rasterio-&gt;ws3==1.1.0.dev0) (2.4.0)
+Building wheels for collected packages: ws3
+  Building editable for ws3 (pyproject.toml) ... done
+  Created wheel for ws3: filename=ws3-1.1.0.dev0-py3-none-any.whl size=4136 sha256=5df49d1809d2f15004f3046010971c142390fb47fb3bfa7620b09e11903424a7
+  Stored in directory: /tmp/pip-ephem-wheel-cache-gqh8kf6a/wheels/fa/4b/10/3fe4b92a02fb87987a6fe53a10fad0a22a781bf98cd7b63f17
+Successfully built ws3
+Installing collected packages: ws3
+Successfully installed ws3-1.1.0.dev0
+Note: you may need to restart the kernel to use updated packages.
+</pre></div></div>
+</div>
+<p>Use <code class="docutils literal notranslate"><span class="pre">pip</span></code> to install Python packages listed in <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> (some extra packages needed for example notebooks to run correctly).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">pip</span> install -r requirements.txt
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Requirement already satisfied: seaborn in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from -r requirements.txt (line 1)) (0.13.2)
+Requirement already satisfied: geopandas in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from -r requirements.txt (line 2)) (1.1.1)
+Requirement already satisfied: ipywidgets in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from -r requirements.txt (line 3)) (8.1.7)
+Requirement already satisfied: numpy!=1.24.0,&gt;=1.20 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from seaborn-&gt;-r requirements.txt (line 1)) (2.2.6)
+Requirement already satisfied: pandas&gt;=1.2 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from seaborn-&gt;-r requirements.txt (line 1)) (2.3.1)
+Requirement already satisfied: matplotlib!=3.6.1,&gt;=3.4 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from seaborn-&gt;-r requirements.txt (line 1)) (3.10.5)
+Requirement already satisfied: pyogrio&gt;=0.7.2 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from geopandas-&gt;-r requirements.txt (line 2)) (0.11.1)
+Requirement already satisfied: packaging in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from geopandas-&gt;-r requirements.txt (line 2)) (25.0)
+Requirement already satisfied: pyproj&gt;=3.5.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from geopandas-&gt;-r requirements.txt (line 2)) (3.7.1)
+Requirement already satisfied: shapely&gt;=2.0.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from geopandas-&gt;-r requirements.txt (line 2)) (2.1.1)
+Requirement already satisfied: comm&gt;=0.1.3 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipywidgets-&gt;-r requirements.txt (line 3)) (0.2.3)
+Requirement already satisfied: ipython&gt;=6.1.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipywidgets-&gt;-r requirements.txt (line 3)) (9.4.0)
+Requirement already satisfied: traitlets&gt;=4.3.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipywidgets-&gt;-r requirements.txt (line 3)) (5.14.3)
+Requirement already satisfied: widgetsnbextension~=4.0.14 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipywidgets-&gt;-r requirements.txt (line 3)) (4.0.14)
+Requirement already satisfied: jupyterlab_widgets~=3.0.15 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipywidgets-&gt;-r requirements.txt (line 3)) (3.0.15)
+Requirement already satisfied: decorator in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (5.2.1)
+Requirement already satisfied: ipython-pygments-lexers in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (1.1.1)
+Requirement already satisfied: jedi&gt;=0.16 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.19.2)
+Requirement already satisfied: matplotlib-inline in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.1.7)
+Requirement already satisfied: pexpect&gt;4.3 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (4.9.0)
+Requirement already satisfied: prompt_toolkit&lt;3.1.0,&gt;=3.0.41 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (3.0.51)
+Requirement already satisfied: pygments&gt;=2.4.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (2.19.2)
+Requirement already satisfied: stack_data in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.6.3)
+Requirement already satisfied: wcwidth in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from prompt_toolkit&lt;3.1.0,&gt;=3.0.41-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.2.13)
+Requirement already satisfied: parso&lt;0.9.0,&gt;=0.8.4 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from jedi&gt;=0.16-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.8.4)
+Requirement already satisfied: contourpy&gt;=1.0.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (1.3.3)
+Requirement already satisfied: cycler&gt;=0.10 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (0.12.1)
+Requirement already satisfied: fonttools&gt;=4.22.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (4.59.0)
+Requirement already satisfied: kiwisolver&gt;=1.3.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (1.4.8)
+Requirement already satisfied: pillow&gt;=8 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (11.3.0)
+Requirement already satisfied: pyparsing&gt;=2.3.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (3.2.3)
+Requirement already satisfied: python-dateutil&gt;=2.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (2.9.0.post0)
+Requirement already satisfied: pytz&gt;=2020.1 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas&gt;=1.2-&gt;seaborn-&gt;-r requirements.txt (line 1)) (2025.2)
+Requirement already satisfied: tzdata&gt;=2022.7 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pandas&gt;=1.2-&gt;seaborn-&gt;-r requirements.txt (line 1)) (2025.2)
+Requirement already satisfied: ptyprocess&gt;=0.5 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pexpect&gt;4.3-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.7.0)
+Requirement already satisfied: certifi in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from pyogrio&gt;=0.7.2-&gt;geopandas-&gt;-r requirements.txt (line 2)) (2025.8.3)
+Requirement already satisfied: six&gt;=1.5 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from python-dateutil&gt;=2.7-&gt;matplotlib!=3.6.1,&gt;=3.4-&gt;seaborn-&gt;-r requirements.txt (line 1)) (1.17.0)
+Requirement already satisfied: executing&gt;=1.2.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from stack_data-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (2.2.0)
+Requirement already satisfied: asttokens&gt;=2.1.0 in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from stack_data-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (3.0.0)
+Requirement already satisfied: pure-eval in /home/gep/tmp/ws3/.venv/lib/python3.12/site-packages (from stack_data-&gt;ipython&gt;=6.1.0-&gt;ipywidgets-&gt;-r requirements.txt (line 3)) (0.2.3)
+Note: you may need to restart the kernel to use updated packages.
+</pre></div></div>
+</div>
+<p>Create a <code class="docutils literal notranslate"><span class="pre">ForestModel</span></code> instance by loading Woodstock-formatted input files.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ws3.forest</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">base_year</span> <span class="o">=</span> <span class="mi">2020</span>
+<span class="n">horizon</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">period_length</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">max_age</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">tvy_name</span> <span class="o">=</span> <span class="s2">&quot;totvol&quot;</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span> <span class="o">=</span> <span class="n">ws3</span><span class="o">.</span><span class="n">forest</span><span class="o">.</span><span class="n">ForestModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;tsa24_clipped&quot;</span><span class="p">,</span>
+                            <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;data/woodstock_model_files_tsa24_clipped&quot;</span><span class="p">,</span>
+                            <span class="n">base_year</span><span class="o">=</span><span class="n">base_year</span><span class="p">,</span>
+                            <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span>
+                            <span class="n">period_length</span><span class="o">=</span><span class="n">period_length</span><span class="p">,</span>
+                            <span class="n">max_age</span><span class="o">=</span><span class="n">max_age</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_landscape_section</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_areas_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_yields_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_actions_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_transitions_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">initialize_areas</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">add_null_action</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">reset_actions</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>Schedule some harvesting in our <code class="docutils literal notranslate"><span class="pre">ws3.ForestModel</span></code> instance using the self-parametrising priority queue heuristic defined in the local <code class="docutils literal notranslate"><span class="pre">util</span></code> module (just so we have something interesting to push through <code class="docutils literal notranslate"><span class="pre">libcbm</span></code>).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">util</span><span class="w"> </span><span class="kn">import</span> <span class="n">schedule_harvest_areacontrol</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sch</span> <span class="o">=</span> <span class="n">schedule_harvest_areacontrol</span><span class="p">(</span><span class="n">fm</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">util</span><span class="w"> </span><span class="kn">import</span> <span class="n">compile_scenario</span><span class="p">,</span> <span class="n">plot_scenario</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">compile_scenario</span><span class="p">(</span><span class="n">fm</span><span class="p">)</span>
+<span class="n">plot_scenario</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(&lt;Figure size 1200x400 with 3 Axes&gt;,
+ array([&lt;Axes: title={&#39;center&#39;: &#39;Harvested area (ha)&#39;}&gt;,
+        &lt;Axes: title={&#39;center&#39;: &#39;Harvested volume (m3)&#39;}&gt;,
+        &lt;Axes: title={&#39;center&#39;: &#39;Growing Stock (m3)&#39;}&gt;], dtype=object))
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_16_1.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_16_1.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">disturbance_type_mapping</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;user_dist_type&quot;</span><span class="p">:</span> <span class="s2">&quot;harvest&quot;</span><span class="p">,</span> <span class="s2">&quot;default_dist_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Clearcut harvesting without salvage&quot;</span><span class="p">},</span>
+                            <span class="p">{</span><span class="s2">&quot;user_dist_type&quot;</span><span class="p">:</span> <span class="s2">&quot;fire&quot;</span><span class="p">,</span> <span class="s2">&quot;default_dist_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Wildfire&quot;</span><span class="p">}]</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">dtype_key</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">dtypes</span><span class="p">:</span>
+    <span class="n">fm</span><span class="o">.</span><span class="n">dt</span><span class="p">(</span><span class="n">dtype_key</span><span class="p">)</span><span class="o">.</span><span class="n">last_pass_disturbance</span> <span class="o">=</span> <span class="s2">&quot;fire&quot;</span> <span class="k">if</span> <span class="n">dtype_key</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">dtype_key</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;harvest&quot;</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sit_config</span><span class="p">,</span> <span class="n">sit_tables</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">to_cbm_sit</span><span class="p">(</span><span class="n">softwood_volume_yname</span><span class="o">=</span><span class="s2">&quot;swdvol&quot;</span><span class="p">,</span>
+                                       <span class="n">hardwood_volume_yname</span><span class="o">=</span><span class="s2">&quot;hwdvol&quot;</span><span class="p">,</span>
+                                       <span class="n">admin_boundary</span><span class="o">=</span><span class="s2">&quot;British Columbia&quot;</span><span class="p">,</span>
+                                       <span class="n">eco_boundary</span><span class="o">=</span><span class="s2">&quot;Montane Cordillera&quot;</span><span class="p">,</span>
+                                       <span class="n">disturbance_type_mapping</span><span class="o">=</span><span class="n">disturbance_type_mapping</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span><span class="o">.</span><span class="n">dt</span><span class="p">((</span><span class="s2">&quot;tsa24_clipped&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;2401002&quot;</span><span class="p">,</span> <span class="s2">&quot;204&quot;</span><span class="p">,</span> <span class="s2">&quot;2401002&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">leading_species</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&#39;softwood&#39;
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span> <span class="o">=</span> <span class="n">ws3</span><span class="o">.</span><span class="n">forest</span><span class="o">.</span><span class="n">ForestModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;tsa24_clipped&quot;</span><span class="p">,</span>
+                            <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;data/woodstock_model_files_tsa24_clipped&quot;</span><span class="p">,</span>
+                            <span class="n">base_year</span><span class="o">=</span><span class="n">base_year</span><span class="p">,</span>
+                            <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span>
+                            <span class="n">period_length</span><span class="o">=</span><span class="n">period_length</span><span class="p">,</span>
+                            <span class="n">max_age</span><span class="o">=</span><span class="n">max_age</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_landscape_section</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_areas_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_yields_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_actions_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_transitions_section</span><span class="p">(</span><span class="n">convert_periods_to_years</span><span class="o">=</span><span class="n">period_length</span><span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">initialize_areas</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">add_null_action</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">reset_actions</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Export-ws3-data-to-Standard-Input-Table-(SIT)-format">
+<h2>Export <code class="docutils literal notranslate"><span class="pre">ws3</span></code> data to Standard Input Table (SIT) format<a class="headerlink" href="#Export-ws3-data-to-Standard-Input-Table-(SIT)-format" title="Link to this heading"></a></h2>
+<p>Export standard SIT tables from <code class="docutils literal notranslate"><span class="pre">ws3</span></code> as a starting point.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">disturbance_type_mapping</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;user_dist_type&quot;</span><span class="p">:</span> <span class="s2">&quot;harvest&quot;</span><span class="p">,</span> <span class="s2">&quot;default_dist_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Clearcut harvesting without salvage&quot;</span><span class="p">},</span>
+                            <span class="p">{</span><span class="s2">&quot;user_dist_type&quot;</span><span class="p">:</span> <span class="s2">&quot;fire&quot;</span><span class="p">,</span> <span class="s2">&quot;default_dist_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Wildfire&quot;</span><span class="p">}]</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">dtype_key</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">dtypes</span><span class="p">:</span>
+    <span class="n">fm</span><span class="o">.</span><span class="n">dt</span><span class="p">(</span><span class="n">dtype_key</span><span class="p">)</span><span class="o">.</span><span class="n">last_pass_disturbance</span> <span class="o">=</span> <span class="s2">&quot;fire&quot;</span> <span class="k">if</span> <span class="n">dtype_key</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">dtype_key</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;harvest&quot;</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sit_config</span><span class="p">,</span> <span class="n">sit_tables</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">to_cbm_sit</span><span class="p">(</span><span class="n">softwood_volume_yname</span><span class="o">=</span><span class="s2">&quot;swdvol&quot;</span><span class="p">,</span>
+                                       <span class="n">hardwood_volume_yname</span><span class="o">=</span><span class="s2">&quot;hwdvol&quot;</span><span class="p">,</span>
+                                       <span class="n">admin_boundary</span><span class="o">=</span><span class="s2">&quot;British Columbia&quot;</span><span class="p">,</span>
+                                       <span class="n">eco_boundary</span><span class="o">=</span><span class="s2">&quot;Montane Cordillera&quot;</span><span class="p">,</span>
+                                       <span class="n">disturbance_type_mapping</span><span class="o">=</span><span class="n">disturbance_type_mapping</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">fm</span><span class="o">.</span><span class="n">dt</span><span class="p">((</span><span class="s2">&quot;tsa24_clipped&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;2402000&quot;</span><span class="p">,</span> <span class="s2">&quot;100&quot;</span><span class="p">,</span> <span class="s2">&quot;2422000&quot;</span><span class="p">)))</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;ws3.forest.DevelopmentType object at 0x7d6e5efc60f0&gt;
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">problems</span><span class="p">[</span><span class="s2">&quot;__cbm_sit_bogus&quot;</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">trees</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span> <span class="nb">print</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+((&#39;tsa24_clipped&#39;, &#39;0&#39;, &#39;2401000&#39;, &#39;100&#39;, &#39;2401000&#39;), 85)
+((&#39;tsa24_clipped&#39;, &#39;0&#39;, &#39;2401000&#39;, &#39;100&#39;, &#39;2401000&#39;), 95)
+((&#39;tsa24_clipped&#39;, &#39;0&#39;, &#39;2401000&#39;, &#39;100&#39;, &#39;2401000&#39;), 105)
+((&#39;tsa24_clipped&#39;, &#39;0&#39;, &#39;2401000&#39;, &#39;100&#39;, &#39;2401000&#39;), 125)
+((&#39;tsa24_clipped&#39;, &#39;0&#39;, &#39;2401000&#39;, &#39;100&#39;, &#39;2401000&#39;), 135)
+((&#39;tsa24_clipped&#39;, &#39;0&#39;, &#39;2401000&#39;, &#39;100&#39;, &#39;2401000&#39;), 145)
+((&#39;tsa24_clipped&#39;, &#39;0&#39;, &#39;2401000&#39;, &#39;100&#39;, &#39;2401000&#39;), 155)
+((&#39;tsa24_clipped&#39;, &#39;0&#39;, &#39;2402005&#39;, &#39;1201&#39;, &#39;2402005&#39;), 85)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2401002&#39;, &#39;204&#39;, &#39;2401002&#39;), 78)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2401002&#39;, &#39;204&#39;, &#39;2401002&#39;), 80)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2401002&#39;, &#39;204&#39;, &#39;2401002&#39;), 85)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2401002&#39;, &#39;204&#39;, &#39;2401002&#39;), 91)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2401002&#39;, &#39;204&#39;, &#39;2401002&#39;), 93)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2401002&#39;, &#39;204&#39;, &#39;2401002&#39;), 95)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2401002&#39;, &#39;204&#39;, &#39;2401002&#39;), 105)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2401002&#39;, &#39;204&#39;, &#39;2401002&#39;), 113)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2401002&#39;, &#39;204&#39;, &#39;2401002&#39;), 115)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2401002&#39;, &#39;204&#39;, &#39;2401002&#39;), 125)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2401002&#39;, &#39;204&#39;, &#39;2401002&#39;), 135)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2401002&#39;, &#39;204&#39;, &#39;2401002&#39;), 145)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2401002&#39;, &#39;204&#39;, &#39;2401002&#39;), 153)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2401002&#39;, &#39;204&#39;, &#39;2401002&#39;), 155)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2401002&#39;, &#39;204&#39;, &#39;2421002&#39;), 20)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;), 165)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402002&#39;, &#39;204&#39;, &#39;2402002&#39;), 78)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402002&#39;, &#39;204&#39;, &#39;2402002&#39;), 93)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402002&#39;, &#39;204&#39;, &#39;2402002&#39;), 95)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402002&#39;, &#39;204&#39;, &#39;2402002&#39;), 115)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2403000&#39;, &#39;100&#39;, &#39;2403000&#39;), 93)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2403002&#39;, &#39;204&#39;, &#39;2403002&#39;), 73)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2403002&#39;, &#39;204&#39;, &#39;2423002&#39;), 9)
+((&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2403002&#39;, &#39;204&#39;, &#39;2423002&#39;), 18)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">trees</span><span class="p">[((</span><span class="s2">&quot;tsa24_clipped&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;2402000&quot;</span><span class="p">,</span> <span class="s2">&quot;100&quot;</span><span class="p">,</span> <span class="s2">&quot;2402000&quot;</span><span class="p">),</span> <span class="mi">165</span><span class="p">)]</span>
+<span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">paths</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s2">&quot;dtk&quot;</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2422000&#39;)
+
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+(&#39;tsa24_clipped&#39;, &#39;1&#39;, &#39;2402000&#39;, &#39;100&#39;, &#39;2402000&#39;)
+
+</pre></div></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">sit_events</span></code> table should be empty, because we did not simulate any actions before calling <code class="docutils literal notranslate"><span class="pre">fm.to_cbm_sit</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sit_tables</span><span class="p">[</span><span class="s2">&quot;sit_events&quot;</span><span class="p">]</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>theme0</th>
+      <th>theme1</th>
+      <th>theme2</th>
+      <th>theme3</th>
+      <th>theme4</th>
+      <th>species</th>
+      <th>using_age_class</th>
+      <th>min_softwood_age</th>
+      <th>max_softwood_age</th>
+      <th>min_hardwood_age</th>
+      <th>...</th>
+      <th>MinSWMerchStemSnagC</th>
+      <th>MaxSWMerchStemSnagC</th>
+      <th>MinHWMerchStemSnagC</th>
+      <th>MaxHWMerchStemSnagC</th>
+      <th>efficiency</th>
+      <th>sort_type</th>
+      <th>target_type</th>
+      <th>target</th>
+      <th>disturbance_type</th>
+      <th>disturbance_year</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<p>0 rows × 38 columns</p>
+</div></div>
+</div>
+<p>Rebuild the inventory table. We need one inventory record <em>for every possible development type</em> (including system states that are not present in the initial inventory). Conveniently for us, <code class="docutils literal notranslate"><span class="pre">fm.to_cbm_sit</span></code> calls <code class="docutils literal notranslate"><span class="pre">fm._cbm_sit_yield</span></code>, which calls <code class="docutils literal notranslate"><span class="pre">fm.add_problem</span></code>, which calls <code class="docutils literal notranslate"><span class="pre">fm._bld_tree_m1</span></code>, which simulates all feasible combinations of actions, which creates any new development types that we need. You just have to know, and now you can leverage that side-effect to make this next part
+easy peasy.</p>
+<p>Figuring out which development types were missing and adding them by hand would not have been <em>too</em> difficult for the simple test dataset we are are using here (assuming you are good at reading Woodstock input files and running through all possible future states in your head), but this could be a doozie of a puzzle or larger models with hundreds of initial development types and more complex actions and transitions. Basically, you definitely want to take note of the <code class="docutils literal notranslate"><span class="pre">add_problem</span></code> hack described
+about and use that. Any other way is just looking for trouble.</p>
+<p>We can reuse the <code class="docutils literal notranslate"><span class="pre">sit_inventory</span></code> table returned from <code class="docutils literal notranslate"><span class="pre">fm.to_cbm_sit</span></code> to make sure we have the correct structure.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">sit_tables</span><span class="p">[</span><span class="s2">&quot;sit_inventory&quot;</span><span class="p">]</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">df</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>theme0</th>
+      <th>theme1</th>
+      <th>theme2</th>
+      <th>theme3</th>
+      <th>theme4</th>
+      <th>species</th>
+      <th>using_age_class</th>
+      <th>age</th>
+      <th>area</th>
+      <th>delay</th>
+      <th>landclass</th>
+      <th>historic_disturbance</th>
+      <th>last_pass_disturbance</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">dtype_key</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">dtypes</span><span class="p">:</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">dt</span><span class="p">(</span><span class="n">dtype_key</span><span class="p">)</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dtype_key</span><span class="p">)</span>
+    <span class="n">values</span> <span class="o">+=</span> <span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">leading_species</span><span class="p">,</span> <span class="s2">&quot;FALSE&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;fire&quot;</span><span class="p">,</span> <span class="s2">&quot;fire&quot;</span> <span class="k">if</span> <span class="n">dtype_key</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">dtype_key</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;harvest&quot;</span><span class="p">]</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="p">)))</span>
+<span class="n">sit_tables</span><span class="p">[</span><span class="s2">&quot;sit_inventory&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">sit_tables</span><span class="p">[</span><span class="s2">&quot;sit_inventory&quot;</span><span class="p">]</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>theme0</th>
+      <th>theme1</th>
+      <th>theme2</th>
+      <th>theme3</th>
+      <th>theme4</th>
+      <th>species</th>
+      <th>using_age_class</th>
+      <th>age</th>
+      <th>area</th>
+      <th>delay</th>
+      <th>landclass</th>
+      <th>historic_disturbance</th>
+      <th>last_pass_disturbance</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>tsa24_clipped</td>
+      <td>0</td>
+      <td>2401000</td>
+      <td>100</td>
+      <td>2401000</td>
+      <td>softwood</td>
+      <td>FALSE</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>fire</td>
+      <td>fire</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>tsa24_clipped</td>
+      <td>0</td>
+      <td>2402005</td>
+      <td>1201</td>
+      <td>2402005</td>
+      <td>hardwood</td>
+      <td>FALSE</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>fire</td>
+      <td>fire</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2401002</td>
+      <td>204</td>
+      <td>2401002</td>
+      <td>softwood</td>
+      <td>FALSE</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>fire</td>
+      <td>fire</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2401002</td>
+      <td>204</td>
+      <td>2421002</td>
+      <td>softwood</td>
+      <td>FALSE</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>fire</td>
+      <td>harvest</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2402000</td>
+      <td>100</td>
+      <td>2402000</td>
+      <td>softwood</td>
+      <td>FALSE</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>fire</td>
+      <td>fire</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2402002</td>
+      <td>204</td>
+      <td>2402002</td>
+      <td>softwood</td>
+      <td>FALSE</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>fire</td>
+      <td>fire</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2403000</td>
+      <td>100</td>
+      <td>2403000</td>
+      <td>softwood</td>
+      <td>FALSE</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>fire</td>
+      <td>fire</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2403002</td>
+      <td>204</td>
+      <td>2403002</td>
+      <td>softwood</td>
+      <td>FALSE</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>fire</td>
+      <td>fire</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2403002</td>
+      <td>204</td>
+      <td>2423002</td>
+      <td>softwood</td>
+      <td>FALSE</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>fire</td>
+      <td>harvest</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2402000</td>
+      <td>100</td>
+      <td>2422000</td>
+      <td>softwood</td>
+      <td>FALSE</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>fire</td>
+      <td>harvest</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2402002</td>
+      <td>204</td>
+      <td>2422002</td>
+      <td>softwood</td>
+      <td>FALSE</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>fire</td>
+      <td>harvest</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2403000</td>
+      <td>100</td>
+      <td>2423000</td>
+      <td>softwood</td>
+      <td>FALSE</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>fire</td>
+      <td>harvest</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Run-CBM-using-built-in-ws3-functions">
+<h2>Run <code class="docutils literal notranslate"><span class="pre">CBM</span></code> using built-in <code class="docutils literal notranslate"><span class="pre">ws3</span></code> functions<a class="headerlink" href="#Run-CBM-using-built-in-ws3-functions" title="Link to this heading"></a></h2>
+<p>Now we run this thruogh <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> for 300 time steps.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">disturbance_type_mapping</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;user_dist_type&quot;</span><span class="p">:</span> <span class="s2">&quot;harvest&quot;</span><span class="p">,</span> <span class="s2">&quot;default_dist_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Clearcut harvesting without salvage&quot;</span><span class="p">},</span>
+                            <span class="p">{</span><span class="s2">&quot;user_dist_type&quot;</span><span class="p">:</span> <span class="s2">&quot;fire&quot;</span><span class="p">,</span> <span class="s2">&quot;default_dist_type&quot;</span><span class="p">:</span> <span class="s2">&quot;Wildfire&quot;</span><span class="p">}]</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">dtype_key</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">dtypes</span><span class="p">:</span>
+    <span class="n">fm</span><span class="o">.</span><span class="n">dt</span><span class="p">(</span><span class="n">dtype_key</span><span class="p">)</span><span class="o">.</span><span class="n">last_pass_disturbance</span> <span class="o">=</span> <span class="s2">&quot;fire&quot;</span> <span class="k">if</span> <span class="n">dtype_key</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">dtype_key</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;harvest&quot;</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">util</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_cbm</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_steps</span> <span class="o">=</span> <span class="mi">300</span>
+<span class="n">cbm_output</span> <span class="o">=</span> <span class="n">run_cbm</span><span class="p">(</span><span class="n">sit_config</span><span class="p">,</span> <span class="n">sit_tables</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cbm_output</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;libcbm.model.cbm.cbm_output.CBMOutput at 0x7d6e5f17a2a0&gt;
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pi</span> <span class="o">=</span> <span class="n">cbm_output</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">cbm_output</span><span class="o">.</span><span class="n">pools</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">(),</span>
+                                              <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;timestep&quot;</span><span class="p">],</span>
+                                              <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;timestep&quot;</span><span class="p">])</span>
+<span class="n">fi</span> <span class="o">=</span> <span class="n">cbm_output</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">cbm_output</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">(),</span>
+                                              <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;timestep&quot;</span><span class="p">],</span>
+                                              <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;timestep&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pi</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>identifier</th>
+      <th>timestep</th>
+      <th>theme0</th>
+      <th>theme1</th>
+      <th>theme2</th>
+      <th>theme3</th>
+      <th>theme4</th>
+      <th>species</th>
+      <th>Input</th>
+      <th>SoftwoodMerch</th>
+      <th>...</th>
+      <th>BelowGroundSlowSoil</th>
+      <th>SoftwoodStemSnag</th>
+      <th>SoftwoodBranchSnag</th>
+      <th>HardwoodStemSnag</th>
+      <th>HardwoodBranchSnag</th>
+      <th>CO2</th>
+      <th>CH4</th>
+      <th>CO</th>
+      <th>NO2</th>
+      <th>Products</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>0</td>
+      <td>tsa24_clipped</td>
+      <td>0</td>
+      <td>2401000</td>
+      <td>100</td>
+      <td>2401000</td>
+      <td>softwood</td>
+      <td>1.0</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>61.072161</td>
+      <td>28.616202</td>
+      <td>19.461734</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>4790.526504</td>
+      <td>4.942348</td>
+      <td>44.479699</td>
+      <td>0.0</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>0</td>
+      <td>tsa24_clipped</td>
+      <td>0</td>
+      <td>2402005</td>
+      <td>1201</td>
+      <td>2402005</td>
+      <td>hardwood</td>
+      <td>1.0</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>114.491754</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>65.448939</td>
+      <td>18.985542</td>
+      <td>9638.462743</td>
+      <td>8.550696</td>
+      <td>76.954017</td>
+      <td>0.0</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>0</td>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2401002</td>
+      <td>204</td>
+      <td>2401002</td>
+      <td>softwood</td>
+      <td>1.0</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>70.577311</td>
+      <td>38.209170</td>
+      <td>20.940326</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>5549.131806</td>
+      <td>5.574412</td>
+      <td>50.168153</td>
+      <td>0.0</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>0</td>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2401002</td>
+      <td>204</td>
+      <td>2421002</td>
+      <td>softwood</td>
+      <td>1.0</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>56.591833</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>4504.469208</td>
+      <td>4.878363</td>
+      <td>43.903950</td>
+      <td>0.0</td>
+      <td>34.110922</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>0</td>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2402000</td>
+      <td>100</td>
+      <td>2402000</td>
+      <td>softwood</td>
+      <td>1.0</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>78.415619</td>
+      <td>47.913734</td>
+      <td>22.404296</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>6182.050833</td>
+      <td>6.060943</td>
+      <td>54.546827</td>
+      <td>0.0</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>3607</th>
+      <td>8</td>
+      <td>300</td>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2403002</td>
+      <td>204</td>
+      <td>2403002</td>
+      <td>softwood</td>
+      <td>1.0</td>
+      <td>63.042997</td>
+      <td>...</td>
+      <td>110.566427</td>
+      <td>10.465389</td>
+      <td>1.954894</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>9088.654777</td>
+      <td>7.694727</td>
+      <td>69.250637</td>
+      <td>0.0</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>3608</th>
+      <td>9</td>
+      <td>300</td>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2403002</td>
+      <td>204</td>
+      <td>2423002</td>
+      <td>softwood</td>
+      <td>1.0</td>
+      <td>92.723531</td>
+      <td>...</td>
+      <td>118.471450</td>
+      <td>9.851096</td>
+      <td>2.270104</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>9070.482693</td>
+      <td>7.597707</td>
+      <td>68.377586</td>
+      <td>0.0</td>
+      <td>79.633546</td>
+    </tr>
+    <tr>
+      <th>3609</th>
+      <td>10</td>
+      <td>300</td>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2402000</td>
+      <td>100</td>
+      <td>2422000</td>
+      <td>softwood</td>
+      <td>1.0</td>
+      <td>74.795270</td>
+      <td>...</td>
+      <td>87.528498</td>
+      <td>7.785973</td>
+      <td>2.065819</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>6201.980905</td>
+      <td>5.599995</td>
+      <td>50.398516</td>
+      <td>0.0</td>
+      <td>48.597173</td>
+    </tr>
+    <tr>
+      <th>3610</th>
+      <td>11</td>
+      <td>300</td>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2402002</td>
+      <td>204</td>
+      <td>2422002</td>
+      <td>softwood</td>
+      <td>1.0</td>
+      <td>66.253514</td>
+      <td>...</td>
+      <td>93.752506</td>
+      <td>6.990460</td>
+      <td>1.970435</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>6923.626178</td>
+      <td>6.063782</td>
+      <td>54.572506</td>
+      <td>0.0</td>
+      <td>53.757580</td>
+    </tr>
+    <tr>
+      <th>3611</th>
+      <td>12</td>
+      <td>300</td>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2403000</td>
+      <td>100</td>
+      <td>2423000</td>
+      <td>softwood</td>
+      <td>1.0</td>
+      <td>93.686522</td>
+      <td>...</td>
+      <td>106.682383</td>
+      <td>9.854980</td>
+      <td>2.280876</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>7881.389804</td>
+      <td>6.779255</td>
+      <td>61.011651</td>
+      <td>0.0</td>
+      <td>68.419040</td>
+    </tr>
+  </tbody>
+</table>
+<p>3612 rows × 35 columns</p>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pi</span><span class="o">.</span><span class="n">columns</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Index([&#39;identifier&#39;, &#39;timestep&#39;, &#39;theme0&#39;, &#39;theme1&#39;, &#39;theme2&#39;, &#39;theme3&#39;,
+       &#39;theme4&#39;, &#39;species&#39;, &#39;Input&#39;, &#39;SoftwoodMerch&#39;, &#39;SoftwoodFoliage&#39;,
+       &#39;SoftwoodOther&#39;, &#39;SoftwoodCoarseRoots&#39;, &#39;SoftwoodFineRoots&#39;,
+       &#39;HardwoodMerch&#39;, &#39;HardwoodFoliage&#39;, &#39;HardwoodOther&#39;,
+       &#39;HardwoodCoarseRoots&#39;, &#39;HardwoodFineRoots&#39;, &#39;AboveGroundVeryFastSoil&#39;,
+       &#39;BelowGroundVeryFastSoil&#39;, &#39;AboveGroundFastSoil&#39;, &#39;BelowGroundFastSoil&#39;,
+       &#39;MediumSoil&#39;, &#39;AboveGroundSlowSoil&#39;, &#39;BelowGroundSlowSoil&#39;,
+       &#39;SoftwoodStemSnag&#39;, &#39;SoftwoodBranchSnag&#39;, &#39;HardwoodStemSnag&#39;,
+       &#39;HardwoodBranchSnag&#39;, &#39;CO2&#39;, &#39;CH4&#39;, &#39;CO&#39;, &#39;NO2&#39;, &#39;Products&#39;],
+      dtype=&#39;object&#39;)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fi</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>identifier</th>
+      <th>timestep</th>
+      <th>theme0</th>
+      <th>theme1</th>
+      <th>theme2</th>
+      <th>theme3</th>
+      <th>theme4</th>
+      <th>species</th>
+      <th>DisturbanceCO2Production</th>
+      <th>DisturbanceCH4Production</th>
+      <th>...</th>
+      <th>DisturbanceVFastBGToAir</th>
+      <th>DisturbanceFastAGToAir</th>
+      <th>DisturbanceFastBGToAir</th>
+      <th>DisturbanceMediumToAir</th>
+      <th>DisturbanceSlowAGToAir</th>
+      <th>DisturbanceSlowBGToAir</th>
+      <th>DisturbanceSWStemSnagToAir</th>
+      <th>DisturbanceSWBranchSnagToAir</th>
+      <th>DisturbanceHWStemSnagToAir</th>
+      <th>DisturbanceHWBranchSnagToAir</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>0</td>
+      <td>tsa24_clipped</td>
+      <td>0</td>
+      <td>2401000</td>
+      <td>100</td>
+      <td>2401000</td>
+      <td>softwood</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>0</td>
+      <td>tsa24_clipped</td>
+      <td>0</td>
+      <td>2402005</td>
+      <td>1201</td>
+      <td>2402005</td>
+      <td>hardwood</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>0</td>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2401002</td>
+      <td>204</td>
+      <td>2401002</td>
+      <td>softwood</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>0</td>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2401002</td>
+      <td>204</td>
+      <td>2421002</td>
+      <td>softwood</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>0</td>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2402000</td>
+      <td>100</td>
+      <td>2402000</td>
+      <td>softwood</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>3607</th>
+      <td>8</td>
+      <td>300</td>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2403002</td>
+      <td>204</td>
+      <td>2403002</td>
+      <td>softwood</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>3608</th>
+      <td>9</td>
+      <td>300</td>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2403002</td>
+      <td>204</td>
+      <td>2423002</td>
+      <td>softwood</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>3609</th>
+      <td>10</td>
+      <td>300</td>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2402000</td>
+      <td>100</td>
+      <td>2422000</td>
+      <td>softwood</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>3610</th>
+      <td>11</td>
+      <td>300</td>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2402002</td>
+      <td>204</td>
+      <td>2422002</td>
+      <td>softwood</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>3611</th>
+      <td>12</td>
+      <td>300</td>
+      <td>tsa24_clipped</td>
+      <td>1</td>
+      <td>2403000</td>
+      <td>100</td>
+      <td>2423000</td>
+      <td>softwood</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>3612 rows × 60 columns</p>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fi</span><span class="o">.</span><span class="n">columns</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Index([&#39;identifier&#39;, &#39;timestep&#39;, &#39;theme0&#39;, &#39;theme1&#39;, &#39;theme2&#39;, &#39;theme3&#39;,
+       &#39;theme4&#39;, &#39;species&#39;, &#39;DisturbanceCO2Production&#39;,
+       &#39;DisturbanceCH4Production&#39;, &#39;DisturbanceCOProduction&#39;,
+       &#39;DisturbanceBioCO2Emission&#39;, &#39;DisturbanceBioCH4Emission&#39;,
+       &#39;DisturbanceBioCOEmission&#39;, &#39;DecayDOMCO2Emission&#39;,
+       &#39;DisturbanceSoftProduction&#39;, &#39;DisturbanceHardProduction&#39;,
+       &#39;DisturbanceDOMProduction&#39;, &#39;DeltaBiomass_AG&#39;, &#39;DeltaBiomass_BG&#39;,
+       &#39;TurnoverMerchLitterInput&#39;, &#39;TurnoverFolLitterInput&#39;,
+       &#39;TurnoverOthLitterInput&#39;, &#39;TurnoverCoarseLitterInput&#39;,
+       &#39;TurnoverFineLitterInput&#39;, &#39;DecayVFastAGToAir&#39;, &#39;DecayVFastBGToAir&#39;,
+       &#39;DecayFastAGToAir&#39;, &#39;DecayFastBGToAir&#39;, &#39;DecayMediumToAir&#39;,
+       &#39;DecaySlowAGToAir&#39;, &#39;DecaySlowBGToAir&#39;, &#39;DecaySWStemSnagToAir&#39;,
+       &#39;DecaySWBranchSnagToAir&#39;, &#39;DecayHWStemSnagToAir&#39;,
+       &#39;DecayHWBranchSnagToAir&#39;, &#39;DisturbanceMerchToAir&#39;,
+       &#39;DisturbanceFolToAir&#39;, &#39;DisturbanceOthToAir&#39;, &#39;DisturbanceCoarseToAir&#39;,
+       &#39;DisturbanceFineToAir&#39;, &#39;DisturbanceDOMCO2Emission&#39;,
+       &#39;DisturbanceDOMCH4Emission&#39;, &#39;DisturbanceDOMCOEmission&#39;,
+       &#39;DisturbanceMerchLitterInput&#39;, &#39;DisturbanceFolLitterInput&#39;,
+       &#39;DisturbanceOthLitterInput&#39;, &#39;DisturbanceCoarseLitterInput&#39;,
+       &#39;DisturbanceFineLitterInput&#39;, &#39;DisturbanceVFastAGToAir&#39;,
+       &#39;DisturbanceVFastBGToAir&#39;, &#39;DisturbanceFastAGToAir&#39;,
+       &#39;DisturbanceFastBGToAir&#39;, &#39;DisturbanceMediumToAir&#39;,
+       &#39;DisturbanceSlowAGToAir&#39;, &#39;DisturbanceSlowBGToAir&#39;,
+       &#39;DisturbanceSWStemSnagToAir&#39;, &#39;DisturbanceSWBranchSnagToAir&#39;,
+       &#39;DisturbanceHWStemSnagToAir&#39;, &#39;DisturbanceHWBranchSnagToAir&#39;],
+      dtype=&#39;object&#39;)
+</pre></div></div>
+</div>
+</section>
+<section id="Import-CBM-output-back-into-ws3-(as-carbon-yield-curves)">
+<h2>Import <code class="docutils literal notranslate"><span class="pre">CBM</span></code> output back into <code class="docutils literal notranslate"><span class="pre">ws3</span></code> (as carbon yield curves)<a class="headerlink" href="#Import-CBM-output-back-into-ws3-(as-carbon-yield-curves)" title="Link to this heading"></a></h2>
+<p>Now we just need to recompile this data into yield curves and stuff them back into our <code class="docutils literal notranslate"><span class="pre">ForestModel</span></code> instance.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">biomass_pools</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SoftwoodMerch&quot;</span><span class="p">,</span><span class="s2">&quot;SoftwoodFoliage&quot;</span><span class="p">,</span> <span class="s2">&quot;SoftwoodOther&quot;</span><span class="p">,</span> <span class="s2">&quot;SoftwoodCoarseRoots&quot;</span><span class="p">,</span><span class="s2">&quot;SoftwoodFineRoots&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;HardwoodMerch&quot;</span><span class="p">,</span> <span class="s2">&quot;HardwoodFoliage&quot;</span><span class="p">,</span> <span class="s2">&quot;HardwoodOther&quot;</span><span class="p">,</span> <span class="s2">&quot;HardwoodCoarseRoots&quot;</span><span class="p">,</span> <span class="s2">&quot;HardwoodFineRoots&quot;</span><span class="p">]</span>
+<span class="n">dom_pools</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AboveGroundVeryFastSoil&quot;</span><span class="p">,</span> <span class="s2">&quot;BelowGroundVeryFastSoil&quot;</span><span class="p">,</span> <span class="s2">&quot;AboveGroundFastSoil&quot;</span><span class="p">,</span> <span class="s2">&quot;BelowGroundFastSoil&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;MediumSoil&quot;</span><span class="p">,</span> <span class="s2">&quot;AboveGroundSlowSoil&quot;</span><span class="p">,</span> <span class="s2">&quot;BelowGroundSlowSoil&quot;</span><span class="p">,</span> <span class="s2">&quot;SoftwoodStemSnag&quot;</span><span class="p">,</span> <span class="s2">&quot;SoftwoodBranchSnag&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;HardwoodStemSnag&quot;</span><span class="p">,</span> <span class="s2">&quot;HardwoodBranchSnag&quot;</span><span class="p">]</span>
+<span class="n">emissions_pools</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;CO2&quot;</span><span class="p">,</span> <span class="s2">&quot;CH4&quot;</span><span class="p">,</span> <span class="s2">&quot;CO&quot;</span><span class="p">,</span> <span class="s2">&quot;NO2&quot;</span><span class="p">]</span>
+<span class="n">products_pools</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Products&quot;</span><span class="p">]</span>
+<span class="n">ecosystem_pools</span> <span class="o">=</span> <span class="n">biomass_pools</span> <span class="o">+</span> <span class="n">dom_pools</span>
+<span class="n">all_pools</span> <span class="o">=</span> <span class="n">biomass_pools</span> <span class="o">+</span> <span class="n">dom_pools</span> <span class="o">+</span> <span class="n">emissions_pools</span> <span class="o">+</span> <span class="n">products_pools</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">annual_process_fluxes</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;DecayDOMCO2Emission&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DeltaBiomass_AG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DeltaBiomass_BG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TurnoverMerchLitterInput&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TurnoverFolLitterInput&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TurnoverOthLitterInput&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TurnoverCoarseLitterInput&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TurnoverFineLitterInput&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayVFastAGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayVFastBGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayFastAGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayFastBGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayMediumToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecaySlowAGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecaySlowBGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecaySWStemSnagToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecaySWBranchSnagToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayHWStemSnagToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayHWBranchSnagToAir&quot;</span>
+<span class="p">]</span>
+
+<span class="n">npp_fluxes</span><span class="o">=</span><span class="p">[</span>
+    <span class="s2">&quot;DeltaBiomass_AG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DeltaBiomass_BG&quot;</span>
+<span class="p">]</span>
+<span class="n">decay_emissions_fluxes</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;DecayVFastAGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayVFastBGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayFastAGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayFastBGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayMediumToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecaySlowAGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecaySlowBGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecaySWStemSnagToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecaySWBranchSnagToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayHWStemSnagToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayHWBranchSnagToAir&quot;</span>
+<span class="p">]</span>
+
+<span class="n">disturbance_production_fluxes</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;DisturbanceSoftProduction&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceHardProduction&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceDOMProduction&quot;</span>
+<span class="p">]</span>
+
+<span class="n">disturbance_emissions_fluxes</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;DisturbanceMerchToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceFolToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceOthToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceCoarseToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceFineToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceVFastAGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceVFastBGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceFastAGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceFastBGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceMediumToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceSlowAGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceSlowBGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceSWStemSnagToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceSWBranchSnagToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceHWStemSnagToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceHWBranchSnagToAir&quot;</span>
+<span class="p">]</span>
+
+<span class="n">all_fluxes</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;DisturbanceCO2Production&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceCH4Production&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceCOProduction&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceBioCO2Emission&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceBioCH4Emission&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceBioCOEmission&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayDOMCO2Emission&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceSoftProduction&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceHardProduction&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceDOMProduction&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DeltaBiomass_AG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DeltaBiomass_BG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TurnoverMerchLitterInput&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TurnoverFolLitterInput&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TurnoverOthLitterInput&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TurnoverCoarseLitterInput&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TurnoverFineLitterInput&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayVFastAGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayVFastBGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayFastAGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayFastBGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayMediumToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecaySlowAGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecaySlowBGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecaySWStemSnagToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecaySWBranchSnagToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayHWStemSnagToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DecayHWBranchSnagToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceMerchToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceFolToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceOthToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceCoarseToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceFineToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceDOMCO2Emission&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceDOMCH4Emission&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceDOMCOEmission&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceMerchLitterInput&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceFolLitterInput&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceOthLitterInput&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceCoarseLitterInput&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceFineLitterInput&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceVFastAGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceVFastBGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceFastAGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceFastBGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceMediumToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceSlowAGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceSlowBGToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceSWStemSnagToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceSWBranchSnagToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceHWStemSnagToAir&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DisturbanceHWBranchSnagToAir&quot;</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pi</span><span class="p">[</span><span class="s2">&quot;dtype_key&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;theme0&quot;</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;theme1&quot;</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;theme2&quot;</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;theme3&quot;</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;theme4&quot;</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">fi</span><span class="p">[</span><span class="s2">&quot;dtype_key&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fi</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;theme0&quot;</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;theme1&quot;</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;theme2&quot;</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;theme3&quot;</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;theme4&quot;</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pi_gb_sum</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;dtype_key&quot;</span><span class="p">,</span> <span class="s2">&quot;timestep&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="n">all_pools</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">fi_gb_sum</span> <span class="o">=</span> <span class="n">fi</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;dtype_key&quot;</span><span class="p">,</span> <span class="s2">&quot;timestep&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="n">all_fluxes</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<br/></pre></div>
+</div>
+</div>
+<p>Reformatted this way, we essentially have carbon yield curves now.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pi_gb_sum</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>SoftwoodMerch</th>
+      <th>SoftwoodFoliage</th>
+      <th>SoftwoodOther</th>
+      <th>SoftwoodCoarseRoots</th>
+      <th>SoftwoodFineRoots</th>
+      <th>HardwoodMerch</th>
+      <th>HardwoodFoliage</th>
+      <th>HardwoodOther</th>
+      <th>HardwoodCoarseRoots</th>
+      <th>HardwoodFineRoots</th>
+      <th>...</th>
+      <th>BelowGroundSlowSoil</th>
+      <th>SoftwoodStemSnag</th>
+      <th>SoftwoodBranchSnag</th>
+      <th>HardwoodStemSnag</th>
+      <th>HardwoodBranchSnag</th>
+      <th>CO2</th>
+      <th>CH4</th>
+      <th>CO</th>
+      <th>NO2</th>
+      <th>Products</th>
+    </tr>
+    <tr>
+      <th>dtype_key</th>
+      <th>timestep</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">tsa24_clipped 0 2401000 100 2401000</th>
+      <th>0</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>61.072161</td>
+      <td>28.616202</td>
+      <td>19.461734</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>4790.526504</td>
+      <td>4.942348</td>
+      <td>44.479699</td>
+      <td>0.0</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.000036</td>
+      <td>0.132721</td>
+      <td>0.000000</td>
+      <td>0.016954</td>
+      <td>0.012518</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>61.121090</td>
+      <td>27.409295</td>
+      <td>16.809097</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>4793.580328</td>
+      <td>4.942348</td>
+      <td>44.479699</td>
+      <td>0.0</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.000305</td>
+      <td>0.370208</td>
+      <td>0.000000</td>
+      <td>0.047501</td>
+      <td>0.034753</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>61.131684</td>
+      <td>26.253292</td>
+      <td>14.518014</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>4796.408697</td>
+      <td>4.942348</td>
+      <td>44.479699</td>
+      <td>0.0</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0.001061</td>
+      <td>0.611266</td>
+      <td>0.061592</td>
+      <td>0.086822</td>
+      <td>0.062788</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>61.114167</td>
+      <td>25.146046</td>
+      <td>12.539502</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>4799.057094</td>
+      <td>4.942348</td>
+      <td>44.479699</td>
+      <td>0.0</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0.002569</td>
+      <td>0.774699</td>
+      <td>0.251065</td>
+      <td>0.133230</td>
+      <td>0.095060</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>61.076059</td>
+      <td>24.085504</td>
+      <td>10.831866</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>4801.559391</td>
+      <td>4.942348</td>
+      <td>44.479699</td>
+      <td>0.0</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">tsa24_clipped 1 2403002 204 2423002</th>
+      <th>296</th>
+      <td>92.723531</td>
+      <td>8.635211</td>
+      <td>32.241928</td>
+      <td>27.228756</td>
+      <td>2.430592</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>118.137520</td>
+      <td>9.862722</td>
+      <td>2.270108</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>9052.158176</td>
+      <td>7.597707</td>
+      <td>68.377586</td>
+      <td>0.0</td>
+      <td>79.633546</td>
+    </tr>
+    <tr>
+      <th>297</th>
+      <td>92.723531</td>
+      <td>8.635211</td>
+      <td>32.241928</td>
+      <td>27.228756</td>
+      <td>2.430592</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>118.221284</td>
+      <td>9.859625</td>
+      <td>2.270107</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>9056.738888</td>
+      <td>7.597707</td>
+      <td>68.377586</td>
+      <td>0.0</td>
+      <td>79.633546</td>
+    </tr>
+    <tr>
+      <th>298</th>
+      <td>92.723531</td>
+      <td>8.635211</td>
+      <td>32.241928</td>
+      <td>27.228756</td>
+      <td>2.430592</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>118.304861</td>
+      <td>9.856659</td>
+      <td>2.270106</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>9061.319879</td>
+      <td>7.597707</td>
+      <td>68.377586</td>
+      <td>0.0</td>
+      <td>79.633546</td>
+    </tr>
+    <tr>
+      <th>299</th>
+      <td>92.723531</td>
+      <td>8.635211</td>
+      <td>32.241928</td>
+      <td>27.228756</td>
+      <td>2.430592</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>118.388250</td>
+      <td>9.853818</td>
+      <td>2.270105</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>9065.901147</td>
+      <td>7.597707</td>
+      <td>68.377586</td>
+      <td>0.0</td>
+      <td>79.633546</td>
+    </tr>
+    <tr>
+      <th>300</th>
+      <td>92.723531</td>
+      <td>8.635211</td>
+      <td>32.241928</td>
+      <td>27.228756</td>
+      <td>2.430592</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>118.471450</td>
+      <td>9.851096</td>
+      <td>2.270104</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>9070.482693</td>
+      <td>7.597707</td>
+      <td>68.377586</td>
+      <td>0.0</td>
+      <td>79.633546</td>
+    </tr>
+  </tbody>
+</table>
+<p>3612 rows × 26 columns</p>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fi_gb_sum</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>DisturbanceCO2Production</th>
+      <th>DisturbanceCH4Production</th>
+      <th>DisturbanceCOProduction</th>
+      <th>DisturbanceBioCO2Emission</th>
+      <th>DisturbanceBioCH4Emission</th>
+      <th>DisturbanceBioCOEmission</th>
+      <th>DecayDOMCO2Emission</th>
+      <th>DisturbanceSoftProduction</th>
+      <th>DisturbanceHardProduction</th>
+      <th>DisturbanceDOMProduction</th>
+      <th>...</th>
+      <th>DisturbanceVFastBGToAir</th>
+      <th>DisturbanceFastAGToAir</th>
+      <th>DisturbanceFastBGToAir</th>
+      <th>DisturbanceMediumToAir</th>
+      <th>DisturbanceSlowAGToAir</th>
+      <th>DisturbanceSlowBGToAir</th>
+      <th>DisturbanceSWStemSnagToAir</th>
+      <th>DisturbanceSWBranchSnagToAir</th>
+      <th>DisturbanceHWStemSnagToAir</th>
+      <th>DisturbanceHWBranchSnagToAir</th>
+    </tr>
+    <tr>
+      <th>dtype_key</th>
+      <th>timestep</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">tsa24_clipped 0 2401000 100 2401000</th>
+      <th>0</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.000000</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>3.053824</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>2.828369</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>2.648398</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>2.502297</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">tsa24_clipped 1 2403002 204 2423002</th>
+      <th>296</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>4.580435</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>297</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>4.580713</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>298</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>4.580990</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>299</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>4.581268</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>300</th>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>4.581546</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>3612 rows × 52 columns</p>
+</div></div>
+</div>
+<p>Add carbon yield curves to our model.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">dtype_key</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">dtypes</span><span class="p">:</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">dt</span><span class="p">(</span><span class="n">dtype_key</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="n">dtype_key</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="n">dtype_key</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">_mask</span><span class="p">,</span> <span class="n">ytype</span><span class="p">,</span> <span class="n">curves</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">yields</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">_mask</span> <span class="o">!=</span> <span class="n">mask</span><span class="p">:</span> <span class="k">continue</span> <span class="c1"># we know there will be a match so this works</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;found match for mask&quot;</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+        <span class="n">pool_data</span> <span class="o">=</span> <span class="n">pi_gb_sum</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dtype_key</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">yname</span> <span class="ow">in</span> <span class="n">all_pools</span><span class="p">:</span>
+            <span class="n">points</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">pool_data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">pool_data</span><span class="p">[</span><span class="n">yname</span><span class="p">]))</span>
+            <span class="n">curve</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">register_curve</span><span class="p">(</span><span class="n">ws3</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Curve</span><span class="p">(</span><span class="n">yname</span><span class="p">,</span>
+                                                     <span class="n">points</span><span class="o">=</span><span class="n">points</span><span class="p">,</span>
+                                                     <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">,</span>
+                                                     <span class="n">is_volume</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                     <span class="n">xmax</span><span class="o">=</span><span class="n">fm</span><span class="o">.</span><span class="n">max_age</span><span class="p">,</span>
+                                                     <span class="n">period_length</span><span class="o">=</span><span class="n">fm</span><span class="o">.</span><span class="n">period_length</span><span class="p">))</span>
+            <span class="n">curves</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">yname</span><span class="p">,</span> <span class="n">curve</span><span class="p">))</span>
+            <span class="n">dt</span><span class="o">.</span><span class="n">add_ycomp</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">yname</span><span class="p">,</span> <span class="n">curve</span><span class="p">)</span>
+        <span class="n">flux_data</span> <span class="o">=</span> <span class="n">fi_gb_sum</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dtype_key</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">yname</span> <span class="ow">in</span> <span class="n">all_fluxes</span><span class="p">:</span>
+            <span class="n">points</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">flux_data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">flux_data</span><span class="p">[</span><span class="n">yname</span><span class="p">]))</span>
+            <span class="n">curve</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">register_curve</span><span class="p">(</span><span class="n">ws3</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">Curve</span><span class="p">(</span><span class="n">yname</span><span class="p">,</span>
+                                                     <span class="n">points</span><span class="o">=</span><span class="n">points</span><span class="p">,</span>
+                                                     <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">,</span>
+                                                     <span class="n">is_volume</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                     <span class="n">xmax</span><span class="o">=</span><span class="n">fm</span><span class="o">.</span><span class="n">max_age</span><span class="p">,</span>
+                                                     <span class="n">period_length</span><span class="o">=</span><span class="n">fm</span><span class="o">.</span><span class="n">period_length</span><span class="p">))</span>
+            <span class="n">curves</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">yname</span><span class="p">,</span> <span class="n">curve</span><span class="p">))</span>
+            <span class="n">dt</span><span class="o">.</span><span class="n">add_ycomp</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">yname</span><span class="p">,</span> <span class="n">curve</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+found match for mask (&#39;?&#39;, &#39;?&#39;, &#39;2401000&#39;, &#39;?&#39;, &#39;2401000&#39;)
+found match for mask (&#39;?&#39;, &#39;?&#39;, &#39;2401000&#39;, &#39;?&#39;, &#39;2401000&#39;)
+found match for mask (&#39;?&#39;, &#39;?&#39;, &#39;2402005&#39;, &#39;?&#39;, &#39;2402005&#39;)
+found match for mask (&#39;?&#39;, &#39;?&#39;, &#39;2402005&#39;, &#39;?&#39;, &#39;2402005&#39;)
+found match for mask (&#39;?&#39;, &#39;?&#39;, &#39;2401002&#39;, &#39;?&#39;, &#39;2401002&#39;)
+found match for mask (&#39;?&#39;, &#39;?&#39;, &#39;2401002&#39;, &#39;?&#39;, &#39;2421002&#39;)
+found match for mask (&#39;?&#39;, &#39;?&#39;, &#39;2402000&#39;, &#39;?&#39;, &#39;2402000&#39;)
+found match for mask (&#39;?&#39;, &#39;?&#39;, &#39;2402002&#39;, &#39;?&#39;, &#39;2402002&#39;)
+found match for mask (&#39;?&#39;, &#39;?&#39;, &#39;2403000&#39;, &#39;?&#39;, &#39;2403000&#39;)
+found match for mask (&#39;?&#39;, &#39;?&#39;, &#39;2403002&#39;, &#39;?&#39;, &#39;2403002&#39;)
+found match for mask (&#39;?&#39;, &#39;?&#39;, &#39;2403002&#39;, &#39;?&#39;, &#39;2423002&#39;)
+found match for mask (&#39;?&#39;, &#39;?&#39;, &#39;2402000&#39;, &#39;?&#39;, &#39;2422000&#39;)
+found match for mask (&#39;?&#39;, &#39;?&#39;, &#39;2402002&#39;, &#39;?&#39;, &#39;2422002&#39;)
+found match for mask (&#39;?&#39;, &#39;?&#39;, &#39;2403000&#39;, &#39;?&#39;, &#39;2423000&#39;)
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span><span class="o">.</span><span class="n">grow</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="n">ecosystem_pools</span><span class="p">:</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">periods</span><span class="p">,</span> <span class="p">[</span><span class="n">fm</span><span class="o">.</span><span class="n">inventory</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">pool</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">periods</span><span class="p">]</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">pool</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;matplotlib.legend.Legend at 0x7d6e5f09dbe0&gt;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_61_1.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_61_1.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="k">for</span> <span class="n">flux</span> <span class="ow">in</span> <span class="n">annual_process_fluxes</span><span class="p">:</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">periods</span><span class="p">,</span> <span class="p">[</span><span class="n">fm</span><span class="o">.</span><span class="n">inventory</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">flux</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">periods</span><span class="p">]</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">flux</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;matplotlib.legend.Legend at 0x7d6e6136f4a0&gt;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_62_1.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_62_1.png" />
+</div>
+</div>
+<p>Not the most pretty or informative plots, but the point is that we are new tracking 26 new carbon pools and 52 new carbon fluxes in our model.</p>
+<p>Bam!</p>
+<p>To make this more useful in a production model, we would likely also want to define some complex yields that aggregate groups of pools and fluxes, and then use these aggregate indicators either as part of the objective function or constraints of an optimization model (i.e., to include carbon in management strategy) or simply as an output indicator (i.e., for reporting on scenario performance without directly influencing the management strategy).</p>
+</section>
+<section id="Compare-embedded-carbon-anticipation-function-to-original-CBM-model">
+<h2>Compare embedded carbon anticipation function to original CBM model<a class="headerlink" href="#Compare-embedded-carbon-anticipation-function-to-original-CBM-model" title="Link to this heading"></a></h2>
+<p>The new <code class="docutils literal notranslate"><span class="pre">ws3</span></code> embedded carbon anticipation function is a simplified version of the original CBM model, so we expect it will produce highly correlated but somewhat offset results from the original <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> model.</p>
+<p>We can verify this by comparing carbon output from both models side-by-side.</p>
+<p>We start by defining a utility function that runs <code class="docutils literal notranslate"><span class="pre">libcbm</span></code>, compiles <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> and <code class="docutils literal notranslate"><span class="pre">ws3</span></code> carbon pool and flux data into analogous tables, and plots results.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">compare_ws3_cbm</span><span class="p">(</span><span class="n">pools</span><span class="o">=</span><span class="n">biomass_pools</span><span class="p">,</span> <span class="n">fluxes</span><span class="o">=</span><span class="n">annual_process_fluxes</span><span class="p">,</span>
+                    <span class="n">cbm_x_shift</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">ws3_pool_coeff</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">ws3_flux_coeff</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span>
+                    <span class="n">ws3_pool_const</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">ws3_flux_const</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
+    <span class="n">sit_config</span><span class="p">,</span> <span class="n">sit_tables</span> <span class="o">=</span> <span class="n">fm</span><span class="o">.</span><span class="n">to_cbm_sit</span><span class="p">(</span><span class="n">softwood_volume_yname</span><span class="o">=</span><span class="s2">&quot;swdvol&quot;</span><span class="p">,</span>
+                                           <span class="n">hardwood_volume_yname</span><span class="o">=</span><span class="s2">&quot;hwdvol&quot;</span><span class="p">,</span>
+                                           <span class="n">admin_boundary</span><span class="o">=</span><span class="s2">&quot;British Columbia&quot;</span><span class="p">,</span>
+                                           <span class="n">eco_boundary</span><span class="o">=</span><span class="s2">&quot;Montane Cordillera&quot;</span><span class="p">,</span>
+                                           <span class="n">disturbance_type_mapping</span><span class="o">=</span><span class="n">disturbance_type_mapping</span><span class="p">)</span>
+    <span class="n">n_steps</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">cbm_output</span> <span class="o">=</span> <span class="n">run_cbm</span><span class="p">(</span><span class="n">sit_config</span><span class="p">,</span> <span class="n">sit_tables</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">pi</span> <span class="o">=</span> <span class="n">cbm_output</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">cbm_output</span><span class="o">.</span><span class="n">pools</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">(),</span>
+                                                  <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;timestep&quot;</span><span class="p">],</span>
+                                                  <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;timestep&quot;</span><span class="p">])</span>
+    <span class="n">fi</span> <span class="o">=</span> <span class="n">cbm_output</span><span class="o">.</span><span class="n">classifiers</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">cbm_output</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">(),</span>
+                                                  <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;timestep&quot;</span><span class="p">],</span>
+                                                  <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;timestep&quot;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">cbm_x_shift</span><span class="p">:</span>
+        <span class="n">df_cbm</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;period&quot;</span><span class="p">:</span><span class="n">pi</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">,</span>
+                           <span class="s2">&quot;pool&quot;</span><span class="p">:</span><span class="n">pi</span><span class="p">[</span><span class="n">pools</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                           <span class="s2">&quot;flux&quot;</span><span class="p">:</span><span class="n">fi</span><span class="p">[</span><span class="n">fluxes</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)})</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;period&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">10</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="n">df_cbm</span><span class="p">[</span><span class="s2">&quot;period&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_cbm</span><span class="p">[</span><span class="s2">&quot;period&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.1</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">df_cbm</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;period&quot;</span><span class="p">:</span><span class="n">pi</span><span class="p">[</span><span class="s2">&quot;timestep&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">,</span>
+                           <span class="s2">&quot;pool&quot;</span><span class="p">:</span><span class="n">pi</span><span class="p">[</span><span class="n">pools</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                           <span class="s2">&quot;flux&quot;</span><span class="p">:</span><span class="n">fi</span><span class="p">[</span><span class="n">fluxes</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)})</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;period&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">10</span><span class="p">::</span><span class="mi">10</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="n">df_cbm</span><span class="p">[</span><span class="s2">&quot;period&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_cbm</span><span class="p">[</span><span class="s2">&quot;period&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">df_ws3</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;period&quot;</span><span class="p">:</span><span class="n">fm</span><span class="o">.</span><span class="n">periods</span><span class="p">,</span>
+                           <span class="s2">&quot;pool&quot;</span><span class="p">:[</span><span class="nb">sum</span><span class="p">(</span><span class="n">fm</span><span class="o">.</span><span class="n">inventory</span><span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="n">pool</span><span class="p">)</span> <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="n">pools</span><span class="p">)</span> <span class="k">for</span> <span class="n">period</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">periods</span><span class="p">],</span>
+                           <span class="s2">&quot;flux&quot;</span><span class="p">:[</span><span class="nb">sum</span><span class="p">(</span><span class="n">fm</span><span class="o">.</span><span class="n">inventory</span><span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="n">flux</span><span class="p">)</span> <span class="k">for</span> <span class="n">flux</span> <span class="ow">in</span> <span class="n">fluxes</span><span class="p">)</span> <span class="k">for</span> <span class="n">period</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">periods</span><span class="p">],</span>
+                           <span class="s2">&quot;ha&quot;</span><span class="p">:[</span><span class="n">fm</span><span class="o">.</span><span class="n">compile_product</span><span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="s2">&quot;1.&quot;</span><span class="p">,</span> <span class="n">acode</span><span class="o">=</span><span class="s2">&quot;harvest&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">period</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">periods</span><span class="p">]})</span>
+    <span class="n">fix</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df_cbm</span><span class="p">[</span><span class="s2">&quot;period&quot;</span><span class="p">],</span> <span class="n">df_cbm</span><span class="p">[</span><span class="s2">&quot;pool&quot;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;cbm pool&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df_ws3</span><span class="p">[</span><span class="s2">&quot;period&quot;</span><span class="p">],</span> <span class="n">df_ws3</span><span class="p">[</span><span class="s2">&quot;pool&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">ws3_pool_coeff</span> <span class="o">+</span> <span class="n">ws3_pool_const</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;ws3 pool&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df_cbm</span><span class="p">[</span><span class="s2">&quot;period&quot;</span><span class="p">],</span> <span class="n">df_cbm</span><span class="p">[</span><span class="s2">&quot;flux&quot;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;cbm flux&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df_ws3</span><span class="p">[</span><span class="s2">&quot;period&quot;</span><span class="p">],</span> <span class="n">df_ws3</span><span class="p">[</span><span class="s2">&quot;flux&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">ws3_flux_coeff</span> <span class="o">+</span> <span class="n">ws3_flux_const</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;ws3 flux&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pi</span><span class="p">,</span> <span class="n">fi</span><span class="p">,</span> <span class="n">df_ws3</span><span class="p">,</span> <span class="n">df_cbm</span>
+</pre></div>
+</div>
+</div>
+<p>First we run a no-disturbance scenario (i.e., just growth). This should almost perfectly match what we ran through the CBM in the first place to create the carbon yield curves, so we expect there should be a very close match between <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> output for both stocks and fluxes.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">util</span><span class="w"> </span><span class="kn">import</span> <span class="n">compile_scenario</span><span class="p">,</span> <span class="n">plot_scenario</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">grow</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">compile_scenario</span><span class="p">(</span><span class="n">fm</span><span class="p">)</span>
+<span class="n">plot_scenario</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(&lt;Figure size 1200x400 with 3 Axes&gt;,
+ array([&lt;Axes: title={&#39;center&#39;: &#39;Harvested area (ha)&#39;}&gt;,
+        &lt;Axes: title={&#39;center&#39;: &#39;Harvested volume (m3)&#39;}&gt;,
+        &lt;Axes: title={&#39;center&#39;: &#39;Growing Stock (m3)&#39;}&gt;], dtype=object))
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_69_1.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_69_1.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pools</span> <span class="o">=</span> <span class="n">biomass_pools</span> <span class="o">+</span> <span class="n">dom_pools</span> <span class="o">+</span> <span class="n">products_pools</span>
+<span class="n">fluxes</span> <span class="o">=</span> <span class="n">decay_emissions_fluxes</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[51]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pi</span><span class="p">,</span> <span class="n">fi</span><span class="p">,</span> <span class="n">df_ws3</span><span class="p">,</span> <span class="n">df_cbm</span> <span class="o">=</span> <span class="n">compare_ws3_cbm</span><span class="p">(</span><span class="n">pools</span><span class="o">=</span><span class="n">pools</span><span class="p">,</span> <span class="n">fluxes</span><span class="o">=</span><span class="n">fluxes</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_71_0.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_71_0.png" />
+</div>
+</div>
+<p>Looks pretty good!</p>
+<p>Next, simulate some harvesting.</p>
+<p>Next, we use the <code class="docutils literal notranslate"><span class="pre">schedule_harvest_areacontrol</span></code> function defined in the local <code class="docutils literal notranslate"><span class="pre">util</span></code> module to simulate some harvesting in all periods. We expect there will be more of a gap between <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> carbon estimates, although we still expect <code class="docutils literal notranslate"><span class="pre">ws3</span></code> output to be highly correlated with <code class="docutils literal notranslate"><span class="pre">libcbm</span></code>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">util</span><span class="w"> </span><span class="kn">import</span> <span class="n">schedule_harvest_areacontrol</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sch</span> <span class="o">=</span> <span class="n">schedule_harvest_areacontrol</span><span class="p">(</span><span class="n">fm</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">compile_scenario</span><span class="p">(</span><span class="n">fm</span><span class="p">)</span>
+<span class="n">plot_scenario</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(&lt;Figure size 1200x400 with 3 Axes&gt;,
+ array([&lt;Axes: title={&#39;center&#39;: &#39;Harvested area (ha)&#39;}&gt;,
+        &lt;Axes: title={&#39;center&#39;: &#39;Harvested volume (m3)&#39;}&gt;,
+        &lt;Axes: title={&#39;center&#39;: &#39;Growing Stock (m3)&#39;}&gt;], dtype=object))
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_78_1.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_78_1.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pi</span><span class="p">,</span> <span class="n">fi</span><span class="p">,</span> <span class="n">df_ws3</span><span class="p">,</span> <span class="n">df_cbm</span> <span class="o">=</span> <span class="n">compare_ws3_cbm</span><span class="p">(</span><span class="n">pools</span><span class="o">=</span><span class="n">pools</span><span class="p">,</span> <span class="n">fluxes</span><span class="o">=</span><span class="n">fluxes</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_79_0.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_79_0.png" />
+</div>
+</div>
+<p>As expected, when we include harvesting disturbances in our simulation <code class="docutils literal notranslate"><span class="pre">ws3</span></code> carbon indicators diverge from corresponding <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> indicators. The gaps for stocks and fluxes are substantial (and of different magnitudes), but output from both models is hightly correlated. So even with some estimations error, we could likely still use these carbon indicators to define optimization problems in <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and get a useful response from the model.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_ws3</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>period</th>
+      <th>pool</th>
+      <th>flux</th>
+      <th>ha</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>273038.224079</td>
+      <td>3684.318154</td>
+      <td>103.411088</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>272183.317438</td>
+      <td>3555.014049</td>
+      <td>105.655079</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>270757.425489</td>
+      <td>3423.239007</td>
+      <td>103.411088</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>269290.984414</td>
+      <td>3279.680491</td>
+      <td>103.411088</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>268189.415203</td>
+      <td>3145.807922</td>
+      <td>103.411088</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>6</td>
+      <td>267189.591266</td>
+      <td>3022.501985</td>
+      <td>103.411088</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>7</td>
+      <td>266209.886837</td>
+      <td>2922.140693</td>
+      <td>103.411088</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>8</td>
+      <td>264538.269595</td>
+      <td>2802.888808</td>
+      <td>114.043292</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>9</td>
+      <td>261988.973856</td>
+      <td>2742.978337</td>
+      <td>114.043292</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>10</td>
+      <td>260038.625703</td>
+      <td>2699.396679</td>
+      <td>114.043292</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[58]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pool_corr</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_cbm</span><span class="p">[</span><span class="s2">&quot;pool&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df_ws3</span><span class="p">[</span><span class="s2">&quot;pool&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">pool_corr</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[58]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+np.float64(1.0349424535173106)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[59]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flux_corr</span> <span class="o">=</span> <span class="p">((</span><span class="n">df_cbm</span><span class="p">[</span><span class="s2">&quot;flux&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df_ws3</span><span class="p">[</span><span class="s2">&quot;flux&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">df_ws3</span><span class="p">[</span><span class="s2">&quot;ha&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">flux_corr</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[59]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+np.float64(6.833749380341729)
+</pre></div></div>
+</div>
+<p>Apply correction.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[60]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pi</span><span class="p">,</span> <span class="n">fi</span><span class="p">,</span> <span class="n">df_ws3</span><span class="p">,</span> <span class="n">df_cbm</span> <span class="o">=</span> <span class="n">compare_ws3_cbm</span><span class="p">(</span><span class="n">pools</span><span class="o">=</span><span class="n">pools</span><span class="p">,</span> <span class="n">fluxes</span><span class="o">=</span><span class="n">fluxes</span><span class="p">,</span>
+                                         <span class="n">ws3_pool_coeff</span><span class="o">=</span><span class="n">pool_corr</span><span class="p">,</span>
+                                         <span class="n">ws3_flux_const</span><span class="o">=</span><span class="n">flux_corr</span><span class="o">*</span><span class="n">df_ws3</span><span class="p">[</span><span class="s2">&quot;ha&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_85_0.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_85_0.png" />
+</div>
+</div>
+<p>Looking good!</p>
+<p>Schedule some more harvesting on top of previous solution, to see how stable the gaps are. Not super important what the exact harvest pattern is here, as long as it is distinct from the previous scenario.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[61]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sch</span> <span class="o">=</span> <span class="n">schedule_harvest_areacontrol</span><span class="p">(</span><span class="n">fm</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[62]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">compile_scenario</span><span class="p">(</span><span class="n">fm</span><span class="p">)</span>
+<span class="n">plot_scenario</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[62]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(&lt;Figure size 1200x400 with 3 Axes&gt;,
+ array([&lt;Axes: title={&#39;center&#39;: &#39;Harvested area (ha)&#39;}&gt;,
+        &lt;Axes: title={&#39;center&#39;: &#39;Harvested volume (m3)&#39;}&gt;,
+        &lt;Axes: title={&#39;center&#39;: &#39;Growing Stock (m3)&#39;}&gt;], dtype=object))
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_89_1.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_89_1.png" />
+</div>
+</div>
+<p>No correction.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[63]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pi</span><span class="p">,</span> <span class="n">fi</span><span class="p">,</span> <span class="n">df_ws3</span><span class="p">,</span> <span class="n">df_cbm</span> <span class="o">=</span> <span class="n">compare_ws3_cbm</span><span class="p">(</span><span class="n">pools</span><span class="o">=</span><span class="n">pools</span><span class="p">,</span> <span class="n">fluxes</span><span class="o">=</span><span class="n">fluxes</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_91_0.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_91_0.png" />
+</div>
+</div>
+<p>With correction.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[64]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pi</span><span class="p">,</span> <span class="n">fi</span><span class="p">,</span> <span class="n">df_ws3</span><span class="p">,</span> <span class="n">df_cbm</span> <span class="o">=</span> <span class="n">compare_ws3_cbm</span><span class="p">(</span><span class="n">pools</span><span class="o">=</span><span class="n">pools</span><span class="p">,</span> <span class="n">fluxes</span><span class="o">=</span><span class="n">fluxes</span><span class="p">,</span>
+                                         <span class="n">ws3_pool_coeff</span><span class="o">=</span><span class="n">pool_corr</span><span class="p">,</span>
+                                         <span class="n">ws3_flux_const</span><span class="o">=</span><span class="n">flux_corr</span><span class="o">*</span><span class="n">df_ws3</span><span class="p">[</span><span class="s2">&quot;ha&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_93_0.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_93_0.png" />
+</div>
+</div>
+<p>Very nice! Now try again with more harvesting, to test stability of the correction hack.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[65]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sch</span> <span class="o">=</span> <span class="n">schedule_harvest_areacontrol</span><span class="p">(</span><span class="n">fm</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[66]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">compile_scenario</span><span class="p">(</span><span class="n">fm</span><span class="p">)</span>
+<span class="n">plot_scenario</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[66]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(&lt;Figure size 1200x400 with 3 Axes&gt;,
+ array([&lt;Axes: title={&#39;center&#39;: &#39;Harvested area (ha)&#39;}&gt;,
+        &lt;Axes: title={&#39;center&#39;: &#39;Harvested volume (m3)&#39;}&gt;,
+        &lt;Axes: title={&#39;center&#39;: &#39;Growing Stock (m3)&#39;}&gt;], dtype=object))
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_96_1.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_96_1.png" />
+</div>
+</div>
+<p>No correction.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[67]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pi</span><span class="p">,</span> <span class="n">fi</span><span class="p">,</span> <span class="n">df_ws3</span><span class="p">,</span> <span class="n">df_cbm</span> <span class="o">=</span> <span class="n">compare_ws3_cbm</span><span class="p">(</span><span class="n">pools</span><span class="o">=</span><span class="n">pools</span><span class="p">,</span> <span class="n">fluxes</span><span class="o">=</span><span class="n">fluxes</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_98_0.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_98_0.png" />
+</div>
+</div>
+<p>With correction.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[68]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pi</span><span class="p">,</span> <span class="n">fi</span><span class="p">,</span> <span class="n">df_ws3</span><span class="p">,</span> <span class="n">df_cbm</span> <span class="o">=</span> <span class="n">compare_ws3_cbm</span><span class="p">(</span><span class="n">pools</span><span class="o">=</span><span class="n">pools</span><span class="p">,</span> <span class="n">fluxes</span><span class="o">=</span><span class="n">fluxes</span><span class="p">,</span>
+                                         <span class="n">ws3_pool_coeff</span><span class="o">=</span><span class="n">pool_corr</span><span class="p">,</span>
+                                         <span class="n">ws3_flux_const</span><span class="o">=</span><span class="n">flux_corr</span><span class="o">*</span><span class="n">df_ws3</span><span class="p">[</span><span class="s2">&quot;ha&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_100_0.png" src="../../../../_build/html/.doctrees/nbsphinx/examples_ws3_examples_040_ws3_libcbm_neilsonhack-fromscratch_100_0.png" />
+</div>
+</div>
+<p>Note that this correction hack is <em>not</em> guaranteed to work for all datasets, but might constitute a good start if you want to apply develop a single correction hack that could be applied to all carbon and flux indicators in your <code class="docutils literal notranslate"><span class="pre">ws3</span></code> model (across all scenarios). The way we implemented this would work reasonably well as a <em>post hoc</em> correction on <code class="docutils literal notranslate"><span class="pre">ws3</span></code> model output (e.g., for reporting), but does not correct the carbon indicators inside the model (so they would still be a bit wonky and
+might distort harvesting solutions, e.g., if we included one or more wonky carbon indicators in an optimization problem).</p>
+<p>You could easily implement a similar pool correction inside <code class="docutils literal notranslate"><span class="pre">ws3</span></code> by scaling all carbon pool yield curves by an appropriate coefficient.</p>
+<p>The correction we applied to the flux estimates would be less intuitive to implement. To implement this correction inside an optimizaiton problem, you would likely have to define the appropriate <code class="docutils literal notranslate"><span class="pre">coeff_func</span></code> function to return something like <span class="math notranslate nohighlight">\(x + (Cxy)\)</span>, where <span class="math notranslate nohighlight">\(x\)</span> is something like <code class="docutils literal notranslate"><span class="pre">fm.inventory(...,</span> <span class="pre">yname='flux_yname',</span> <span class="pre">...)</span></code>, <span class="math notranslate nohighlight">\(y\)</span> is something like <code class="docutils literal notranslate"><span class="pre">(fm.compile_product(...,</span> <span class="pre">expr='1.',</span> <span class="pre">acode='harvest',</span> <span class="pre">...)</span></code> and <span class="math notranslate nohighlight">\(C\)</span> is the flux correction coefficient (calculated
+similary to how we did it above, but then divided by the total system flux in <code class="docutils literal notranslate"><span class="pre">ws3</span></code>). Might get a bit messy, and may not be necessary at all depending on what you are trying to do (and why).</p>
+<p>The <em>post hoc</em> calibration should work well enough for reporting purposes (or to confirm that “optimizing” for carbon in a <code class="docutils literal notranslate"><span class="pre">ws3</span></code> scenario actually did more good than harm, which is not a given).</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015--2025, Gregory Paradis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
