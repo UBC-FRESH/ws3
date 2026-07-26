@@ -1,9 +1,6 @@
 [![tests](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml/badge.svg)](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml)
-<<<<<<< HEAD
-=======
 [![Documentation Status](https://readthedocs.org/projects/ws3/badge/?version=dev)](https://ws3.readthedocs.io/en/dev/?badge=dev)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17331213.svg)](https://doi.org/10.5281/zenodo.17331213)
->>>>>>> dev
 
     
 # ws3 - Wood Supply Simulation System
@@ -28,15 +25,12 @@ Read the tutorial [here](https://ws3.readthedocs.io/en/latest/index.html).
 
 We recommend installing `ws3` package into a Python venv (virtual environment) to minimize interactions with system-level packages. 
 
-<<<<<<< HEAD
-=======
 Optional CBM support available via `pip install libcbm`.
 
 Optional Gurobi support available via `pip install ws3[gurobi]` or `conda install -c gurobi gurobi`.
 
 Optional PuLP support available via `pip install pulp`.
 
->>>>>>> dev
 In [**000_venv_python_kernel_setup.ipynb**](https://github.com/UBC-FRESH/ws3/blob/dev/examples/000_venv_python_kernel_setup.ipynb) we provide the instructions for how to set up a new venv-sandboxed Python kernel and make it available in your JupyterLab environment, assuming that you are running this notebook in a standard linux-based environment and a regular (non-root) using running commands in a bash terminal. 
 
 ## Modules 
@@ -64,11 +58,7 @@ Multiple examples are available to demonstrate the utilization of ws3. Below is 
 ## License
 
 **MIT License**
-<<<<<<< HEAD
-Copyright (c) 2024 Gregory Paradis.
-=======
 Copyright (c) 2025 Gregory Paradis.
->>>>>>> dev
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
