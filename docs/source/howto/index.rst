@@ -32,6 +32,10 @@ includes runnable code examples.
    reproducibility
    faq
    migration_from_woodstock
+   advanced-optimization
+   custom-solvers
+   data-validation
+   scenario-analysis
 
 What You Will Find Here
 ========================

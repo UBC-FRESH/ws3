@@ -141,11 +141,11 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Scope: fhops integration, FEMIC integration, FreshForge workflows, SpaDES coupling, API endpoints
 
 ### Task 5.5 — Production Deployment
-- Status: in_progress
+- Status: complete
 - Scope: release packaging, CI/CD pipeline, versioning, changelog, community guidelines, support channels
 
 ### Task 5.6 — Additional How-To Guides
-- Status: not_started
+- Status: in_progress
 - Scope: advanced optimization, custom solvers, data validation, scenario analysis, reporting
 
 ### Task 5.7 — Textbook Expansion
