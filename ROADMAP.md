@@ -74,8 +74,9 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 ## Phase 4 — Documentation Expansion and Agent-Friendly Docs
 
 - Parent issue: #58
-- Status: in_progress
+- Status: complete
 - Branch: `feature/ws3-phase4-docs`
+- Completion date: 2026-07-26
 
 ### Task 4.1 — Restructure documentation with audience-based navigation
 - Status: complete
@@ -92,14 +93,14 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Progress: All 16 chapters complete (ch01-ch16) with substantive chapter content across the full sequence.
 
 ### Task 4.4 — Create how-to guides
-- Status: in_progress
+- Status: complete
 - Scope: operational guides for data preparation, curve definition, action definition, optimization, parallel optimization, spatial allocation, libcbm callbacks, financial scenarios, custom selectors, custom growth functions, model validation, and reproducibility.
-- Progress: Guide index created. Individual guide content pending.
+- Progress: All 12 how-to guides created with runnable examples and troubleshooting sections.
 
 ### Task 4.5 — Create agent-friendly contract pages
-- Status: in_progress
+- Status: complete
 - Scope: compact technical contracts for LLM coding agents: repo/runtime invariants, module responsibilities, class hierarchy, solver options. Follow femic/fhops pattern.
-- Progress: Coding agent onboarding guide complete. Additional contract pages (module details, solver options) pending.
+- Progress: All 4 contract pages created (data_contracts, runtime_invariants, module_boundaries, output_format_spec).
 
 ### Task 4.6 — Create coding agent onboarding guide
 - Status: complete
@@ -107,10 +108,50 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Verification: Guide includes module map, class hierarchy (mermaid), data flow diagram, common patterns, and platform notes.
 
 ### Task 4.7 — Create troubleshooting and limitations guides
-- Status: in_progress
+- Status: complete
 - Scope: known issues, recovery procedures, honest documentation of boundaries and external dependencies.
-- Progress: Guide index created. Content pending.
+- Progress: Created troubleshooting.rst and limitations-and-boundaries.rst with comprehensive coverage.
 
 ### Task 4.8 — Update conf.py and verify docs build
-- Status: not_started
+- Status: complete
 - Scope: enhance Sphinx configuration with new extensions, verify all docs build successfully, ensure GitHub Pages deployment works.
+- Verification: Docs build with zero errors and zero warnings.
+
+## Phase 5 — Advanced Features and Production Deployment
+
+- Parent issue: to be created
+- Status: planning
+- Branch: `feature/ws3-phase5`
+- Start date: TBD
+
+### Task 5.1 — Advanced Modeling Features
+- Status: not_started
+- Scope: stochastic optimization, multi-objective optimization, dynamic planning, climate scenarios, enhanced carbon accounting
+
+### Task 5.2 — User Experience Improvements
+- Status: not_started
+- Scope: interactive notebooks, GUI wrapper, tutorial videos, FAQ section, migration guide
+
+### Task 5.3 — Performance Optimization
+- Status: not_started
+- Scope: solver tuning, memory profiling, parallel processing, incremental solving, caching
+
+### Task 5.4 — Integration Enhancements
+- Status: not_started
+- Scope: fhops integration, FEMIC integration, FreshForge workflows, SpaDES coupling, API endpoints
+
+### Task 5.5 — Production Deployment
+- Status: not_started
+- Scope: release packaging, CI/CD pipeline, versioning, changelog, community guidelines, support channels
+
+### Task 5.6 — Additional How-To Guides
+- Status: not_started
+- Scope: advanced optimization, custom solvers, data validation, scenario analysis, reporting
+
+### Task 5.7 — Textbook Expansion
+- Status: not_started
+- Scope: advanced spatial modeling, carbon accounting in detail, case studies, future directions, more exercises
+
+### Task 5.8 — Testing and Validation
+- Status: not_started
+- Scope: unit tests, integration tests, performance tests, regression tests, documentation tests
