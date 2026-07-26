@@ -365,7 +365,14 @@ class Curve:
                 return self._y
             return []
         return [self.interp(x) for x in self.x]
-
+    def y_generator(self) -> Iterator[float]:
+        """
+        Returns a generator that yields y-values one at a time (memory efficient).
+        
+        :return: Generator yielding y values.
+        """
+        for x in self.x:
+            yield self.interp(x)
     def __iter__(self):
         """
         Returns an iterator that iterates through the y values of this curve.

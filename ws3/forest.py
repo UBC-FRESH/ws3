@@ -569,29 +569,89 @@ class DevelopmentType:
         if isinstance(ycomp, core.Curve):
             self._ycomps[yname] = ycomp
     
-    def grow(self, start_period=1, cascade=True):
+    def grow(self, start_period=1, cascade=True, parallel=False, workers=1):
         """
         Grow self (default starting period 1, and cascading to end of planning horizon).
 
         :param int start_period: The starting period for growth (default is 1).
         :param bool cascade: If True, growth cascades to the end of the planning horizon. Default is True.
+        :param bool parallel: If True, use parallel processing for growth. Default is False.
+        :param int workers: Number of worker processes for parallel processing. Default is 1.
 
         """
         
         end_period = start_period + 1 if not cascade else self.parent.horizon
         period_length = self.parent.period_length
         
-        # Cache for frequently accessed period data
+        if parallel and workers > 1:
+            # Parallel processing mode
+            return self._grow_parallel(start_period, end_period, period_length, workers)
+        else:
+            # Sequential processing mode (optimized)
+            for p in range(start_period, end_period):
+                self.reset_areas(p+1)
+                current_areas = self._areas[p]
+                next_areas = self._areas[p+1]
+                
+                # Bulk update with pre-calculated keys
+                for age, area in current_areas.items():
+                    next_age = age + period_length
+                    next_areas[next_age] = area
+            return None
+    
+    def _grow_parallel(self, start_period: int, end_period: int, period_length: int, workers: int) -> None:
+        """
+        Parallel implementation of grow using ProcessPoolExecutor.
+        
+        :param int start_period: Starting period.
+        :param int end_period: Ending period.
+        :param int period_length: Length of each period.
+        :param int workers: Number of worker processes.
+        """
+        # Prepare tasks for parallel processing
+        tasks = []
         for p in range(start_period, end_period):
-            self.reset_areas(p+1)
-            # Use direct dictionary operations for better performance
-            current_areas = self._areas[p]
-            next_areas = self._areas[p+1]
+            current_areas = dict(self._areas[p])
+            tasks.append((p, current_areas, period_length))
+        
+        if not tasks:
+            return
+        
+        # Process tasks in parallel
+        with ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT)) as executor:
+            futures = {executor.submit(self._process_growth_task, task): task for task in tasks}
             
-            # Bulk update with pre-calculated keys
-            for age, area in current_areas.items():
-                next_age = age + period_length
-                next_areas[next_age] = area
+            # Collect results
+            results = {}
+            for future in as_completed(futures):
+                task = futures[future]
+                try:
+                    result = future.result()
+                    results[task[0]] = result
+                except Exception as e:
+                    print(f"Error processing period {task[0]}: {e}")
+                    raise
+        
+        # Apply results
+        for p, next_areas in results.items():
+            self._areas[p+1] = next_areas
+    
+    @staticmethod
+    def _process_growth_task(task: Tuple[int, Dict[int, float], int]) -> Tuple[int, Dict[int, float]]:
+        """
+        Process a single growth task.
+        
+        :param task: Tuple of (period, current_areas, period_length).
+        :return: Tuple of (period, next_areas).
+        """
+        p, current_areas, period_length = task
+        next_areas = {}
+        
+        for age, area in current_areas.items():
+            next_age = age + period_length
+            next_areas[next_age] = area
+        
+        return (p, next_areas)
 
     def overwrite_initial_areas(self, period):
 

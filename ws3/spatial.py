@@ -374,14 +374,22 @@ class ForestRaster:
         assert mode in ('randpxl', 'randblk')
         fk, tk = tuple(from_dtk), tuple(to_dtk)
         fh, th = self._hdt_func(fk), self._hdt_func(tk)
+        
+        # Use numpy vectorized operations for better performance
         if 1:
+            # Vectorized age mask calculation
             ages = self._x[1][self._ix_forested] + da
             age_tolerance = max(1, int(self._period_length))
             age_mask = np.abs(ages - from_age) <= age_tolerance
-            _ix = np.where((self._x[0][self._ix_forested] == fh) & age_mask)
+            
+            # Vectorized filtering
+            hdt_match = self._x[0][self._ix_forested] == fh
+            combined_mask = hdt_match & age_mask
+            _ix = np.where(combined_mask)
             x = self._ix_forested[0][_ix], self._ix_forested[1][_ix]
         else:
             x = np.where((self._x[0] == fh) & (self._x[1]+da == from_age))
+        
         xn = len(x[0])
         xa = float(xn * self._pixel_area)
         c = tarea / xa if xa else np.inf
@@ -391,6 +399,7 @@ class ForestRaster:
         n = int(round(xa * c / self._pixel_area))
         if not n:
             return 0.0
+        
         if mode == 'randpxl' or n <= nthresh:
             missing_area = self._transition_cells_randpxl(x, xn, n, th, to_age, acode, dy, tarea, xa)
         elif mode == 'randblk':
@@ -398,7 +407,8 @@ class ForestRaster:
                                                           ovrflwthr=ovrflwthr, allow_split=allow_split,
                                                           aggregate_disturbance=aggregate_disturbance)
         else:
-            assert False # no valid mode specified
+            raise ValueError(f"Unknown mode: {mode}")
+        
         return missing_area
 
     def _transition_cells_randpxl(
