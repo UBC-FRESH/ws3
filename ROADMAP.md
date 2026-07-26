@@ -153,5 +153,5 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Scope: advanced spatial modeling, carbon accounting in detail, case studies, future directions, more exercises
 
 ### Task 5.8 — Testing and Validation
-- Status: not_started
+- Status: in_progress
 - Scope: unit tests, integration tests, performance tests, regression tests, documentation tests
