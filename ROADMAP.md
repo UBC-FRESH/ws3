@@ -137,7 +137,7 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Scope: solver tuning, memory profiling, parallel processing, incremental solving, caching
 
 ### Task 5.4 — Integration Enhancements
-- Status: not_started
+- Status: in_progress
 - Scope: fhops integration, FEMIC integration, FreshForge workflows, SpaDES coupling, API endpoints
 
 ### Task 5.5 — Production Deployment
