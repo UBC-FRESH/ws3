@@ -119,10 +119,10 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 
 ## Phase 5 — Advanced Features and Production Deployment
 
-- Parent issue: to be created
-- Status: planning
+- Parent issue: #60
+- Status: in_progress
 - Branch: `feature/ws3-phase5`
-- Start date: TBD
+- Start date: 2026-07-26
 
 ### Task 5.1 — Advanced Modeling Features
 - Status: not_started
