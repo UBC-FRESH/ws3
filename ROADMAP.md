@@ -78,8 +78,9 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Branch: `feature/ws3-phase4-docs`
 
 ### Task 4.1 — Restructure documentation with audience-based navigation
-- Status: in_progress
+- Status: complete
 - Scope: rewrite `index.rst` landing page with audience navigation (new users, advanced users, LLM agents). Create `getting_started/`, `textbook/`, `howto/`, `reference/`, `guides/` sections.
+- Verification: Docs build successfully, landing page has audience navigation, all section indexes created.
 
 ### Task 4.2 — Create Getting Started section
 - Status: not_started
