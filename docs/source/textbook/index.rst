@@ -64,19 +64,22 @@ Prerequisite Chain
    graph LR
      CH01["ch01: Forest Estate Models"] --> CH02["ch02: Forest Inventory"]
      CH01 --> CH03["ch03: Growth & Yield"]
-     CH02 --> CH04["ch04: Disturbance & Actions"]
+     CH02 --> CH04["ch04: Actions & Transitions"]
      CH03 --> CH04
      CH04 --> CH05["ch05: Optimization"]
      CH04 --> CH06["ch06: Spatial Allocation"]
      CH05 --> CH07["ch07: Financial Analysis"]
      CH06 --> CH07
-     CH07 --> CH08["ch08: Uncertainty & Scenarios"]
+     CH07 --> CH08["ch08: Uncertainty & Risk"]
      CH08 --> CH09["ch09: Advanced Topics"]
+     CH07 --> CH10["ch10: Carbon Modelling"]
+     CH09 --> CH10
 
 .. note::
 
    Chapters 02 and 03 can be studied in parallel after Chapter 01.
    Chapters 05 and 06 can also be studied in parallel after Chapter 04.
+   Chapter 10 (Carbon Modelling) can be studied after Chapter 07 (Financial Analysis).
 
 Contents
 --------
@@ -89,10 +92,12 @@ Contents
    ch02_forest_inventory
    ch03_growth_and_yield
    ch04_actions_and_transitions
-   ch05_multi_period_planning
-   ch06_scenario_analysis
-   ch07_carbon_accounting
-   ch08_spatial_extension
+   ch05_optimization
+   ch06_spatial_allocation
+   ch07_financial_analysis
+   ch08_uncertainty_and_risk
+   ch09_advanced_topics
+   ch10_carbon_modelling
 
 Chapter Structure
 =================
