@@ -1,8 +1,10 @@
-from ws3 import common
-from ws3 import opt
-from concurrent.futures import ProcessPoolExecutor #, as_completed
-from multiprocessing import get_context
+from __future__ import annotations
 
+from concurrent.futures import ProcessPoolExecutor  #, as_completed
+from multiprocessing import get_context
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
+from ws3 import common, opt
 
 MP_CONTEXT = "fork"
 
@@ -11,7 +13,7 @@ _GLOBAL_COEFF_FUNCS_GEN_VARS = None
 _GLOBAL_WORKERS_GEN_VARS = 1
 
 
-def choose_max_batch_factor(workers):
+def choose_max_batch_factor(workers: int) -> int:
     """
     Adaptive max_batch_factor for auto_batch based on number of workers.
 
@@ -47,7 +49,7 @@ def choose_max_batch_factor(workers):
     else:
         return 16
 
-def auto_batch(tasks, workers, max_batch_factor = None, size_fn= lambda x: 1.):
+def auto_batch(tasks: List[Any], workers: int, max_batch_factor: Optional[int] = None, size_fn: Optional[Callable[[Any], float]] = None) -> List[List[Any]]:
     """Split tasks into batches for parallel processing. Optionally sorts tasks by size (descending) and greedily fills batches.
 
     :param tasks: List of tasks to batch
@@ -79,14 +81,14 @@ def auto_batch(tasks, workers, max_batch_factor = None, size_fn= lambda x: 1.):
     sized_tasks = sorted(tasks, key=size_fn, reverse=True)
 
     # Initialize batches and their current total size
-    batches = [[] for _ in range(target_batches)]
-    batch_loads = [0] * target_batches
+    batches: List[List[Any]] = [[] for _ in range(target_batches)]
+    batch_loads: List[float] = [0.0] * target_batches
 
     # Greedy fill: always append to the lightest batch
     for task in sized_tasks:
         idx = batch_loads.index(min(batch_loads))
         batches[idx].append(task)
-        batch_loads[idx] += size_fn(task)
+        batch_loads[idx] += size_fn(task)  # type: ignore[assignment]
 
     # Remove empty batches (if tasks < batches)
     batches = [b for b in batches if b]
@@ -102,7 +104,7 @@ def auto_batch(tasks, workers, max_batch_factor = None, size_fn= lambda x: 1.):
 
     return final_batches
 
-def worker_summarize_tree_batch(args):
+def worker_summarize_tree_batch(args: List[Any]) -> List[Tuple[str, Dict[str, float], Dict[str, float]]]:
     """Summarize a batch of trees into coverage constraints and leaf outputs.
 
     :param args: [batch, z_coeff_key]
@@ -125,7 +127,7 @@ def worker_summarize_tree_batch(args):
         results.append((cname, coeffs, z_coeffs))
     return results
 
-def sanitize_func(f):
+def sanitize_func(f: Any) -> Any:
     """Make a version of f that is safe to serialize via dill in `spawn` mode
     
     :param f: Function to sanitize
@@ -149,9 +151,8 @@ def sanitize_func(f):
         return new_f
     raise TypeError(f"Don't know how to sanitize function of type {type(f)}")
 
-    from concurrent.futures import ThreadPoolExecutor, as_completed
 
-def init_worker_gen_vars(blob_bytes_local, serialized_funcs_local, workers=1):
+def init_worker_gen_vars(blob_bytes_local: bytes, serialized_funcs_local: Dict[str, bytes], workers: int = 1) -> None:
     """Initializer for `_gen_vars_m1` workers: load model and coefficient functions once.
     Also stores desired worker count for `_bld_tree_m1`.
 
@@ -168,7 +169,7 @@ def init_worker_gen_vars(blob_bytes_local, serialized_funcs_local, workers=1):
     _GLOBAL_COEFF_FUNCS_GEN_VARS = {k: dill.loads(f_bytes) for k, f_bytes in serialized_funcs_local.items()}
     _GLOBAL_WORKERS_GEN_VARS = workers
 
-def worker_gen_vars(tasks, acodes):
+def worker_gen_vars(tasks: List[Tuple[str, int]], acodes: List[str]) -> List[Tuple[str, int, Any]]:
     """    Worker for building trees in `_gen_vars_m1`.
 
     :param tasks: list of (dtk, age) tuples to process
@@ -184,21 +185,22 @@ def worker_gen_vars(tasks, acodes):
     
     results = []
     for (dtk, age) in tasks: 
-        model.reset()
-        area = model.dtypes[dtk].area(1, age)
-        if not area: continue
-        tree = model._bld_tree_m1(
-            area, dtk, age, coeff_funcs,
-            tree=None, period=1,
-            acodes=acodes, compile_c_ycomps=True)
-        results.append((dtk, age, tree))
+        if model is not None:
+            model.reset()
+            area = model.dtypes[dtk].area(1, age)
+            if not area: continue
+            tree = model._bld_tree_m1(
+                area, dtk, age, coeff_funcs,
+                tree=None, period=1,
+                acodes=acodes, compile_c_ycomps=True)
+            results.append((dtk, age, tree))
     return results
 
 # ----------------------------
 # Globals for _cmp_cflw_m1 parallel execution
 # ----------------------------
 
-def worker_cmp_cflw_batch(args):
+def worker_cmp_cflw_batch(args: List[Any]) -> List[Tuple[int, str, Tuple, Tuple, float]]:
     """Worker function to process batches of tasks for `_cmp_cflw_m1`
 
     :param args: (batch, cflw_keys, periods)
@@ -217,7 +219,7 @@ def worker_cmp_cflw_batch(args):
                     results.append((t, o, i, j, _mu.get(t, 0.0)))
     return results
 
-def worker_cmp_cflw_phase3(args):
+def worker_cmp_cflw_phase3(args: Tuple[int, str, Dict[Any, float], Dict[Any, float], float, List[str]]) -> List[Tuple[str, Dict[str, float], str, float]]:
     """ Worker function to compute (name, coeffs, sense, rhs) tuples for Phase 3 of `_cmp_cflw_m1`.
 
     :param args: (t, o, mu_t_o, mu_ref_o, eps, xnames)
@@ -226,7 +228,7 @@ def worker_cmp_cflw_phase3(args):
     :rtype: list[(str, float, str, float)]
     """    
     t, o, mu_t_o, mu_ref_o, eps, xnames = args
-    results = []
+    results: List[Tuple[str, Dict[str, float], str, float]] = []
 
     keys = list(mu_t_o.keys())
     x_keys = [xnames[k] for k in keys]
@@ -245,7 +247,7 @@ def worker_cmp_cflw_phase3(args):
 
     return results
 
-def worker_cmp_cflw_phase3_batch(batch):
+def worker_cmp_cflw_phase3_batch(batch: List[Tuple[int, str, float, float, float, List[str]]]) -> List[Tuple[str, Dict[str, float], str, float]]:
     """Worker function to process batches of phase 3 tasks for `_cmp_cflw_m1`
 
     :param batch: list of tasks (tuples)
@@ -255,14 +257,14 @@ def worker_cmp_cflw_phase3_batch(batch):
     """    
     batch_results = []
     for task in batch:
-        batch_results.extend(worker_cmp_cflw_phase3(task))
+        batch_results.extend(worker_cmp_cflw_phase3(task))  # type: ignore[arg-type]
     return batch_results
 
 # ----------------------------
 # Globals for _cmp_cgen_m1 parallel execution
 # ----------------------------
 
-def worker_cmp_cgen_batch(args):
+def worker_cmp_cgen_batch(args: List[Any]) -> List[Tuple[int, str, Tuple, Tuple, float]]:
     """Worker function to process batches of tasks for `_cmp_cgen_m1`
 
     :param args: (batch, cgen_keys, periods)
@@ -282,7 +284,7 @@ def worker_cmp_cgen_batch(args):
                     results.append((t, o, i, j, _mu.get(t, 0.0)))
     return results
 
-def worker_cmp_cgen_phase3(args):
+def worker_cmp_cgen_phase3(args: Tuple[int, str, Dict[Any, float], Optional[Dict[Any, float]], Optional[Dict[Any, float]]]) -> List[Tuple[str, Dict[str, float], str, float]]:
     """
     Args: (t, o, mu_t_o, lb, ub)
     Returns: [(name, coeffs, sense, rhs), ...]
@@ -293,14 +295,14 @@ def worker_cmp_cgen_phase3(args):
     # NOTE: keys in mu_t_o are (i, j)
     coeffs = {'x_%s' % common.hex_id(k): v for k, v in mu_t_o.items()}
 
-    res = []
+    res: List[Tuple[str, Dict[str, float], str, float]] = []
     if lb is not None and t in lb:
         res.append((f'gen-lb_{t:03d}_{o}', coeffs, opt.SENSE_GEQ, lb[t]))
     if ub is not None and t in ub:
         res.append((f'gen-ub_{t:03d}_{o}', coeffs, opt.SENSE_LEQ, ub[t]))
     return res
 
-def worker_cmp_cgen_phase3_batch(batch):
+def worker_cmp_cgen_phase3_batch(batch: List[Tuple[int, str, Dict[Any, float], Optional[Dict[Any, float]], Optional[Dict[Any, float]]]]) -> List[Tuple[str, Dict[str, float], str, float]]:
     """Process a batch of Phase 3 CGEN tasks."""
     out = []
     for task in batch:
@@ -313,7 +315,7 @@ class PersistentWorkerPool:
     workers with ForestModel and coeff_funcs.
     """
 
-    def __init__(self, workers, blob_bytes=None, serialized_funcs=None):
+    def __init__(self, workers: int, blob_bytes: Optional[bytes] = None, serialized_funcs: Optional[Dict[str, Any]] = None) -> None:
         """Constructor
 
         :param workers: Number of workers
@@ -326,9 +328,9 @@ class PersistentWorkerPool:
         self.workers = workers
         self.blob_bytes = blob_bytes
         self.serialized_funcs = serialized_funcs
-        self.executor = None
+        self.executor: Optional[ProcessPoolExecutor] = None
 
-    def __enter__(self):
+    def __enter__(self) -> Any:
         """Create persistent worker pool executor
 
         :return: 
@@ -336,15 +338,15 @@ class PersistentWorkerPool:
         """        
         if self.workers > 1:
             ctx = get_context(MP_CONTEXT)
-            self.executor = ProcessPoolExecutor(
+            self.executor = ProcessPoolExecutor(  # type: ignore[arg-type]
                 max_workers=self.workers,
                 mp_context=ctx,
-                initializer=init_worker_gen_vars,
-                initargs=(self.blob_bytes, self.serialized_funcs, self.workers),
+                initializer=init_worker_gen_vars,  # type: ignore[arg-type]
+                initargs=(self.blob_bytes, self.serialized_funcs, self.workers),  # type: ignore[arg-type]
             )
         return self.executor
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
         """Shut down persisten pool executor when with block exits"""        
         if self.executor is not None:
             self.executor.shutdown()

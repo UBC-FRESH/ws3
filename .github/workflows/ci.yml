@@ -1,49 +1,47 @@
-name: tests
+name: CI
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ dev, main ]
   pull_request:
     branches: [ dev, main ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-    - name: Set up Python
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10.12'
+        python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
       run: |
-        pip install -r requirements.txt
-        pip install --upgrade pip
-        pip install pytest pytest-cov
-        pip install coverage-badge
+        pip install -e ".[gurobi,pulp]"
+        pip install mypy ruff pytest coverage
+
+    - name: Lint with ruff
+      run: |
+        ruff check ws3/
+        ruff format --check ws3/
+
+    - name: Type check with mypy
+      run: |
+        mypy ws3/ --ignore-missing-imports --strict
 
     - name: Run pytest with coverage
       run: |
-        pytest --cov=tests/
+        pytest tests/ -v --cov=ws3 --cov-report=xml
 
-    - name: Generate Coverage Badge
-      run: |
-        coverage-badge -o coverage.svg
-
-    - name: Extract Badge URL
-      run: |
-        # grep -oP "(?<=\[!\[Coverage\]\().*?(?=\))" coverage.svg > badge_url.txt
-        sed -n 's/.*xlink:href="\([^"]*\).*/\1/p' coverage.svg > badge_url.txt
-
-
-    - name: Display Badge URL
-      run: cat badge_url.txt
-
-    - name: Update README.md with Coverage Badge
-      run: |
-        badge_url=$(cat badge_url.txt)
-        echo "[![Coverage]($badge_url)]($badge_url)" >> README.md
+    - name: Upload coverage to Codecov
+      if: matrix.python-version == '3.12'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false

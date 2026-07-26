@@ -32,6 +32,10 @@ The ``Problem`` class is the main functional unit here. It encapsulates optimiza
 Note that we implemented a modular design that decouples the implementation from the choice of solver. Currently, only bindings to the Gurobi solver are implemented, although bindings to other solvers can easilty be added (we will add more binding in later releases, as the need arises). 
 """
 
+from __future__ import annotations
+
+from typing import Any, Callable, Dict, List, Optional
+
 SENSE_MINIMIZE = +1 # same as GRB.MINIMIZE
 SENSE_MAXIMIZE = -1 # same as GRB.MAXIMIZE
 SENSE_EQ = '=' # same as GRB.EQUAL
@@ -53,7 +57,14 @@ class Variable:
     """
     Encapsulates data describing a variable in an optimization problem. This includes a variable name (should be unique within a problem, although the user is responsible for enforcing this condition), a variable type (should be one of ``VTYPE_CONTINUOUS``, ``VTYPE_INTEGER``, or ``VTYPE_BINARY``), variable value bound (lower bound defaults to zero, upper bound defaults to positive infinity), and variable value (defaults to ``None``).
     """
-    def __init__(self, name, vtype, lb=0., ub=VBNDS_INF, val=None):
+    name: str
+    vtype: str
+    lb: float
+    ub: float
+    val: Optional[float]
+    _solver_var: Any
+
+    def __init__(self, name: str, vtype: str, lb: float = 0., ub: float = VBNDS_INF, val: Optional[float] = None) -> None:
         if lb > ub:
             raise ValueError("Lower bound cannot be greater than upper bound")
         self.name = name
@@ -66,7 +77,12 @@ class Constraint:
     """
     Encapsulates data describing a constraint in an optimization problem. This includes a constraint name (should be unique within a problem, although the user is responsible for enforcing this condition), a vector of coefficient values (length of vector should match the number of variables in the problem, although the user is responsible for enforcing this condition), a sense (should be one of ``SENSE_EQ``, ``SENSE_GEQ``, or ``SENSE_LEQ``), and a right-hand-side value.
     """
-    def __init__(self, name, coeffs, sense, rhs):
+    name: str
+    coeffs: Dict[str, float]
+    sense: str
+    rhs: float
+
+    def __init__(self, name: str, coeffs: Dict[str, float], sense: str, rhs: float) -> None:
         if not isinstance(coeffs, dict) or len(coeffs) == 0:
             raise ValueError("Coefficients must be a non-empty list")
         if not all(isinstance(coeff, (int, float)) for coeff in coeffs.values()):
@@ -82,135 +98,149 @@ class Problem:
     """
     This is the main class of the ``opt`` module---it encapsulates optimization problem data (i.e., variables, constraints, objective function, optimal solution, and choice of solver), as well as methods to operate on this data (i.e., methods to build and solve the problem, and report on the optimal solution).
     """
-    def __init__(self, name, sense=SENSE_MAXIMIZE, solver=SOLVER_DEFAULT):
+    _name: str
+    _vars: Dict[str, Variable]
+    _z: Dict[str, float]
+    _constraints: Dict[str, Constraint]
+    _sense: int
+    _solver: str
+    _solver_backend: Optional[str]
+    _solution: Optional[Dict[str, float]]
+    _warm_start: Optional[List[float]]
+    _model: Any
+    _dispatch_map: Dict[str, Callable[..., None]]
+
+    def __init__(self, name: str, sense: int = SENSE_MAXIMIZE, solver: str = SOLVER_DEFAULT) -> None:
         self._name = name
-        self._vars = {}
-        self._z = {}
-        self._constraints = {}
-        #self._solution = None
+        self._vars: Dict[str, Variable] = {}
+        self._z: Dict[str, float] = {}
+        self._constraints: Dict[str, Constraint] = {}
         self._sense = sense
         self._solver = solver
         self._solver_backend = None
-        self._dispatch_map = {SOLVER_PULP:self._solve_pulp, 
-                              SOLVER_GUROBI:self._solve_gurobi,
-                              SOLVER_HIGHS:self._solve_highs}
+        self._solution = None
+        self._warm_start = None
+        self._model = None
+        self._dispatch_map = {
+            SOLVER_PULP: self._solve_pulp,
+            SOLVER_GUROBI: self._solve_gurobi,
+            SOLVER_HIGHS: self._solve_highs
+        }
 
-    def merge(self, problem):
+    def merge(self, problem: Problem) -> None:
         """
         Merge problem with data from another problem. 
         
-        :param Problem: The problem to be merged with this one.
+        :param problem: The problem to be merged with this one.
         """
         self._vars.update(problem._vars)
         self._z.update(problem._z)
         self._constraints.update(problem._constraints)
 
-    def add_var(self, name, vtype, lb=0., ub=VBNDS_INF):
+    def add_var(self, name: str, vtype: str, lb: float = 0., ub: float = VBNDS_INF) -> None:
         """
         The function adds a variable to the problem.
     
-        :param str name: The variable name that needs to be unique within the problem (user is responsible for enforcing this condition) type.
-        :param str vtype: The variable type that has to be one of ``VTYPE_CONTINUOUS``, ``VTYPE_INTEGER``, or ``VTYPE_BINARY``.
-        :param float lb: The lower bound value for the variable (Default is zero).
-        :param float ub: The upper bound value for the variable (Default is positive infinity).
+        :param name: The variable name that needs to be unique within the problem (user is responsible for enforcing this condition) type.
+        :param vtype: The variable type that has to be one of ``VTYPE_CONTINUOUS``, ``VTYPE_INTEGER``, or ``VTYPE_BINARY``.
+        :param lb: The lower bound value for the variable (Default is zero).
+        :param ub: The upper bound value for the variable (Default is positive infinity).
         """
-
         self._vars[name] = Variable(name, vtype, lb, ub)
         self._solution = None # modifying problem kills solution
 
-    def var_names(self):
+    def var_names(self) -> List[str]:
         """
         Return a list of variable names.
         """
         return list(self._vars.keys())
 
-    def constraint_names(self):
+    def constraint_names(self) -> List[str]:
         """
         Returns a list of constraint names.
         """
         return list(self._constraints.keys())
 
-    def name(self):
+    def name(self) -> str:
         """
         Returns problem name.
         """
         return self._name
-        
-    def var(self, name):
+
+    def var(self, name: str) -> Variable:
         """
         Returns a ``Variable`` instance, given a variable name.
         """
         return self._vars[name]
 
-    def sense(self, val=None):
+    def sense(self, val: Optional[int] = None) -> Optional[int]:
         """
         Returns (or sets) objective function sense.
-        :param str val: Value should be one of ``SENSE_MINIMIZE`` or ``SENSE_MAXIMIZE``.
+        :param val: Value should be one of ``SENSE_MINIMIZE`` or ``SENSE_MAXIMIZE``.
         """
-        if val:
+        if val is not None:
             self._sense = val
             self._solution = None # modifying problem kills solution
-        else:
-            return self._sense
+            return None
+        return self._sense
 
-    def solved(self):
+    def solved(self) -> bool:
         """
         Returns ``True`` if the problem has been solved, ``False`` otherwise.
         """
         return self._solution is not None
-        
-    def z(self, coeffs=None, validate=False):
+
+    def z(self, coeffs: Optional[Dict[str, float]] = None, validate: bool = False) -> Optional[float]:
         """
         Returns the objective function value if ``coeffs`` is not provided (triggers an exception if problem has not been solved yet), or updates the objective function coefficient vector (resets the value of the optimal solution to ``None``).
         """
-        if coeffs:
+        if coeffs is not None:
             if validate:
                 for v in coeffs:
                     assert v in self._vars
             self._z = coeffs
             self._solution = None # modifying problem kills solution
-        else:
-            assert self.solved()
-            return sum([self._z[v] * self._solution[v] for v in list(self._vars.keys())])
-        
-    def add_constraint(self, name, coeffs, sense, rhs, validate=False):
+            return None
+        assert self.solved()
+        assert self._solution is not None
+        return sum([self._z[v] * self._solution[v] for v in list(self._vars.keys())])
+
+    def add_constraint(self, name: str, coeffs: Dict[str, float], sense: str, rhs: float, validate: bool = False) -> None:
         """
         This function adds a constraint to the problem.
     
-        :param str name: The constraint name should be unique within the problem (user is responsible for enforcing this condition).
-        :param dict coeffs: Constraint coeffients should be provided as a ``dict``, keyed on variable names---length of constraint coefficient ``dict`` should match number of variables in the problem (user is responsible for enforcing this condition).
-        :param float sense: Constraint sense should be one of ``SENSE_EQ``, ``SENSE_GEQ``, or ``SENSE_LEQ``.
-        :param float rhs: The right hand side of the constraint.
+        :param name: The constraint name should be unique within the problem (user is responsible for enforcing this condition).
+        :param coeffs: Constraint coeffients should be provided as a ``dict``, keyed on variable names---length of constraint coefficient ``dict`` should match number of variables in the problem (user is responsible for enforcing this condition).
+        :param sense: Constraint sense should be one of ``SENSE_EQ``, ``SENSE_GEQ``, or ``SENSE_LEQ``.
+        :param rhs: The right hand side of the constraint.
 
         Note that calling this method resets the value of the optimal solution to ``None``
     
         """
-
         if validate:
             for v in coeffs:
                 assert v in self._vars
         self._constraints[name] = Constraint(name, coeffs, sense, rhs)
         self._solution = None # modifying problem kills solution
 
-    def solver(self, val):
+    def solver(self, val: Optional[str] = None) -> Optional[str]:
         """
         Sets the solver backend (defaults to ``SOLVER_PULP`` in the class constructor). 
         
         Use ``SOLVER_GUROBI`` to use Gurobi solver bindings.
         """
-        if val:
+        if val is not None:
             self._solver = val
-        else:
-            return self._solver
+            return None
+        return self._solver
 
-    def solution(self):
+    def solution(self) -> Optional[Dict[str, float]]:
         """
         Returns a ``dict`` of variable values, keyed on variable names.
         """
         return self._solution
-        #return {x:self._vars[x].val for x in self._vars}
 
-    def solve(self, validate=False, threads=0, warm_start=None, verbose=False):
+    def solve(self, validate: bool = False, threads: int = 0, warm_start: Optional[List[float]] = None, verbose: bool = False) -> None:
         """
         Solve the optimization problem.
 
@@ -231,7 +261,8 @@ class Problem:
 
         # Capture solution if optimal
         if self.status() == STATUS_OPTIMAL:
-            self._solution = {x: self._vars[x].val for x in self._vars}
+            assert self._solution is not None
+            self._solution = {x: (self._vars[x].val or 0.0) for x in self._vars}
                 
     def status(self):
         """
@@ -239,8 +270,9 @@ class Problem:
 
         :returns:  STATUS_INFEASIBLE, STATUS_UNBOUNDED, STATUS_OPTIMAL, or None
         """
-        import ws3.opt
         import pulp
+
+        import ws3.opt
 
         # Optional import: only if Gurobi used
         try:
@@ -305,7 +337,6 @@ class Problem:
             raise ValueError("The problem has not been solved yet.")           
         lhs_values = {}
         if self._solver == SOLVER_PULP:
-            import pulp
             for constraint_name, constraint in self._constraints.items():
                 lhs_value = sum(constraint.coeffs[v] * self._vars[v].val for v in constraint.coeffs)
                 lhs_values[constraint_name] = lhs_value
@@ -449,8 +480,9 @@ class Problem:
         status : highspy.HighsStatus
             HiGHS solver status.
         """
-        import highspy
         from collections import defaultdict
+
+        import highspy
         import numpy as np
 
         highs = highspy.Highs()
