@@ -35,6 +35,10 @@ docs = [
     "sphinx-rtd-theme>=2",
     "nbsphinx>=0.9",
 ]
+release = [
+    "build",
+    "twine",
+]
 github-mcp = [
     "github-mcp-server",  # GitHub MCP server for enhanced GitHub integration
 ]
