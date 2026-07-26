@@ -3,9 +3,6 @@ This module contains a number of functions used for calculating
 silviculture credits and harvest costs.
 """
 
-<<<<<<< HEAD
-PACAL_BROKEN = True
-=======
 from __future__ import annotations
 
 import math
@@ -13,7 +10,6 @@ from typing import Any, Dict, Optional
 
 import numpy as np
 from scipy.stats import norm
->>>>>>> dev
 
 #################################################################################################
 # PaCal breaks when trying to import numpy.fft.fftpack (names have changed or some such... yuck).
@@ -35,28 +31,6 @@ from scipy.stats import norm
 #   to
 #     from numpy.fft import fft, ifft 
 # 
-<<<<<<< HEAD
-if not PACAL_BROKEN:
-    import pacal
-#################################################################################################
-import math
-
-    
-def _sylv_cred_f1(P,
-                  vr,
-                  vp,
-                  rv=False,
-                  C1a=4.511,
-                  C2a=-0.628,
-                  C7d=-0.391,
-                  C8d=1.939,
-                  C15h=3.912,
-                  C16h=-0.0094,
-                  C17i=0.0698,
-                  C18j=9.2529,
-                  Kmult=1.,
-                  Kplus=0.):
-=======
 PACAL_BROKEN = True
 if not PACAL_BROKEN:
     import pacal
@@ -77,87 +51,10 @@ def _sylv_cred_f1(P: float,
                   C18j: float = 9.2529,
                   Kmult: float = 1.,
                   Kplus: float = 0.) -> float:
->>>>>>> dev
     exp = pacal.exp if rv else math.exp
     log = pacal.log if rv else math.exp
     sc = (C1a*vr**C2a-exp(C7d*log(vp)+C8d)+C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus
     if rv:
-<<<<<<< HEAD
-        return sc.mean() # expected value, given random variates
-    else:
-        return sc
-        
-    
-def _sylv_cred_f2(P,
-                  vr,
-                  vp,
-                  rv=False,
-                  C3b=-0.237,
-                  C4b=2.592,
-                  C7d=-0.237,
-                  C8d=2.247,
-                  C11f=4.3546,
-                  C12f=0.34,
-                  C13g=4.3543,
-                  C14g=0.34,
-                  C15h=3.912,
-                  C16h=-0.0094,
-                  C17i=0.0698,
-                  C18j=7.1029,
-                  Kmult=1.,
-                  Kplus=0.):
-    exp = pacal.exp if rv else math.exp
-    log = pacal.log if rv else math.exp
-    sc = ((exp(C3b*log(vr)+C4b)-exp(C7d*log(vp)+C8d)+C11f/vr**C12f-C13g/vp**C14g
-           +C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus)
-    if rv:
-        return sc.mean() # expected value, given random variates
-    else:
-        return sc
-
-
-def _sylv_cred_f3(P,
-                  vr,
-                  vp,
-                  rv=False,
-                  C3b=-0.237,
-                  C4b=2.247,
-                  C7d=-0.237,
-                  C8d=2.247,
-                  C15h=3.912,
-                  C16h=-0.0094,
-                  C17i=0.0698,
-                  C18j=7.1029,
-                  Kmult=1.,
-                  Kplus=0.):
-    exp = pacal.exp if rv else math.exp
-    log = pacal.log if rv else math.exp
-    sc = (exp(C3b*log(vr)+C4b)-exp(C7d*log(vp)+C8d)+C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus
-    if rv:
-        return sc.mean() # expected value, given random variates
-    else:
-        return sc
-
-
-def _sylv_cred_f4(P,
-                  vr,
-                  vp,
-                  rv=False,
-                  C3b=-0.237,
-                  C4b=2.592,
-                  C7d=-0.237,
-                  C8d=2.247,
-                  C11f=4.3546,
-                  C12f=0.34,
-                  C13g=4.3546,
-                  C14g=0.34,
-                  C15h=3.912,
-                  C16h=-0.0069,
-                  C17i=0.0517,
-                  C18j=7.1029,
-                  Kmult=1.,
-                  Kplus=0.):
-=======
         return float(sc.mean())  # type: ignore[union-attr] # expected value, given random variates
     else:
         return float(sc)  # type: ignore[misc]
@@ -260,69 +157,11 @@ def _sylv_cred_f5(P: float,
                   C18j: float = 7.1029,
                   Kmult: float = 1.,
                   Kplus: float = 0.) -> float:
->>>>>>> dev
     exp = pacal.exp if rv else math.exp
     log = pacal.log if rv else math.exp
     sc = ((exp(C3b*log(vr)+C4b)-exp(C7d*log(vp)+C8d)+C11f/vr**C12f-C13g/vp**C14g
            +C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus)
     if rv:
-<<<<<<< HEAD
-        return sc.mean() # expected value, given random variates
-    else:
-        return sc
-
-
-def _sylv_cred_f5(P,
-                  vr,
-                  vp,
-                  rv=False,
-                  C3b=-0.237,
-                  C4b=2.519,
-                  C7d=-0.237,
-                  C8d=2.247,
-                  C11f=4.3546,
-                  C12f=0.34,
-                  C13g=4.3546,
-                  C14g=0.34,
-                  C15h=3.912,
-                  C16h=-0.0069,
-                  C17i=0.0517,
-                  C18j=7.1029,
-                  Kmult=1.,
-                  Kplus=0.):
-    exp = pacal.exp if rv else math.exp
-    log = pacal.log if rv else math.exp
-    sc = ((exp(C3b*log(vr)+C4b)-exp(C7d*log(vp)+C8d)+C11f/vr**C12f-C13g/vp**C14g
-           +C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus)
-    if rv:
-        return sc.mean() # expected value, given random variates
-    else:
-        return sc
-
-
-def _sylv_cred_f6(P,
-                  vr,
-                  vp,
-                  rv=False,
-                  C3b=-0.237,
-                  C4b=2.519,
-                  C5c=-0.391,
-                  C6c=2.017,
-                  C7d=-0.237,
-                  C8d=2.247,
-                  C9e=-0.391,
-                  C10e=1.939,
-                  C11f=4.3546,
-                  C12f=0.34,
-                  C13g=4.3546,
-                  C14g=0.34,
-                  C15h=3.912,
-                  C16h=-0.0069,
-                  C17i=0.0517,
-                  C18j=7.1029,
-                  Kmult=1.,
-                  Kplus=0.):
-=======
         return float(sc.mean())  # type: ignore[union-attr] # expected value, given random variates
     else:
         return float(sc)  # type: ignore[misc]
@@ -350,43 +189,11 @@ def _sylv_cred_f6(P: float,
                   C18j: float = 7.1029,
                   Kmult: float = 1.,
                   Kplus: float = 0.) -> float:
->>>>>>> dev
     exp = pacal.exp if rv else math.exp
     log = pacal.log if rv else math.exp
     sc = (((exp(C3b*log(vr)+C4b)+exp(C5c*log(vr)+C6c)-exp(C7d*log(vp)+C8d)-exp(C9e*log(vp)+C10e))/2
             +C11f/vr**C12f-C13g/vp**C14g+C15h*exp(C16h*P)-C17i*P+C18j*P)*Kmult+Kplus)
     if rv:
-<<<<<<< HEAD
-        return sc.mean() # expected value, given random variates
-    else:
-        return sc
-
-
-def _sylv_cred_f7(P,
-                  vr,
-                  vp,
-                  rv=False,
-                  C3b=-0.391,
-                  C4b=2.2,
-                  C7d=-0.391,
-                  C8d=1.939,
-                  C15h=3.912,
-                  C16h=-0.0069,
-                  C17i=0.0517,
-                  C18j=7.1029,
-                  Kmult=1.,
-                  Kplus=0.):
-    exp = pacal.exp if rv else math.exp
-    log = pacal.log if rv else math.exp
-    sc = (exp(C3b*log(vr)+C4b)-exp(C7d*log(vp)+C8d)+C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus
-    if rv:
-        return sc.mean() # expected value, given random variates
-    else:
-        return sc
-
-
-def sylv_cred(P, vr, vp, formula):
-=======
         return float(sc.mean())  # type: ignore[union-attr]
     else:
         return float(sc)  # type: ignore[misc]
@@ -416,7 +223,6 @@ def _sylv_cred_f7(P: float,
 
 
 def sylv_cred(P: float, vr: float, vp: float, formula: int) -> float:
->>>>>>> dev
     """
     This function returns sylviculture credit ($ per hectare).
 
@@ -432,15 +238,6 @@ def sylv_cred(P: float, vr: float, vp: float, formula: int) -> float:
          5:_sylv_cred_f5,
          6:_sylv_cred_f6,
          7:_sylv_cred_f7}
-<<<<<<< HEAD
-    return f[formula](P, vr, vp)
-
-
-def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
-                 treatment_type=None, cover_type=None, formula=None,
-                 P_min=20., tv_min=50., N_min=200., ps_min=0.05,
-                 E_fromintegral=False, e=0.01, n=1000):
-=======
     return f[formula](P, vr, vp)  # type: ignore[operator,no-any-return]
 
 
@@ -448,7 +245,6 @@ def sylv_cred_rv(P_mu: float, P_sigma: float, tv_mu: float, tv_sigma: float, N_m
                  treatment_type: Optional[str] = None, cover_type: Optional[str] = None, formula: Optional[int] = None,
                  P_min: float = 20., tv_min: float = 50., N_min: float = 200., ps_min: float = 0.05,
                  E_fromintegral: bool = False, e: float = 0.01, n: int = 1000) -> float:
->>>>>>> dev
     
     """
     This function returns sylviculture credit ($ per hectare).
@@ -482,11 +278,7 @@ def sylv_cred_rv(P_mu: float, P_sigma: float, tv_mu: float, tv_sigma: float, N_m
     #print ' formula', formula
     if E_fromintegral:
         # estimate expected value E(f(P, vr, vp)) using PaCAL numerical integration functions (sssssslow!) 
-<<<<<<< HEAD
-        E = f[formula](P, vr, vp, rv=True)
-=======
         E = f[formula](P, vr, vp, rv=True)  # type: ignore[operator]
->>>>>>> dev
     else:
         # estimate expected value E(f(P, vr, vp)) using Monte Carlo simulation (until convergence to E_tol)
         E = 0.
@@ -496,15 +288,6 @@ def sylv_cred_rv(P_mu: float, P_sigma: float, tv_mu: float, tv_sigma: float, N_m
             args = list(zip(P.rand(n), vr.rand(n), vp.rand(n)))
             while len(args) > 0: # process random args in in n-length chunks
                 _E = E
-<<<<<<< HEAD
-                E = ((i - 1) * E + f[formula](*args.pop())) / i
-                dE = abs((E - _E) / _E) if _E else np.inf
-                i += 1
-    return E
-
-
-def sylv_cred_formula(treatment_type, cover_type):
-=======
                 E = ((i - 1) * E + f[formula](*args.pop())) / i  # type: ignore[operator]
                 dE = abs((E - _E) / _E) if _E else np.inf
                 i += 1
@@ -512,7 +295,6 @@ def sylv_cred_formula(treatment_type, cover_type):
 
 
 def sylv_cred_formula(treatment_type: str, cover_type: str) -> int:
->>>>>>> dev
     """
     Returns sylviculture credit formula index.
 
@@ -528,11 +310,7 @@ def sylv_cred_formula(treatment_type: str, cover_type: str) -> int:
     return 0
 
 
-<<<<<<< HEAD
-def piece_size_ratio(treatment_type, cover_type, piece_size_ratios):
-=======
 def piece_size_ratio(treatment_type: int, cover_type: str, piece_size_ratios: Optional[Dict[int, Dict[str, float]]]) -> float:
->>>>>>> dev
     """
     Returns piece size ratio.
     
@@ -553,21 +331,12 @@ def piece_size_ratio(treatment_type: int, cover_type: str, piece_size_ratios: Op
         return 0.
 
 
-<<<<<<< HEAD
-def harv_cost(piece_size,
-              is_finalcut,
-              is_toleranthw,
-              partialcut_extracare=False,              
-              A=1.97, B=0.405, C=0.169, D=0.164, E=0.202, F=13.6, G=8.83, K=0.,
-              rv=False):
-=======
 def harv_cost(piece_size: float,
               is_finalcut: bool,
               is_toleranthw: bool,
               partialcut_extracare: bool = False,              
               A: float = 1.97, B: float = 0.405, C: float = 0.169, D: float = 0.164, E: float = 0.202, F: float = 13.6, G: float = 8.83, K: float = 0.,
               rv: bool = False) -> float:
->>>>>>> dev
     """
     Returns harvest cost.
 
@@ -582,24 +351,6 @@ def harv_cost(piece_size: float,
     _ifc = float(is_finalcut)
     _ith = float(is_toleranthw)
     _pce = float(partialcut_extracare)
-<<<<<<< HEAD
-    log = pacal.log if rv else math.log
-    exp = pacal.exp if rv else math.exp
-    _exp = A - (B * log(piece_size)) + (C * _pce) + (D * _ifc) - (E * (1 - _ith))
-    hc = exp(_exp) + ((F * _ith) + (G * (1 - _ith))) + K
-    if rv:
-        return hc.mean()
-    else:
-        return hc
-
-    
-def harv_cost_rv(tv_mu, tv_sigma, N_mu, N_sigma, psr,
-                 is_finalcut,
-                 is_toleranthw,
-                 partialcut_extracare=False,
-                 tv_min=50., N_min=200., ps_min=0.05,
-                 E_fromintegral=False, e=0.01, n=1000):
-=======
     log = pacal.log if rv else math.log  # type: ignore[assignment]
     exp = pacal.exp if rv else math.exp  # type: ignore[assignment]
     _exp = A - (B * log(piece_size)) + (C * _pce) + (D * _ifc) - (E * (1 - _ith))
@@ -616,7 +367,6 @@ def harv_cost_rv(tv_mu: float, tv_sigma: float, N_mu: float, N_sigma: float, psr
                  partialcut_extracare: bool = False,
                  tv_min: float = 50., N_min: float = 200., ps_min: float = 0.05,
                  E_fromintegral: bool = False, e: float = 0.01, n: int = 1000) -> float:
->>>>>>> dev
 
     """
     Returns harvest cost.
@@ -640,11 +390,7 @@ def harv_cost_rv(tv_mu: float, tv_sigma: float, N_mu: float, N_sigma: float, psr
     vr = (vp + (vp.mean() * (psr - 1.))) | pacal.Gt(ps_min)
     if E_fromintegral:
         # estimate expected value E(f(vr)) using PaCAL numerical integration functions (sssssslow!) 
-<<<<<<< HEAD
-        E = harv_cost(vr, is_finalcut, is_toleranthw, rv=True)
-=======
         E = harv_cost(vr, is_finalcut, is_toleranthw, rv=True)  # type: ignore[operator]
->>>>>>> dev
     else:
         # estimate expected value E(f(vr)) using Monte Carlo simulation (until convergence to E_tol)
         E = 0.
@@ -654,31 +400,18 @@ def harv_cost_rv(tv_mu: float, tv_sigma: float, N_mu: float, N_sigma: float, psr
             args = list(vr.rand(n))
             while len(args) > 0: # process random args in in n-length chunks
                 _E = E
-<<<<<<< HEAD
-                E = ((i - 1) * E + harv_cost(args.pop(), is_finalcut, is_toleranthw)) / i
-=======
                 E = ((i - 1) * E + harv_cost(args.pop(), is_finalcut, is_toleranthw)) / i  # type: ignore[operator]
->>>>>>> dev
                 dE = abs((E - _E) / _E) if _E else np.inf
                 i += 1
     return E
 
 
-<<<<<<< HEAD
-def harv_cost_wec(piece_size,
-                  is_finalcut,
-                  is_toleranthw,
-                  sigma,
-                  nsigmas=3,
-                  **kwargs):
-=======
 def harv_cost_wec(piece_size: float,
                   is_finalcut: bool,
                   is_toleranthw: bool,
                   sigma: float,
                   nsigmas: int = 3,
                   **kwargs: Any) -> float:
->>>>>>> dev
     """
     Estimate harvest cost with error correction.
 
@@ -694,9 +427,5 @@ def harv_cost_wec(piece_size: float,
     rv = norm(loc=piece_size, scale=sigma)
     X = sorted([(piece_size + (sigma * (i - (1. * 0.5)) * sign)) 
                for i in range(1, nsigmas+1) for sign in [-1, +1]])
-<<<<<<< HEAD
-    return sum(harv_cost(x, is_finalcut, is_toleranthw, **kwargs) * sigma * rv.pdf(x) for x in X)
-=======
     return sum(harv_cost(x, is_finalcut, is_toleranthw, **kwargs) * sigma * rv.pdf(x) for x in X)  # type: ignore[misc,no-any-return]
->>>>>>> dev
         

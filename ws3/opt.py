@@ -47,11 +47,8 @@ VTYPE_CONTINUOUS = 'C' # same as GRB.CONTINUOUS
 VBNDS_INF = float('inf')
 SOLVER_GUROBI = 'gurobi'
 SOLVER_PULP = 'pulp'
-<<<<<<< HEAD
-=======
 SOLVER_HIGHS = 'highs'
 SOLVER_DEFAULT = SOLVER_HIGHS
->>>>>>> dev
 STATUS_OPTIMAL = 'optimal'
 STATUS_INFEASIBLE = 'infeasible'
 STATUS_UNBOUNDED = 'unbounded'
@@ -60,9 +57,6 @@ class Variable:
     """
     Encapsulates data describing a variable in an optimization problem. This includes a variable name (should be unique within a problem, although the user is responsible for enforcing this condition), a variable type (should be one of ``VTYPE_CONTINUOUS``, ``VTYPE_INTEGER``, or ``VTYPE_BINARY``), variable value bound (lower bound defaults to zero, upper bound defaults to positive infinity), and variable value (defaults to ``None``).
     """
-<<<<<<< HEAD
-    def __init__(self, name, vtype, lb=0., ub=VBNDS_INF, val=None):
-=======
     name: str
     vtype: str
     lb: float
@@ -71,7 +65,6 @@ class Variable:
     _solver_var: Any
 
     def __init__(self, name: str, vtype: str, lb: float = 0., ub: float = VBNDS_INF, val: Optional[float] = None) -> None:
->>>>>>> dev
         if lb > ub:
             raise ValueError("Lower bound cannot be greater than upper bound")
         self.name = name
@@ -84,16 +77,12 @@ class Constraint:
     """
     Encapsulates data describing a constraint in an optimization problem. This includes a constraint name (should be unique within a problem, although the user is responsible for enforcing this condition), a vector of coefficient values (length of vector should match the number of variables in the problem, although the user is responsible for enforcing this condition), a sense (should be one of ``SENSE_EQ``, ``SENSE_GEQ``, or ``SENSE_LEQ``), and a right-hand-side value.
     """
-<<<<<<< HEAD
-    def __init__(self, name, coeffs, sense, rhs):
-=======
     name: str
     coeffs: Dict[str, float]
     sense: str
     rhs: float
 
     def __init__(self, name: str, coeffs: Dict[str, float], sense: str, rhs: float) -> None:
->>>>>>> dev
         if not isinstance(coeffs, dict) or len(coeffs) == 0:
             raise ValueError("Coefficients must be a non-empty list")
         if not all(isinstance(coeff, (int, float)) for coeff in coeffs.values()):
@@ -109,9 +98,6 @@ class Problem:
     """
     This is the main class of the ``opt`` module---it encapsulates optimization problem data (i.e., variables, constraints, objective function, optimal solution, and choice of solver), as well as methods to operate on this data (i.e., methods to build and solve the problem, and report on the optimal solution).
     """
-<<<<<<< HEAD
-    def __init__(self, name, sense=SENSE_MAXIMIZE, solver=SOLVER_PULP):
-=======
     _name: str
     _vars: Dict[str, Variable]
     _z: Dict[str, float]
@@ -125,7 +111,6 @@ class Problem:
     _dispatch_map: Dict[str, Callable[..., None]]
 
     def __init__(self, name: str, sense: int = SENSE_MAXIMIZE, solver: str = SOLVER_DEFAULT) -> None:
->>>>>>> dev
         self._name = name
         self._vars: Dict[str, Variable] = {}
         self._z: Dict[str, float] = {}
@@ -133,10 +118,6 @@ class Problem:
         self._sense = sense
         self._solver = solver
         self._solver_backend = None
-<<<<<<< HEAD
-        self._dispatch_map = {SOLVER_PULP:self._solve_pulp, 
-                              SOLVER_GUROBI:self._solve_gurobi}
-=======
         self._solution = None
         self._warm_start = None
         self._model = None
@@ -145,7 +126,6 @@ class Problem:
             SOLVER_GUROBI: self._solve_gurobi,
             SOLVER_HIGHS: self._solve_highs
         }
->>>>>>> dev
 
     def merge(self, problem: Problem) -> None:
         """
@@ -264,10 +244,6 @@ class Problem:
         Returns a ``dict`` of variable values, keyed on variable names.
         """
         return self._solution
-<<<<<<< HEAD
-        #return {x:self._vars[x].val for x in self._vars}
-=======
->>>>>>> dev
 
     def solve(self, validate: bool = False, threads: int = 0, warm_start: Optional[List[float]] = None, verbose: bool = False) -> None:
         """
@@ -280,88 +256,6 @@ class Problem:
         :return None: Solution is stored in self._solution if optimal.
         """
         if validate:
-<<<<<<< HEAD
-            assert False # not implemented yet, but later check that all systems are GO before launching...
-        self._dispatch_map[self._solver].__get__(self, type(self))()
-        if self.status() == STATUS_OPTIMAL:
-            self._solution = {x:self._vars[x].val for x in self._vars}
-
-    def status(self):
-        """
-        Checks whether the current solution is infeasible (i.e., not feasible).
-        """
-        import ws3.opt
-        import gurobipy
-        import pulp
-        match self._solver:
-            case ws3.opt.SOLVER_PULP:
-                match self._model.status:
-                    case pulp.constants.LpStatusInfeasible:
-                        return STATUS_INFEASIBLE
-                    case pulp.constants.LpStatusUnbounded:
-                        return STATUS_UNBOUNDED
-                    case pulp.constants.LpStatusOptimal:
-                        return STATUS_OPTIMAL
-            case ws3.opt.SOLVER_GUROBI:
-                match self._model.status:
-                    case gurobipy.GRB.INFEASIBLE:
-                        return STATUS_INFEASIBLE
-                    case gurobipy.GRB.UNBOUNDED:
-                        return STATUS_UNBOUNDED
-                    case gurobipy.GRB.OPTIMAL:
-                        return STATUS_OPTIMAL
-            # add last case to return None if no match
-            case _:
-                return None
-
-
-    def _solve_gurobi(self, allow_feasrelax=True):
-        """
-        Solve the LP optimization problem using Gurobi.
-
-        Returns
-        -------
-        None
-        """
-        import gurobipy as grb
-        const_map = {
-            SENSE_MINIMIZE:grb.GRB.MINIMIZE,
-            SENSE_MAXIMIZE:grb.GRB.MAXIMIZE,
-            VTYPE_INTEGER:grb.GRB.INTEGER,
-            VTYPE_BINARY:grb.GRB.BINARY,
-            VTYPE_CONTINUOUS:grb.GRB.CONTINUOUS,
-            SENSE_EQ:grb.GRB.EQUAL,
-            SENSE_GEQ:grb.GRB.GREATER_EQUAL,
-            SENSE_LEQ:grb.GRB.LESS_EQUAL}
-        GUROBI_IU = grb.GRB.status.INF_OR_UNBD, grb.GRB.status.INFEASIBLE, grb.GRB.status.UNBOUNDED
-        self._model = grb.Model(self._name)
-        vars = {v.name:self._model.addVar(name=v.name, vtype=v.vtype) for v in list(self._vars.values())}
-        self._model.update()
-        z = grb.LinExpr()
-        for v in vars:
-            z += self._z[v] * vars[v]
-        self._model.setObjective(expr=z, sense=const_map[self._sense])
-        for name, constraint in list(self._constraints.items()):
-            lhs = grb.LinExpr()
-            for x in constraint.coeffs:
-                lhs += constraint.coeffs[x] * vars[x]
-            self._model.addConstr(lhs=lhs,
-                        sense=const_map[constraint.sense],
-                        rhs=constraint.rhs,
-                        name=name)
-        self._model.optimize()
-        if allow_feasrelax and self._model.status in GUROBI_IU: # infeasible or unbounded model
-            print('ws3.opt._solve_gurobi: Model infeasible, enabling feasRelaxS mode.')
-            self._model.feasRelaxS(1, False, False, True)
-            self._model.optimize()
-        if self._model.status == grb.GRB.OPTIMAL:
-            for k, v in list(self._vars.items()):
-                _v = self._model.getVarByName(k)
-                v._solver_var = _v # might want to poke around this later...
-                v.val = _v.X
-
-    def _solve_pulp(self):
-=======
             assert False, "Validation not implemented yet"
 
         # Store warm start for use by solver
@@ -524,7 +418,6 @@ class Problem:
                 v.val = _v.X
                 
     def _solve_pulp(self, threads=0, verbose=False, solver_backend="CBC"):
->>>>>>> dev
         """
         Solve the LP problem using the pulp solver.
 
@@ -541,12 +434,8 @@ class Problem:
             VTYPE_CONTINUOUS:pulp.constants.LpContinuous,
             SENSE_EQ:pulp.constants.LpConstraintEQ,
             SENSE_GEQ:pulp.constants.LpConstraintGE,
-<<<<<<< HEAD
-            SENSE_LEQ:pulp.constants.LpConstraintLE}
-=======
             SENSE_LEQ:pulp.constants.LpConstraintLE
         }
->>>>>>> dev
         self._model = pulp.LpProblem(name=self._name, sense=const_map[self._sense])
         vars = pulp.LpVariable.dicts(name='',
                                      indices=self._vars.keys(),
@@ -563,9 +452,6 @@ class Problem:
                 self._model += lhs >= constraint.rhs, name
             elif constraint.sense == SENSE_LEQ:
                 self._model += lhs <= constraint.rhs, name
-<<<<<<< HEAD
-        self._model.solve(solver=pulp.LpSolverDefault) # use default LP solver for now, but expland later to allow other backends
-=======
         if solver_backend == "CBC":
             self._model.solve(solver=pulp.PULP_CBC_CMD(msg=verbose, threads=0))
         elif solver_backend == "HiGHS":
@@ -573,15 +459,12 @@ class Problem:
         else:
             print("Solver backend not supported:", solver_backend)
             raise ValueError
->>>>>>> dev
         if pulp.LpStatus[self._model.status] in [pulp.constants.LpStatusInfeasible, pulp.constants.LpStatusUnbounded]:
             print(f"ws3.opt._solve_pulp: Model {pulp.LpStatus[self._model.status]}")
         else:
             for k, v in list(self._vars.items()):
                 self._vars[k].val = vars[k].varValue
 
-<<<<<<< HEAD
-=======
     def _solve_highs(self, threads=0, simplex_strategy=2, verbose=False):
         """
         Solve the current LP using HiGHS in the same way PuLP does in its buildSolverModel:
@@ -689,4 +572,3 @@ class Problem:
                 var.val = None
 
         return status
->>>>>>> dev
