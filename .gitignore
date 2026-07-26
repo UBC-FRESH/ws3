@@ -8,6 +8,7 @@ docs/build/
 docs/build/doctrees
 docs/build/html
 docs/build/latex
+_build/
 # ignore .venv in the root of the workspace
 .venv/
 .venv-mcp/
