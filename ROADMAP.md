@@ -129,7 +129,7 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Scope: stochastic optimization, multi-objective optimization, dynamic planning, climate scenarios, enhanced carbon accounting
 
 ### Task 5.2 — User Experience Improvements
-- Status: not_started
+- Status: complete
 - Scope: interactive notebooks, GUI wrapper, tutorial videos, FAQ section, migration guide
 
 ### Task 5.3 — Performance Optimization

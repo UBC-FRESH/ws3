@@ -30,6 +30,8 @@ includes runnable code examples.
    custom-growth-function
    model-validation
    reproducibility
+   faq
+   migration_from_woodstock
 
 What You Will Find Here
 ========================

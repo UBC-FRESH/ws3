@@ -23,11 +23,10 @@
    - Helper script for creating properly structured notebooks using nbformat
    - Demonstrates best practices for notebook creation
 
-4. ✅ Created `examples/072_ws3_carbon_accounting_with_libcbm.ipynb`
-   - Integrate libCBM for detailed carbon pool modeling
-   - Show carbon sequestration vs. harvest trade-offs
-   - Demonstrate carbon budget calculations
-   - 25+ cells covering full carbon accounting workflow
+4. ❌ Deleted `examples/072_ws3_carbon_accounting_with_libcbm.ipynb`
+   - Was a broken duplicate of existing libcbm notebooks (040, 041, 030, 031)
+   - Had DT key/mask matching bug
+   - Didn't add value beyond existing examples
 
 5. ✅ Created `examples/073_ws3_spatial_constraints.ipynb`
    - Add adjacency constraints
@@ -57,7 +56,8 @@
 ### Task 5.2 Subtasks
 
 1. **Additional Interactive Notebooks** (Target: 5+ total) ✅ COMPLETE
-   - [x] `072_ws3_carbon_accounting_with_libcbm.ipynb`
+   - [x] `070_ws3_quickstart_complete_workflow.ipynb`
+   - [x] `071_ws3_scenario_analysis_and_comparison.ipynb`
    - [x] `073_ws3_spatial_constraints.ipynb`
    - [x] `074_ws3_multi_objective_optimization.ipynb`
    - [x] `075_ws3_parallel_optimization.ipynb`
