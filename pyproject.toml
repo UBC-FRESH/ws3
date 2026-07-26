@@ -33,6 +33,7 @@ pulp = ["pulp"]
 docs = [
     "sphinx>=7",
     "sphinx-rtd-theme>=2",
+    "nbsphinx>=0.9",
 ]
 
 [tool.hatch.version]
