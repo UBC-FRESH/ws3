@@ -389,7 +389,7 @@ def hash_dt(
     s = '.'.join(map(str, dt)).encode('utf-8')
     d = hashlib.md5(s).digest() # first n bytes of md5 digest
     # return np.dtype(dtype).type(int(binascii.hexlify(d[:4]), 16))
-    return int(np.dtype(dtype).type(struct.unpack('<i', d[:4])[0]))
+    return np.dtype(dtype).type(struct.unpack('<i', d[:4])[0])
 
 def warp_raster(
     src: rasterio.DatasetReader,
