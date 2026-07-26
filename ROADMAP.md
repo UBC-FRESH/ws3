@@ -24,7 +24,8 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 
 - Parent issue: #53
 - Status: complete
-- Branch: `feature/ws3-typed-python-refactor`
+- Branch: `feature/ws3-typed-python-refactor` (merged to dev)
+- PR: #57 (squash merged)
 
 ### Task 2.1 — Add typing infrastructure and package conventions
 - Status: complete
