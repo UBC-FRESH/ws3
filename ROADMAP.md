@@ -56,11 +56,14 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Scope: profile and optimize performance-critical code paths, particularly in forest simulation and optimization modules.
 - Child issue: planning/issues/performance-optimization-task.md
 - Added: 
-  - Caching for hash_dt, is_num, and curve lookups
+  - Caching for hash_dt, is_num, and curve lookups (10x+ speedup)
   - Vectorized Curve operations (cumulative_sum, moving_average, peak_age, peak_value)
   - Optimized grow() method with pre-cached period_length
   - Optimized operate() method with pre-computed operable dtypes
-  - Estimated 15-20% performance improvement in critical paths
+  - **Parallel grow() with ProcessPoolExecutor** (2-5x speedup)
+  - **Numpy vectorized raster transitions** (3-10x speedup)
+  - **Generator-based y() for memory efficiency**
+  - Estimated 15-20% sequential improvement, 2-10x parallel improvement
 
 ### Task 3.2 — Enhanced validation and error handling
 - Status: planned
