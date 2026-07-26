@@ -52,9 +52,10 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Branch: `feature/ws3-phase3-enhancements`
 
 ### Task 3.1 — Performance optimizations for critical paths
-- Status: planned
+- Status: in_progress
 - Scope: profile and optimize performance-critical code paths, particularly in forest simulation and optimization modules.
-- Child issue: to be created
+- Child issue: planning/issues/performance-optimization-task.md
+- Added: Caching for hash_dt, is_num, and curve lookups
 
 ### Task 3.2 — Enhanced validation and error handling
 - Status: planned
