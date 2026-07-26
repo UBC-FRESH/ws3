@@ -37,6 +37,10 @@ maintainers = [
 cbm = ["libcbm"]  # pip users can `pip install ws3[cbm]`
 gurobi = ["gurobipy"]
 pulp = ["pulp"]
+docs = [
+    "sphinx>=7",
+    "sphinx-rtd-theme>=2",
+]
 
 [tool.hatch.version]
 source = "code"
