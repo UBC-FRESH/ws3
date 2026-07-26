@@ -88,8 +88,8 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 
 ### Task 4.3 — Create textbook for forest estate modelling
 - Status: complete
-- Scope: 10-chapter textbook covering forest inventory, growth/yield, actions/transitions, optimization, spatial allocation, financial analysis, uncertainty, advanced topics, and carbon modelling. Each chapter includes learning objectives, worked examples, and exercises.
-- Progress: All 10 chapters complete (ch01-ch10).
+- Scope: 13-chapter textbook covering forest inventory, growth/yield, actions/transitions, optimization, spatial allocation, financial analysis, uncertainty, advanced topics, carbon modelling, FEMIC integration, fhops integration, and FreshForge workflow automation. Each chapter includes learning objectives, worked examples, and exercises.
+- Progress: All 13 chapters complete (ch01-ch13).
 
 ### Task 4.4 — Create how-to guides
 - Status: in_progress
