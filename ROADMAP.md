@@ -149,7 +149,7 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Scope: advanced optimization, custom solvers, data validation, scenario analysis, reporting
 
 ### Task 5.7 — Textbook Expansion
-- Status: not_started
+- Status: in_progress
 - Scope: advanced spatial modeling, carbon accounting in detail, case studies, future directions, more exercises
 
 ### Task 5.8 — Testing and Validation
