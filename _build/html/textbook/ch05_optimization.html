@@ -425,6 +425,8 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l4"><a class="reference internal" href="ch14_spades_integration.html">Chapter 14: Integrating ws3 with SpaDES</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch15_disturbance_modelling.html">Chapter 15: Modelling Natural Disturbances</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch16_supply_chain.html">Chapter 16: Value-Creation and Forest Supply Chain Modelling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch17_advanced_spatial.html">Chapter 17: Advanced Spatial Modeling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch18_carbon_accounting.html">Chapter 18: Carbon Accounting in Detail</a></li>
 </ul>
 </li>
 </ul>
@@ -436,16 +438,6 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
 </ul>
 
         </div>
@@ -527,53 +519,50 @@ maximizes (or minimizes) your objective.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.opt</span><span class="w"> </span><span class="kn">import</span> <span class="n">Problem</span>
 
 <span class="c1"># Create an optimization problem</span>
-<span class="n">prob</span> <span class="o">=</span> <span class="n">Problem</span><span class="p">()</span>
+<span class="n">prob</span> <span class="o">=</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">&quot;example_problem&quot;</span><span class="p">)</span>
 
 <span class="c1"># Add decision variables</span>
 <span class="c1"># x1 = harvest area for development type 1</span>
 <span class="c1"># x2 = harvest area for development type 2</span>
-<span class="n">x1</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;harvest_DT1&quot;</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="s2">&quot;continuous&quot;</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
-<span class="n">x2</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;harvest_DT2&quot;</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="s2">&quot;continuous&quot;</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;harvest_DT1&quot;</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="s2">&quot;continuous&quot;</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;harvest_DT2&quot;</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="s2">&quot;continuous&quot;</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
 
 <span class="c1"># Add objective: maximize NPV</span>
+<span class="c1"># The z() method sets objective coefficients as a dict keyed on variable names</span>
 <span class="c1"># NPV = 50 * x1 + 40 * x2 (price per m³ * volume per ha * area)</span>
-<span class="n">npv</span> <span class="o">=</span> <span class="mi">50</span> <span class="o">*</span> <span class="n">x1</span> <span class="o">+</span> <span class="mi">40</span> <span class="o">*</span> <span class="n">x2</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">set_objective</span><span class="p">(</span><span class="n">npv</span><span class="p">,</span> <span class="n">sense</span><span class="o">=</span><span class="s2">&quot;maximize&quot;</span><span class="p">)</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">z</span><span class="p">(</span><span class="n">coeffs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;harvest_DT1&quot;</span><span class="p">:</span> <span class="mf">50.0</span><span class="p">,</span> <span class="s2">&quot;harvest_DT2&quot;</span><span class="p">:</span> <span class="mf">40.0</span><span class="p">})</span>
 
 <span class="c1"># Add constraints</span>
 <span class="c1"># Constraint 1: Total harvest cannot exceed 200 ha per period</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="s2">&quot;max_harvest&quot;</span><span class="p">,</span> <span class="n">expr</span><span class="o">=</span><span class="n">x1</span> <span class="o">+</span> <span class="n">x2</span> <span class="o">&lt;=</span> <span class="mi">200</span><span class="p">)</span>
+<span class="c1"># add_constraint(name, coeffs_dict, sense, rhs) where sense is &#39;leq&#39;, &#39;geq&#39;, or &#39;eq&#39;</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="s2">&quot;max_harvest&quot;</span><span class="p">,</span> <span class="n">coeffs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;harvest_DT1&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;harvest_DT2&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span> <span class="n">sense</span><span class="o">=</span><span class="s2">&quot;leq&quot;</span><span class="p">,</span> <span class="n">rhs</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
 
 <span class="c1"># Constraint 2: At least 100 ha of DT1 must remain</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="s2">&quot;min_inventory&quot;</span><span class="p">,</span> <span class="n">expr</span><span class="o">=</span><span class="n">x1</span> <span class="o">&lt;=</span> <span class="mi">400</span><span class="p">)</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="s2">&quot;min_inventory&quot;</span><span class="p">,</span> <span class="n">coeffs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;harvest_DT1&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span> <span class="n">sense</span><span class="o">=</span><span class="s2">&quot;leq&quot;</span><span class="p">,</span> <span class="n">rhs</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="solving-the-problem">
 <h2>Solving the Problem<a class="headerlink" href="#solving-the-problem" title="Link to this heading"></a></h2>
 <p>ws3 supports multiple solvers:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Solve with HiGHS (default, open-source)</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s2">&quot;highs&quot;</span><span class="p">)</span>
-
-<span class="c1"># Solve with Gurobi (commercial, faster for large problems)</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s2">&quot;gurobi&quot;</span><span class="p">)</span>
-
-<span class="c1"># Solve with PuLP (open-source, good for linear problems)</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s2">&quot;pulp&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set solver and solve</span>
+<span class="c1"># The solver is set via prob.solver(&quot;highs&quot;) before calling solve()</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">solver</span><span class="p">(</span><span class="s2">&quot;highs&quot;</span><span class="p">)</span>  <span class="c1"># or &quot;gurobi&quot; or &quot;pulp&quot;</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
 <section id="extracting-results">
 <h2>Extracting Results<a class="headerlink" href="#extracting-results" title="Link to this heading"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get the optimal solution</span>
-<span class="n">solution</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">get_solution</span><span class="p">()</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">solution</span><span class="p">()</span>
 
 <span class="c1"># Print decision variable values</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Optimal harvest for DT1: </span><span class="si">{</span><span class="n">solution</span><span class="p">[</span><span class="s1">&#39;harvest_DT1&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> ha&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Optimal harvest for DT2: </span><span class="si">{</span><span class="n">solution</span><span class="p">[</span><span class="s1">&#39;harvest_DT2&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> ha&quot;</span><span class="p">)</span>
 
 <span class="c1"># Print the objective value</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Maximum NPV: $</span><span class="si">{</span><span class="n">solution</span><span class="o">.</span><span class="n">objective_value</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Maximum NPV: $</span><span class="si">{</span><span class="n">prob</span><span class="o">.</span><span class="n">z</span><span class="p">()</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -581,45 +570,47 @@ maximizes (or minimizes) your objective.</p>
 <h2>Multi-Period Optimization<a class="headerlink" href="#multi-period-optimization" title="Link to this heading"></a></h2>
 <p>For realistic forest planning, you need to optimize over multiple periods:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create variables for each development type and period</span>
-<span class="n">harvest_vars</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="c1"># Track variable names for building objective and constraints</span>
+<span class="n">harvest_var_names</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># {(dt_code, period): var_name}</span>
 <span class="k">for</span> <span class="n">dt_code</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;DF-SI50&quot;</span><span class="p">,</span> <span class="s2">&quot;SP-SI40&quot;</span><span class="p">]:</span>
     <span class="k">for</span> <span class="n">period</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
         <span class="n">var_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;harv_</span><span class="si">{</span><span class="n">dt_code</span><span class="si">}</span><span class="s2">_p</span><span class="si">{</span><span class="n">period</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="n">harvest_vars</span><span class="p">[(</span><span class="n">dt_code</span><span class="p">,</span> <span class="n">period</span><span class="p">)]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="n">var_name</span><span class="p">,</span>
-            <span class="n">vtype</span><span class="o">=</span><span class="s2">&quot;continuous&quot;</span><span class="p">,</span>
-            <span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-            <span class="n">ub</span><span class="o">=</span><span class="mi">100</span>  <span class="c1"># Max 100 ha per period</span>
-        <span class="p">)</span>
+        <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="s2">&quot;continuous&quot;</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ub</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>  <span class="c1"># Max 100 ha per period</span>
+        <span class="n">harvest_var_names</span><span class="p">[(</span><span class="n">dt_code</span><span class="p">,</span> <span class="n">period</span><span class="p">)]</span> <span class="o">=</span> <span class="n">var_name</span>
 
 <span class="c1"># Objective: maximize NPV over all periods</span>
-<span class="n">npv</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c1"># z() takes a dict keyed on variable names with coefficient values</span>
+<span class="n">npv_coeffs</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">discount_rate</span> <span class="o">=</span> <span class="mf">0.05</span>
-<span class="k">for</span> <span class="p">(</span><span class="n">dt_code</span><span class="p">,</span> <span class="n">period</span><span class="p">),</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">harvest_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">dt_code</span><span class="p">,</span> <span class="n">period</span><span class="p">),</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">harvest_var_names</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="n">volume_per_ha</span> <span class="o">=</span> <span class="mi">200</span>  <span class="c1"># m³/ha (from growth curve)</span>
     <span class="n">price</span> <span class="o">=</span> <span class="mi">50</span>  <span class="c1"># $/m³</span>
-    <span class="n">npv</span> <span class="o">+=</span> <span class="n">var</span> <span class="o">*</span> <span class="n">volume_per_ha</span> <span class="o">*</span> <span class="n">price</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">discount_rate</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">period</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
-
-<span class="n">prob</span><span class="o">.</span><span class="n">set_objective</span><span class="p">(</span><span class="n">npv</span><span class="p">,</span> <span class="n">sense</span><span class="o">=</span><span class="s2">&quot;maximize&quot;</span><span class="p">)</span>
+    <span class="n">coeff</span> <span class="o">=</span> <span class="n">volume_per_ha</span> <span class="o">*</span> <span class="n">price</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">discount_rate</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">period</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="n">npv_coeffs</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">coeff</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">z</span><span class="p">(</span><span class="n">coeffs</span><span class="o">=</span><span class="n">npv_coeffs</span><span class="p">)</span>
 
 <span class="c1"># Constraint: Maximum harvest area per period</span>
 <span class="k">for</span> <span class="n">period</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
-    <span class="n">period_harvest</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
-        <span class="n">harvest_vars</span><span class="p">[(</span><span class="n">dt_code</span><span class="p">,</span> <span class="n">period</span><span class="p">)]</span>
+    <span class="n">period_var_names</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">harvest_var_names</span><span class="p">[(</span><span class="n">dt_code</span><span class="p">,</span> <span class="n">period</span><span class="p">)]</span>
         <span class="k">for</span> <span class="n">dt_code</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;DF-SI50&quot;</span><span class="p">,</span> <span class="s2">&quot;SP-SI40&quot;</span><span class="p">]</span>
-    <span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">period_coeffs</span> <span class="o">=</span> <span class="p">{</span><span class="n">vn</span><span class="p">:</span> <span class="mf">1.0</span> <span class="k">for</span> <span class="n">vn</span> <span class="ow">in</span> <span class="n">period_var_names</span><span class="p">}</span>
     <span class="n">prob</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span>
         <span class="sa">f</span><span class="s2">&quot;max_harvest_p</span><span class="si">{</span><span class="n">period</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="n">expr</span><span class="o">=</span><span class="n">period_harvest</span> <span class="o">&lt;=</span> <span class="mi">200</span>
+        <span class="n">coeffs</span><span class="o">=</span><span class="n">period_coeffs</span><span class="p">,</span>
+        <span class="n">sense</span><span class="o">=</span><span class="s2">&quot;leq&quot;</span><span class="p">,</span>
+        <span class="n">rhs</span><span class="o">=</span><span class="mi">200</span>
     <span class="p">)</span>
 
 <span class="c1"># Solve</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s2">&quot;highs&quot;</span><span class="p">)</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">solver</span><span class="p">(</span><span class="s2">&quot;highs&quot;</span><span class="p">)</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
 
 <span class="c1"># Extract solution</span>
-<span class="n">solution</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">get_solution</span><span class="p">()</span>
-<span class="k">for</span> <span class="p">(</span><span class="n">dt_code</span><span class="p">,</span> <span class="n">period</span><span class="p">),</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">harvest_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="n">area</span> <span class="o">=</span> <span class="n">solution</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">solution</span><span class="p">()</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">dt_code</span><span class="p">,</span> <span class="n">period</span><span class="p">),</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">harvest_var_names</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">area</span> <span class="o">=</span> <span class="n">solution</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">area</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Period </span><span class="si">{</span><span class="n">period</span><span class="si">}</span><span class="s2">: Harvest </span><span class="si">{</span><span class="n">area</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> ha of </span><span class="si">{</span><span class="n">dt_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
@@ -689,8 +680,8 @@ the optimal rotation age for Douglas-fir that maximizes NPV.</p>
 <h2>Further Reading<a class="headerlink" href="#further-reading" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="ch04_actions_and_transitions.html"><span class="doc">Chapter 4: Actions and Transitions</span></a> — Defining actions</p></li>
-<li><p><span class="xref std std-doc">/howto/running-optimization</span> — Detailed optimization guide</p></li>
-<li><p><span class="xref std std-doc">/howto/parallel-optimization</span> — Parallel optimization for large models</p></li>
+<li><p><a class="reference internal" href="../howto/running-optimization.html"><span class="doc">Running Optimization</span></a> — Detailed optimization guide</p></li>
+<li><p><a class="reference internal" href="../howto/parallel-optimization.html"><span class="doc">Parallel Optimization</span></a> — Parallel optimization for large models</p></li>
 </ul>
 </section>
 </section>

@@ -6,4 +6,4 @@ Examples Gallery
     :caption: Examples
     :glob:
 
-    examples/*
+    examples/*.ipynb

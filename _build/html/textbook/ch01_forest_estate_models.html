@@ -425,6 +425,8 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l4"><a class="reference internal" href="ch14_spades_integration.html">Chapter 14: Integrating ws3 with SpaDES</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch15_disturbance_modelling.html">Chapter 15: Modelling Natural Disturbances</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch16_supply_chain.html">Chapter 16: Value-Creation and Forest Supply Chain Modelling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch17_advanced_spatial.html">Chapter 17: Advanced Spatial Modeling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch18_carbon_accounting.html">Chapter 18: Carbon Accounting in Detail</a></li>
 </ul>
 </li>
 </ul>
@@ -436,16 +438,6 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
 </ul>
 
         </div>
@@ -686,48 +678,50 @@ contains:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.forest</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForestModel</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ws3.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Curve</span>
 
-<span class="c1"># Create model</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">()</span>
-
-<span class="c1"># Add a development type: 1000 ha of DF-SI50 at age 0</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add_development_type</span><span class="p">(</span>
-    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;DF-SI50&quot;</span><span class="p">,</span>
-    <span class="n">area</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">,</span>
-    <span class="n">age</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">species</span><span class="o">=</span><span class="s2">&quot;Pseudotsuga menziesii&quot;</span><span class="p">,</span>
-    <span class="n">site_index</span><span class="o">=</span><span class="mi">50</span>
+<span class="c1"># Create model with required parameters</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;example&quot;</span><span class="p">,</span>
+    <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;/path/to/data&quot;</span><span class="p">,</span>
+    <span class="n">base_year</span><span class="o">=</span><span class="mi">2024</span><span class="p">,</span>
+    <span class="n">horizon</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">period_length</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">max_age</span><span class="o">=</span><span class="mi">200</span>
 <span class="p">)</span>
 
-<span class="c1"># Add a volume curve (simplified)</span>
+<span class="c1"># Development types are loaded from Woodstock-format data files,</span>
+<span class="c1"># not constructed individually. The typical workflow is:</span>
+<span class="c1">#</span>
+<span class="c1">#   model.import_areas_section()       # loads areas into dtypes</span>
+<span class="c1">#   model.import_yields_section()      # loads yield curves</span>
+<span class="c1">#   model.import_actions_section()     # loads action definitions</span>
+<span class="c1">#   model.import_transitions_section() # loads transition rules</span>
+<span class="c1">#</span>
+<span class="c1"># For programmatic curve registration, use register_curve():</span>
+<span class="c1">#   volume_curve = Curve(label=&quot;DF-SI50_volume&quot;, is_volume=True,</span>
+<span class="c1">#                        points=[(0,0),(10,5),(20,20),...,(100,490)])</span>
+<span class="c1">#   model.register_curve(volume_curve)</span>
+
+<span class="c1"># Define a volume curve (simplified)</span>
 <span class="n">volume_curve</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
-    <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
-    <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">280</span><span class="p">,</span> <span class="mi">380</span><span class="p">,</span> <span class="mi">450</span><span class="p">,</span> <span class="mi">480</span><span class="p">,</span> <span class="mi">490</span><span class="p">],</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DF-SI50_volume&quot;</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;DF-SI50_volume&quot;</span><span class="p">,</span>
+    <span class="n">is_volume</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">points</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+            <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">180</span><span class="p">),</span> <span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">280</span><span class="p">),</span> <span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="mi">380</span><span class="p">),</span> <span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">450</span><span class="p">),</span>
+            <span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="mi">480</span><span class="p">),</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">490</span><span class="p">)]</span>
 <span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add_curve</span><span class="p">(</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="n">volume_curve</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">register_curve</span><span class="p">(</span><span class="n">volume_curve</span><span class="p">)</span>
 
-<span class="c1"># Add a harvest action</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span>
-    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;HARV&quot;</span><span class="p">,</span>
-    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Clearcut harvest&quot;</span><span class="p">,</span>
-    <span class="n">components</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;volume&quot;</span><span class="p">],</span>
-    <span class="n">transitions</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;DF-SI50&quot;</span><span class="p">:</span> <span class="s2">&quot;BARE&quot;</span><span class="p">}</span>
-<span class="p">)</span>
+<span class="c1"># Actions are defined in Woodstock-format ACTION section files</span>
+<span class="c1"># and imported via model.import_actions_section()</span>
+<span class="c1"># Transitions are defined in the TRANSITION section and imported</span>
+<span class="c1"># via model.import_transitions_section()</span>
 
-<span class="c1"># Add a bare site development type</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add_development_type</span><span class="p">(</span>
-    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;BARE&quot;</span><span class="p">,</span>
-    <span class="n">area</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-    <span class="n">age</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">species</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n">site_index</span><span class="o">=</span><span class="mi">0</span>
-<span class="p">)</span>
-
-<span class="c1"># Run simulation for 20 periods (100 years)</span>
-<span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_simulation</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
-
-<span class="c1"># Print results</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+<span class="c1"># Simulation proceeds by:</span>
+<span class="c1"># 1. Resetting actions: model.reset_actions()</span>
+<span class="c1"># 2. Setting applied actions for each period</span>
+<span class="c1"># 3. Growing the model: model.grow(start_period=1)</span>
+<span class="c1"># For optimization, build a ws3.opt.Problem, solve it, then</span>
+<span class="c1"># compile the schedule via model.compile_schedule(problem)</span>
 </pre></div>
 </div>
 <p>The output will show how area moves between development types over time
@@ -757,10 +751,10 @@ your setup:</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ws3 version: </span><span class="si">{</span><span class="n">ws3</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Exercise 2 (Medium)</strong>: Modify the minimal model above to:</p>
+<p><strong>Exercise 2 (Medium)</strong>: Extend the model to include Spruce:</p>
 <ol class="arabic simple">
-<li><p>Add a second development type: 500 hectares of Spruce on Site Index 40</p></li>
-<li><p>Add a separate volume curve for Spruce-SI40</p></li>
+<li><p>Add Spruce-SI40 to the AREAS section file (500 hectares)</p></li>
+<li><p>Add a separate yield curve for Spruce-SI40</p></li>
 <li><p>Run the simulation and compare the volume trajectories</p></li>
 </ol>
 <p><strong>Exercise 3 (Hard)</strong>: The current model assumes all 50 hectares harvested
@@ -781,8 +775,7 @@ each year come from the same development type. Modify the code to:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="ch02_forest_inventory.html"><span class="doc">Chapter 2: Forest Inventory and Data Preparation</span></a> — How to prepare forest inventory data for ws3</p></li>
 <li><p><a class="reference internal" href="ch03_growth_and_yield.html"><span class="doc">Chapter 3: Growth and Yield</span></a> — Growth curve fitting and interpolation</p></li>
-<li><p><span class="xref std std-doc">/reference/modules/forest</span> — ForestModel API reference</p></li>
-<li><p><a class="reference internal" href="../getting_started/quickstart.html"><span class="doc">Quickstart Tutorial</span></a> — Hands-on quickstart tutorial</p></li>
+<li><p><span class="xref std std-doc">getting_started/quickstart</span> — Hands-on quickstart tutorial</p></li>
 </ul>
 </section>
 </section>

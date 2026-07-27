@@ -69,6 +69,8 @@
 <li class="toctree-l4"><a class="reference internal" href="ch14_spades_integration.html">Chapter 14: Integrating ws3 with SpaDES</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch15_disturbance_modelling.html">Chapter 15: Modelling Natural Disturbances</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch16_supply_chain.html">Chapter 16: Value-Creation and Forest Supply Chain Modelling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch17_advanced_spatial.html">Chapter 17: Advanced Spatial Modeling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch18_carbon_accounting.html">Chapter 18: Carbon Accounting in Detail</a></li>
 </ul>
 </li>
 </ul>
@@ -80,16 +82,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
 </ul>
 
         </div>
@@ -257,19 +249,37 @@ class can accept pandas DataFrames directly.</p>
 <p>Step 4: Create the Forest Model</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.forest</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForestModel</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">()</span>
+<span class="c1"># Create the model with required parameters</span>
+<span class="n">fm</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;inventory_model&quot;</span><span class="p">,</span>
+    <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+    <span class="n">base_year</span><span class="o">=</span><span class="mi">2024</span><span class="p">,</span>
+    <span class="n">horizon</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">period_length</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">max_age</span><span class="o">=</span><span class="mi">200</span>
+<span class="p">)</span>
 
-<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">dt_summary</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">add_development_type</span><span class="p">(</span>
-        <span class="n">code</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;dt_code&quot;</span><span class="p">],</span>
-        <span class="n">area</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;area&quot;</span><span class="p">],</span>
-        <span class="n">age</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;mean_age&quot;</span><span class="p">],</span>
-        <span class="n">species</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;dt_code&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
-        <span class="n">site_index</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;mean_site_index&quot;</span><span class="p">]</span>
-    <span class="p">)</span>
+<span class="c1"># Development types are loaded from Woodstock-format data files,</span>
+<span class="c1"># not constructed individually. The typical workflow is:</span>
+<span class="c1">#</span>
+<span class="c1">#   fm.import_areas_section(&quot;areas.txt&quot;)</span>
+<span class="c1">#   fm.import_yields_section(&quot;yields.txt&quot;)</span>
+<span class="c1">#   fm.import_actions_section(&quot;actions.txt&quot;)</span>
+<span class="c1">#   fm.import_transitions_section(&quot;transitions.txt&quot;)</span>
+<span class="c1">#</span>
+<span class="c1"># For programmatic construction from a pandas DataFrame, you would</span>
+<span class="c1"># iterate over your aggregated development types and populate the</span>
+<span class="c1"># model&#39;s internal data structures accordingly. See the ws3 source</span>
+<span class="c1"># for the import methods above.</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Created model with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">development_types</span><span class="p">)</span><span class="si">}</span><span class="s2"> development types&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total area: </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">total_area</span><span class="p">()</span><span class="si">}</span><span class="s2"> hectares&quot;</span><span class="p">)</span>
+<span class="c1"># Access development types via the dtypes dict</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Development types: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">fm</span><span class="o">.</span><span class="n">dtypes</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># Calculate total area across all periods and development types</span>
+<span class="n">total_area</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="k">for</span> <span class="n">period</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">periods</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">dtype</span> <span class="ow">in</span> <span class="n">fm</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="n">total_area</span> <span class="o">+=</span> <span class="n">dtype</span><span class="o">.</span><span class="n">area</span><span class="p">(</span><span class="n">period</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total area: </span><span class="si">{</span><span class="n">total_area</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> hectares&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -318,7 +328,7 @@ using a site index curve.</p>
 <li><p><a class="reference internal" href="ch01_forest_estate_models.html"><span class="doc">Chapter 1: Forest Estate Models</span></a> — Forest estate model fundamentals</p></li>
 <li><p><a class="reference internal" href="ch03_growth_and_yield.html"><span class="doc">Chapter 3: Growth and Yield</span></a> — Growth curve fitting and interpolation</p></li>
 <li><p><span class="xref std std-doc">/howto/data-preparation</span> — Detailed data preparation guide</p></li>
-<li><p><span class="xref std std-doc">/reference/modules/forest</span> — ForestModel API reference</p></li>
+<li><p><span class="xref std std-doc">reference/contracts/index</span> — Data contracts and module boundaries</p></li>
 </ul>
 </section>
 </section>

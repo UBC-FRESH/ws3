@@ -59,40 +59,56 @@ scenarios:
 .. code-block:: python
 
    from ws3.forest import ForestModel
+   from ws3.core import Curve
 
-   model = ForestModel()
+   # Scenario analysis in ws3 is done by comparing outcomes from
+   # different model configurations. The typical workflow:
+   #
+   #   1. Build model with optimistic growth curves:
+   #      model = ForestModel("optimistic", "/path/to/optimistic_data",
+   #                          2024, horizon=20, period_length=10)
+   #      model.import_areas_section()
+   #      model.import_yields_section()  # uses optimistic curves
+   #      model.import_actions_section()
+   #      model.import_transitions_section()
+   #      model.reset_actions()
+   #      model.grow(start_period=1)
+   #
+   #   2. Build model with pessimistic growth curves:
+   #      model = ForestModel("pessimistic", "/path/to/pessimistic_data",
+   #                          2024, horizon=20, period_length=10)
+   #      # ... same import steps with pessimistic data ...
+   #
+   #   3. Compare results by querying area/volume at each period:
+   #      for period in model.periods:
+   #          for dtype in model.dtypes.values():
+   #              area = dtype.area(period)
+   #              # query yield curves for volume at current age
+   #
+   # Curve construction uses points=[(x,y)] format:
+   #   optimistic_curve = Curve(label="optimistic_vol",
+   #       points=[(0,0),(10,8),(20,35),(30,90),...,(100,640)],
+   #       is_volume=True)
 
-   # Define development types
-   model.add_development_type(
-       code="DF-SI50",
-       area=1000.0,
-       age=40,
-       species="Pseudotsuga menziesii",
-       site_index=50
-   )
-
-   # Define growth curves for different scenarios
+   # Example: define curves for scenario comparison
    optimistic_curve = Curve(
-       x=[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-       y=[0, 8, 35, 90, 160, 260, 380, 500, 580, 620, 640],
-       name="optimistic"
+       label="optimistic_vol",
+       is_volume=True,
+       points=[(0, 0), (10, 8), (20, 35), (30, 90), (40, 160),
+               (50, 260), (60, 380), (70, 500), (80, 580),
+               (90, 620), (100, 640)]
    )
 
    pessimistic_curve = Curve(
-       x=[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-       y=[0, 3, 15, 40, 75, 130, 200, 280, 350, 400, 420],
-       name="pessimistic"
+       label="pessimistic_vol",
+       is_volume=True,
+       points=[(0, 0), (10, 3), (20, 15), (30, 40), (40, 75),
+               (50, 130), (60, 200), (70, 280), (80, 350),
+               (90, 400), (100, 420)]
    )
 
-   # Run simulation with optimistic growth
-   model.add_curve("volume", optimistic_curve)
-   results_opt = model.run_simulation(horizon=20)
-   print(f"Optimistic total volume: {results_opt.total_volume():.0f} m³")
-
-   # Run simulation with pessimistic growth
-   model.add_curve("volume", pessimistic_curve)
-   results_pess = model.run_simulation(horizon=20)
-   print(f"Pessimistic total volume: {results_pess.total_volume():.0f} m³")
+   # Compare by running separate models with different curve data
+   # and querying dtype.area(period) and yield curve values for each period
 
 Monte Carlo Simulation
 ----------------------

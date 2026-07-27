@@ -65,19 +65,25 @@ Calculating NPV
 
 .. code-block:: python
 
-   from ws3.financial import calculate_npv
-
+   # Financial calculations are done in pure Python (no ws3.financial module).
    # Define cash flows for each period
    revenues = [0, 0, 50000, 80000, 100000, 120000, 110000, 90000, 70000, 50000]
    costs = [10000, 5000, 20000, 25000, 30000, 35000, 30000, 25000, 20000, 15000]
 
    # Calculate NPV at 5% discount rate
-   npv = calculate_npv(revenues, costs, discount_rate=0.05)
+   discount_rate = 0.05
+   npv = sum(
+       (r - c) / (1 + discount_rate) ** t
+       for t, (r, c) in enumerate(zip(revenues, costs))
+   )
    print(f"NPV: ${npv:,.0f}")
 
    # Calculate NPV at different discount rates
    for rate in [0.02, 0.05, 0.08, 0.10]:
-       npv = calculate_npv(revenues, costs, discount_rate=rate)
+       npv = sum(
+           (r - c) / (1 + rate) ** t
+           for t, (r, c) in enumerate(zip(revenues, costs))
+       )
        print(f"NPV at {rate*100:.0f}%: ${npv:,.0f}")
 
 Calculating IRR
@@ -89,10 +95,18 @@ investment.
 
 .. code-block:: python
 
-   from ws3.financial import calculate_irr
+   # Calculate IRR using numpy (or scipy.optimize)
+   import numpy as np
+   from scipy.optimize import brentq
 
-   # Calculate IRR
-   irr = calculate_irr(revenues, costs)
+   # Net cash flows
+   net_flows = [r - c for r, c in zip(revenues, costs)]
+
+   # IRR is the discount rate that makes NPV = 0
+   def npv_at_rate(rate):
+       return sum(cf / (1 + rate) ** t for t, cf in enumerate(net_flows))
+
+   irr = brentq(npv_at_rate, -0.99, 0.99)
    print(f"IRR: {irr*100:.1f}%")
 
    # Compare to discount rate
@@ -138,10 +152,11 @@ Using ws3 to Find Optimal Rotation
 
    # Define a volume curve
    volume_curve = Curve(
-       x=list(range(0, 201, 10)),
-       y=[0, 2, 10, 30, 70, 130, 210, 300, 390, 460, 510,
-          540, 560, 575, 585, 590, 595, 598, 600, 601, 602, 602],
-       name="DF_volume"
+       label="DF_volume",
+       points=[(age, vol) for age, vol in
+               zip(range(0, 201, 10),
+                   [0, 2, 10, 30, 70, 130, 210, 300, 390, 460, 510,
+                    540, 560, 575, 585, 590, 595, 598, 600, 601, 602, 602])]
    )
 
    # Calculate NPV for each rotation age
@@ -172,17 +187,23 @@ how results change with different assumptions:
 
    # Sensitivity to timber prices
    print("Sensitivity to timber prices:")
+   base_price = 50
    for price in [30, 40, 50, 60, 70]:
-       npv = calculate_npv(revenues, costs, discount_rate=0.05)
        # Adjust revenues for new price
-       adjusted_revenues = [r * price / 50 for r in revenues]
-       npv_adj = calculate_npv(adjusted_revenues, costs, discount_rate=0.05)
+       adjusted_revenues = [r * price / base_price for r in revenues]
+       npv_adj = sum(
+           (r - c) / (1 + 0.05) ** t
+           for t, (r, c) in enumerate(zip(adjusted_revenues, costs))
+       )
        print(f"  Price = ${price}/m³: NPV = ${npv_adj:,.0f}")
 
    # Sensitivity to discount rates
    print("\nSensitivity to discount rates:")
    for rate in [0.02, 0.05, 0.08, 0.10, 0.15]:
-       npv = calculate_npv(revenues, costs, discount_rate=rate)
+       npv = sum(
+           (r - c) / (1 + rate) ** t
+           for t, (r, c) in enumerate(zip(revenues, costs))
+       )
        print(f"  Rate = {rate*100:.0f}%: NPV = ${npv:,.0f}")
 
 Common Financial Mistakes
@@ -211,4 +232,4 @@ Further Reading
 
 - :doc:`ch05_optimization` — Optimization fundamentals
 - :doc:`/howto/financial-scenarios` — Detailed financial analysis guide
-- :doc:`/reference/modules/financial` — Financial functions API reference
+- :doc:`reference/contracts/index` — Data contracts and module boundaries

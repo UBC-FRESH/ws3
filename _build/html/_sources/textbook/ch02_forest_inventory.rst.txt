@@ -136,19 +136,37 @@ Step 4: Create the Forest Model
 
    from ws3.forest import ForestModel
 
-   model = ForestModel()
+   # Create the model with required parameters
+   fm = ForestModel(
+       model_name="inventory_model",
+       model_path=".",
+       base_year=2024,
+       horizon=20,
+       period_length=10,
+       max_age=200
+   )
 
-   for _, row in dt_summary.iterrows():
-       model.add_development_type(
-           code=row["dt_code"],
-           area=row["area"],
-           age=row["mean_age"],
-           species=row["dt_code"].split("-")[0],
-           site_index=row["mean_site_index"]
-       )
+   # Development types are loaded from Woodstock-format data files,
+   # not constructed individually. The typical workflow is:
+   #
+   #   fm.import_areas_section("areas.txt")
+   #   fm.import_yields_section("yields.txt")
+   #   fm.import_actions_section("actions.txt")
+   #   fm.import_transitions_section("transitions.txt")
+   #
+   # For programmatic construction from a pandas DataFrame, you would
+   # iterate over your aggregated development types and populate the
+   # model's internal data structures accordingly. See the ws3 source
+   # for the import methods above.
 
-   print(f"Created model with {len(model.development_types)} development types")
-   print(f"Total area: {model.total_area()} hectares")
+   # Access development types via the dtypes dict
+   print(f"Development types: {len(fm.dtypes)}")
+   # Calculate total area across all periods and development types
+   total_area = 0.0
+   for period in fm.periods:
+       for dtype in fm.dtypes.values():
+           total_area += dtype.area(period)
+   print(f"Total area: {total_area:.1f} hectares")
 
 Data Validation
 ---------------
@@ -199,4 +217,4 @@ Further Reading
 - :doc:`ch01_forest_estate_models` — Forest estate model fundamentals
 - :doc:`ch03_growth_and_yield` — Growth curve fitting and interpolation
 - :doc:`/howto/data-preparation` — Detailed data preparation guide
-- :doc:`/reference/modules/forest` — ForestModel API reference
+- :doc:`reference/contracts/index` — Data contracts and module boundaries

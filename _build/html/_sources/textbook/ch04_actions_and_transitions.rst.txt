@@ -65,41 +65,27 @@ Defining Actions in ws3
 
    from ws3.forest import ForestModel
 
-   model = ForestModel()
-
-   # Define a clearcut harvest action
-   model.add_action(
-       code="HARV",
-       descr="Clearcut harvest - remove all trees",
-       components=["volume", "basal_area"],
-       transitions={
-           "DF-SI50": "Bare",
-           "SP-SI40": "Bare",
-           "CE-SI45": "Bare"
-       }
-   )
-
-   # Define a commercial thin action
-   model.add_action(
-       code="CT",
-       descr="Commercial thin - remove merchantable trees",
-       components=["volume", "basal_area"],
-       transitions={
-           "DF-SI50": "DF-SI50-thinned",
-           "SP-SI40": "SP-SI40-thinned"
-       }
-   )
-
-   # Define a planting action
-   model.add_action(
-       code="PLNT",
-       descr="Plant seedlings on bare site",
-       components=["volume"],
-       transitions={
-           "Bare": "DF-SI50",
-           "Bare-SP": "SP-SI40"
-       }
-   )
+   # Actions and transitions are defined in Woodstock-format section files
+   # and imported into the ForestModel. The typical workflow is:
+   #
+   #   model = ForestModel("my_model", "/path/to/data", 2024,
+   #                       horizon=20, period_length=10)
+   #   model.import_areas_section()       # loads development types and areas
+   #   model.import_yields_section()      # loads growth curves
+   #   model.import_actions_section()     # loads action definitions
+   #   model.import_transitions_section() # loads transition rules
+   #
+   # Actions are defined in the ACTIONS section file (e.g., model.act):
+   #   *action HARV Clearcut harvest - remove all trees
+   #   *operable df si50 volume basal_area
+   #   *operable sp si40 volume basal_area
+   #
+   # Transitions are defined in the TRANSITIONS section file (e.g., model.trn):
+   #   *case HARV
+   #   *source df si50
+   #   *target bare
+   #   *source sp si40
+   #   *target bare
 
 Understanding Transitions
 -------------------------
@@ -126,17 +112,10 @@ might reduce the age class (because time passes during the treatment):
 
 .. code-block:: python
 
-   # Thinning action that also advances the age class
-   model.add_action(
-       code="THIN",
-       descr="Commercial thin with age advancement",
-       components=["volume", "basal_area"],
-       transitions={
-           "DF-SI50-A20": "DF-SI50-A25",
-           "DF-SI50-A30": "DF-SI50-A35",
-           "DF-SI50-A40": "DF-SI50-A45"
-       }
-   )
+   # Thinning actions are defined in the ACTIONS/TRANSITIONS section files
+   # and imported via model.import_actions_section() and
+   # model.import_transitions_section(). The transition file maps source
+   # development types to target development types for each action code.
 
 Actions and the Simulation Loop
 -------------------------------
@@ -222,10 +201,10 @@ actions:
        }
    ]
 
-   for action_def in actions:
-       model.add_action(**action_def)
-
-   print(f"Added {len(actions)} actions")
+   # In practice, actions are defined in Woodstock-format section files
+   # and imported via model.import_actions_section() and
+   # model.import_transitions_section(). The dict-based approach above
+   # is illustrative only; the real workflow uses file-based import.
 
 Common Mistakes
 ---------------

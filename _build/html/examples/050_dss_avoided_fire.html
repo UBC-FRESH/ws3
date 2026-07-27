@@ -22,9 +22,7 @@
       <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="DSS Example: Avoided Harvesting" href="060_dss_avoid_harvest.html" />
-    <link rel="prev" title="Implement the Neilson hack using ws3 and libcbm (from scratch)" href="040_ws3_libcbm_neilsonhack-fromscratch.html" /> 
+    <link rel="search" title="Search" href="../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -54,36 +52,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples Gallery</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="000_venv_python_kernel_setup.html">Setting up a venv-sandboxed Python kernel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="010_ws3_model_example-fromscratch.html">Building a <code class="docutils literal notranslate"><span class="pre">ws3</span></code> model from scratch</a></li>
-<li class="toctree-l2"><a class="reference internal" href="020_ws3_model_example-woodstock.html">Build a <code class="docutils literal notranslate"><span class="pre">ws3</span></code> model from Woodstock-format text input files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="021_ws3_model_example-optimize-basic.html">Using the <code class="docutils literal notranslate"><span class="pre">ws3</span></code> optimization modelling funtions (basic)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="022_ws3_model_example-optimize-advanced.html">Using the <code class="docutils literal notranslate"><span class="pre">ws3</span></code> optimization modelling function (advanced)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="023_ws3_model_example-optimize-parallel.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Parallel Model Building + HiGHS (<code class="docutils literal notranslate"><span class="pre">highspy</span></code>) — Hands-On</a></li>
-<li class="toctree-l2"><a class="reference internal" href="023_ws3_model_example-optimize-parallel.html#Picking-max_workers-in-ws3:-quick-guidance-+-deeper-dive">Picking <code class="docutils literal notranslate"><span class="pre">max_workers</span></code> in <code class="docutils literal notranslate"><span class="pre">ws3</span></code>: quick guidance + deeper dive</a></li>
-<li class="toctree-l2"><a class="reference internal" href="024_ws3_model_example-spatial-allocate-schedule.html">Spatially allocating a <code class="docutils literal notranslate"><span class="pre">ws3</span></code> harvest schedule to raster grids</a></li>
-<li class="toctree-l2"><a class="reference internal" href="030_ws3_libcbm_sequential-fromscratch.html">Running <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> as a two-stage sequential pipeline (from scratch)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="031_ws3_libcbm_sequential-builtin.html">Running <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> as a two-stage sequential pipeline (using built-in functions)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="040_ws3_libcbm_neilsonhack-fromscratch.html">Implement the <em>Neilson hack</em> using <code class="docutils literal notranslate"><span class="pre">ws3</span></code> and <code class="docutils literal notranslate"><span class="pre">libcbm</span></code> (from scratch)</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">DSS Example: Avoided Fire</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#DSS-implementation-notes">DSS implementation notes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Description-of-case">Description of case</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Deterministic-versus-Stochastic-fire-simulation">Deterministic versus Stochastic fire simulation</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="060_dss_avoid_harvest.html">DSS Example: Avoided Harvesting</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
-</ul>
 
         </div>
       </div>
@@ -99,7 +67,6 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../examples.html">Examples Gallery</a></li>
       <li class="breadcrumb-item active">DSS Example: Avoided Fire</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/examples/050_dss_avoided_fire.ipynb.txt" rel="nofollow"> View page source</a>
@@ -282,10 +249,7 @@ Note: you may need to restart the kernel to use updated packages.
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="040_ws3_libcbm_neilsonhack-fromscratch.html" class="btn btn-neutral float-left" title="Implement the Neilson hack using ws3 and libcbm (from scratch)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="060_dss_avoid_harvest.html" class="btn btn-neutral float-right" title="DSS Example: Avoided Harvesting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

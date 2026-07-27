@@ -425,6 +425,8 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l4"><a class="reference internal" href="ch14_spades_integration.html">Chapter 14: Integrating ws3 with SpaDES</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch15_disturbance_modelling.html">Chapter 15: Modelling Natural Disturbances</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch16_supply_chain.html">Chapter 16: Value-Creation and Forest Supply Chain Modelling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch17_advanced_spatial.html">Chapter 17: Advanced Spatial Modeling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch18_carbon_accounting.html">Chapter 18: Carbon Accounting in Detail</a></li>
 </ul>
 </li>
 </ul>
@@ -436,16 +438,6 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
 </ul>
 
         </div>
@@ -521,107 +513,54 @@ In forest inventory, each pixel might represent:</p>
 <section id="creating-a-forest-raster">
 <h2>Creating a Forest Raster<a class="headerlink" href="#creating-a-forest-raster" title="Link to this heading"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.spatial</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForestRaster</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">rasterio</span>
 
-<span class="c1"># Load forest inventory as a raster</span>
-<span class="n">raster</span> <span class="o">=</span> <span class="n">ForestRaster</span><span class="p">(</span>
-    <span class="n">input_raster</span><span class="o">=</span><span class="s2">&quot;inventory.tif&quot;</span><span class="p">,</span>
-    <span class="n">attribute_column</span><span class="o">=</span><span class="s2">&quot;species&quot;</span>
-<span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Raster size: </span><span class="si">{</span><span class="n">raster</span><span class="o">.</span><span class="n">width</span><span class="si">}</span><span class="s2"> x </span><span class="si">{</span><span class="n">raster</span><span class="o">.</span><span class="n">height</span><span class="si">}</span><span class="s2"> pixels&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pixel size: </span><span class="si">{</span><span class="n">raster</span><span class="o">.</span><span class="n">res</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total area: </span><span class="si">{</span><span class="n">raster</span><span class="o">.</span><span class="n">total_area</span><span class="p">()</span><span class="si">}</span><span class="s2"> hectares&quot;</span><span class="p">)</span>
+<span class="c1"># ForestRaster requires a pre-rasterized inventory GeoTIFF and a</span>
+<span class="c1"># ForestModel instance. The constructor signature is:</span>
+<span class="c1">#</span>
+<span class="c1">#   ForestRaster(hdt_map, hdt_func, src_path, snk_path,</span>
+<span class="c1">#                acode_map, forestmodel, base_year, ...)</span>
+<span class="c1">#</span>
+<span class="c1"># Where:</span>
+<span class="c1">#   hdt_map    - dict mapping hash values to development type tuples</span>
+<span class="c1">#   hdt_func   - function to hash development type tuples</span>
+<span class="c1">#   src_path   - path to input GeoTIFF (rasterized inventory)</span>
+<span class="c1">#   snk_path   - directory for output GeoTIFF files</span>
+<span class="c1">#   acode_map  - dict mapping disturbance codes to output prefixes</span>
+<span class="c1">#   forestmodel - a ForestModel instance</span>
+<span class="c1">#   base_year  - base year for output file naming</span>
+<span class="c1">#</span>
+<span class="c1"># Example:</span>
+<span class="c1">#</span>
+<span class="c1">#   raster = ForestRaster(</span>
+<span class="c1">#       hdt_map=hdt_map,</span>
+<span class="c1">#       hdt_func=hdt_func,</span>
+<span class="c1">#       src_path=&quot;data/inventory.tif&quot;,</span>
+<span class="c1">#       snk_path=&quot;output/spatial&quot;,</span>
+<span class="c1">#       acode_map={&quot;HARV&quot;: &quot;harv&quot;, &quot;THIN&quot;: &quot;thin&quot;},</span>
+<span class="c1">#       forestmodel=model,</span>
+<span class="c1">#       base_year=2024</span>
+<span class="c1">#   )</span>
 </pre></div>
 </div>
 </section>
-<section id="reading-raster-data">
-<h2>Reading Raster Data<a class="headerlink" href="#reading-raster-data" title="Link to this heading"></a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read the raster data as a numpy array</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-
-<span class="c1"># Get unique development types</span>
-<span class="n">unique_dts</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">get_unique_development_types</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Development types: </span><span class="si">{</span><span class="n">unique_dts</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<span class="c1"># Get area by development type</span>
-<span class="n">area_by_dt</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">area_by_development_type</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">area_by_dt</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="spatial-allocation">
-<h2>Spatial Allocation<a class="headerlink" href="#spatial-allocation" title="Link to this heading"></a></h2>
-<p>Once you have an aspatial harvest target, you can allocate it to specific
-pixels:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get aspatial harvest target (e.g., from optimization)</span>
-<span class="n">target_area</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># hectares</span>
-
-<span class="c1"># Allocate to pixels</span>
-<span class="n">harvest_map</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">allocate_harvest</span><span class="p">(</span>
-    <span class="n">target_area</span><span class="o">=</span><span class="n">target_area</span><span class="p">,</span>
-    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;greedy&quot;</span><span class="p">,</span>  <span class="c1"># Always harvest oldest first</span>
-    <span class="n">development_type</span><span class="o">=</span><span class="s2">&quot;DF-SI50&quot;</span>
-<span class="p">)</span>
-
-<span class="c1"># Save harvest map to GeoTIFF</span>
-<span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span>
-    <span class="s2">&quot;harvest_map.tif&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;w&quot;</span><span class="p">,</span>
-    <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;GTiff&quot;</span><span class="p">,</span>
-    <span class="n">height</span><span class="o">=</span><span class="n">raster</span><span class="o">.</span><span class="n">height</span><span class="p">,</span>
-    <span class="n">width</span><span class="o">=</span><span class="n">raster</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
-    <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int16&quot;</span><span class="p">,</span>
-    <span class="n">crs</span><span class="o">=</span><span class="n">raster</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span>
-    <span class="n">transform</span><span class="o">=</span><span class="n">raster</span><span class="o">.</span><span class="n">transform</span>
-<span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">harvest_map</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="allocation-methods">
-<h2>Allocation Methods<a class="headerlink" href="#allocation-methods" title="Link to this heading"></a></h2>
-<p>ws3 supports several allocation methods:</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 25.0%" />
-<col style="width: 75.0%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Method</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">greedy</span></code></p></td>
-<td><p>Always harvest oldest stands first</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">random</span></code></p></td>
-<td><p>Randomly select pixels</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">closest</span></code></p></td>
-<td><p>Harvest from closest to existing harvest blocks</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">custom</span></code></p></td>
-<td><p>User-defined selection function</p></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="contiguity-constraints">
-<h2>Contiguity Constraints<a class="headerlink" href="#contiguity-constraints" title="Link to this heading"></a></h2>
-<p>For realistic harvest planning, you may want to ensure that harvested
-pixels are contiguous (form a single block):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Allocate with contiguity constraint</span>
-<span class="n">harvest_map</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">allocate_harvest</span><span class="p">(</span>
-    <span class="n">target_area</span><span class="o">=</span><span class="n">target_area</span><span class="p">,</span>
-    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;contiguous&quot;</span><span class="p">,</span>
-    <span class="n">development_type</span><span class="o">=</span><span class="s2">&quot;DF-SI50&quot;</span>
-<span class="p">)</span>
-
-<span class="c1"># Check if harvest is contiguous</span>
-<span class="n">is_contiguous</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">check_contiguity</span><span class="p">(</span><span class="n">harvest_map</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harvest is contiguous: </span><span class="si">{</span><span class="n">is_contiguous</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<section id="spatial-allocation-via-allocate-schedule">
+<h2>Spatial Allocation via allocate_schedule<a class="headerlink" href="#spatial-allocation-via-allocate-schedule" title="Link to this heading"></a></h2>
+<p>Once you have an aspatial harvest target (e.g., from optimization),
+you can allocate it to specific pixels using <code class="docutils literal notranslate"><span class="pre">allocate_schedule</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># The allocate_schedule method takes a schedule (list of</span>
+<span class="c1"># (dtype_key, age, area, acode, period, etype) tuples) and</span>
+<span class="c1"># allocates it to the raster.</span>
+<span class="c1">#</span>
+<span class="c1"># Example schedule from optimization:</span>
+<span class="c1">#   schedule = model.compile_schedule(problem)</span>
+<span class="c1">#</span>
+<span class="c1"># With context manager:</span>
+<span class="c1">#   with ForestRaster(...) as raster:</span>
+<span class="c1">#       raster.allocate_schedule(schedule)</span>
+<span class="c1">#       raster.commit()</span>
+<span class="c1">#</span>
+<span class="c1"># Output GeoTIFF files are created automatically in snk_path,</span>
+<span class="c1"># one per combination of disturbance type and time step.</span>
 </pre></div>
 </div>
 </section>
@@ -663,7 +602,7 @@ minimum block size of 10 hectares (no harvest blocks smaller than 10 ha).</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="ch05_optimization.html"><span class="doc">Chapter 5: Optimization</span></a> — Optimization fundamentals</p></li>
 <li><p><span class="xref std std-doc">/howto/spatial-schedule-allocation</span> — Detailed spatial allocation guide</p></li>
-<li><p><span class="xref std std-doc">/reference/modules/spatial</span> — ForestRaster API reference</p></li>
+<li><p><span class="xref std std-doc">reference/contracts/index</span> — Data contracts and module boundaries</p></li>
 </ul>
 </section>
 </section>

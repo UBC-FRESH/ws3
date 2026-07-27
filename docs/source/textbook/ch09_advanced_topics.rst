@@ -131,12 +131,25 @@ Exporting Results
    import pandas as pd
 
    # Export simulation results to CSV
-   results = model.run_simulation(horizon=20)
-   df = results.to_dataframe()
+   # Simulation results are accessed via dtype.area(period) and
+   # yield curve lookups for each period.
+   # Example:
+   results_rows = []
+   for period in model.periods:
+       for dtype_key, dtype in model.dtypes.items():
+           area = dtype.area(period)
+           age = dtype.age(period) if hasattr(dtype, 'age') else period * model.period_length
+           results_rows.append({
+               "period": period,
+               "dtype": str(dtype_key),
+               "area": area,
+               "age": age
+           })
+   df = pd.DataFrame(results_rows)
    df.to_csv("simulation_results.csv", index=False)
 
    # Export optimization solution
-   solution = prob.get_solution()
+   solution = prob.solution()
    sol_df = pd.DataFrame(list(solution.items()), columns=["variable", "value"])
    sol_df.to_csv("optimization_solution.csv", index=False)
 
@@ -150,12 +163,13 @@ Importing External Data
 
    curve_data = pd.read_csv("growth_curves.csv")
    for _, row in curve_data.iterrows():
+       ages = [int(a) for a in row["ages"].split(",")]
+       volumes = [float(v) for v in row["volumes"].split(",")]
        curve = Curve(
-           x=row["ages"].split(","),
-           y=row["volumes"].split(","),
-           name=row["name"]
+           label=row["name"],
+           points=list(zip(ages, volumes))
        )
-       model.add_curve(curve)
+       model.register_curve(curve)
 
 Parallel Computation
 --------------------
@@ -227,4 +241,4 @@ Further Reading
 - :doc:`ch07_financial_analysis` — Financial analysis
 - :doc:`ch08_uncertainty_and_risk` — Uncertainty and risk
 - :doc:`/guides/extending-ws3` — Detailed extension guide
-- :doc:`/reference/modules/forest` — ForestModel API reference
+- :doc:`reference/contracts/index` — Data contracts and module boundaries

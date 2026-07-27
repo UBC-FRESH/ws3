@@ -120,10 +120,10 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 ## Phase 5 — Advanced Features and Production Deployment
 
 - Parent issue: #60
-- Status: in_progress
+- Status: complete
 - Branch: `feature/ws3-phase5`
 - Start date: 2026-07-26
-- Alpha release: v1.1.0a1 (smoke testing in progress)
+- Alpha release: v1.1.0a1 (published to PyPI)
 
 ### Task 5.1 — Advanced Modeling Features
 - GitHub issue: #61
@@ -147,7 +147,7 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 
 ### Task 5.5 — Production Deployment
 - GitHub issue: #65
-- Status: in_progress (CI/CD exists, PyPI secrets not configured)
+- Status: complete (v1.1.0a1 published to PyPI via trusted publisher)
 - Scope: release packaging, CI/CD pipeline, versioning, changelog, community guidelines, support channels
 
 ### Task 5.6 — Additional How-To Guides
@@ -164,3 +164,29 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - GitHub issue: #68
 - Status: not_started (no dedicated test files for new modules)
 - Scope: unit tests, integration tests, performance tests, regression tests, documentation tests
+
+## Phase 6 — Documentation Cleanup and Integration
+
+- Parent issue: #69
+- Status: in_progress
+- Branch: `feature/ws3-phase6-docs-cleanup`
+
+### Task 6.1 — Audit documentation for AI slop
+- GitHub issue: #70
+- Status: in_progress
+- Scope: read every .rst and .md file, identify verbose filler, redundant explanations, overly casual language
+
+### Task 6.2 — Integrate legacy chapters
+- GitHub issue: #71
+- Status: not_started
+- Scope: merge legacy flat chapters into structured sections or remove if obsolete, remove "Old Documentation" section from index.rst
+
+### Task 6.3 — Purge AI slop
+- GitHub issue: #72
+- Status: not_started
+- Scope: remove filler sentences, tighten verbose explanations, ensure consistent tight technical tone
+
+### Task 6.4 — Verify docs build
+- GitHub issue: #73
+- Status: not_started
+- Scope: ensure sphinx-build succeeds with zero errors and zero warnings

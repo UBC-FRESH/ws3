@@ -138,34 +138,37 @@ as part of the financial analysis:
        num_points=50
    )
 
-   # Create ws3 model
-   model = ForestModel()
-
-   # Add development types
-   model.add_development_type(
-       code="DF-SI50-HighProd",
-       area=500.0,
-       age=40,
-       species="Pseudotsuga menziesii",
-       site_index=50
+   # Create ws3 model with required parameters
+   model = ForestModel(
+       model_name="fhops_example",
+       model_path="/path/to/data",
+       base_year=2024,
+       horizon=20,
+       period_length=10,
+       max_age=200
    )
 
-   # Add growth curve (volume)
+   # Development types are loaded from Woodstock-format data files
+   # via model.import_areas_section(), import_yields_section(), etc.
+
+   # Add growth curve (volume) using register_curve
    volume_curve = Curve(
-       x=[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-       y=[0, 5, 25, 65, 120, 200, 300, 400, 470, 500, 510],
-       name="DF-SI50_volume"
+       label="DF-SI50_volume",
+       is_volume=True,
+       points=[(0, 0), (10, 5), (20, 25), (30, 65), (40, 120),
+               (50, 200), (60, 300), (70, 400), (80, 470),
+               (90, 500), (100, 510)]
    )
-   model.add_curve("volume", volume_curve)
+   model.register_curve(volume_curve)
 
-   # Add cost curve from fhops
+   # Add cost curve from fhops using register_curve
+   # Note: Curve constructor takes points=[(x,y)], not x= and y= separately
    high_prod_cost = cost_curves["high_productivity"]
    cost_curve = Curve(
-       x=high_prod_cost.x,
-       y=high_prod_cost.y,
-       name="DF-SI50_HighProd_cost"
+       label="DF-SI50_HighProd_cost",
+       points=list(zip(high_prod_cost.x, high_prod_cost.y))
    )
-   model.add_curve("harvest_cost", cost_curve)
+   model.register_curve(cost_curve)
 
    # Now the model has both volume and cost curves
    # Use them in optimization to maximize net revenue

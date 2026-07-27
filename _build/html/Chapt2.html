@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>About the ws3 Package &mdash; ws3 1.0.5 documentation</title>
+  <title>Overview of Main Classes and Functions &mdash; ws3 1.0.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
 
@@ -19,9 +19,7 @@
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="ws3 Package and Data Preparation" href="aboutws3.html" />
-    <link rel="prev" title="Wood Supply Models" href="Chapt1.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -51,20 +49,6 @@
 <li class="toctree-l1"><a class="reference internal" href="guides/index.html">Advanced Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reference/index.html">Reference</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#overview-of-main-classes-and-functions">Overview of Main Classes and Functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#common-use-case-and-sample-notebooks">Common Use Case and Sample Notebooks</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples Gallery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="appendices.html">Appendices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
-</ul>
 
         </div>
       </div>
@@ -80,7 +64,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</li>
+      <li class="breadcrumb-item active">Overview of Main Classes and Functions</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/Chapt2.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,10 +74,28 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="about-the-ws3-package">
-<h1>About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package<a class="headerlink" href="#about-the-ws3-package" title="Link to this heading"></a></h1>
-<p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> package is implemented using the Python programming language.
-<code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> is an aspatial wood supply model, which applies actions (and matching
+  <div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version 2.0.0: </span>This file is a <strong>legacy chapter</strong> and is no longer part of the active documentation.
+Its content has been integrated into the structured reference sections.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This page is <strong>deprecated</strong>. The content from this legacy chapter has been
+migrated into the new structured documentation.</p>
+<ul class="simple">
+<li><p><strong>Package overview and architecture</strong> → <a class="reference internal" href="getting_started/architecture_overview.html"><span class="doc">Architecture Overview</span></a></p></li>
+<li><p><strong>API reference</strong> → <a class="reference internal" href="reference/index.html"><span class="doc">Reference</span></a></p></li>
+<li><p><strong>Spatial allocation</strong> → <a class="reference internal" href="howto/spatial-allocation.html"><span class="doc">Spatial Schedule Allocation</span></a></p></li>
+</ul>
+</div>
+<p>Original title: <em>About the ws3 Package</em></p>
+<nav class="contents local" id="contents" role="doc-toc">
+<ul class="simple">
+<li><p><a class="reference internal" href="#overview-of-main-classes-and-functions" id="id7">Overview of Main Classes and Functions</a></p></li>
+<li><p><a class="reference internal" href="#common-use-case-and-sample-notebooks" id="id8">Common Use Case and Sample Notebooks</a></p></li>
+</ul>
+</nav>
+<p><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> is an aspatial wood supply model, which applies actions (and matching
 transitions) to development types, simulates growth, and tracks inventory
 area (by development type and by age class) at each time step. Aspatial
 models output aspatial activity schedules—each line of the output schedule
@@ -147,7 +149,7 @@ and massively-paralleled non-interactive workflows is a unique feature of <code 
 sections describe some of the main classes and functions in the package, and describe
 some common use cases, and link to sample notebooks that implement these use cases.</p>
 <section id="overview-of-main-classes-and-functions">
-<h2>Overview of Main Classes and Functions<a class="headerlink" href="#overview-of-main-classes-and-functions" title="Link to this heading"></a></h2>
+<h1><a class="toc-backref" href="#id7" role="doc-backlink">Overview of Main Classes and Functions</a><a class="headerlink" href="#overview-of-main-classes-and-functions" title="Link to this heading"></a></h1>
 <p>This section describes some of the main classes and functions that make up the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code>
 pacakge.</p>
 <p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.forest.ForestModel</span></code> class is the core class in the package. This class
@@ -166,7 +168,7 @@ to these actions, stores growth and yield functions, and knows how to <em>grow i
 when time is incremented during a simulation.</p>
 </section>
 <section id="common-use-case-and-sample-notebooks">
-<h2>Common Use Case and Sample Notebooks<a class="headerlink" href="#common-use-case-and-sample-notebooks" title="Link to this heading"></a></h2>
+<h1><a class="toc-backref" href="#id8" role="doc-backlink">Common Use Case and Sample Notebooks</a><a class="headerlink" href="#common-use-case-and-sample-notebooks" title="Link to this heading"></a></h1>
 <p>In this section, we assume an interactive Jupyter Notebook environment is used to
 interface with <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code>.</p>
 <p>A typical use case starts with creating an instance of the <code class="xref py py-class docutils literal notranslate"><span class="pre">ForestModel</span></code>
@@ -241,15 +243,11 @@ to solve linear programs, and also includes <a class="reference external" href="
 </aside>
 </aside>
 </section>
-</section>
 
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="Chapt1.html" class="btn btn-neutral float-left" title="Wood Supply Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="aboutws3.html" class="btn btn-neutral float-right" title="ws3 Package and Data Preparation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

@@ -418,16 +418,6 @@ window.runMermaid = runMermaid;</script>
 </ul>
 </li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples Gallery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../appendices.html">Appendices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
-</ul>
 
         </div>
       </div>
@@ -458,119 +448,138 @@ window.runMermaid = runMermaid;</script>
   <section id="module-boundaries">
 <span id="contract-module-boundaries"></span><h1>Module Boundaries<a class="headerlink" href="#module-boundaries" title="Link to this heading"></a></h1>
 <p>This page defines the responsibilities and boundaries of each ws3 module.</p>
-<section id="core-module-ws3-forest">
-<h2>Core Module (<code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.forest</span></code>)<a class="headerlink" href="#core-module-ws3-forest" title="Link to this heading"></a></h2>
-<p><strong>Responsibility</strong>: Model state and development types</p>
+<section id="forest-module-ws3-forest">
+<h2>Forest Module (<code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.forest</span></code>)<a class="headerlink" href="#forest-module-ws3-forest" title="Link to this heading"></a></h2>
+<p><strong>Responsibility</strong>: Model state, development types, actions, and schedule management.</p>
 <p><strong>Owns</strong>:
-- DevelopmentType objects
-- Action definitions
-- GrowthCurve objects
-- Model configuration</p>
+- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.forest.ForestModel</span></code> — Central coordinator for all model data
+- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.forest.DevelopmentType</span></code> — Forest stratum (age, area, yield curves, transitions)
+- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.forest.Action</span></code> — Management intervention definition
+- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.forest.GreedyAreaSelector</span></code> — Default area selection strategy</p>
+<p><strong>Key methods on ForestModel</strong>:
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.forest.ForestModel.__init__()</span></code> — Constructor
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.forest.ForestModel.import_areas_section()</span></code> — Load area data
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.forest.ForestModel.import_yields_section()</span></code> — Load yield curves
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.forest.ForestModel.import_actions_section()</span></code> — Load action definitions
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.forest.ForestModel.import_transitions_section()</span></code> — Load transition rules
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.forest.ForestModel.register_curve()</span></code> — Register a Curve with the model
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.forest.ForestModel.add_problem()</span></code> — Create and compile an optimization problem
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.forest.ForestModel.compile_schedule()</span></code> — Compile schedule from problem solution
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.forest.ForestModel.apply_schedule()</span></code> — Apply schedule to model state
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.forest.ForestModel.compile_product()</span></code> — Evaluate yield products
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.forest.ForestModel.inventory()</span></code> — Query inventory at a period</p>
 <p><strong>Does not own</strong>:
-- Optimization logic
-- Simulation execution
-- Spatial allocation</p>
-<p><strong>Key classes</strong>:
-- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.forest.ForestModel</span></code> — Central coordinator
-- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.forest.DevelopmentType</span></code> — Forest stratum
-- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.forest.Action</span></code> — Management intervention</p>
+- Curve construction (delegated to <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.core</span></code>)
+- Optimization solving (delegated to <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.opt</span></code>)
+- Spatial allocation (delegated to <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.spatial</span></code>)</p>
 <p><strong>Dependencies</strong>:
-- <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.common</span></code> for Curve objects</p>
+- <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.core</span></code> for Curve, Node, Tree classes
+- <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.opt</span></code> for Problem, Variable, Constraint classes
+- <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.common</span></code> for constants and utilities</p>
 </section>
 <section id="optimization-module-ws3-opt">
 <h2>Optimization Module (<code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.opt</span></code>)<a class="headerlink" href="#optimization-module-ws3-opt" title="Link to this heading"></a></h2>
-<p><strong>Responsibility</strong>: Solve harvest scheduling problems</p>
+<p><strong>Responsibility</strong>: Optimization problem formulation and solving.</p>
 <p><strong>Owns</strong>:
-- Optimization problem formulation
-- Solver integration
-- Solution objects</p>
+- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.opt.Problem</span></code> — Optimization problem (variables, constraints, objective)
+- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.opt.Variable</span></code> — Decision variable definition
+- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.opt.Constraint</span></code> — Constraint definition
+- Solver dispatch (Gurobi, PuLP, HiGHS)</p>
+<p><strong>Key methods on Problem</strong>:
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.opt.Problem.__init__()</span></code> — Constructor (name, sense, solver)
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.opt.Problem.add_var()</span></code> — Add a variable
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.opt.Problem.add_constr()</span></code> — Add a constraint
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.opt.Problem.z()</span></code> — Set/get objective function coefficients
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.opt.Problem.solve()</span></code> — Solve the problem
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.opt.Problem.status()</span></code> — Get solution status
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.opt.Problem.merge()</span></code> — Merge another problem into this one</p>
 <p><strong>Does not own</strong>:
 - Model state (reads from <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.forest</span></code>)
-- Result visualization</p>
-<p><strong>Key classes</strong>:
-- <code class="xref py py-func docutils literal notranslate"><span class="pre">ws3.opt.solve_optimization()</span></code> — Main solver entry point
-- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.opt.AreaSelector</span></code> — Base class for area selection</p>
+- Schedule compilation (reads from <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.forest</span></code>)</p>
 <p><strong>Dependencies</strong>:
-- <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.forest</span></code> for model data</p>
+- <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.forest</span></code> for model data (via ForestModel.add_problem)</p>
 </section>
-<section id="simulation-module-ws3-core">
-<h2>Simulation Module (<code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.core</span></code>)<a class="headerlink" href="#simulation-module-ws3-core" title="Link to this heading"></a></h2>
-<p><strong>Responsibility</strong>: Execute simulations</p>
+<section id="core-module-ws3-core">
+<h2>Core Module (<code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.core</span></code>)<a class="headerlink" href="#core-module-ws3-core" title="Link to this heading"></a></h2>
+<p><strong>Responsibility</strong>: Core data structures — curves and dynamic programming state trees.</p>
 <p><strong>Owns</strong>:
-- Period-by-period simulation loop
-- Callback execution
-- Result collection</p>
+- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.core.Curve</span></code> — Growth/yield curve with interpolation
+- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.core.Interpolator</span></code> — Linear interpolation between curve points
+- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.core.Node</span></code> — State tree node for dynamic programming
+- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.core.Tree</span></code> — Dynamic programming state tree</p>
+<p><strong>Key methods on Curve</strong>:
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.core.Curve.__init__()</span></code> — Constructor (label, points, is_volume, period_length, …)
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.core.Curve.add_points()</span></code> — Add data points
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.core.Curve.simplify()</span></code> — Simplify curve by removing redundant points
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.core.Curve.points()</span></code> — Get current (x,y) point list
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.core.Curve.__call__()</span></code> — Interpolate y at given x</p>
+<p><strong>Key methods on Node</strong>:
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.core.Node.data()</span></code> — Get/set node data
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.core.Node.parent()</span></code> — Get parent node
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.core.Node.children()</span></code> — Get child nodes
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.core.Node.is_root()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.core.Node.is_leaf()</span></code> — Tree position queries</p>
 <p><strong>Does not own</strong>:
-- Model state (reads from <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.forest</span></code>)
-- Optimization (reads from <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.opt</span></code>)</p>
-<p><strong>Key functions</strong>:
-- <code class="xref py py-func docutils literal notranslate"><span class="pre">ws3.core.simulate()</span></code> — Run simulation</p>
+- Model state (no ForestModel reference)
+- Optimization (no Problem reference)</p>
 <p><strong>Dependencies</strong>:
-- <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.forest</span></code> for model data
-- <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.opt</span></code> for schedule input</p>
+- <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.common</span></code> for default constants</p>
 </section>
 <section id="spatial-module-ws3-spatial">
 <h2>Spatial Module (<code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.spatial</span></code>)<a class="headerlink" href="#spatial-module-ws3-spatial" title="Link to this heading"></a></h2>
-<p><strong>Responsibility</strong>: Spatial allocation of harvest</p>
+<p><strong>Responsibility</strong>: Spatial allocation of harvest schedules to rasterized forest inventory.</p>
 <p><strong>Owns</strong>:
-- ForestRaster objects
-- Spatial allocation algorithms
-- Map generation</p>
+- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.spatial.ForestRaster</span></code> — Raster-based spatial allocation</p>
+<p><strong>Key methods on ForestRaster</strong>:
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.spatial.ForestRaster.__init__()</span></code> — Constructor (hdt_map, hdt_func, src_path, snk_path, …)
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.spatial.ForestRaster.allocate_schedule()</span></code> — Allocate schedule to raster
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.spatial.ForestRaster.commit()</span></code> — Close output file handles
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.spatial.ForestRaster.cleanup()</span></code> — Commit and close input file handle</p>
 <p><strong>Does not own</strong>:
-- Optimization (reads from <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.opt</span></code>)
-- Model state (reads from <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.forest</span></code>)</p>
-<p><strong>Key classes</strong>:
-- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.spatial.ForestRaster</span></code> — Spatial representation</p>
+- Optimization (reads schedule from <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.forest</span></code>)
+- Model state (reads development type mapping from <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.forest</span></code>)</p>
 <p><strong>Dependencies</strong>:
-- <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.forest</span></code> for development type mapping
-- <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.opt</span></code> for schedule input</p>
+- <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.forest</span></code> for ForestModel instance and development type mapping
+- <code class="xref py py-mod docutils literal notranslate"><span class="pre">rasterio</span></code> for GeoTIFF I/O</p>
 </section>
 <section id="common-module-ws3-common">
 <h2>Common Module (<code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.common</span></code>)<a class="headerlink" href="#common-module-ws3-common" title="Link to this heading"></a></h2>
-<p><strong>Responsibility</strong>: Shared utilities and data structures</p>
+<p><strong>Responsibility</strong>: Shared constants, utilities, and geospatial helpers.</p>
 <p><strong>Owns</strong>:
-- Curve objects
-- Utility functions
-- Base classes</p>
+- Global constants (PERIOD_LENGTH_DEFAULT, HORIZON_DEFAULT, MIN_AGE_DEFAULT, MAX_AGE_DEFAULT, etc.)
+- Utility functions (hex_id, is_num, reproject, clean_vector_data)</p>
 <p><strong>Does not own</strong>:
-- Model-specific logic
-- Solver-specific logic</p>
-<p><strong>Key classes</strong>:
-- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.common.Curve</span></code> — Growth curve data structure</p>
+- Curve objects (defined in <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.core</span></code>)
+- Model-specific logic</p>
 <p><strong>Dependencies</strong>:
 - None (leaf module)</p>
 </section>
-<section id="callback-system">
-<h2>Callback System<a class="headerlink" href="#callback-system" title="Link to this heading"></a></h2>
-<p>Callbacks are registered with the model and called during simulation:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">register_callback</span><span class="p">(</span><span class="s1">&#39;carbon&#39;</span><span class="p">,</span> <span class="n">libcbm_callback</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Callback signature:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">callback</span><span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="n">development_type</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">area_ha</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Callback function signature.&quot;&quot;&quot;</span>
-    <span class="k">pass</span>
-</pre></div>
-</div>
-<p>Callbacks should:
-- Be side-effect free where possible
-- Not modify model state directly
-- Return results through the callback system</p>
+<section id="integration-module-ws3-integration">
+<h2>Integration Module (<code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.integration</span></code>)<a class="headerlink" href="#integration-module-ws3-integration" title="Link to this heading"></a></h2>
+<p><strong>Responsibility</strong>: Integration with external tools (fhops, FEMIC, FreshForge).</p>
+<p><strong>Owns</strong>:
+- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.integration.FHOPSIntegrator</span></code> — Harvest cost curve generation
+- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.integration.FEMICIntegrator</span></code> — Carbon pool accounting
+- <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.integration.FreshForgeIntegrator</span></code> — Workflow automation</p>
+<p><strong>Key methods</strong>:
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.integration.FEMICIntegrator.get_carbon_pools()</span></code> — List carbon pools</p>
+<p><strong>Does not own</strong>:
+- Core model logic
+- Optimization</p>
+<p><strong>Dependencies</strong>:
+- <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3.forest</span></code> (optional, for ForestModel integration)</p>
 </section>
 <section id="module-interaction-pattern">
 <h2>Module Interaction Pattern<a class="headerlink" href="#module-interaction-pattern" title="Link to this heading"></a></h2>
 <pre  class="mermaid">
         graph LR
-  FM[&quot;ForestModel&quot;] --&gt; OPT[&quot;Optimization&quot;]
-  FM --&gt; SIM[&quot;Simulation&quot;]
-  FM --&gt; SPA[&quot;Spatial&quot;]
-  OPT --&gt; SIM
-  OPT --&gt; SPA
-  SIM --&gt; SPA
-  COM[&quot;Common&quot;] --&gt; FM
-  COM --&gt; OPT
-  COM --&gt; SIM
-  COM --&gt; SPA
+  FM[&quot;ForestModel&quot;] --&gt; OPT[&quot;Problem (opt)&quot;]
+  FM --&gt; SPA[&quot;ForestRaster (spatial)&quot;]
+  FM --&gt; CORE[&quot;Curve/Node/Tree (core)&quot;]
+  FM --&gt; COM[&quot;Constants (common)&quot;]
+  OPT --&gt; CORE
+  OPT --&gt; COM
+  SPA --&gt; FM
+  INT[&quot;Integration&quot;] --&gt; FM
     </pre></section>
 </section>
 

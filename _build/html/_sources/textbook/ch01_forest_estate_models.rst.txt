@@ -220,48 +220,50 @@ Let's build a simple model. Suppose we have:
    from ws3.forest import ForestModel
    from ws3.core import Curve
 
-   # Create model
-   model = ForestModel()
-
-   # Add a development type: 1000 ha of DF-SI50 at age 0
-   model.add_development_type(
-       code="DF-SI50",
-       area=1000.0,
-       age=0,
-       species="Pseudotsuga menziesii",
-       site_index=50
+   # Create model with required parameters
+   model = ForestModel(
+       model_name="example",
+       model_path="/path/to/data",
+       base_year=2024,
+       horizon=20,
+       period_length=10,
+       max_age=200
    )
 
-   # Add a volume curve (simplified)
+   # Development types are loaded from Woodstock-format data files,
+   # not constructed individually. The typical workflow is:
+   #
+   #   model.import_areas_section()       # loads areas into dtypes
+   #   model.import_yields_section()      # loads yield curves
+   #   model.import_actions_section()     # loads action definitions
+   #   model.import_transitions_section() # loads transition rules
+   #
+   # For programmatic curve registration, use register_curve():
+   #   volume_curve = Curve(label="DF-SI50_volume", is_volume=True,
+   #                        points=[(0,0),(10,5),(20,20),...,(100,490)])
+   #   model.register_curve(volume_curve)
+
+   # Define a volume curve (simplified)
    volume_curve = Curve(
-       x=[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-       y=[0, 5, 20, 50, 100, 180, 280, 380, 450, 480, 490],
-       name="DF-SI50_volume"
+       label="DF-SI50_volume",
+       is_volume=True,
+       points=[(0, 0), (10, 5), (20, 20), (30, 50), (40, 100),
+               (50, 180), (60, 280), (70, 380), (80, 450),
+               (90, 480), (100, 490)]
    )
-   model.add_curve("volume", volume_curve)
+   model.register_curve(volume_curve)
 
-   # Add a harvest action
-   model.add_action(
-       code="HARV",
-       descr="Clearcut harvest",
-       components=["volume"],
-       transitions={"DF-SI50": "BARE"}
-   )
+   # Actions are defined in Woodstock-format ACTION section files
+   # and imported via model.import_actions_section()
+   # Transitions are defined in the TRANSITION section and imported
+   # via model.import_transitions_section()
 
-   # Add a bare site development type
-   model.add_development_type(
-       code="BARE",
-       area=0.0,
-       age=0,
-       species="",
-       site_index=0
-   )
-
-   # Run simulation for 20 periods (100 years)
-   results = model.run_simulation(horizon=20)
-
-   # Print results
-   print(results.summary())
+   # Simulation proceeds by:
+   # 1. Resetting actions: model.reset_actions()
+   # 2. Setting applied actions for each period
+   # 3. Growing the model: model.grow(start_period=1)
+   # For optimization, build a ws3.opt.Problem, solve it, then
+   # compile the schedule via model.compile_schedule(problem)
 
 The output will show how area moves between development types over time
 as the harvest action is applied.
@@ -292,10 +294,10 @@ your setup:
    import ws3
    print(f"ws3 version: {ws3.__version__}")
 
-**Exercise 2 (Medium)**: Modify the minimal model above to:
+**Exercise 2 (Medium)**: Extend the model to include Spruce:
 
-1. Add a second development type: 500 hectares of Spruce on Site Index 40
-2. Add a separate volume curve for Spruce-SI40
+1. Add Spruce-SI40 to the AREAS section file (500 hectares)
+2. Add a separate yield curve for Spruce-SI40
 3. Run the simulation and compare the volume trajectories
 
 **Exercise 3 (Hard)**: The current model assumes all 50 hectares harvested
@@ -315,5 +317,4 @@ Further Reading
 
 - :doc:`ch02_forest_inventory` — How to prepare forest inventory data for ws3
 - :doc:`ch03_growth_and_yield` — Growth curve fitting and interpolation
-- :doc:`/reference/modules/forest` — ForestModel API reference
-- :doc:`/getting_started/quickstart` — Hands-on quickstart tutorial
+- :doc:`getting_started/quickstart` — Hands-on quickstart tutorial

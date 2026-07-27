@@ -427,6 +427,8 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l4"><a class="reference internal" href="ch14_spades_integration.html">Chapter 14: Integrating ws3 with SpaDES</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch15_disturbance_modelling.html">Chapter 15: Modelling Natural Disturbances</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch16_supply_chain.html">Chapter 16: Value-Creation and Forest Supply Chain Modelling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch17_advanced_spatial.html">Chapter 17: Advanced Spatial Modeling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch18_carbon_accounting.html">Chapter 18: Carbon Accounting in Detail</a></li>
 </ul>
 </li>
 </ul>
@@ -438,16 +440,6 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
 </ul>
 
         </div>
@@ -598,34 +590,37 @@ as part of the financial analysis:</p>
     <span class="n">num_points</span><span class="o">=</span><span class="mi">50</span>
 <span class="p">)</span>
 
-<span class="c1"># Create ws3 model</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">()</span>
-
-<span class="c1"># Add development types</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add_development_type</span><span class="p">(</span>
-    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;DF-SI50-HighProd&quot;</span><span class="p">,</span>
-    <span class="n">area</span><span class="o">=</span><span class="mf">500.0</span><span class="p">,</span>
-    <span class="n">age</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
-    <span class="n">species</span><span class="o">=</span><span class="s2">&quot;Pseudotsuga menziesii&quot;</span><span class="p">,</span>
-    <span class="n">site_index</span><span class="o">=</span><span class="mi">50</span>
+<span class="c1"># Create ws3 model with required parameters</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;fhops_example&quot;</span><span class="p">,</span>
+    <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;/path/to/data&quot;</span><span class="p">,</span>
+    <span class="n">base_year</span><span class="o">=</span><span class="mi">2024</span><span class="p">,</span>
+    <span class="n">horizon</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">period_length</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">max_age</span><span class="o">=</span><span class="mi">200</span>
 <span class="p">)</span>
 
-<span class="c1"># Add growth curve (volume)</span>
+<span class="c1"># Development types are loaded from Woodstock-format data files</span>
+<span class="c1"># via model.import_areas_section(), import_yields_section(), etc.</span>
+
+<span class="c1"># Add growth curve (volume) using register_curve</span>
 <span class="n">volume_curve</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
-    <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
-    <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">65</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">470</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">510</span><span class="p">],</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DF-SI50_volume&quot;</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;DF-SI50_volume&quot;</span><span class="p">,</span>
+    <span class="n">is_volume</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">points</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">65</span><span class="p">),</span> <span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">120</span><span class="p">),</span>
+            <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span> <span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">300</span><span class="p">),</span> <span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="mi">400</span><span class="p">),</span> <span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">470</span><span class="p">),</span>
+            <span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">510</span><span class="p">)]</span>
 <span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add_curve</span><span class="p">(</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="n">volume_curve</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">register_curve</span><span class="p">(</span><span class="n">volume_curve</span><span class="p">)</span>
 
-<span class="c1"># Add cost curve from fhops</span>
+<span class="c1"># Add cost curve from fhops using register_curve</span>
+<span class="c1"># Note: Curve constructor takes points=[(x,y)], not x= and y= separately</span>
 <span class="n">high_prod_cost</span> <span class="o">=</span> <span class="n">cost_curves</span><span class="p">[</span><span class="s2">&quot;high_productivity&quot;</span><span class="p">]</span>
 <span class="n">cost_curve</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
-    <span class="n">x</span><span class="o">=</span><span class="n">high_prod_cost</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
-    <span class="n">y</span><span class="o">=</span><span class="n">high_prod_cost</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DF-SI50_HighProd_cost&quot;</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;DF-SI50_HighProd_cost&quot;</span><span class="p">,</span>
+    <span class="n">points</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">high_prod_cost</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">high_prod_cost</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
 <span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add_curve</span><span class="p">(</span><span class="s2">&quot;harvest_cost&quot;</span><span class="p">,</span> <span class="n">cost_curve</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">register_curve</span><span class="p">(</span><span class="n">cost_curve</span><span class="p">)</span>
 
 <span class="c1"># Now the model has both volume and cost curves</span>
 <span class="c1"># Use them in optimization to maximize net revenue</span>

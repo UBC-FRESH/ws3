@@ -62,16 +62,6 @@
 </ul>
 </li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples Gallery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../appendices.html">Appendices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
-</ul>
 
         </div>
       </div>
@@ -105,26 +95,37 @@
 <section id="model-state-invariants">
 <h2>Model State Invariants<a class="headerlink" href="#model-state-invariants" title="Link to this heading"></a></h2>
 <ol class="arabic">
-<li><p><strong>Development type codes are unique</strong></p>
-<p>Each development type must have a unique code within the model. Duplicate
-codes will cause undefined behavior.</p>
+<li><p><strong>Development type keys are unique tuples</strong></p>
+<p>Each development type is identified by a unique tuple of theme values
+(e.g., <code class="docutils literal notranslate"><span class="pre">('SP',</span> <span class="pre">50,</span> <span class="pre">'T1')</span></code>). Duplicate keys in <code class="docutils literal notranslate"><span class="pre">ForestModel.dtypes</span></code>
+will cause undefined behavior.</p>
 </li>
-<li><p><strong>Growth curves match development types</strong></p>
-<p>Every development type must have a corresponding growth curve. If a DT
-has species=”SP” and site_index=50, there must be a curve for that
-combination.</p>
+<li><p><strong>Yield curves are registered before use</strong></p>
+<p>Every yield component curve referenced by a development type must have
+been registered with the model via <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.forest.ForestModel.register_curve()</span></code>.
+Curves are keyed by their point list — two curves with identical points
+share the same registered instance.</p>
 </li>
-<li><p><strong>Action transitions reference valid DTs</strong></p>
-<p>All target development types in action transitions must exist in the model.</p>
+<li><p><strong>Action transitions reference valid development types</strong></p>
+<p>All target development types produced by action transitions must be
+resolvable from the source development type’s theme values.</p>
 </li>
 <li><p><strong>Area is non-negative</strong></p>
-<p>All area values must be &gt;= 0. Negative areas indicate a bug.</p>
+<p>All area values stored in <code class="docutils literal notranslate"><span class="pre">DevelopmentType._areas</span></code> must be &gt;= 0.
+Negative areas indicate a bug.</p>
 </li>
 <li><p><strong>Ages are non-negative integers</strong></p>
-<p>Stand ages must be non-negative integers.</p>
+<p>Stand ages must be non-negative integers. The <code class="docutils literal notranslate"><span class="pre">ages</span></code> list in
+<code class="docutils literal notranslate"><span class="pre">ForestModel</span></code> is <code class="docutils literal notranslate"><span class="pre">list(range(max_age</span> <span class="pre">+</span> <span class="pre">1))</span></code>.</p>
 </li>
-<li><p><strong>Volume curves are monotonically non-decreasing</strong></p>
-<p>Volume curves should not decrease with age (except for thinning effects).</p>
+<li><p><strong>Volume curves are monotonically non-decreasing (with exceptions)</strong></p>
+<p>Volume curves should not decrease with age, except for thinning effects
+or harvest-related yield components.</p>
+</li>
+<li><p><strong>Curves are immutable after registration</strong></p>
+<p>Once a curve is registered via <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.forest.ForestModel.register_curve()</span></code>,
+it is locked (<code class="docutils literal notranslate"><span class="pre">curve.is_locked</span> <span class="pre">=</span> <span class="pre">True</span></code>). Modifying a locked curve’s points
+will corrupt the model’s curve registry.</p>
 </li>
 </ol>
 </section>
@@ -132,8 +133,8 @@ combination.</p>
 <h2>Optimization Invariants<a class="headerlink" href="#optimization-invariants" title="Link to this heading"></a></h2>
 <ol class="arabic">
 <li><p><strong>Flow constraints are feasible</strong></p>
-<p>Flow constraints must allow at least one feasible solution. If min_ratio &gt;
-max_ratio, the problem is infeasible.</p>
+<p>Flow constraints must allow at least one feasible solution. If
+<code class="docutils literal notranslate"><span class="pre">min_ratio</span> <span class="pre">&gt;</span> <span class="pre">max_ratio</span></code>, the problem is infeasible.</p>
 </li>
 <li><p><strong>Area constraints don’t exceed available area</strong></p>
 <p>Sum of max_area constraints across all periods must not exceed total
@@ -143,22 +144,56 @@ available area.</p>
 <p>Harvest volume in any period should not exceed available volume from
 standing inventory.</p>
 </li>
+<li><p><strong>Problem variables are unique</strong></p>
+<p>Variable names must be unique within a <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.opt.Problem</span></code> instance.
+Duplicate variable names will overwrite existing variables.</p>
+</li>
+<li><p><strong>Problem sense is consistent</strong></p>
+<p>The objective sense (<code class="docutils literal notranslate"><span class="pre">SENSE_MAXIMIZE</span></code> or <code class="docutils literal notranslate"><span class="pre">SENSE_MINIMIZE</span></code>) is set at
+construction and should not change after variables and constraints are added.</p>
+</li>
 </ol>
 </section>
-<section id="simulation-invariants">
-<h2>Simulation Invariants<a class="headerlink" href="#simulation-invariants" title="Link to this heading"></a></h2>
+<section id="schedule-application-invariants">
+<h2>Schedule Application Invariants<a class="headerlink" href="#schedule-application-invariants" title="Link to this heading"></a></h2>
 <ol class="arabic">
 <li><p><strong>Total area is conserved</strong></p>
-<p>Total area across all development types should remain constant (unless
-area is added or removed explicitly).</p>
+<p>Total area across all development types should remain constant when
+actions are applied, unless transitions create or destroy area.</p>
 </li>
 <li><p><strong>Transitions are deterministic</strong></p>
-<p>Given the same input state and actions, simulation should produce the
-same output.</p>
+<p>Given the same input state and actions, <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.forest.ForestModel.apply_schedule()</span></code>
+should produce the same output.</p>
 </li>
-<li><p><strong>Callback state is consistent</strong></p>
-<p>If callbacks modify state (e.g., libCBM), the state must be consistent
-with the development type transitions.</p>
+<li><p><strong>Applied actions are tracked per period</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">ForestModel.applied_actions[period][acode][dtype_key][age]</span></code> stores
+the area applied. This structure must remain consistent after each
+schedule application.</p>
+</li>
+<li><p><strong>GreedyAreaSelector patches missing area</strong></p>
+<p>When <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.forest.ForestModel.apply_schedule()</span></code> is called with
+<code class="docutils literal notranslate"><span class="pre">recourse_enabled=True</span></code> (default), the <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.forest.GreedyAreaSelector</span></code>
+automatically fills any missing area from operable age classes.</p>
+</li>
+</ol>
+</section>
+<section id="spatial-allocation-invariants">
+<h2>Spatial Allocation Invariants<a class="headerlink" href="#spatial-allocation-invariants" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p><strong>Raster dimensions match model horizon</strong></p>
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.spatial.ForestRaster</span></code> creates one output GeoTIFF per
+(period, year_within_period) combination. The number of periods is
+determined by <code class="docutils literal notranslate"><span class="pre">forestmodel.horizon</span></code>.</p>
+</li>
+<li><p><strong>Pixel area is computed from raster resolution</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">ForestRaster._pixel_area</span> <span class="pre">=</span> <span class="pre">d^2</span> <span class="pre">*</span> <span class="pre">0.0001</span></code> converts square meters to
+hectares based on the raster’s pixel dimension <code class="docutils literal notranslate"><span class="pre">d</span></code>.</p>
+</li>
+<li><p><strong>ForestRaster is single-use</strong></p>
+<p>After calling <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.spatial.ForestRaster.commit()</span></code> or
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.spatial.ForestRaster.cleanup()</span></code>, the instance is expired.
+Further calls to <code class="xref py py-meth docutils literal notranslate"><span class="pre">ws3.spatial.ForestRaster.allocate_schedule()</span></code>
+will raise <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code>.</p>
 </li>
 </ol>
 </section>
@@ -167,10 +202,12 @@ with the development type transitions.</p>
 <p>The following conditions indicate bugs or misconfiguration:</p>
 <ul class="simple">
 <li><p>Development type with zero area in schedule</p></li>
-<li><p>Action with no transitions defined</p></li>
-<li><p>Growth curve with fewer than 2 data points</p></li>
+<li><p>Action with no operability expressions defined</p></li>
+<li><p>Curve with fewer than 2 data points after simplification</p></li>
 <li><p>Negative volume or area values in output</p></li>
 <li><p>Infeasible optimization (no solution found)</p></li>
+<li><p>Locked curve modified after registration</p></li>
+<li><p>Missing yield component curve referenced by development type</p></li>
 </ul>
 </section>
 <section id="validation">

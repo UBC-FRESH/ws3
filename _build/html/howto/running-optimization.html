@@ -20,8 +20,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Parallel Optimization" href="parallel-optimization.html" />
-    <link rel="prev" title="Action Definition" href="action-definition.html" /> 
+    <link rel="next" title="Spatial Schedule Allocation" href="spatial-allocation.html" />
+    <link rel="prev" title="Defining Growth Curves" href="defining-growth-curves.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -49,45 +49,25 @@
 <li class="toctree-l1"><a class="reference internal" href="../textbook/index.html">The ws3 Textbook</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">How-To Guides</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="index.html#id1">How-To Guides</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="data-preparation.html">Data Preparation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="curve-definition.html">Growth Curve Definition</a></li>
-<li class="toctree-l3"><a class="reference internal" href="action-definition.html">Action Definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="loading-a-woodstock-model.html">Loading a Woodstock Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="defining-growth-curves.html">Defining Growth Curves</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Running Optimization</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#goal">Goal</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#step-by-step-instructions">Step-by-Step Instructions</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#expected-output">Expected Output</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#procedure">Procedure</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#next-steps">Next Steps</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="spatial-allocation.html">Spatial Schedule Allocation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="multi-objective-optimization.html">Multi-Objective Optimization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="parallel-optimization.html">Parallel Optimization</a></li>
-<li class="toctree-l3"><a class="reference internal" href="spatial-schedule-allocation.html">Spatial Schedule Allocation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="libcbm-callbacks.html">libCBM Callbacks Integration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="financial-scenarios.html">Financial Scenarios</a></li>
-<li class="toctree-l3"><a class="reference internal" href="custom-area-selector.html">Custom Area Selector</a></li>
-<li class="toctree-l3"><a class="reference internal" href="custom-growth-function.html">Custom Growth Function</a></li>
-<li class="toctree-l3"><a class="reference internal" href="model-validation.html">Model Validation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="reproducibility.html">Reproducibility Workflows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#what-you-will-find-here">What You Will Find Here</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#common-tasks-covered">Common Tasks Covered</a></li>
 <li class="toctree-l2"><a class="reference internal" href="index.html#prerequisites">Prerequisites</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
 </ul>
 
         </div>
@@ -117,139 +97,80 @@
              
   <section id="running-optimization">
 <span id="howto-running-optimization"></span><h1>Running Optimization<a class="headerlink" href="#running-optimization" title="Link to this heading"></a></h1>
-<section id="goal">
-<h2>Goal<a class="headerlink" href="#goal" title="Link to this heading"></a></h2>
-<p>Run your first optimization scenario with ws3:</p>
-<ul class="simple">
-<li><p>Configure optimization parameters</p></li>
-<li><p>Solve the harvest scheduling problem</p></li>
-<li><p>Interpret the results</p></li>
-<li><p>Export results for analysis</p></li>
-</ul>
-</section>
+<p>This guide shows how to run an optimization scenario with ws3.</p>
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Completed <a class="reference internal" href="data-preparation.html"><span class="doc">Data Preparation</span></a>, <a class="reference internal" href="curve-definition.html"><span class="doc">Growth Curve Definition</span></a>, and <a class="reference internal" href="action-definition.html"><span class="doc">Action Definition</span></a></p></li>
-<li><p>Familiarity with optimization concepts from <a class="reference internal" href="../textbook/ch05_optimization.html"><span class="doc">Chapter 5: Optimization</span></a></p></li>
-<li><p>A working ws3 installation with sample data</p></li>
+<li><p>A loaded <a class="reference internal" href="loading-a-woodstock-model.html#howto-loading-model"><span class="std std-ref">ForestModel</span></a></p></li>
+<li><p>Understanding of linear programming concepts</p></li>
 </ul>
 </section>
-<section id="step-by-step-instructions">
-<h2>Step-by-Step Instructions<a class="headerlink" href="#step-by-step-instructions" title="Link to this heading"></a></h2>
-<p><strong>Step 1: Load Your Model</strong></p>
+<section id="procedure">
+<h2>Procedure<a class="headerlink" href="#procedure" title="Link to this heading"></a></h2>
+<p><strong>1. Load the model</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.forest</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForestModel</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="c1"># Load model from previous steps</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">()</span>
-
-<span class="c1"># Add development types, curves, and actions</span>
-<span class="c1"># (see previous how-to guides)</span>
+<span class="n">fm</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;my_model&quot;</span><span class="p">,</span>
+    <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;path/to/model&quot;</span><span class="p">,</span>
+    <span class="n">base_year</span><span class="o">=</span><span class="mi">2020</span><span class="p">,</span>
+    <span class="n">horizon</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">period_length</span><span class="o">=</span><span class="mi">10</span>
+<span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_areas_section</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_yields_section</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_actions_section</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_transitions_section</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">initialize_areas</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">add_null_action</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">reset_actions</span><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Step 2: Configure Optimization Parameters</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define planning horizon</span>
-<span class="n">horizon</span> <span class="o">=</span> <span class="mi">5</span>
+<p><strong>2. Create a Problem</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.opt</span><span class="w"> </span><span class="kn">import</span> <span class="n">Problem</span>
 
-<span class="c1"># Define time periods</span>
-<span class="n">periods</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">horizon</span><span class="p">))</span>
-
-<span class="c1"># Set optimization objective</span>
-<span class="n">objective</span> <span class="o">=</span> <span class="s1">&#39;maximize_volume&#39;</span>  <span class="c1"># or &#39;maximize_npv&#39;, &#39;area_control&#39;</span>
-</pre></div>
-</div>
-<p><strong>Step 3: Define Constraints</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Flow constraints</span>
-<span class="n">flow_constraints</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">{</span>
-        <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;flow&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;periods&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
-        <span class="s1">&#39;min_ratio&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
-        <span class="s1">&#39;max_ratio&#39;</span><span class="p">:</span> <span class="mf">1.2</span>
-    <span class="p">}</span>
-<span class="p">]</span>
-
-<span class="c1"># Area constraints</span>
-<span class="n">area_constraints</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">{</span>
-        <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;area&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;period&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s1">&#39;min_area&#39;</span><span class="p">:</span> <span class="mf">50.0</span><span class="p">,</span>
-        <span class="s1">&#39;max_area&#39;</span><span class="p">:</span> <span class="mf">200.0</span>
-    <span class="p">}</span>
-<span class="p">]</span>
-</pre></div>
-</div>
-<p><strong>Step 4: Run Optimization</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.opt</span><span class="w"> </span><span class="kn">import</span> <span class="n">solve_optimization</span>
-
-<span class="c1"># Solve the optimization problem</span>
-<span class="n">solution</span> <span class="o">=</span> <span class="n">solve_optimization</span><span class="p">(</span>
-    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-    <span class="n">horizon</span><span class="o">=</span><span class="n">horizon</span><span class="p">,</span>
-    <span class="n">objective</span><span class="o">=</span><span class="n">objective</span><span class="p">,</span>
-    <span class="n">flow_constraints</span><span class="o">=</span><span class="n">flow_constraints</span><span class="p">,</span>
-    <span class="n">area_constraints</span><span class="o">=</span><span class="n">area_constraints</span>
+<span class="n">problem</span> <span class="o">=</span> <span class="n">Problem</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;base_scenario&quot;</span><span class="p">,</span>
+    <span class="n">sense</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># SENSE_MAXIMIZE</span>
+    <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;highs&quot;</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Step 5: Inspect Results</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get harvest schedule</span>
-<span class="n">schedule</span> <span class="o">=</span> <span class="n">solution</span><span class="o">.</span><span class="n">get_schedule</span><span class="p">()</span>
-
-<span class="c1"># Print results</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">schedule</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
-
-<span class="c1"># Get summary statistics</span>
-<span class="n">summary</span> <span class="o">=</span> <span class="n">solution</span><span class="o">.</span><span class="n">get_summary</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+<p><strong>3. Define the objective</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">coeffs</span> <span class="o">=</span> <span class="p">{</span><span class="n">var_name</span><span class="p">:</span> <span class="mf">1.0</span> <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">problem</span><span class="o">.</span><span class="n">var_names</span><span class="p">()}</span>
+<span class="n">problem</span><span class="o">.</span><span class="n">z</span><span class="p">(</span><span class="n">coeffs</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Step 6: Export Results</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Export to CSV</span>
-<span class="n">schedule</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;harvest_schedule.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-<span class="c1"># Export to Excel</span>
-<span class="n">schedule</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="s1">&#39;harvest_schedule.xlsx&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<p><strong>4. Add constraints</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;even_flow&quot;</span><span class="p">,</span>
+    <span class="n">coeffs</span><span class="o">=</span><span class="p">{</span><span class="n">var_name</span><span class="p">:</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="s2">&quot;period_0&quot;</span> <span class="ow">in</span> <span class="n">var_name</span> <span class="k">else</span> <span class="o">-</span><span class="mf">1.2</span>
+            <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">problem</span><span class="o">.</span><span class="n">var_names</span><span class="p">()},</span>
+    <span class="n">sense</span><span class="o">=</span><span class="s2">&quot;&lt;=&quot;</span><span class="p">,</span>
+    <span class="n">rhs</span><span class="o">=</span><span class="mf">0.0</span>
+<span class="p">)</span>
 </pre></div>
 </div>
-</section>
-<section id="expected-output">
-<h2>Expected Output<a class="headerlink" href="#expected-output" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p>Optimization solution object</p></li>
-<li><p>Harvest schedule with period-by-period prescriptions</p></li>
-<li><p>Summary statistics (total volume, NPV, etc.)</p></li>
-</ul>
+<p><strong>5. Solve</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>6. Inspect results</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">solution</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">solution</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Objective value: </span><span class="si">{</span><span class="n">problem</span><span class="o">.</span><span class="n">z</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variables: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">solution</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 <section id="troubleshooting">
 <h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
-<p><strong>Issue: Solver fails to converge</strong></p>
 <ul class="simple">
-<li><p>Check that all development types and actions are defined</p></li>
-<li><p>Verify constraint ranges are feasible</p></li>
-<li><p>Try simpler objective function first</p></li>
-</ul>
-<p><strong>Issue: No harvest in schedule</strong></p>
-<ul class="simple">
-<li><p>Check that actions are applicable to development types</p></li>
-<li><p>Verify area constraints allow harvest</p></li>
-<li><p>Ensure growth curves are defined</p></li>
-</ul>
-<p><strong>Issue: Solver takes too long</strong></p>
-<ul class="simple">
-<li><p>Reduce planning horizon</p></li>
-<li><p>Simplify constraints</p></li>
-<li><p>Check model size (number of development types)</p></li>
-</ul>
-</section>
-<section id="next-steps">
-<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
-<ul class="simple">
-<li><p><a class="reference internal" href="parallel-optimization.html"><span class="doc">Parallel Optimization</span></a> — Run multiple scenarios in parallel</p></li>
-<li><p><a class="reference internal" href="spatial-schedule-allocation.html"><span class="doc">Spatial Schedule Allocation</span></a> — Allocate harvest spatially</p></li>
-<li><p><a class="reference internal" href="libcbm-callbacks.html"><span class="doc">libCBM Callbacks Integration</span></a> — Integrate with libCBM for carbon</p></li>
+<li><p><strong>Solver fails to converge</strong> — verify all development types and actions are
+defined and constraint ranges are feasible.</p></li>
+<li><p><strong>No harvest in schedule</strong> — check that actions are applicable to
+development types and that area constraints allow harvest.</p></li>
+<li><p><strong>Solver takes too long</strong> — reduce the planning horizon or simplify
+constraints.</p></li>
 </ul>
 </section>
 </section>
@@ -258,8 +179,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="action-definition.html" class="btn btn-neutral float-left" title="Action Definition" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="parallel-optimization.html" class="btn btn-neutral float-right" title="Parallel Optimization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="defining-growth-curves.html" class="btn btn-neutral float-left" title="Defining Growth Curves" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="spatial-allocation.html" class="btn btn-neutral float-right" title="Spatial Schedule Allocation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

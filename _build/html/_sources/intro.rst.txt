@@ -1,11 +1,22 @@
-********
-Overview
-********
+.. deprecated:: 2.0.0
 
-Introduction
-============
+   This file is a **legacy page** and is no longer part of the active documentation.
+   Its content has been integrated into the structured sections.
 
-The *Wood Supply Simulation System* (:py:mod:`ws3`) is an open-source Python software 
+.. warning::
+
+   This page is **deprecated**. The content from this legacy page has been
+   migrated into the new structured documentation.
+
+   - **Installation and first run** → :doc:`getting_started/index`
+   - **Forest estate modelling concepts** → :doc:`textbook/index`
+   - **How-to guides** → :doc:`howto/index`
+   - **About FRESH** → :doc:`guides/index`
+
+Original title: *Overview*
+
+.. contents::
+   :local: 
 package that is designed to model *wood supply planning problems* (WSPP) (i.e., a 
 forest estate model), in the context of forest resource analysis in support of 
 sustainable forest management planning.
