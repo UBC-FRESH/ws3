@@ -96,9 +96,13 @@ class TestFEMICIntegrator:
         assert integrator._femic_available is False
 
     def test_calculate_carbon_budget(self):
-        """Test carbon budget calculation (mocked - femic not installed)."""
+        """Test carbon budget calculation (requires femic)."""
+        try:
+            import femic
+        except ImportError:
+            pytest.skip("femic not installed")
+        
         integrator = FEMICIntegrator()
-        integrator._femic_available = True
 
         schedule = pd.DataFrame({
             'area_ha': [100.0, 200.0],
