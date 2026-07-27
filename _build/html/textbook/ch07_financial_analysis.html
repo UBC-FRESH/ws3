@@ -427,6 +427,8 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l4"><a class="reference internal" href="ch14_spades_integration.html">Chapter 14: Integrating ws3 with SpaDES</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch15_disturbance_modelling.html">Chapter 15: Modelling Natural Disturbances</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch16_supply_chain.html">Chapter 16: Value-Creation and Forest Supply Chain Modelling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch17_advanced_spatial.html">Chapter 17: Advanced Spatial Modeling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch18_carbon_accounting.html">Chapter 18: Carbon Accounting in Detail</a></li>
 </ul>
 </li>
 </ul>
@@ -438,16 +440,6 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
 </ul>
 
         </div>
@@ -530,19 +522,25 @@ is worth more than a dollar tomorrow.</p>
 module.</p>
 <section id="calculating-npv">
 <h3>Calculating NPV<a class="headerlink" href="#calculating-npv" title="Link to this heading"></a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.financial</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculate_npv</span>
-
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Financial calculations are done in pure Python (no ws3.financial module).</span>
 <span class="c1"># Define cash flows for each period</span>
 <span class="n">revenues</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">50000</span><span class="p">,</span> <span class="mi">80000</span><span class="p">,</span> <span class="mi">100000</span><span class="p">,</span> <span class="mi">120000</span><span class="p">,</span> <span class="mi">110000</span><span class="p">,</span> <span class="mi">90000</span><span class="p">,</span> <span class="mi">70000</span><span class="p">,</span> <span class="mi">50000</span><span class="p">]</span>
 <span class="n">costs</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">20000</span><span class="p">,</span> <span class="mi">25000</span><span class="p">,</span> <span class="mi">30000</span><span class="p">,</span> <span class="mi">35000</span><span class="p">,</span> <span class="mi">30000</span><span class="p">,</span> <span class="mi">25000</span><span class="p">,</span> <span class="mi">20000</span><span class="p">,</span> <span class="mi">15000</span><span class="p">]</span>
 
 <span class="c1"># Calculate NPV at 5% discount rate</span>
-<span class="n">npv</span> <span class="o">=</span> <span class="n">calculate_npv</span><span class="p">(</span><span class="n">revenues</span><span class="p">,</span> <span class="n">costs</span><span class="p">,</span> <span class="n">discount_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">discount_rate</span> <span class="o">=</span> <span class="mf">0.05</span>
+<span class="n">npv</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">r</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">discount_rate</span><span class="p">)</span> <span class="o">**</span> <span class="n">t</span>
+    <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">revenues</span><span class="p">,</span> <span class="n">costs</span><span class="p">))</span>
+<span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;NPV: $</span><span class="si">{</span><span class="n">npv</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="c1"># Calculate NPV at different discount rates</span>
 <span class="k">for</span> <span class="n">rate</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">]:</span>
-    <span class="n">npv</span> <span class="o">=</span> <span class="n">calculate_npv</span><span class="p">(</span><span class="n">revenues</span><span class="p">,</span> <span class="n">costs</span><span class="p">,</span> <span class="n">discount_rate</span><span class="o">=</span><span class="n">rate</span><span class="p">)</span>
+    <span class="n">npv</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">r</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">rate</span><span class="p">)</span> <span class="o">**</span> <span class="n">t</span>
+        <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">revenues</span><span class="p">,</span> <span class="n">costs</span><span class="p">))</span>
+    <span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;NPV at </span><span class="si">{</span><span class="n">rate</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">%: $</span><span class="si">{</span><span class="n">npv</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -552,10 +550,18 @@ module.</p>
 <p>The <strong>Internal Rate of Return (IRR)</strong> is the discount rate that makes
 NPV equal to zero. It represents the inherent rate of return of the
 investment.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.financial</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculate_irr</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculate IRR using numpy (or scipy.optimize)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">brentq</span>
 
-<span class="c1"># Calculate IRR</span>
-<span class="n">irr</span> <span class="o">=</span> <span class="n">calculate_irr</span><span class="p">(</span><span class="n">revenues</span><span class="p">,</span> <span class="n">costs</span><span class="p">)</span>
+<span class="c1"># Net cash flows</span>
+<span class="n">net_flows</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="o">-</span> <span class="n">c</span> <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">revenues</span><span class="p">,</span> <span class="n">costs</span><span class="p">)]</span>
+
+<span class="c1"># IRR is the discount rate that makes NPV = 0</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">npv_at_rate</span><span class="p">(</span><span class="n">rate</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">cf</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">rate</span><span class="p">)</span> <span class="o">**</span> <span class="n">t</span> <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">cf</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">net_flows</span><span class="p">))</span>
+
+<span class="n">irr</span> <span class="o">=</span> <span class="n">brentq</span><span class="p">(</span><span class="n">npv_at_rate</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.99</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;IRR: </span><span class="si">{</span><span class="n">irr</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
 
 <span class="c1"># Compare to discount rate</span>
@@ -593,10 +599,11 @@ This is a fundamental concept in forest economics.</p>
 
 <span class="c1"># Define a volume curve</span>
 <span class="n">volume_curve</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
-    <span class="n">x</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">201</span><span class="p">,</span> <span class="mi">10</span><span class="p">)),</span>
-    <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">210</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">390</span><span class="p">,</span> <span class="mi">460</span><span class="p">,</span> <span class="mi">510</span><span class="p">,</span>
-       <span class="mi">540</span><span class="p">,</span> <span class="mi">560</span><span class="p">,</span> <span class="mi">575</span><span class="p">,</span> <span class="mi">585</span><span class="p">,</span> <span class="mi">590</span><span class="p">,</span> <span class="mi">595</span><span class="p">,</span> <span class="mi">598</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">601</span><span class="p">,</span> <span class="mi">602</span><span class="p">,</span> <span class="mi">602</span><span class="p">],</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DF_volume&quot;</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;DF_volume&quot;</span><span class="p">,</span>
+    <span class="n">points</span><span class="o">=</span><span class="p">[(</span><span class="n">age</span><span class="p">,</span> <span class="n">vol</span><span class="p">)</span> <span class="k">for</span> <span class="n">age</span><span class="p">,</span> <span class="n">vol</span> <span class="ow">in</span>
+            <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">201</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">210</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">390</span><span class="p">,</span> <span class="mi">460</span><span class="p">,</span> <span class="mi">510</span><span class="p">,</span>
+                 <span class="mi">540</span><span class="p">,</span> <span class="mi">560</span><span class="p">,</span> <span class="mi">575</span><span class="p">,</span> <span class="mi">585</span><span class="p">,</span> <span class="mi">590</span><span class="p">,</span> <span class="mi">595</span><span class="p">,</span> <span class="mi">598</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">601</span><span class="p">,</span> <span class="mi">602</span><span class="p">,</span> <span class="mi">602</span><span class="p">])]</span>
 <span class="p">)</span>
 
 <span class="c1"># Calculate NPV for each rotation age</span>
@@ -626,17 +633,23 @@ This is a fundamental concept in forest economics.</p>
 how results change with different assumptions:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sensitivity to timber prices</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sensitivity to timber prices:&quot;</span><span class="p">)</span>
+<span class="n">base_price</span> <span class="o">=</span> <span class="mi">50</span>
 <span class="k">for</span> <span class="n">price</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">]:</span>
-    <span class="n">npv</span> <span class="o">=</span> <span class="n">calculate_npv</span><span class="p">(</span><span class="n">revenues</span><span class="p">,</span> <span class="n">costs</span><span class="p">,</span> <span class="n">discount_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
     <span class="c1"># Adjust revenues for new price</span>
-    <span class="n">adjusted_revenues</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="o">*</span> <span class="n">price</span> <span class="o">/</span> <span class="mi">50</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">revenues</span><span class="p">]</span>
-    <span class="n">npv_adj</span> <span class="o">=</span> <span class="n">calculate_npv</span><span class="p">(</span><span class="n">adjusted_revenues</span><span class="p">,</span> <span class="n">costs</span><span class="p">,</span> <span class="n">discount_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+    <span class="n">adjusted_revenues</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="o">*</span> <span class="n">price</span> <span class="o">/</span> <span class="n">base_price</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">revenues</span><span class="p">]</span>
+    <span class="n">npv_adj</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">r</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">0.05</span><span class="p">)</span> <span class="o">**</span> <span class="n">t</span>
+        <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">adjusted_revenues</span><span class="p">,</span> <span class="n">costs</span><span class="p">))</span>
+    <span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Price = $</span><span class="si">{</span><span class="n">price</span><span class="si">}</span><span class="s2">/m³: NPV = $</span><span class="si">{</span><span class="n">npv_adj</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="c1"># Sensitivity to discount rates</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Sensitivity to discount rates:&quot;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">rate</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">]:</span>
-    <span class="n">npv</span> <span class="o">=</span> <span class="n">calculate_npv</span><span class="p">(</span><span class="n">revenues</span><span class="p">,</span> <span class="n">costs</span><span class="p">,</span> <span class="n">discount_rate</span><span class="o">=</span><span class="n">rate</span><span class="p">)</span>
+    <span class="n">npv</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">r</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">rate</span><span class="p">)</span> <span class="o">**</span> <span class="n">t</span>
+        <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">revenues</span><span class="p">,</span> <span class="n">costs</span><span class="p">))</span>
+    <span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Rate = </span><span class="si">{</span><span class="n">rate</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">%: NPV = $</span><span class="si">{</span><span class="n">npv</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -665,7 +678,7 @@ rotation age with respect to discount rate and timber price.</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="ch05_optimization.html"><span class="doc">Chapter 5: Optimization</span></a> — Optimization fundamentals</p></li>
 <li><p><span class="xref std std-doc">/howto/financial-scenarios</span> — Detailed financial analysis guide</p></li>
-<li><p><span class="xref std std-doc">/reference/modules/financial</span> — Financial functions API reference</p></li>
+<li><p><span class="xref std std-doc">reference/contracts/index</span> — Data contracts and module boundaries</p></li>
 </ul>
 </section>
 </section>

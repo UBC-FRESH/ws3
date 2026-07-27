@@ -65,23 +65,6 @@ Documentation Sections
   guides/index
   reference/index
 
-Old Documentation
------------------
-
-The legacy flat-chapter documentation is still available for reference:
-
-.. toctree::
-  :maxdepth: 2
-  :caption: Legacy Chapters
-
-  intro
-  Chapt1
-  Chapt2
-  aboutws3
-  examples
-  appendices
-  modules
-
 Indices and Tables
 ==================
 

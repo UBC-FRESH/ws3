@@ -68,7 +68,9 @@ recipe for different areas or scenarios.
 
    # Inspect the instance
    print(f"Development types: {len(instance.development_types)}")
-   print(f"Total area: {instance.total_area()} ha")
+   # Total area is computed from the instance's development type areas
+   total_area = sum(dt.area for dt in instance.development_types)
+   print(f"Total area: {total_area:.1f} ha")
    print(f"Horizon: {instance.horizon} periods")
 
 Pipelines
@@ -149,13 +151,18 @@ FEMIC provides a bridge to convert instances into ws3 models:
    ws3_model = instance_to_ws3_model(instance)
 
    # Now use ws3 for simulation
-   results = ws3_model.run_simulation(horizon=instance.horizon)
+   # Simulation proceeds by resetting actions, applying them, and growing:
+   #   ws3_model.reset_actions()
+   #   # apply actions for each period...
+   #   ws3_model.grow(start_period=1)
+   # Query results via ws3_model.dtypes[key].area(period)
 
    # Or for optimization
    from ws3.opt import Problem
-   prob = Problem()
+   prob = Problem("femic_opt")
    # ... build optimization problem using ws3_model ...
-   prob.solve(solver="highs")
+   prob.solver("highs")
+   prob.solve()
 
 This bridge ensures that the complex configuration defined in FEMIC
 translates correctly into ws3's data structures.
@@ -254,5 +261,5 @@ Further Reading
 
 - :doc:`ch12_fhops_integration` — Using fhops for harvest cost curves
 - :doc:`ch13_freshforge` — Automating workflows with FreshForge
-- :doc:`/reference/modules/forest` — ws3 ForestModel API reference
+- :doc:`reference/contracts/index` — Data contracts and module boundaries
 - FEMIC documentation: https://femic.readthedocs.io

@@ -1,8 +1,23 @@
-******************
-Wood Supply Models
-******************
+.. deprecated:: 2.0.0
 
-Wood supply models (WSM) are software packages that simulate forest activities 
+   This file is a **legacy chapter** and is no longer part of the active documentation.
+   Its content has been integrated into the structured textbook sections.
+
+.. warning::
+
+   This page is **deprecated**. The content from this legacy chapter has been
+   migrated into the new structured documentation.
+
+   - **Forest estate modelling concepts** → :doc:`textbook/ch01_forest_estate_models`
+   - **Forest inventory** → :doc:`textbook/ch02_forest_inventory`
+   - **Growth and yield** → :doc:`textbook/ch03_growth_and_yield`
+   - **Actions and transitions** → :doc:`textbook/ch04_actions_and_transitions`
+   - **Optimization** → :doc:`textbook/ch05_optimization`
+
+Original title: *Wood Supply Models*
+
+.. contents::
+   :local: 
 to assist in the development of forest plans, wood supply analysis and sustainable 
 forest management. WSM aim to provide foresters, landowners and stakeholders with 
 information about how a forested land base will progress through time. They help 

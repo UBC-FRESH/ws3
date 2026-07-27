@@ -1,8 +1,21 @@
-*******************************
-About the :py:mod:`ws3` Package
-*******************************
+.. deprecated:: 2.0.0
 
-The :py:mod:`ws3` package is implemented using the Python programming language. 
+   This file is a **legacy chapter** and is no longer part of the active documentation.
+   Its content has been integrated into the structured reference sections.
+
+.. warning::
+
+   This page is **deprecated**. The content from this legacy chapter has been
+   migrated into the new structured documentation.
+
+   - **Package overview and architecture** → :doc:`getting_started/architecture_overview`
+   - **API reference** → :doc:`reference/index`
+   - **Spatial allocation** → :doc:`howto/spatial-allocation`
+
+Original title: *About the ws3 Package*
+
+.. contents::
+   :local: 
 :py:mod:`ws3` is an aspatial wood supply model, which applies actions (and matching
 transitions) to development types, simulates growth, and tracks inventory 
 area (by development type and by age class) at each time step. Aspatial 

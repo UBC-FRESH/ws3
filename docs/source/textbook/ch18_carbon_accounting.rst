@@ -174,22 +174,15 @@ Carbon Accounting with ws3
 
 .. code-block:: python
 
-   from ws3.core import compile_scenario
+   # compile_scenario is a user-defined helper (see examples/util.py),
+   # not part of ws3.core. It builds a ws3.opt.Problem from a ForestModel.
+   # The typical approach is to build the Problem directly:
+   from ws3.opt import Problem
    
-   # Define carbon objective
-   carbon_objective = {
-       'type': 'maximize_carbon',
-       'pools': ['above_ground', 'below_ground', 'deadwood', 'litter', 'soil'],
-       'time_horizon': 100,  # years
-       'discount_rate': 0.0,  # no discounting for carbon
-   }
-   
-   # Compile scenario with carbon objective
-   problem = compile_scenario(
-       fm,
-       scenario_name="carbon_max",
-       objective=carbon_objective
-   )
+   prob = Problem("carbon_max")
+   # Add variables, constraints, and objective using prob.add_var(),
+   # prob.add_constraint(), and prob.z(coeffs=dict) as shown elsewhere
+   # in this chapter and in ch05_optimization.rst.
 
 **Step 2: Calculate Carbon Stocks**
 
@@ -265,18 +258,20 @@ Carbon Accounting with ws3
 
 .. code-block:: python
 
-   # Solve carbon optimization
-   solution = problem.solve(solver="gurobi")
+   # Set solver and solve
+   problem.solver("gurobi")
+   problem.solve()
    
-   # Get schedule
-   schedule = solution.get_schedule()
+   # Get solution
+   solution = problem.solution()
+   for var_name, value in solution.items():
+       if value > 0:
+           print(f"  {var_name}: {value:.2f}")
+   print(f"Objective value: {problem.z():.2f}")
    
-   # Calculate carbon stocks
-   carbon_pre = calculate_carbon_stocks(fm, fm.development_types)
-   carbon_post = calculate_carbon_stocks(fm, schedule)
-   
-   # Calculate fluxes
-   fluxes = calculate_carbon_fluxes(carbon_pre, carbon_post)
+   # Carbon stocks and fluxes are calculated from model output:
+   # Query dtype.area(period) for each period, then apply
+   # allometric equations to estimate carbon stocks.
    
    print("Carbon Fluxes (tC):")
    for pool, flux in fluxes.items():
@@ -379,7 +374,7 @@ while maintaining timber production.
    problem.add_constraint(
        name="carbon_neutral",
        coeffs={'carbon_flux': 1.0},
-       sense='=',
+       sense='eq',
        rhs=0.0
    )
    
@@ -387,17 +382,20 @@ while maintaining timber production.
    problem.add_constraint(
        name="timber_min",
        coeffs={'volume_harvest': 1.0},
-       sense='>=',
+       sense='geq',
        rhs=50000  # 50,000 m3 minimum
    )
    
-   # Solve
-   solution = problem.solve(solver="gurobi")
+   # Set solver and solve
+   problem.solver("gurobi")
+   problem.solve()
    
-   # Check carbon balance
-   carbon_balance = solution.get_variable_value('carbon_flux')
+   # Get solution
+   solution = problem.solution()
+   carbon_balance = solution['carbon_flux']
+   volume_harvest = solution['volume_harvest']
    print(f"Carbon balance: {carbon_balance:.2f} tC")
-   print(f"Timber harvested: {solution.get_variable_value('volume_harvest'):.2f} m3")
+   print(f"Timber harvested: {volume_harvest:.2f} m3")
 
 Summary
 -------

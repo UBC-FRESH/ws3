@@ -427,6 +427,8 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l4"><a class="reference internal" href="ch14_spades_integration.html">Chapter 14: Integrating ws3 with SpaDES</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch15_disturbance_modelling.html">Chapter 15: Modelling Natural Disturbances</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch16_supply_chain.html">Chapter 16: Value-Creation and Forest Supply Chain Modelling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch17_advanced_spatial.html">Chapter 17: Advanced Spatial Modeling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch18_carbon_accounting.html">Chapter 18: Carbon Accounting in Detail</a></li>
 </ul>
 </li>
 </ul>
@@ -438,16 +440,6 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
 </ul>
 
         </div>
@@ -573,15 +565,15 @@ stocks from the model output:</p>
 
 <span class="c1"># Define biomass curves (tonnes/ha of carbon)</span>
 <span class="n">df_carbon</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
-    <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
-    <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">65</span><span class="p">,</span> <span class="mi">78</span><span class="p">,</span> <span class="mi">88</span><span class="p">,</span> <span class="mi">95</span><span class="p">],</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DF-SI50_carbon&quot;</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;DF-SI50_carbon&quot;</span><span class="p">,</span>
+    <span class="n">points</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">22</span><span class="p">),</span>
+            <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">35</span><span class="p">),</span> <span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="mi">65</span><span class="p">),</span> <span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">78</span><span class="p">),</span> <span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="mi">88</span><span class="p">),</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">95</span><span class="p">)]</span>
 <span class="p">)</span>
 
 <span class="n">spruce_carbon</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
-    <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
-    <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">38</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">68</span><span class="p">,</span> <span class="mi">73</span><span class="p">],</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;SP-SI40_carbon&quot;</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;SP-SI40_carbon&quot;</span><span class="p">,</span>
+    <span class="n">points</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span>
+            <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">25</span><span class="p">),</span> <span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">38</span><span class="p">),</span> <span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span> <span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="mi">68</span><span class="p">),</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">73</span><span class="p">)]</span>
 <span class="p">)</span>
 
 <span class="c1"># Calculate carbon stock for a development type</span>
@@ -652,41 +644,42 @@ stocks from the model output:</p>
 <p>Carbon can be incorporated into the optimization objective:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.opt</span><span class="w"> </span><span class="kn">import</span> <span class="n">Problem</span>
 
-<span class="n">prob</span> <span class="o">=</span> <span class="n">Problem</span><span class="p">()</span>
+<span class="n">prob</span> <span class="o">=</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">&quot;carbon_optimization&quot;</span><span class="p">)</span>
 
 <span class="c1"># Decision variables</span>
-<span class="n">harvest_vars</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">harvest_var_names</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="k">for</span> <span class="n">dt_code</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;DF-SI50&quot;</span><span class="p">,</span> <span class="s2">&quot;SP-SI40&quot;</span><span class="p">]:</span>
     <span class="k">for</span> <span class="n">period</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
         <span class="n">var_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;harv_</span><span class="si">{</span><span class="n">dt_code</span><span class="si">}</span><span class="s2">_p</span><span class="si">{</span><span class="n">period</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="n">harvest_vars</span><span class="p">[(</span><span class="n">dt_code</span><span class="p">,</span> <span class="n">period</span><span class="p">)]</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="n">var_name</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="s2">&quot;continuous&quot;</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mi">0</span>
-        <span class="p">)</span>
+        <span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">var_name</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="s2">&quot;continuous&quot;</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">harvest_var_names</span><span class="p">[(</span><span class="n">dt_code</span><span class="p">,</span> <span class="n">period</span><span class="p">)]</span> <span class="o">=</span> <span class="n">var_name</span>
 
 <span class="c1"># Objective: maximize NPV + carbon revenue</span>
+<span class="c1"># z() takes a dict keyed on variable names</span>
 <span class="n">timber_price</span> <span class="o">=</span> <span class="mi">50</span>  <span class="c1"># $/m³</span>
 <span class="n">carbon_price</span> <span class="o">=</span> <span class="mi">50</span>  <span class="c1"># $/tonne CO₂ (ETS price)</span>
 <span class="n">discount_rate</span> <span class="o">=</span> <span class="mf">0.05</span>
 
-<span class="n">npv</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="k">for</span> <span class="p">(</span><span class="n">dt_code</span><span class="p">,</span> <span class="n">period</span><span class="p">),</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">harvest_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<span class="n">npv_coeffs</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">dt_code</span><span class="p">,</span> <span class="n">period</span><span class="p">),</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">harvest_var_names</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="n">volume_per_ha</span> <span class="o">=</span> <span class="mi">200</span>  <span class="c1"># m³/ha</span>
-    <span class="n">timber_revenue</span> <span class="o">=</span> <span class="n">var</span> <span class="o">*</span> <span class="n">volume_per_ha</span> <span class="o">*</span> <span class="n">timber_price</span>
-    <span class="n">carbon_revenue</span> <span class="o">=</span> <span class="n">var</span> <span class="o">*</span> <span class="n">volume_per_ha</span> <span class="o">*</span> <span class="mf">0.45</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="mf">3.67</span> <span class="o">*</span> <span class="n">carbon_price</span>
-    <span class="n">npv</span> <span class="o">+=</span> <span class="p">(</span><span class="n">timber_revenue</span> <span class="o">+</span> <span class="n">carbon_revenue</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">discount_rate</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">period</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
-
-<span class="n">prob</span><span class="o">.</span><span class="n">set_objective</span><span class="p">(</span><span class="n">npv</span><span class="p">,</span> <span class="n">sense</span><span class="o">=</span><span class="s2">&quot;maximize&quot;</span><span class="p">)</span>
+    <span class="n">timber_revenue</span> <span class="o">=</span> <span class="n">volume_per_ha</span> <span class="o">*</span> <span class="n">timber_price</span>
+    <span class="n">carbon_revenue</span> <span class="o">=</span> <span class="n">volume_per_ha</span> <span class="o">*</span> <span class="mf">0.45</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="mf">3.67</span> <span class="o">*</span> <span class="n">carbon_price</span>
+    <span class="n">coeff</span> <span class="o">=</span> <span class="p">(</span><span class="n">timber_revenue</span> <span class="o">+</span> <span class="n">carbon_revenue</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">discount_rate</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">period</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="n">npv_coeffs</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">coeff</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">z</span><span class="p">(</span><span class="n">coeffs</span><span class="o">=</span><span class="n">npv_coeffs</span><span class="p">)</span>
 
 <span class="c1"># Constraint: carbon budget (max allowable emissions)</span>
 <span class="n">max_carbon_budget</span> <span class="o">=</span> <span class="mi">10000</span>  <span class="c1"># tonnes CO₂ over 100 years</span>
-<span class="n">total_carbon_flux</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="k">for</span> <span class="p">(</span><span class="n">dt_code</span><span class="p">,</span> <span class="n">period</span><span class="p">),</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">harvest_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="n">carbon_per_m3</span> <span class="o">=</span> <span class="mf">0.45</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="mf">3.67</span>  <span class="c1"># tonnes CO₂ per m³</span>
-    <span class="n">total_carbon_flux</span> <span class="o">+=</span> <span class="n">var</span> <span class="o">*</span> <span class="mi">200</span> <span class="o">*</span> <span class="n">carbon_per_m3</span>
+<span class="n">carbon_per_m3</span> <span class="o">=</span> <span class="mf">0.45</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="mf">3.67</span>  <span class="c1"># tonnes CO₂ per m³</span>
+<span class="n">carbon_coeffs</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="n">harvest_var_names</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+    <span class="n">carbon_coeffs</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="mi">200</span> <span class="o">*</span> <span class="n">carbon_per_m3</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="s2">&quot;carbon_budget&quot;</span><span class="p">,</span> <span class="n">coeffs</span><span class="o">=</span><span class="n">carbon_coeffs</span><span class="p">,</span> <span class="n">sense</span><span class="o">=</span><span class="s2">&quot;leq&quot;</span><span class="p">,</span> <span class="n">rhs</span><span class="o">=</span><span class="n">max_carbon_budget</span><span class="p">)</span>
 
-<span class="n">prob</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="s2">&quot;carbon_budget&quot;</span><span class="p">,</span> <span class="n">expr</span><span class="o">=</span><span class="n">total_carbon_flux</span> <span class="o">&lt;=</span> <span class="n">max_carbon_budget</span><span class="p">)</span>
-
-<span class="n">prob</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s2">&quot;highs&quot;</span><span class="p">)</span>
+<span class="c1"># Set solver and solve</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">solver</span><span class="p">(</span><span class="s2">&quot;highs&quot;</span><span class="p">)</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>

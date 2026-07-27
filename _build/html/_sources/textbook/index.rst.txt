@@ -129,6 +129,8 @@ Contents
    ch14_spades_integration
    ch15_disturbance_modelling
    ch16_supply_chain
+   ch17_advanced_spatial
+   ch18_carbon_accounting
 
 Chapter Structure
 =================

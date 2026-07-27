@@ -4,37 +4,34 @@
 Spatial Schedule Allocation
 =============================
 
-Goal
-----
-
-Allocate an aspatial harvest schedule to a rasterized forest inventory.
+This guide shows how to allocate an aspatial harvest schedule to a
+rasterized forest inventory.
 
 Prerequisites
 -------------
 
-* Completed :doc:`running-optimization`
+* A loaded :ref:`ForestModel <howto-loading-model>`
+* A solved :ref:`Problem <howto-running-optimization>`
 * A rasterized forest inventory (GeoTIFF with theme, age, and block ID layers)
 
-Step-by-Step Instructions
--------------------------
+Procedure
+---------
 
-**Step 1: Prepare Spatial Data**
+**1. Prepare spatial data**
 
 .. code-block:: python
 
    from ws3.spatial import ForestRaster
 
-   # Define development type mapping
    hdt_map = {
        1: ('TSA24', 'CWHvm1', 1, 'DWG', 'curve_001'),
        2: ('TSA24', 'CWHvm1', 1, 'SP', 'curve_002'),
    }
 
-   # Define hash function
    def hdt_func(key):
        return hash(key) % 1000000
 
-**Step 2: Create ForestRaster Instance**
+**2. Create a ForestRaster instance**
 
 .. code-block:: python
 
@@ -50,42 +47,22 @@ Step-by-Step Instructions
        period_length=10
    )
 
-**Step 3: Allocate Schedule**
+**3. Allocate the schedule**
 
 .. code-block:: python
 
-   # Allocate harvest schedule to raster
    raster.allocate_schedule(problem.solution())
 
-**Step 4: Export Results**
+**4. Export results**
 
 .. code-block:: python
 
-   # Export allocated schedule to GeoTIFF
    raster.export_schedule()
-
-Expected Output
----------------
-
-* Spatially allocated harvest schedule
-* GeoTIFF output with harvest prescriptions
 
 Troubleshooting
 ---------------
 
-**Issue: Allocation fails**
-
-* Check that raster dimensions match model extent
-* Verify development type mapping is correct
-* Ensure schedule is feasible
-
-**Issue: Output files missing**
-
-* Check that output directory exists and is writable
-* Verify rasterio is installed
-
-Next Steps
-----------
-
-* :doc:`running-optimization` — Run optimization scenarios
-* :doc:`multi-objective-optimization` — Run multi-objective scenarios
+* **Allocation fails** — verify raster dimensions match model extent and
+  that the development type mapping is correct.
+* **Output files missing** — confirm the output directory exists and is
+  writable, and that ``rasterio`` is installed.

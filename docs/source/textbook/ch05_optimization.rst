@@ -59,25 +59,26 @@ Setting Up an Optimization Problem
    from ws3.opt import Problem
 
    # Create an optimization problem
-   prob = Problem()
+   prob = Problem("example_problem")
 
    # Add decision variables
    # x1 = harvest area for development type 1
    # x2 = harvest area for development type 2
-   x1 = prob.add_variable("harvest_DT1", vtype="continuous", lb=0, ub=500)
-   x2 = prob.add_variable("harvest_DT2", vtype="continuous", lb=0, ub=300)
+   prob.add_var("harvest_DT1", vtype="continuous", lb=0, ub=500)
+   prob.add_var("harvest_DT2", vtype="continuous", lb=0, ub=300)
 
    # Add objective: maximize NPV
+   # The z() method sets objective coefficients as a dict keyed on variable names
    # NPV = 50 * x1 + 40 * x2 (price per m³ * volume per ha * area)
-   npv = 50 * x1 + 40 * x2
-   prob.set_objective(npv, sense="maximize")
+   prob.z(coeffs={"harvest_DT1": 50.0, "harvest_DT2": 40.0})
 
    # Add constraints
    # Constraint 1: Total harvest cannot exceed 200 ha per period
-   prob.add_constraint("max_harvest", expr=x1 + x2 <= 200)
+   # add_constraint(name, coeffs_dict, sense, rhs) where sense is 'leq', 'geq', or 'eq'
+   prob.add_constraint("max_harvest", coeffs={"harvest_DT1": 1.0, "harvest_DT2": 1.0}, sense="leq", rhs=200)
 
    # Constraint 2: At least 100 ha of DT1 must remain
-   prob.add_constraint("min_inventory", expr=x1 <= 400)
+   prob.add_constraint("min_inventory", coeffs={"harvest_DT1": 1.0}, sense="leq", rhs=400)
 
 Solving the Problem
 -------------------
@@ -86,14 +87,10 @@ ws3 supports multiple solvers:
 
 .. code-block:: python
 
-   # Solve with HiGHS (default, open-source)
-   prob.solve(solver="highs")
-
-   # Solve with Gurobi (commercial, faster for large problems)
-   prob.solve(solver="gurobi")
-
-   # Solve with PuLP (open-source, good for linear problems)
-   prob.solve(solver="pulp")
+   # Set solver and solve
+   # The solver is set via prob.solver("highs") before calling solve()
+   prob.solver("highs")  # or "gurobi" or "pulp"
+   prob.solve()
 
 Extracting Results
 ------------------
@@ -101,14 +98,14 @@ Extracting Results
 .. code-block:: python
 
    # Get the optimal solution
-   solution = prob.get_solution()
+   solution = prob.solution()
 
    # Print decision variable values
    print(f"Optimal harvest for DT1: {solution['harvest_DT1']:.1f} ha")
    print(f"Optimal harvest for DT2: {solution['harvest_DT2']:.1f} ha")
 
    # Print the objective value
-   print(f"Maximum NPV: ${solution.objective_value:,.0f}")
+   print(f"Maximum NPV: ${prob.z():,.0f}")
 
 Multi-Period Optimization
 -------------------------
@@ -118,45 +115,47 @@ For realistic forest planning, you need to optimize over multiple periods:
 .. code-block:: python
 
    # Create variables for each development type and period
-   harvest_vars = {}
+   # Track variable names for building objective and constraints
+   harvest_var_names = {}  # {(dt_code, period): var_name}
    for dt_code in ["DF-SI50", "SP-SI40"]:
        for period in range(20):
            var_name = f"harv_{dt_code}_p{period}"
-           harvest_vars[(dt_code, period)] = prob.add_variable(
-               name=var_name,
-               vtype="continuous",
-               lb=0,
-               ub=100  # Max 100 ha per period
-           )
+           prob.add_var(var_name, vtype="continuous", lb=0, ub=100)  # Max 100 ha per period
+           harvest_var_names[(dt_code, period)] = var_name
 
    # Objective: maximize NPV over all periods
-   npv = 0
+   # z() takes a dict keyed on variable names with coefficient values
+   npv_coeffs = {}
    discount_rate = 0.05
-   for (dt_code, period), var in harvest_vars.items():
+   for (dt_code, period), var_name in harvest_var_names.items():
        volume_per_ha = 200  # m³/ha (from growth curve)
        price = 50  # $/m³
-       npv += var * volume_per_ha * price * (1 + discount_rate) ** (-period * 5)
-
-   prob.set_objective(npv, sense="maximize")
+       coeff = volume_per_ha * price * (1 + discount_rate) ** (-period * 5)
+       npv_coeffs[var_name] = coeff
+   prob.z(coeffs=npv_coeffs)
 
    # Constraint: Maximum harvest area per period
    for period in range(20):
-       period_harvest = sum(
-           harvest_vars[(dt_code, period)]
+       period_var_names = [
+           harvest_var_names[(dt_code, period)]
            for dt_code in ["DF-SI50", "SP-SI40"]
-       )
+       ]
+       period_coeffs = {vn: 1.0 for vn in period_var_names}
        prob.add_constraint(
            f"max_harvest_p{period}",
-           expr=period_harvest <= 200
+           coeffs=period_coeffs,
+           sense="leq",
+           rhs=200
        )
 
    # Solve
-   prob.solve(solver="highs")
+   prob.solver("highs")
+   prob.solve()
 
    # Extract solution
-   solution = prob.get_solution()
-   for (dt_code, period), var in harvest_vars.items():
-       area = solution[var.name]
+   solution = prob.solution()
+   for (dt_code, period), var_name in harvest_var_names.items():
+       area = solution[var_name]
        if area > 0:
            print(f"Period {period}: Harvest {area:.1f} ha of {dt_code}")
 

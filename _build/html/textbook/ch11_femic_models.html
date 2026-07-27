@@ -425,6 +425,8 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l4"><a class="reference internal" href="ch14_spades_integration.html">Chapter 14: Integrating ws3 with SpaDES</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch15_disturbance_modelling.html">Chapter 15: Modelling Natural Disturbances</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch16_supply_chain.html">Chapter 16: Value-Creation and Forest Supply Chain Modelling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch17_advanced_spatial.html">Chapter 17: Advanced Spatial Modeling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch18_carbon_accounting.html">Chapter 18: Carbon Accounting in Detail</a></li>
 </ul>
 </li>
 </ul>
@@ -436,16 +438,6 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
 </ul>
 
         </div>
@@ -536,7 +528,9 @@ recipe for different areas or scenarios.</p>
 
 <span class="c1"># Inspect the instance</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Development types: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">instance</span><span class="o">.</span><span class="n">development_types</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total area: </span><span class="si">{</span><span class="n">instance</span><span class="o">.</span><span class="n">total_area</span><span class="p">()</span><span class="si">}</span><span class="s2"> ha&quot;</span><span class="p">)</span>
+<span class="c1"># Total area is computed from the instance&#39;s development type areas</span>
+<span class="n">total_area</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">area</span> <span class="k">for</span> <span class="n">dt</span> <span class="ow">in</span> <span class="n">instance</span><span class="o">.</span><span class="n">development_types</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total area: </span><span class="si">{</span><span class="n">total_area</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> ha&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Horizon: </span><span class="si">{</span><span class="n">instance</span><span class="o">.</span><span class="n">horizon</span><span class="si">}</span><span class="s2"> periods&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -611,13 +605,18 @@ compare results.</p>
 <span class="n">ws3_model</span> <span class="o">=</span> <span class="n">instance_to_ws3_model</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
 
 <span class="c1"># Now use ws3 for simulation</span>
-<span class="n">results</span> <span class="o">=</span> <span class="n">ws3_model</span><span class="o">.</span><span class="n">run_simulation</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="n">instance</span><span class="o">.</span><span class="n">horizon</span><span class="p">)</span>
+<span class="c1"># Simulation proceeds by resetting actions, applying them, and growing:</span>
+<span class="c1">#   ws3_model.reset_actions()</span>
+<span class="c1">#   # apply actions for each period...</span>
+<span class="c1">#   ws3_model.grow(start_period=1)</span>
+<span class="c1"># Query results via ws3_model.dtypes[key].area(period)</span>
 
 <span class="c1"># Or for optimization</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ws3.opt</span><span class="w"> </span><span class="kn">import</span> <span class="n">Problem</span>
-<span class="n">prob</span> <span class="o">=</span> <span class="n">Problem</span><span class="p">()</span>
+<span class="n">prob</span> <span class="o">=</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">&quot;femic_opt&quot;</span><span class="p">)</span>
 <span class="c1"># ... build optimization problem using ws3_model ...</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s2">&quot;highs&quot;</span><span class="p">)</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">solver</span><span class="p">(</span><span class="s2">&quot;highs&quot;</span><span class="p">)</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>This bridge ensures that the complex configuration defined in FEMIC
@@ -712,7 +711,7 @@ aggregates into development types, and fits growth curves.</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="ch12_fhops_integration.html"><span class="doc">Chapter 12: Harvest Cost Curves with FHOPS</span></a> — Using fhops for harvest cost curves</p></li>
 <li><p><a class="reference internal" href="ch13_freshforge.html"><span class="doc">Chapter 13: Workflow Automation with FreshForge</span></a> — Automating workflows with FreshForge</p></li>
-<li><p><span class="xref std std-doc">/reference/modules/forest</span> — ws3 ForestModel API reference</p></li>
+<li><p><span class="xref std std-doc">reference/contracts/index</span> — Data contracts and module boundaries</p></li>
 <li><p>FEMIC documentation: <a class="reference external" href="https://femic.readthedocs.io">https://femic.readthedocs.io</a></p></li>
 </ul>
 </section>

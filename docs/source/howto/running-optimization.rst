@@ -4,21 +4,18 @@
 Running Optimization
 =============================
 
-Goal
-----
-
-Run your first optimization scenario with ws3.
+This guide shows how to run an optimization scenario with ws3.
 
 Prerequisites
 -------------
 
-* Completed :doc:`loading-a-woodstock-model` and :doc:`defining-growth-curves`
-* Understanding of optimization concepts
+* A loaded :ref:`ForestModel <howto-loading-model>`
+* Understanding of linear programming concepts
 
-Step-by-Step Instructions
--------------------------
+Procedure
+---------
 
-**Step 1: Load Model**
+**1. Load the model**
 
 .. code-block:: python
 
@@ -39,7 +36,7 @@ Step-by-Step Instructions
    fm.add_null_action()
    fm.reset_actions()
 
-**Step 2: Create Problem**
+**2. Create a Problem**
 
 .. code-block:: python
 
@@ -51,35 +48,32 @@ Step-by-Step Instructions
        solver="highs"
    )
 
-**Step 3: Define Objective**
+**3. Define the objective**
 
 .. code-block:: python
 
-   # Define objective coefficients
-   # Example: maximize volume harvest
    coeffs = {var_name: 1.0 for var_name in problem.var_names()}
    problem.z(coeffs)
 
-**Step 4: Add Constraints**
+**4. Add constraints**
 
 .. code-block:: python
 
-   # Example: even-flow constraint
-   # Sum of harvest in period 0 <= 1.2 * Sum of harvest in period 1
    problem.add_constraint(
        name="even_flow",
-       coeffs={var_name: 1.0 if "period_0" in var_name else -1.2 for var_name in problem.var_names()},
+       coeffs={var_name: 1.0 if "period_0" in var_name else -1.2
+               for var_name in problem.var_names()},
        sense="<=",
        rhs=0.0
    )
 
-**Step 5: Solve**
+**5. Solve**
 
 .. code-block:: python
 
    problem.solve(verbose=True)
 
-**Step 6: Inspect Results**
+**6. Inspect results**
 
 .. code-block:: python
 
@@ -87,36 +81,12 @@ Step-by-Step Instructions
    print(f"Objective value: {problem.z()}")
    print(f"Variables: {len(solution)}")
 
-Expected Output
----------------
-
-* Optimization solution found
-* Harvest schedule with period-by-period prescriptions
-* Summary statistics (total volume, NPV, etc.)
-
 Troubleshooting
 ---------------
 
-**Issue: Solver fails to converge**
-
-* Check that all development types and actions are defined
-* Verify constraint ranges are feasible
-* Try simpler objective function first
-
-**Issue: No harvest in schedule**
-
-* Check that actions are applicable to development types
-* Verify area constraints allow harvest
-* Ensure growth curves are defined
-
-**Issue: Solver takes too long**
-
-* Reduce planning horizon
-* Simplify constraints
-* Check model size (number of development types)
-
-Next Steps
-----------
-
-* :doc:`spatial-allocation` — Allocate harvest spatially
-* :doc:`multi-objective-optimization` — Run multi-objective scenarios
+* **Solver fails to converge** — verify all development types and actions are
+  defined and constraint ranges are feasible.
+* **No harvest in schedule** — check that actions are applicable to
+  development types and that area constraints allow harvest.
+* **Solver takes too long** — reduce the planning horizon or simplify
+  constraints.

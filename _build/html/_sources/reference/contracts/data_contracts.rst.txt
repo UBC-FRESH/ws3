@@ -9,157 +9,203 @@ This page defines the data formats that ws3 expects and produces.
 Development Type Contract
 -------------------------
 
-Each development type must have:
+Development types are represented as :py:class:`ws3.forest.DevelopmentType` instances,
+keyed by a tuple of theme values (one per theme) stored in ``ForestModel.dtypes``.
+
+A development type is identified by its **key** — a tuple of theme values (e.g.,
+``('SP', 50, 'T1')`` for species=SP, site_index=50, theme1=T1). Each development
+type encapsulates:
 
 .. list-table::
    :header-rows: 1
    :widths: 20 20 60
 
-   * - Field
+   * - Attribute
      - Type
      - Description
-   * - code
-     - str
-     - Unique identifier (e.g., "DT001")
-   * - species
-     - str
-     - Species code (e.g., "SP", "HW")
-   * - site_index
-     - int
-     - Site index class (e.g., 40, 50)
-   * - age
-     - int
-     - Stand age in years
-   * - area
-     - float
-     - Area in hectares
+   * - key
+     - tuple[str, ...]
+     - Unique identifier: tuple of theme values
+   * - parent
+     - ForestModel
+     - Reference to owning model
+   * - _ages_curve
+     - core.Curve
+     - Age curve for the development type
+   * - _ycomps
+     - dict[str, Curve]
+     - Yield component curves keyed by name
+   * - oper_expr
+     - defaultdict(list)
+     - Operability expressions per action code
+   * - transitions
+     - dict[(str, int), list]
+     - Action/age → target development types
+   * - _areas
+     - dict[int, defaultdict(float)]
+     - Area by period and age
 
 Example:
 
 .. code-block:: python
 
-   {
-       "code": "DT001",
-       "species": "SP",
-       "site_index": 50,
-       "age": 20,
-       "area": 100.0
-   }
+   # Development types are created automatically when areas are imported
+   model.import_areas_section()
+   # Access a development type:
+   dt = model.dtypes[('SP', 50, 'T1')]
 
 Action Contract
 ---------------
 
-Each action must have:
+Actions are represented as :py:class:`ws3.forest.Action` instances stored in
+``ForestModel.actions`` (dict keyed by action code string).
 
 .. list-table::
    :header-rows: 1
    :widths: 20 20 60
 
-   * - Field
+   * - Attribute
      - Type
      - Description
    * - code
      - str
-     - Unique action identifier (e.g., "CLEARCUT")
+     - Unique action identifier (e.g., "harvest")
+   * - targetage
+     - int or None
+     - Target age for the action (None = any age)
    * - descr
      - str
      - Human-readable description
+   * - lockexempt
+     - bool
+     - Whether action bypasses age locks
    * - components
      - list[str]
-     - Yield components affected (e.g., ["volume"])
-   * - transitions
-     - dict[str, str]
-     - Mapping from source DT code to target DT code
+     - Yield components affected (for aggregate actions)
+   * - partial
+     - list[str]
+     - Partial yield components
+   * - is_harvest
+     - int
+     - 1 if harvest action, 0 otherwise
+   * - is_sticky
+     - int
+     - 1 if action persists across periods
 
 Example:
 
 .. code-block:: python
 
-   {
-       "code": "CLEARCUT",
-       "descr": "Clearcut harvest",
-       "components": ["volume"],
-       "transitions": {
-           "DT001": "DT001_REGEN"
-       }
-   }
+   action = model.actions['harvest']
+   print(action.code, action.descr)  # 'harvest', 'Clearcut harvest'
 
 Growth Curve Contract
 ---------------------
 
-Each growth curve must have:
+Growth curves are represented as :py:class:`ws3.core.Curve` instances.
+Curves are registered with the model via :py:meth:`ws3.forest.ForestModel.register_curve`.
 
 .. list-table::
    :header-rows: 1
    :widths: 20 20 60
 
-   * - Field
+   * - Parameter
      - Type
      - Description
-   * - species
+   * - label
+     - str or None
+     - Label for the curve
+   * - id
+     - str or None
+     - ID for the curve
+   * - is_volume
+     - bool
+     - Whether the curve tracks volume
+   * - points
+     - list[tuple[int, float]]
+     - List of (x, y) coordinate pairs
+   * - type
      - str
-     - Species code
-   * - site_index
+     - Curve type: 'a' (age-based), 't' (time-based), 'c' (complex)
+   * - is_special
+     - bool
+     - Immune to simplification
+   * - period_length
+     - float
+     - Length of planning period in years
+   * - xmin
      - int
-     - Site index class
-   * - ages
-     - list[int]
-     - Age values (ascending order)
-   * - volumes
-     - list[float]
-     - Volume values (m3/ha)
-   * - components
-     - list[str]
-     - Components included (e.g., ["volume", "basal_area"])
+     - Minimum x value (default: 0)
+   * - xmax
+     - int
+     - Maximum x value (default: 200)
+   * - epsilon
+     - float
+     - Tolerance for curve simplification
+   * - simplify
+     - bool
+     - Whether to simplify the curve on construction
 
 Example:
 
 .. code-block:: python
 
-   {
-       "species": "SP",
-       "site_index": 50,
-       "ages": [10, 20, 30, 40, 50],
-       "volumes": [25.0, 55.0, 95.0, 150.0, 220.0],
-       "components": ["volume"]
-   }
+   from ws3.core import Curve
+   curve = Curve(
+       label='vol_SP50',
+       points=[(0, 0), (10, 25.0), (20, 55.0), (30, 95.0), (40, 150.0), (50, 220.0)],
+       is_volume=True,
+       type='a',
+       period_length=10
+   )
+   registered = model.register_curve(curve)
+
+Yields Data Structure
+---------------------
+
+Yields are stored as a **list** of tuples in ``ForestModel.yields``. Each entry
+is a tuple of ``(mask, ytype, ycomps)`` where:
+
+- ``mask`` — tuple of theme values (e.g., ``('SP', 50)``)
+- ``ytype`` — one of ``'a'`` (age-based), ``'t'`` (time-based), ``'c'`` (complex)
+- ``ycomps`` — list of ``(yname, Curve)`` tuples
 
 Schedule Output Contract
 ------------------------
 
-Each schedule row must have:
+Schedules are compiled as lists of tuples via :py:meth:`ws3.forest.ForestModel.compile_schedule`.
+Each tuple has the format ``(dtype_key, age, area, acode, period, etype)``.
 
 .. list-table::
    :header-rows: 1
    :widths: 20 20 60
 
-   * - Field
+   * - Element
      - Type
      - Description
-   * - period
+   * - dtype_key
+     - tuple[str, ...]
+     - Development type key
+   * - age
      - int
-     - Planning period (0-indexed)
-   * - development_type
-     - str
-     - Source development type code
-   * - action
-     - str
-     - Action code
-   * - area_ha
+     - Age at which action was applied
+   * - area
      - float
      - Area harvested (hectares)
-   * - volume_m3
-     - float
-     - Volume harvested (cubic meters)
+   * - acode
+     - str
+     - Action code
+   * - period
+     - int
+     - Planning period (1-indexed)
+   * - etype
+     - str
+     - ``'_existing'`` or ``'_future'``
 
 Example:
 
 .. code-block:: python
 
-   {
-       "period": 0,
-       "development_type": "DT001",
-       "action": "CLEARCUT",
-       "area_ha": 50.0,
-       "volume_m3": 1250.0
-   }
+   schedule = model.compile_schedule(problem)
+   for dtk, age, area, acode, period, etype in schedule:
+       print(f"Period {period}: {acode} on {dtk} at age {age}, {area} ha")

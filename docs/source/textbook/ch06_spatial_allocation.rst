@@ -56,103 +56,56 @@ Creating a Forest Raster
 .. code-block:: python
 
    from ws3.spatial import ForestRaster
-   import rasterio
 
-   # Load forest inventory as a raster
-   raster = ForestRaster(
-       input_raster="inventory.tif",
-       attribute_column="species"
-   )
+   # ForestRaster requires a pre-rasterized inventory GeoTIFF and a
+   # ForestModel instance. The constructor signature is:
+   #
+   #   ForestRaster(hdt_map, hdt_func, src_path, snk_path,
+   #                acode_map, forestmodel, base_year, ...)
+   #
+   # Where:
+   #   hdt_map    - dict mapping hash values to development type tuples
+   #   hdt_func   - function to hash development type tuples
+   #   src_path   - path to input GeoTIFF (rasterized inventory)
+   #   snk_path   - directory for output GeoTIFF files
+   #   acode_map  - dict mapping disturbance codes to output prefixes
+   #   forestmodel - a ForestModel instance
+   #   base_year  - base year for output file naming
+   #
+   # Example:
+   #
+   #   raster = ForestRaster(
+   #       hdt_map=hdt_map,
+   #       hdt_func=hdt_func,
+   #       src_path="data/inventory.tif",
+   #       snk_path="output/spatial",
+   #       acode_map={"HARV": "harv", "THIN": "thin"},
+   #       forestmodel=model,
+   #       base_year=2024
+   #   )
 
-   print(f"Raster size: {raster.width} x {raster.height} pixels")
-   print(f"Pixel size: {raster.res}")
-   print(f"Total area: {raster.total_area()} hectares")
+Spatial Allocation via allocate_schedule
+----------------------------------------
 
-Reading Raster Data
--------------------
-
-.. code-block:: python
-
-   # Read the raster data as a numpy array
-   data = raster.read()
-
-   # Get unique development types
-   unique_dts = raster.get_unique_development_types()
-   print(f"Development types: {unique_dts}")
-
-   # Get area by development type
-   area_by_dt = raster.area_by_development_type()
-   print(area_by_dt)
-
-Spatial Allocation
-------------------
-
-Once you have an aspatial harvest target, you can allocate it to specific
-pixels:
-
-.. code-block:: python
-
-   # Get aspatial harvest target (e.g., from optimization)
-   target_area = 100  # hectares
-
-   # Allocate to pixels
-   harvest_map = raster.allocate_harvest(
-       target_area=target_area,
-       method="greedy",  # Always harvest oldest first
-       development_type="DF-SI50"
-   )
-
-   # Save harvest map to GeoTIFF
-   rasterio.open(
-       "harvest_map.tif",
-       "w",
-       driver="GTiff",
-       height=raster.height,
-       width=raster.width,
-       count=1,
-       dtype="int16",
-       crs=raster.crs,
-       transform=raster.transform
-   ).write(harvest_map)
-
-Allocation Methods
-------------------
-
-ws3 supports several allocation methods:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 25 75
-
-   * - Method
-     - Description
-   * - ``greedy``
-     - Always harvest oldest stands first
-   * - ``random``
-     - Randomly select pixels
-   * - ``closest``
-     - Harvest from closest to existing harvest blocks
-   * - ``custom``
-     - User-defined selection function
-
-Contiguity Constraints
-----------------------
-
-For realistic harvest planning, you may want to ensure that harvested
-pixels are contiguous (form a single block):
+Once you have an aspatial harvest target (e.g., from optimization),
+you can allocate it to specific pixels using ``allocate_schedule``:
 
 .. code-block:: python
 
-   # Allocate with contiguity constraint
-   harvest_map = raster.allocate_harvest(
-       target_area=target_area,
-       method="contiguous",
-       development_type="DF-SI50"
-   )
-
-   # Check if harvest is contiguous
-   is_contiguous = raster.check_contiguity(harvest_map)
-   print(f"Harvest is contiguous: {is_contiguous}")
+   # The allocate_schedule method takes a schedule (list of
+   # (dtype_key, age, area, acode, period, etype) tuples) and
+   # allocates it to the raster.
+   #
+   # Example schedule from optimization:
+   #   schedule = model.compile_schedule(problem)
+   #
+   # With context manager:
+   #   with ForestRaster(...) as raster:
+   #       raster.allocate_schedule(schedule)
+   #       raster.commit()
+   #
+   # Output GeoTIFF files are created automatically in snk_path,
+   # one per combination of disturbance type and time step.
 
 Spatial Constraints
 -------------------
@@ -196,4 +149,4 @@ Further Reading
 
 - :doc:`ch05_optimization` — Optimization fundamentals
 - :doc:`/howto/spatial-schedule-allocation` — Detailed spatial allocation guide
-- :doc:`/reference/modules/spatial` — ForestRaster API reference
+- :doc:`reference/contracts/index` — Data contracts and module boundaries

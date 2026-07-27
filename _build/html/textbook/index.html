@@ -425,6 +425,8 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l4"><a class="reference internal" href="ch14_spades_integration.html">Chapter 14: Integrating ws3 with SpaDES</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch15_disturbance_modelling.html">Chapter 15: Modelling Natural Disturbances</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch16_supply_chain.html">Chapter 16: Value-Creation and Forest Supply Chain Modelling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch17_advanced_spatial.html">Chapter 17: Advanced Spatial Modeling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch18_carbon_accounting.html">Chapter 18: Carbon Accounting in Detail</a></li>
 </ul>
 </li>
 </ul>
@@ -436,16 +438,6 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
 </ul>
 
         </div>
@@ -642,10 +634,7 @@ disturbance, and supply-chain workflows.</p>
 <li class="toctree-l2"><a class="reference internal" href="ch06_spatial_allocation.html#aspatial-vs-spatial-models">Aspatial vs. Spatial Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ch06_spatial_allocation.html#forest-raster-data">Forest Raster Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ch06_spatial_allocation.html#creating-a-forest-raster">Creating a Forest Raster</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ch06_spatial_allocation.html#reading-raster-data">Reading Raster Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ch06_spatial_allocation.html#spatial-allocation">Spatial Allocation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ch06_spatial_allocation.html#allocation-methods">Allocation Methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ch06_spatial_allocation.html#contiguity-constraints">Contiguity Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch06_spatial_allocation.html#spatial-allocation-via-allocate-schedule">Spatial Allocation via allocate_schedule</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ch06_spatial_allocation.html#spatial-constraints">Spatial Constraints</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ch06_spatial_allocation.html#performance-considerations">Performance Considerations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ch06_spatial_allocation.html#exercises">Exercises</a></li>
@@ -788,6 +777,34 @@ disturbance, and supply-chain workflows.</p>
 <li class="toctree-l2"><a class="reference internal" href="ch16_supply_chain.html#worked-interpretation-exercise">Worked Interpretation Exercise</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ch16_supply_chain.html#exercises">Exercises</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ch16_supply_chain.html#further-reading">Further Reading</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ch17_advanced_spatial.html">Chapter 17: Advanced Spatial Modeling</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ch17_advanced_spatial.html#learning-objectives">Learning Objectives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch17_advanced_spatial.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch17_advanced_spatial.html#spatial-constraints-overview">Spatial Constraints Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch17_advanced_spatial.html#implementing-adjacency-constraints">Implementing Adjacency Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch17_advanced_spatial.html#contiguous-area-requirements">Contiguous Area Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch17_advanced_spatial.html#raster-based-spatial-analysis">Raster-Based Spatial Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch17_advanced_spatial.html#case-study-adjacency-constraints-in-tsa-24">Case Study: Adjacency Constraints in TSA 24</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch17_advanced_spatial.html#summary">Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch17_advanced_spatial.html#exercises">Exercises</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch17_advanced_spatial.html#related-resources">Related Resources</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ch18_carbon_accounting.html">Chapter 18: Carbon Accounting in Detail</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ch18_carbon_accounting.html#learning-objectives">Learning Objectives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch18_carbon_accounting.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch18_carbon_accounting.html#forest-carbon-pools">Forest Carbon Pools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch18_carbon_accounting.html#carbon-stock-estimation">Carbon Stock Estimation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch18_carbon_accounting.html#carbon-fluxes">Carbon Fluxes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch18_carbon_accounting.html#carbon-accounting-with-ws3">Carbon Accounting with ws3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch18_carbon_accounting.html#femic-integration">FEMIC Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch18_carbon_accounting.html#carbon-market-applications">Carbon Market Applications</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch18_carbon_accounting.html#case-study-carbon-neutral-forest-management">Case Study: Carbon-Neutral Forest Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch18_carbon_accounting.html#summary">Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch18_carbon_accounting.html#exercises">Exercises</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ch18_carbon_accounting.html#related-resources">Related Resources</a></li>
 </ul>
 </li>
 </ul>

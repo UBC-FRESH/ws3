@@ -4,21 +4,19 @@
 Loading a Woodstock Model
 =============================
 
-Goal
-----
-
-Load a Woodstock-formatted model into ws3 and verify it loaded correctly.
+This guide shows how to load a Woodstock-formatted model into ws3.
 
 Prerequisites
 -------------
 
-* A Woodstock model directory with standard section files (AREAS, YIELDS, ACTIONS, TRANSITIONS)
+* A Woodstock model directory containing standard section files
+  (AREAS, YIELDS, ACTIONS, TRANSITIONS)
 * ws3 installed
 
-Step-by-Step Instructions
--------------------------
+Procedure
+---------
 
-**Step 1: Create ForestModel Instance**
+**1. Create a ForestModel instance**
 
 .. code-block:: python
 
@@ -32,7 +30,7 @@ Step-by-Step Instructions
        period_length=10
    )
 
-**Step 2: Import Sections**
+**2. Import sections**
 
 .. code-block:: python
 
@@ -41,7 +39,7 @@ Step-by-Step Instructions
    fm.import_actions_section()
    fm.import_transitions_section()
 
-**Step 3: Initialize**
+**3. Initialize**
 
 .. code-block:: python
 
@@ -49,7 +47,7 @@ Step-by-Step Instructions
    fm.add_null_action()
    fm.reset_actions()
 
-**Step 4: Verify**
+**4. Verify the load**
 
 .. code-block:: python
 
@@ -57,27 +55,11 @@ Step-by-Step Instructions
    print(f"Actions: {list(fm.actions.keys())}")
    print(f"Yield names: {fm.ynames}")
 
-Expected Output
----------------
-
-* Model loaded with development types, actions, and yield curves
-* No errors during import
-
 Troubleshooting
 ---------------
 
-**Issue: Missing section files**
-
-* Check that model_path contains standard Woodstock section files
-* Verify file naming convention (model_name.are, model_name.yld, etc.)
-
-**Issue: Empty development types**
-
-* Check that AREAS section contains non-zero area values
-* Verify area_epsilon threshold is appropriate
-
-Next Steps
-----------
-
-* :doc:`defining-growth-curves` — Learn to define custom growth curves
-* :doc:`running-optimization` — Run your first optimization scenario
+* **Missing section files** — confirm ``model_path`` contains standard
+  Woodstock section files and that file naming follows the convention
+  ``<model_name>.<section>``.
+* **Empty development types** — check that the AREAS section contains
+  non-zero area values and that ``area_epsilon`` is appropriate.

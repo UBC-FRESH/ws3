@@ -425,6 +425,8 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l4"><a class="reference internal" href="ch14_spades_integration.html">Chapter 14: Integrating ws3 with SpaDES</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch15_disturbance_modelling.html">Chapter 15: Modelling Natural Disturbances</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch16_supply_chain.html">Chapter 16: Value-Creation and Forest Supply Chain Modelling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch17_advanced_spatial.html">Chapter 17: Advanced Spatial Modeling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch18_carbon_accounting.html">Chapter 18: Carbon Accounting in Detail</a></li>
 </ul>
 </li>
 </ul>
@@ -436,16 +438,6 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
 </ul>
 
         </div>
@@ -547,41 +539,27 @@ makes: when to harvest, when to thin, when to plant.</p>
 <h2>Defining Actions in ws3<a class="headerlink" href="#defining-actions-in-ws3" title="Link to this heading"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.forest</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForestModel</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">()</span>
-
-<span class="c1"># Define a clearcut harvest action</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span>
-    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;HARV&quot;</span><span class="p">,</span>
-    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Clearcut harvest - remove all trees&quot;</span><span class="p">,</span>
-    <span class="n">components</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="s2">&quot;basal_area&quot;</span><span class="p">],</span>
-    <span class="n">transitions</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;DF-SI50&quot;</span><span class="p">:</span> <span class="s2">&quot;Bare&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;SP-SI40&quot;</span><span class="p">:</span> <span class="s2">&quot;Bare&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;CE-SI45&quot;</span><span class="p">:</span> <span class="s2">&quot;Bare&quot;</span>
-    <span class="p">}</span>
-<span class="p">)</span>
-
-<span class="c1"># Define a commercial thin action</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span>
-    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;CT&quot;</span><span class="p">,</span>
-    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Commercial thin - remove merchantable trees&quot;</span><span class="p">,</span>
-    <span class="n">components</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="s2">&quot;basal_area&quot;</span><span class="p">],</span>
-    <span class="n">transitions</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;DF-SI50&quot;</span><span class="p">:</span> <span class="s2">&quot;DF-SI50-thinned&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;SP-SI40&quot;</span><span class="p">:</span> <span class="s2">&quot;SP-SI40-thinned&quot;</span>
-    <span class="p">}</span>
-<span class="p">)</span>
-
-<span class="c1"># Define a planting action</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span>
-    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;PLNT&quot;</span><span class="p">,</span>
-    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Plant seedlings on bare site&quot;</span><span class="p">,</span>
-    <span class="n">components</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;volume&quot;</span><span class="p">],</span>
-    <span class="n">transitions</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;Bare&quot;</span><span class="p">:</span> <span class="s2">&quot;DF-SI50&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Bare-SP&quot;</span><span class="p">:</span> <span class="s2">&quot;SP-SI40&quot;</span>
-    <span class="p">}</span>
-<span class="p">)</span>
+<span class="c1"># Actions and transitions are defined in Woodstock-format section files</span>
+<span class="c1"># and imported into the ForestModel. The typical workflow is:</span>
+<span class="c1">#</span>
+<span class="c1">#   model = ForestModel(&quot;my_model&quot;, &quot;/path/to/data&quot;, 2024,</span>
+<span class="c1">#                       horizon=20, period_length=10)</span>
+<span class="c1">#   model.import_areas_section()       # loads development types and areas</span>
+<span class="c1">#   model.import_yields_section()      # loads growth curves</span>
+<span class="c1">#   model.import_actions_section()     # loads action definitions</span>
+<span class="c1">#   model.import_transitions_section() # loads transition rules</span>
+<span class="c1">#</span>
+<span class="c1"># Actions are defined in the ACTIONS section file (e.g., model.act):</span>
+<span class="c1">#   *action HARV Clearcut harvest - remove all trees</span>
+<span class="c1">#   *operable df si50 volume basal_area</span>
+<span class="c1">#   *operable sp si40 volume basal_area</span>
+<span class="c1">#</span>
+<span class="c1"># Transitions are defined in the TRANSITIONS section file (e.g., model.trn):</span>
+<span class="c1">#   *case HARV</span>
+<span class="c1">#   *source df si50</span>
+<span class="c1">#   *target bare</span>
+<span class="c1">#   *source sp si40</span>
+<span class="c1">#   *target bare</span>
 </pre></div>
 </div>
 </section>
@@ -601,17 +579,10 @@ Bare.”</p>
 <h2>Complex Transitions<a class="headerlink" href="#complex-transitions" title="Link to this heading"></a></h2>
 <p>Some actions have more complex transitions. For example, a thinning action
 might reduce the age class (because time passes during the treatment):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Thinning action that also advances the age class</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span>
-    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;THIN&quot;</span><span class="p">,</span>
-    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Commercial thin with age advancement&quot;</span><span class="p">,</span>
-    <span class="n">components</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="s2">&quot;basal_area&quot;</span><span class="p">],</span>
-    <span class="n">transitions</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;DF-SI50-A20&quot;</span><span class="p">:</span> <span class="s2">&quot;DF-SI50-A25&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;DF-SI50-A30&quot;</span><span class="p">:</span> <span class="s2">&quot;DF-SI50-A35&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;DF-SI50-A40&quot;</span><span class="p">:</span> <span class="s2">&quot;DF-SI50-A45&quot;</span>
-    <span class="p">}</span>
-<span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Thinning actions are defined in the ACTIONS/TRANSITIONS section files</span>
+<span class="c1"># and imported via model.import_actions_section() and</span>
+<span class="c1"># model.import_transitions_section(). The transition file maps source</span>
+<span class="c1"># development types to target development types for each action code.</span>
 </pre></div>
 </div>
 </section>
@@ -700,10 +671,10 @@ actions:</p>
     <span class="p">}</span>
 <span class="p">]</span>
 
-<span class="k">for</span> <span class="n">action_def</span> <span class="ow">in</span> <span class="n">actions</span><span class="p">:</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="o">**</span><span class="n">action_def</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span><span class="si">}</span><span class="s2"> actions&quot;</span><span class="p">)</span>
+<span class="c1"># In practice, actions are defined in Woodstock-format section files</span>
+<span class="c1"># and imported via model.import_actions_section() and</span>
+<span class="c1"># model.import_transitions_section(). The dict-based approach above</span>
+<span class="c1"># is illustrative only; the real workflow uses file-based import.</span>
 </pre></div>
 </div>
 </section>

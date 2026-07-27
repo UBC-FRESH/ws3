@@ -52,9 +52,11 @@ Defining a Curve
 
    # Define a volume curve for Douglas-fir on Site Index 50
    volume_curve = Curve(
-       x=[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-       y=[0, 5, 25, 65, 120, 200, 300, 400, 470, 500, 510],
-       name="DF-SI50_volume"
+       label="DF-SI50_volume",
+       is_volume=True,
+       points=[(0, 0), (10, 5), (20, 25), (30, 65), (40, 120),
+               (50, 200), (60, 300), (70, 400), (80, 470),
+               (90, 500), (100, 510)]
    )
 
 The ``x`` values are ages (years), and the ``y`` values are attribute
@@ -85,16 +87,18 @@ curves or calculating differences:
 
    # Create a value curve (volume * price)
    price_curve = Curve(
-       x=[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-       y=[0, 250, 1250, 3250, 6000, 10000, 15000, 20000, 23500, 25000, 25500],
-       name="DF-SI50_value"
+       label="DF-SI50_value",
+       points=[(0, 0), (10, 250), (20, 1250), (30, 3250), (40, 6000),
+               (50, 10000), (60, 15000), (70, 20000), (80, 23500),
+               (90, 25000), (100, 25500)]
    )
 
    # Net value = value curve - harvesting cost curve
    cost_curve = Curve(
-       x=[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-       y=[0, 100, 400, 900, 1600, 2500, 3600, 4900, 6400, 8100, 10000],
-       name="harvest_cost"
+       label="harvest_cost",
+       points=[(0, 0), (10, 100), (20, 400), (30, 900), (40, 1600),
+               (50, 2500), (60, 3600), (70, 4900), (80, 6400),
+               (90, 8100), (100, 10000)]
    )
 
    net_value = price_curve - cost_curve
@@ -155,9 +159,9 @@ different species, site indices, and ages.
    }
 
    curve = Curve(
-       x=yield_data["ages"],
-       y=yield_data["volumes"],
-       name=f"{yield_data['species']}-SI{yield_data['site_index']}_volume"
+       label=f"{yield_data['species']}-SI{yield_data['site_index']}_volume",
+       is_volume=True,
+       points=list(zip(yield_data["ages"], yield_data["volumes"]))
    )
 
 Validating Growth Curves
@@ -238,4 +242,4 @@ Further Reading
 
 - :doc:`ch02_forest_inventory` — Preparing inventory data
 - :doc:`/howto/curve-definition` — Detailed curve definition guide
-- :doc:`/reference/modules/core` — Curve and Interpolator API reference
+- :doc:`reference/contracts/index` — Data contracts and module boundaries

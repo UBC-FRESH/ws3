@@ -425,6 +425,8 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l4"><a class="reference internal" href="ch14_spades_integration.html">Chapter 14: Integrating ws3 with SpaDES</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch15_disturbance_modelling.html">Chapter 15: Modelling Natural Disturbances</a></li>
 <li class="toctree-l4"><a class="reference internal" href="ch16_supply_chain.html">Chapter 16: Value-Creation and Forest Supply Chain Modelling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch17_advanced_spatial.html">Chapter 17: Advanced Spatial Modeling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ch18_carbon_accounting.html">Chapter 18: Carbon Accounting in Detail</a></li>
 </ul>
 </li>
 </ul>
@@ -436,16 +438,6 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
 </ul>
 
         </div>
@@ -516,9 +508,11 @@ for defining and manipulating growth curves.</p>
 
 <span class="c1"># Define a volume curve for Douglas-fir on Site Index 50</span>
 <span class="n">volume_curve</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
-    <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
-    <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">65</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">470</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">510</span><span class="p">],</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DF-SI50_volume&quot;</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;DF-SI50_volume&quot;</span><span class="p">,</span>
+    <span class="n">is_volume</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">points</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">65</span><span class="p">),</span> <span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">120</span><span class="p">),</span>
+            <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span> <span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">300</span><span class="p">),</span> <span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="mi">400</span><span class="p">),</span> <span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">470</span><span class="p">),</span>
+            <span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">510</span><span class="p">)]</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -544,16 +538,18 @@ values (e.g., volume in m³/ha).</p>
 curves or calculating differences:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a value curve (volume * price)</span>
 <span class="n">price_curve</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
-    <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
-    <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="mi">1250</span><span class="p">,</span> <span class="mi">3250</span><span class="p">,</span> <span class="mi">6000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">15000</span><span class="p">,</span> <span class="mi">20000</span><span class="p">,</span> <span class="mi">23500</span><span class="p">,</span> <span class="mi">25000</span><span class="p">,</span> <span class="mi">25500</span><span class="p">],</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DF-SI50_value&quot;</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;DF-SI50_value&quot;</span><span class="p">,</span>
+    <span class="n">points</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">250</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">1250</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">3250</span><span class="p">),</span> <span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">6000</span><span class="p">),</span>
+            <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">10000</span><span class="p">),</span> <span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">15000</span><span class="p">),</span> <span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="mi">20000</span><span class="p">),</span> <span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">23500</span><span class="p">),</span>
+            <span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="mi">25000</span><span class="p">),</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">25500</span><span class="p">)]</span>
 <span class="p">)</span>
 
 <span class="c1"># Net value = value curve - harvesting cost curve</span>
 <span class="n">cost_curve</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
-    <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
-    <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">900</span><span class="p">,</span> <span class="mi">1600</span><span class="p">,</span> <span class="mi">2500</span><span class="p">,</span> <span class="mi">3600</span><span class="p">,</span> <span class="mi">4900</span><span class="p">,</span> <span class="mi">6400</span><span class="p">,</span> <span class="mi">8100</span><span class="p">,</span> <span class="mi">10000</span><span class="p">],</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;harvest_cost&quot;</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;harvest_cost&quot;</span><span class="p">,</span>
+    <span class="n">points</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">400</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">900</span><span class="p">),</span> <span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">1600</span><span class="p">),</span>
+            <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">2500</span><span class="p">),</span> <span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">3600</span><span class="p">),</span> <span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="mi">4900</span><span class="p">),</span> <span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">6400</span><span class="p">),</span>
+            <span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="mi">8100</span><span class="p">),</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)]</span>
 <span class="p">)</span>
 
 <span class="n">net_value</span> <span class="o">=</span> <span class="n">price_curve</span> <span class="o">-</span> <span class="n">cost_curve</span>
@@ -623,9 +619,9 @@ different species, site indices, and ages.</p>
 <span class="p">}</span>
 
 <span class="n">curve</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
-    <span class="n">x</span><span class="o">=</span><span class="n">yield_data</span><span class="p">[</span><span class="s2">&quot;ages&quot;</span><span class="p">],</span>
-    <span class="n">y</span><span class="o">=</span><span class="n">yield_data</span><span class="p">[</span><span class="s2">&quot;volumes&quot;</span><span class="p">],</span>
-    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">yield_data</span><span class="p">[</span><span class="s1">&#39;species&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">-SI</span><span class="si">{</span><span class="n">yield_data</span><span class="p">[</span><span class="s1">&#39;site_index&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">_volume&quot;</span>
+    <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">yield_data</span><span class="p">[</span><span class="s1">&#39;species&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">-SI</span><span class="si">{</span><span class="n">yield_data</span><span class="p">[</span><span class="s1">&#39;site_index&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">_volume&quot;</span><span class="p">,</span>
+    <span class="n">is_volume</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">points</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">yield_data</span><span class="p">[</span><span class="s2">&quot;ages&quot;</span><span class="p">],</span> <span class="n">yield_data</span><span class="p">[</span><span class="s2">&quot;volumes&quot;</span><span class="p">]))</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -712,7 +708,7 @@ data points using scipy.optimize.curve_fit:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="ch02_forest_inventory.html"><span class="doc">Chapter 2: Forest Inventory and Data Preparation</span></a> — Preparing inventory data</p></li>
 <li><p><span class="xref std std-doc">/howto/curve-definition</span> — Detailed curve definition guide</p></li>
-<li><p><span class="xref std std-doc">/reference/modules/core</span> — Curve and Interpolator API reference</p></li>
+<li><p><span class="xref std std-doc">reference/contracts/index</span> — Data contracts and module boundaries</p></li>
 </ul>
 </section>
 </section>

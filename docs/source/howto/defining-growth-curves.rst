@@ -4,32 +4,29 @@
 Defining Growth Curves
 =============================
 
-Goal
-----
-
-Define custom growth curves for forest development types.
+This guide shows how to define custom growth curves for forest development
+types.
 
 Prerequisites
 -------------
 
-* Completed :doc:`loading-a-woodstock-model`
-* Understanding of growth-and-yield concepts
+* A loaded :ref:`ForestModel <howto-loading-model>`
+* Age-volume data as pairs ``(age, volume)``
 
-Step-by-Step Instructions
--------------------------
+Procedure
+---------
 
-**Step 1: Prepare Age-Volume Data**
+**1. Prepare age-volume data**
 
 .. code-block:: python
 
-   # Age-volume pairs as list of tuples
    points = [
        (10, 15.2), (20, 45.8), (30, 95.3), (40, 165.7),
        (50, 258.4), (60, 368.2), (70, 485.9), (80, 602.1),
        (90, 715.3), (100, 820.5)
    ]
 
-**Step 2: Create Curve Object**
+**2. Create a Curve object**
 
 .. code-block:: python
 
@@ -42,41 +39,21 @@ Step-by-Step Instructions
        period_length=10
    )
 
-**Step 3: Register with Model**
+**3. Register with the model**
 
 .. code-block:: python
 
    fm.register_curve(curve)
 
-**Step 4: Query Curve**
+**4. Query the curve**
 
 .. code-block:: python
 
-   # Get volume at age 45
    vol_45 = curve.lookup(45)
    print(f"Volume at age 45: {vol_45:.1f} m3/ha")
 
-Expected Output
----------------
+Notes
+-----
 
-* Curve object created and registered
-* Ability to query volume at any age
-
-Troubleshooting
----------------
-
-**Issue: Interpolation errors**
-
-* Ensure ages are in ascending order
-* Check for NaN or negative values
-
-**Issue: Curve doesn't match expectations**
-
-* Compare with published yield tables
-* Verify species and site index codes
-
-Next Steps
-----------
-
-* :doc:`loading-a-woodstock-model` — Load a Woodstock model
-* :doc:`running-optimization` — Run optimization scenarios
+* Ages must be in ascending order.
+* ``Curve.lookup()`` performs linear interpolation between data points.

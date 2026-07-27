@@ -162,36 +162,31 @@ Common implementation pattern:
 
    from ws3.forest import ForestModel
 
-   model = ForestModel()
-
-   # Add post-disturbance state class.
-   model.add_development_type(
-       code="DF-SI50-disturbed",
-       area=0.0,
-       age=0,
-       species="Pseudotsuga menziesii",
-       site_index=50
-   )
-
-   # Disturbance transition.
-   model.add_action(
-       code="FIRE",
-       descr="Wildfire disturbance",
-       components=["volume"],
-       transitions={
-           "DF-SI50": "DF-SI50-disturbed"
-       }
-   )
-
-   # Optional salvage pathway.
-   model.add_action(
-       code="SALVAGE",
-       descr="Salvage harvest after disturbance",
-       components=["volume"],
-       transitions={
-           "DF-SI50-disturbed": "DF-SI50-regen"
-       }
-   )
+   # Disturbance actions and transitions are defined in Woodstock-format
+   # section files and imported into the ForestModel.
+   #
+   #   model = ForestModel("disturbance_model", "/path/to/data", 2024,
+   #                       horizon=20, period_length=10)
+   #   model.import_areas_section()       # includes post-disturbance DTs
+   #   model.import_yields_section()
+   #   model.import_actions_section()     # includes FIRE, SALVAGE actions
+   #   model.import_transitions_section() # maps DF-SI50 -> DF-SI50-disturbed
+   #
+   # The ACTIONS section file defines:
+   #   *action FIRE Wildfire disturbance
+   #   *operable df si50 volume
+   #
+   #   *action SALVAGE Salvage harvest after disturbance
+   #   *operable df si50-disturbed volume
+   #
+   # The TRANSITIONS section file defines:
+   #   *case FIRE
+   #   *source df si50
+   #   *target df si50-disturbed
+   #
+   #   *case SALVAGE
+   #   *source df si50-disturbed
+   #   *target df si50-regen
 
    # The simulation controller applies FIRE stochastically and SALVAGE
    # according to policy and operational constraints.

@@ -25,29 +25,6 @@ includes runnable code examples verified against the actual ws3 API.
    multi-objective-optimization
    parallel-optimization
    faq
-
-What You Will Find Here
-========================
-
-Each how-to guide follows a consistent format:
-
-* **Goal** — what you will accomplish by the end of the guide.
-* **Prerequisites** — what you need to know or have set up first.
-* **Step-by-Step Instructions** — numbered steps with code examples.
-* **Expected Output** — what the results should look like.
-* **Troubleshooting** — common pitfalls and how to fix them.
-
-Common Tasks Covered
-====================
-
-* Defining custom forest management actions and transition rules.
-* Linking ws3 to libCMB for carbon accounting.
-* Linking ws3 to SpaDES for spatially-explicit disturbance modelling.
-* Integrating ws3 with optimization solvers for automatic schedule generation.
-* Running and comparing multiple scenarios in batch.
-* Post-processing simulation output for reporting and visualization.
-* Adding custom growth-and-yield curves.
-* Building multi-region models that share data across landscapes.
 * Setting up reproducible workflows with version-controlled inputs and
   automated validation.
 

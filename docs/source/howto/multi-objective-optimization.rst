@@ -4,21 +4,18 @@
 Multi-Objective Optimization
 =============================
 
-Goal
-----
-
-Run multi-objective optimization scenarios with ws3.
+This guide shows how to run multi-objective optimization with ws3.
 
 Prerequisites
 -------------
 
-* Completed :doc:`running-optimization`
+* A loaded :ref:`ForestModel <howto-loading-model>`
 * Understanding of multi-objective optimization concepts
 
-Step-by-Step Instructions
--------------------------
+Procedure
+---------
 
-**Step 1: Load Model**
+**1. Load the model**
 
 .. code-block:: python
 
@@ -39,7 +36,7 @@ Step-by-Step Instructions
    fm.add_null_action()
    fm.reset_actions()
 
-**Step 2: Create Multi-Objective Problem**
+**2. Create a MultiObjectiveOptimizer**
 
 .. code-block:: python
 
@@ -47,7 +44,7 @@ Step-by-Step Instructions
 
    optimizer = MultiObjectiveOptimizer(fm)
 
-**Step 3: Define Objectives**
+**3. Define objectives**
 
 .. code-block:: python
 
@@ -57,13 +54,13 @@ Step-by-Step Instructions
        {"name": "carbon", "weight": 0.2, "direction": "maximize"}
    ]
 
-**Step 4: Run Optimization**
+**4. Run optimization**
 
 .. code-block:: python
 
    pareto_front = optimizer.optimize(objectives)
 
-**Step 5: Inspect Results**
+**5. Inspect results**
 
 .. code-block:: python
 
@@ -71,29 +68,10 @@ Step-by-Step Instructions
    for solution in pareto_front:
        print(f"NPV: {solution['npv']}, Even Flow: {solution['even_flow']}, Carbon: {solution['carbon']}")
 
-Expected Output
----------------
+Notes
+-----
 
-* Pareto front with multiple trade-off solutions
-* Ability to select preferred solution based on weights
-
-Troubleshooting
----------------
-
-**Issue: No Pareto solutions found**
-
-* Check that objectives are feasible
-* Verify constraint ranges are appropriate
-* Try different weight combinations
-
-**Issue: Optimization takes too long**
-
-* Reduce number of objectives
-* Simplify constraints
-* Check model size
-
-Next Steps
-----------
-
-* :doc:`running-optimization` — Run single-objective scenarios
-* :doc:`spatial-allocation` — Allocate harvest spatially
+* If no Pareto solutions are found, check that objectives are feasible and
+  constraint ranges are appropriate.
+* Reduce the number of objectives or simplify constraints if optimization
+  is too slow.

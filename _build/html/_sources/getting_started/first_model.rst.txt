@@ -30,33 +30,60 @@ Step 1: Create the Forest Model
 .. code-block:: python
 
    from ws3.forest import ForestModel
-   from ws3.core import Curve
 
-   model = ForestModel()
+   fm = ForestModel(
+       model_name="first_model",
+       model_path="path/to/model",
+       base_year=2020,
+       horizon=20,
+       period_length=5
+   )
 
-Step 2: Add Development Types
+Step 2: Import Data
 
 .. code-block:: python
 
-   # Douglas-fir stands at different ages
-   for age in [20, 30, 40, 50, 60, 70, 80]:
-       model.add_development_type(
-           code=f"DF-SI50-A{age}",
-           area=800.0 / 7,  # Distribute evenly
-           age=age,
-           species="Pseudotsuga menziesii",
-           site_index=50
-       )
+   fm.import_areas_section()
+   fm.import_yields_section()
+   fm.import_actions_section()
+   fm.import_transitions_section()
+   fm.initialize_areas()
+   fm.add_null_action()
+   fm.reset_actions()
 
-   # Spruce stands at different ages
-   for age in [30, 40, 50, 60, 70]:
-       model.add_development_type(
-           code=f"SP-SI40-A{age}",
-           area=600.0 / 5,
-           age=age,
-           species="Picea sitchensis",
-           site_index=40
-       )
+Step 3: Verify
+
+.. code-block:: python
+
+   print(f"Development types: {len(fm.dtypes)}")
+   print(f"Total area: {sum(dt.area for dt in fm.dtypes.values()):.1f} ha")
+
+Step 4: Set Up Optimization
+
+.. code-block:: python
+
+   from ws3.opt import Problem
+
+   problem = Problem(
+       name="maximize_npv",
+       sense=1,  # SENSE_MAXIMIZE
+       solver="highs"
+   )
+
+Step 5: Define Objective and Constraints
+
+.. code-block:: python
+
+   # Add variables, constraints, and objective
+   # (See running-optimization how-to for details)
+
+Step 6: Solve and Inspect
+
+.. code-block:: python
+
+   problem.solve(verbose=True)
+   solution = problem.solution()
+   print(f"Objective value: {problem.z()}")
 
    # Cedar stands at different ages
    for age in [40, 50, 60, 70, 80, 90]:

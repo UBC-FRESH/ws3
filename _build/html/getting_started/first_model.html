@@ -47,6 +47,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Getting Started</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="index.html#id2">Getting Started</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="quickstart.html">Quickstart Tutorial</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Your First Model</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#scenario">Scenario</a></li>
@@ -58,25 +59,12 @@
 <li class="toctree-l3"><a class="reference internal" href="architecture_overview.html">Architecture Overview</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#what-you-will-learn">What You Will Learn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#prerequisites">Prerequisites</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#estimated-time">Estimated Time</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../textbook/index.html">The ws3 Textbook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/index.html">Advanced Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../appendices.html">Appendices</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
 </ul>
 
         </div>
@@ -130,31 +118,50 @@ problem, and extract the optimal harvest schedule.</p>
 <h2>Building the Model<a class="headerlink" href="#building-the-model" title="Link to this heading"></a></h2>
 <p>Step 1: Create the Forest Model</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.forest</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForestModel</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ws3.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Curve</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">()</span>
+<span class="n">fm</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;first_model&quot;</span><span class="p">,</span>
+    <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;path/to/model&quot;</span><span class="p">,</span>
+    <span class="n">base_year</span><span class="o">=</span><span class="mi">2020</span><span class="p">,</span>
+    <span class="n">horizon</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">period_length</span><span class="o">=</span><span class="mi">5</span>
+<span class="p">)</span>
 </pre></div>
 </div>
-<p>Step 2: Add Development Types</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Douglas-fir stands at different ages</span>
-<span class="k">for</span> <span class="n">age</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">]:</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">add_development_type</span><span class="p">(</span>
-        <span class="n">code</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;DF-SI50-A</span><span class="si">{</span><span class="n">age</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="n">area</span><span class="o">=</span><span class="mf">800.0</span> <span class="o">/</span> <span class="mi">7</span><span class="p">,</span>  <span class="c1"># Distribute evenly</span>
-        <span class="n">age</span><span class="o">=</span><span class="n">age</span><span class="p">,</span>
-        <span class="n">species</span><span class="o">=</span><span class="s2">&quot;Pseudotsuga menziesii&quot;</span><span class="p">,</span>
-        <span class="n">site_index</span><span class="o">=</span><span class="mi">50</span>
-    <span class="p">)</span>
+<p>Step 2: Import Data</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fm</span><span class="o">.</span><span class="n">import_areas_section</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_yields_section</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_actions_section</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_transitions_section</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">initialize_areas</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">add_null_action</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">reset_actions</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Step 3: Verify</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Development types: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">fm</span><span class="o">.</span><span class="n">dtypes</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total area: </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">area</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">dt</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">fm</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> ha&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Step 4: Set Up Optimization</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.opt</span><span class="w"> </span><span class="kn">import</span> <span class="n">Problem</span>
 
-<span class="c1"># Spruce stands at different ages</span>
-<span class="k">for</span> <span class="n">age</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">]:</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">add_development_type</span><span class="p">(</span>
-        <span class="n">code</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;SP-SI40-A</span><span class="si">{</span><span class="n">age</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="n">area</span><span class="o">=</span><span class="mf">600.0</span> <span class="o">/</span> <span class="mi">5</span><span class="p">,</span>
-        <span class="n">age</span><span class="o">=</span><span class="n">age</span><span class="p">,</span>
-        <span class="n">species</span><span class="o">=</span><span class="s2">&quot;Picea sitchensis&quot;</span><span class="p">,</span>
-        <span class="n">site_index</span><span class="o">=</span><span class="mi">40</span>
-    <span class="p">)</span>
+<span class="n">problem</span> <span class="o">=</span> <span class="n">Problem</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;maximize_npv&quot;</span><span class="p">,</span>
+    <span class="n">sense</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># SENSE_MAXIMIZE</span>
+    <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;highs&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Step 5: Define Objective and Constraints</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add variables, constraints, and objective</span>
+<span class="c1"># (See running-optimization how-to for details)</span>
+</pre></div>
+</div>
+<p>Step 6: Solve and Inspect</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">solution</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Objective value: </span><span class="si">{</span><span class="n">problem</span><span class="o">.</span><span class="n">z</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="c1"># Cedar stands at different ages</span>
 <span class="k">for</span> <span class="n">age</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">90</span><span class="p">]:</span>
@@ -333,8 +340,8 @@ problem, and extract the optimal harvest schedule.</p>
 <h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="architecture_overview.html"><span class="doc">Architecture Overview</span></a> — Understand how ws3 components fit together</p></li>
-<li><p><span class="xref std std-doc">/howto/running-optimization</span> — Deep dive into optimization setup</p></li>
-<li><p><span class="xref std std-doc">/howto/parallel-optimization</span> — Speed up large models with parallel processing</p></li>
+<li><p><a class="reference internal" href="../howto/running-optimization.html"><span class="doc">Running Optimization</span></a> — Deep dive into optimization setup</p></li>
+<li><p><a class="reference internal" href="../howto/parallel-optimization.html"><span class="doc">Parallel Optimization</span></a> — Speed up large models with parallel processing</p></li>
 <li><p><a class="reference internal" href="../textbook/ch02_forest_inventory.html"><span class="doc">Chapter 2: Forest Inventory and Data Preparation</span></a> — Learn about forest inventory data</p></li>
 </ul>
 </section>

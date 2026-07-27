@@ -123,7 +123,7 @@ Implementing Adjacency Constraints
            problem.add_constraint(
                name=constraint_name,
                coeffs=coeffs,
-               sense='<',
+               sense='leq',
                rhs=1.0
            )
 
@@ -137,11 +137,17 @@ Implementing Adjacency Constraints
    # Add adjacency constraints
    add_adjacency_constraints(problem, adj_matrix, dt_mapping)
    
-   # Solve
-   solution = problem.solve(solver="gurobi")
+   # Set solver and solve
+   problem.solver("gurobi")
+   problem.solve()
    
-   print(f"Status: {solution.status()}")
-   print(f"Objective value: {solution.get_objective_value():.2f}")
+   # Check status and get solution
+   print(f"Solved: {problem.solved()}")
+   print(f"Objective value: {problem.z():.2f}")
+   solution = problem.solution()
+   for var_name, value in solution.items():
+       if value > 0:
+           print(f"  {var_name}: {value:.2f}")
 
 Contiguous Area Requirements
 -----------------------------
@@ -316,13 +322,16 @@ sustainable forest management.
    # Add adjacency constraints
    add_adjacency_constraints(problem, adj_matrix, tsa24_spatial['dt_code'])
    
-   # Solve
-   solution = problem.solve(solver="gurobi")
+   # Set solver and solve
+   problem.solver("gurobi")
+   problem.solve()
    
    # Analyze results
-   schedule = solution.get_schedule()
-   print(f"Total harvest area: {schedule['area_ha'].sum():.2f} ha")
-   print(f"Number of harvest blocks: {schedule['dt_code'].nunique()}")
+   solution = problem.solution()
+   for var_name, value in solution.items():
+       if value > 0:
+           print(f"  {var_name}: {value:.2f}")
+   print(f"Objective value: {problem.z():.2f}")
 
 Summary
 -------

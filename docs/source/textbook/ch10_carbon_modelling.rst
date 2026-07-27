@@ -98,15 +98,15 @@ stocks from the model output:
 
    # Define biomass curves (tonnes/ha of carbon)
    df_carbon = Curve(
-       x=[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-       y=[0, 1, 5, 12, 22, 35, 50, 65, 78, 88, 95],
-       name="DF-SI50_carbon"
+       label="DF-SI50_carbon",
+       points=[(0, 0), (10, 1), (20, 5), (30, 12), (40, 22),
+               (50, 35), (60, 50), (70, 65), (80, 78), (90, 88), (100, 95)]
    )
 
    spruce_carbon = Curve(
-       x=[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-       y=[0, 0.5, 3, 8, 15, 25, 38, 50, 60, 68, 73],
-       name="SP-SI40_carbon"
+       label="SP-SI40_carbon",
+       points=[(0, 0), (10, 0.5), (20, 3), (30, 8), (40, 15),
+               (50, 25), (60, 38), (70, 50), (80, 60), (90, 68), (100, 73)]
    )
 
    # Calculate carbon stock for a development type
@@ -183,41 +183,42 @@ Carbon can be incorporated into the optimization objective:
 
    from ws3.opt import Problem
 
-   prob = Problem()
+   prob = Problem("carbon_optimization")
 
    # Decision variables
-   harvest_vars = {}
+   harvest_var_names = {}
    for dt_code in ["DF-SI50", "SP-SI40"]:
        for period in range(20):
            var_name = f"harv_{dt_code}_p{period}"
-           harvest_vars[(dt_code, period)] = prob.add_variable(
-               name=var_name, vtype="continuous", lb=0
-           )
+           prob.add_var(var_name, vtype="continuous", lb=0)
+           harvest_var_names[(dt_code, period)] = var_name
 
    # Objective: maximize NPV + carbon revenue
+   # z() takes a dict keyed on variable names
    timber_price = 50  # $/m³
    carbon_price = 50  # $/tonne CO₂ (ETS price)
    discount_rate = 0.05
 
-   npv = 0
-   for (dt_code, period), var in harvest_vars.items():
+   npv_coeffs = {}
+   for (dt_code, period), var_name in harvest_var_names.items():
        volume_per_ha = 200  # m³/ha
-       timber_revenue = var * volume_per_ha * timber_price
-       carbon_revenue = var * volume_per_ha * 0.45 * 0.5 * 3.67 * carbon_price
-       npv += (timber_revenue + carbon_revenue) * (1 + discount_rate) ** (-period * 5)
-
-   prob.set_objective(npv, sense="maximize")
+       timber_revenue = volume_per_ha * timber_price
+       carbon_revenue = volume_per_ha * 0.45 * 0.5 * 3.67 * carbon_price
+       coeff = (timber_revenue + carbon_revenue) * (1 + discount_rate) ** (-period * 5)
+       npv_coeffs[var_name] = coeff
+   prob.z(coeffs=npv_coeffs)
 
    # Constraint: carbon budget (max allowable emissions)
    max_carbon_budget = 10000  # tonnes CO₂ over 100 years
-   total_carbon_flux = 0
-   for (dt_code, period), var in harvest_vars.items():
-       carbon_per_m3 = 0.45 * 0.5 * 3.67  # tonnes CO₂ per m³
-       total_carbon_flux += var * 200 * carbon_per_m3
+   carbon_per_m3 = 0.45 * 0.5 * 3.67  # tonnes CO₂ per m³
+   carbon_coeffs = {}
+   for var_name in harvest_var_names.values():
+       carbon_coeffs[var_name] = 200 * carbon_per_m3
+   prob.add_constraint("carbon_budget", coeffs=carbon_coeffs, sense="leq", rhs=max_carbon_budget)
 
-   prob.add_constraint("carbon_budget", expr=total_carbon_flux <= max_carbon_budget)
-
-   prob.solve(solver="highs")
+   # Set solver and solve
+   prob.solver("highs")
+   prob.solve()
 
 Carbon Reporting
 ----------------

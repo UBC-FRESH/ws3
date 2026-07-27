@@ -4,21 +4,18 @@
 Parallel Optimization
 =============================
 
-Goal
-----
-
-Run multiple optimization scenarios in parallel to speed up analysis.
+This guide shows how to run multiple optimization scenarios in parallel.
 
 Prerequisites
 -------------
 
-* Completed :doc:`running-optimization`
+* A loaded :ref:`ForestModel <howto-loading-model>`
 * Understanding of parallel computing concepts
 
-Step-by-Step Instructions
--------------------------
+Procedure
+---------
 
-**Step 1: Load Model**
+**1. Load the model**
 
 .. code-block:: python
 
@@ -39,7 +36,7 @@ Step-by-Step Instructions
    fm.add_null_action()
    fm.reset_actions()
 
-**Step 2: Define Scenarios**
+**2. Define scenarios**
 
 .. code-block:: python
 
@@ -49,7 +46,7 @@ Step-by-Step Instructions
        {"name": "timber", "objective": "maximize_volume"}
    ]
 
-**Step 3: Run Parallel Optimization**
+**3. Run parallel optimization**
 
 .. code-block:: python
 
@@ -62,36 +59,16 @@ Step-by-Step Instructions
        scenarios
    )
 
-**Step 4: Collect Results**
+**4. Collect results**
 
 .. code-block:: python
 
    for scenario, result in zip(scenarios, results):
        print(f"Scenario {scenario['name']}: {result}")
 
-Expected Output
----------------
+Notes
+-----
 
-* Multiple optimization scenarios run in parallel
-* Results collected and compared
-
-Troubleshooting
----------------
-
-**Issue: Parallel execution fails**
-
-* Check that dill is installed
-* Verify that worker processes can access model data
-* Check memory usage
-
-**Issue: Results are inconsistent**
-
-* Ensure model is reset between scenarios
-* Check that random seeds are set consistently
-* Verify that parallel execution doesn't introduce race conditions
-
-Next Steps
-----------
-
-* :doc:`running-optimization` — Run single-objective scenarios
-* :doc:`multi-objective-optimization` — Run multi-objective scenarios
+* Install ``dill`` for worker serialization.
+* Reset the model between scenarios to avoid state leakage.
+* Set random seeds consistently if reproducibility matters.

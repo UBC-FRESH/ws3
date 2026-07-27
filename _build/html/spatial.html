@@ -19,9 +19,7 @@
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Examples Gallery" href="examples.html" />
-    <link rel="prev" title="opt module" href="opt.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -51,34 +49,6 @@
 <li class="toctree-l1"><a class="reference internal" href="guides/index.html">Advanced Guides</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reference/index.html">Reference</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Legacy Chapters</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="intro.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Chapt1.html">Wood Supply Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Chapt2.html">About the <code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples Gallery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="appendices.html">Appendices</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="common.html"><code class="docutils literal notranslate"><span class="pre">common</span></code> module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="core.html"><code class="docutils literal notranslate"><span class="pre">core</span></code> module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="forest.html"><code class="docutils literal notranslate"><span class="pre">forest</span></code> module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="forest_helper.html"><code class="docutils literal notranslate"><span class="pre">forest_helper</span></code> module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="financial.html"><code class="docutils literal notranslate"><span class="pre">financial</span></code> module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="opt.html"><code class="docutils literal notranslate"><span class="pre">opt</span></code> module</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">spatial</span></code> module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#spatial.ForestRaster"><code class="docutils literal notranslate"><span class="pre">ForestRaster</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#spatial.ForestRaster.allocate_schedule"><code class="docutils literal notranslate"><span class="pre">ForestRaster.allocate_schedule()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#spatial.ForestRaster.cleanup"><code class="docutils literal notranslate"><span class="pre">ForestRaster.cleanup()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#spatial.ForestRaster.commit"><code class="docutils literal notranslate"><span class="pre">ForestRaster.commit()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#spatial.ForestRaster.grow"><code class="docutils literal notranslate"><span class="pre">ForestRaster.grow()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
 
         </div>
       </div>
@@ -94,8 +64,6 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="aboutws3.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ws3</span></code> Package and Data Preparation</a></li>
-          <li class="breadcrumb-item"><a href="modules.html"><code class="docutils literal notranslate"><span class="pre">ws3</span></code> Package Modules</a></li>
       <li class="breadcrumb-item active"><code class="docutils literal notranslate"><span class="pre">spatial</span></code> module</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/spatial.rst.txt" rel="nofollow"> View page source</a>
@@ -114,7 +82,7 @@ generated by an instance of the <code class="xref py py-class docutils literal n
 representation of the forest inventory.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="spatial.ForestRaster">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">spatial.</span></span><span class="sig-name descname"><span class="pre">ForestRaster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">hdt_map:</span> <span class="pre">~typing.Dict[int,</span> <span class="pre">~typing.Tuple[str,</span> <span class="pre">...]],</span> <span class="pre">hdt_func:</span> <span class="pre">~typing.Callable[[~typing.Tuple[str,</span> <span class="pre">...]],</span> <span class="pre">int],</span> <span class="pre">src_path:</span> <span class="pre">str,</span> <span class="pre">snk_path:</span> <span class="pre">str,</span> <span class="pre">acode_map:</span> <span class="pre">~typing.Dict[str,</span> <span class="pre">str],</span> <span class="pre">forestmodel:</span> <span class="pre">~typing.Any,</span> <span class="pre">base_year:</span> <span class="pre">int,</span> <span class="pre">horizon:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">period_length:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">10,</span> <span class="pre">tif_compress:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'lzw',</span> <span class="pre">tif_dtype:</span> <span class="pre">&lt;MagicMock</span> <span class="pre">id='131522305599360'&gt;</span> <span class="pre">=</span> <span class="pre">&lt;MagicMock</span> <span class="pre">id='131522359119600'&gt;,</span> <span class="pre">piggyback_acodes:</span> <span class="pre">~typing.Dict[str,</span> <span class="pre">~typing.List[~typing.Tuple[str,</span> <span class="pre">float]]]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">time_step:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">disturb_thresh:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spatial.html#ForestRaster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spatial.ForestRaster" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">spatial.</span></span><span class="sig-name descname"><span class="pre">ForestRaster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">hdt_map:</span> <span class="pre">~typing.Dict[int,</span> <span class="pre">~typing.Tuple[str,</span> <span class="pre">...]],</span> <span class="pre">hdt_func:</span> <span class="pre">~typing.Callable[[~typing.Tuple[str,</span> <span class="pre">...]],</span> <span class="pre">int],</span> <span class="pre">src_path:</span> <span class="pre">str,</span> <span class="pre">snk_path:</span> <span class="pre">str,</span> <span class="pre">acode_map:</span> <span class="pre">~typing.Dict[str,</span> <span class="pre">str],</span> <span class="pre">forestmodel:</span> <span class="pre">~typing.Any,</span> <span class="pre">base_year:</span> <span class="pre">int,</span> <span class="pre">horizon:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">period_length:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">10,</span> <span class="pre">tif_compress:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'lzw',</span> <span class="pre">tif_dtype:</span> <span class="pre">&lt;MagicMock</span> <span class="pre">id='123389811168784'&gt;</span> <span class="pre">=</span> <span class="pre">&lt;MagicMock</span> <span class="pre">id='123389820607984'&gt;,</span> <span class="pre">piggyback_acodes:</span> <span class="pre">~typing.Dict[str,</span> <span class="pre">~typing.List[~typing.Tuple[str,</span> <span class="pre">float]]]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">time_step:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">disturb_thresh:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spatial.html#ForestRaster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spatial.ForestRaster" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.spatial.ForestRaster</span></code> class can be used to allocate an aspatial disturbance schedule 
 (for example, an optimal solution to a wood supply problem generated by an instance 
@@ -271,10 +239,7 @@ calls to <a class="reference internal" href="#spatial.ForestRaster.allocate_sche
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="opt.html" class="btn btn-neutral float-left" title="opt module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="examples.html" class="btn btn-neutral float-right" title="Examples Gallery" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 
