@@ -1,122 +1,96 @@
 .. _howto-running-optimization:
 
-=================
+=============================
 Running Optimization
-=================
+=============================
 
 Goal
 ----
 
-Run your first optimization scenario with ws3:
-
-* Configure optimization parameters
-* Solve the harvest scheduling problem
-* Interpret the results
-* Export results for analysis
+Run your first optimization scenario with ws3.
 
 Prerequisites
 -------------
 
-* Completed :doc:`data-preparation`, :doc:`curve-definition`, and :doc:`action-definition`
-* Familiarity with optimization concepts from :doc:`../textbook/ch05_optimization`
-* A working ws3 installation with sample data
+* Completed :doc:`loading-a-woodstock-model` and :doc:`defining-growth-curves`
+* Understanding of optimization concepts
 
 Step-by-Step Instructions
 -------------------------
 
-**Step 1: Load Your Model**
+**Step 1: Load Model**
 
 .. code-block:: python
 
    from ws3.forest import ForestModel
-   import pandas as pd
 
-   # Load model from previous steps
-   model = ForestModel()
+   fm = ForestModel(
+       model_name="my_model",
+       model_path="path/to/model",
+       base_year=2020,
+       horizon=10,
+       period_length=10
+   )
+   fm.import_areas_section()
+   fm.import_yields_section()
+   fm.import_actions_section()
+   fm.import_transitions_section()
+   fm.initialize_areas()
+   fm.add_null_action()
+   fm.reset_actions()
 
-   # Add development types, curves, and actions
-   # (see previous how-to guides)
-
-**Step 2: Configure Optimization Parameters**
-
-.. code-block:: python
-
-   # Define planning horizon
-   horizon = 5
-
-   # Define time periods
-   periods = list(range(horizon))
-
-   # Set optimization objective
-   objective = 'maximize_volume'  # or 'maximize_npv', 'area_control'
-
-**Step 3: Define Constraints**
+**Step 2: Create Problem**
 
 .. code-block:: python
 
-   # Flow constraints
-   flow_constraints = [
-       {
-           'type': 'flow',
-           'periods': [0, 1],
-           'min_ratio': 0.8,
-           'max_ratio': 1.2
-       }
-   ]
+   from ws3.opt import Problem
 
-   # Area constraints
-   area_constraints = [
-       {
-           'type': 'area',
-           'period': 0,
-           'min_area': 50.0,
-           'max_area': 200.0
-       }
-   ]
-
-**Step 4: Run Optimization**
-
-.. code-block:: python
-
-   from ws3.opt import solve_optimization
-
-   # Solve the optimization problem
-   solution = solve_optimization(
-       model=model,
-       horizon=horizon,
-       objective=objective,
-       flow_constraints=flow_constraints,
-       area_constraints=area_constraints
+   problem = Problem(
+       name="base_scenario",
+       sense=1,  # SENSE_MAXIMIZE
+       solver="highs"
    )
 
-**Step 5: Inspect Results**
+**Step 3: Define Objective**
 
 .. code-block:: python
 
-   # Get harvest schedule
-   schedule = solution.get_schedule()
+   # Define objective coefficients
+   # Example: maximize volume harvest
+   coeffs = {var_name: 1.0 for var_name in problem.var_names()}
+   problem.z(coeffs)
 
-   # Print results
-   print(schedule.head())
-
-   # Get summary statistics
-   summary = solution.get_summary()
-   print(summary)
-
-**Step 6: Export Results**
+**Step 4: Add Constraints**
 
 .. code-block:: python
 
-   # Export to CSV
-   schedule.to_csv('harvest_schedule.csv', index=False)
+   # Example: even-flow constraint
+   # Sum of harvest in period 0 <= 1.2 * Sum of harvest in period 1
+   problem.add_constraint(
+       name="even_flow",
+       coeffs={var_name: 1.0 if "period_0" in var_name else -1.2 for var_name in problem.var_names()},
+       sense="<=",
+       rhs=0.0
+   )
 
-   # Export to Excel
-   schedule.to_excel('harvest_schedule.xlsx', index=False)
+**Step 5: Solve**
+
+.. code-block:: python
+
+   problem.solve(verbose=True)
+
+**Step 6: Inspect Results**
+
+.. code-block:: python
+
+   solution = problem.solution()
+   print(f"Objective value: {problem.z()}")
+   print(f"Variables: {len(solution)}")
 
 Expected Output
 ---------------
 
-* Optimization solution object
+* Optimization solution found
 * Harvest schedule with period-by-period prescriptions
 * Summary statistics (total volume, NPV, etc.)
 
@@ -144,6 +118,5 @@ Troubleshooting
 Next Steps
 ----------
 
-* :doc:`parallel-optimization` — Run multiple scenarios in parallel
-* :doc:`spatial-schedule-allocation` — Allocate harvest spatially
-* :doc:`libcbm-callbacks` — Integrate with libCBM for carbon
+* :doc:`spatial-allocation` — Allocate harvest spatially
+* :doc:`multi-objective-optimization` — Run multi-objective scenarios

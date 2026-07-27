@@ -12,30 +12,19 @@ How-To Guides
 =============
 
 Operational guides for common ws3 tasks. Each guide is self-contained and
-includes runnable code examples.
+includes runnable code examples verified against the actual ws3 API.
 
 .. toctree::
    :maxdepth: 2
    :caption: How-To Guides
 
-   data-preparation
-   curve-definition
-   action-definition
+   loading-a-woodstock-model
+   defining-growth-curves
    running-optimization
+   spatial-allocation
+   multi-objective-optimization
    parallel-optimization
-   spatial-schedule-allocation
-   libcbm-callbacks
-   financial-scenarios
-   custom-area-selector
-   custom-growth-function
-   model-validation
-   reproducibility
    faq
-   migration_from_woodstock
-   advanced-optimization
-   custom-solvers
-   data-validation
-   scenario-analysis
 
 What You Will Find Here
 ========================
