@@ -14,12 +14,12 @@ def test_sylv_cred():
     vr = 2.0
     vp = 1.0
     formula = 1
-    
+
     # Call the function
     result = sylv_cred(P, vr, vp, formula)
 
-    expected_result = 126.33 
-    
+    expected_result = 126.33
+
     # Assertion
     assert result == pytest.approx(expected_result, rel=1.3e-04)
 
@@ -111,10 +111,9 @@ def test_harv_cost():
     A, B, C, D, E, F, G, K = 1.97, 0.405, 0.169, 0.164, 0.202, 13.6, 8.83, 0.0
 
     expected_result_1 = (
-        A - (B * math.log(piece_size)) + (C * float(partialcut_extracare)) + 
-        (D * float(is_finalcut)) - (E * (1 - float(is_toleranthw)))  
+        A - (B * math.log(piece_size)) + (C * float(partialcut_extracare)) +
+        (D * float(is_finalcut)) - (E * (1 - float(is_toleranthw)))
     )
     expected_result = math.exp(expected_result_1)+ ((F * float(is_toleranthw)) + (G * (1 - float(is_toleranthw)))) + K
-   
-    assert harv_cost(piece_size, is_finalcut, is_toleranthw, partialcut_extracare, A, B, C, D, E, F, G, K) == expected_result
 
+    assert harv_cost(piece_size, is_finalcut, is_toleranthw, partialcut_extracare, A, B, C, D, E, F, G, K) == expected_result

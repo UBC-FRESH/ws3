@@ -53,7 +53,7 @@ def test_curve_initialization():
     assert curve.is_special == False
     assert curve.epsilon == ws3.common.CURVE_EPSILON_DEFAULT
     assert curve.is_locked == False
-    assert curve.points() == [(ws3.common.MIN_AGE_DEFAULT, 0), 
+    assert curve.points() == [(ws3.common.MIN_AGE_DEFAULT, 0),
                               (ws3.common.MAX_AGE_DEFAULT, 0)]
 
 
@@ -90,10 +90,3 @@ def test_curve_lookup(sample_curve):
 #     # Test calculating yield-to-point (YTP) of a Curve instance
 #     ytp_curve = sample_curve.ytp()
 #     assert ytp_curve.points() == [(0, 2), (1, 1), (2, 0), (3, 0)]
-
-
-
-
-
-
-

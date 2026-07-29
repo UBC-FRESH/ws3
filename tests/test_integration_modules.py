@@ -101,7 +101,7 @@ class TestFEMICIntegrator:
             import femic
         except ImportError:
             pytest.skip("femic not installed")
-        
+
         integrator = FEMICIntegrator()
 
         schedule = pd.DataFrame({

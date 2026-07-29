@@ -29,7 +29,7 @@ All the wood-supply-problem--specific references are implemented in the ``forest
 
 The ``Problem`` class is the main functional unit here. It encapsulates optimization problem data (i.e., variables, constraints, objective function, and optimal solution), as well as methods to operate on this data (i.e., methods to build and solve the problem, and report on the optimal solution).
 
-Note that we implemented a modular design that decouples the implementation from the choice of solver. Currently, only bindings to the Gurobi solver are implemented, although bindings to other solvers can easilty be added (we will add more binding in later releases, as the need arises). 
+Note that we implemented a modular design that decouples the implementation from the choice of solver. Currently, only bindings to the Gurobi solver are implemented, although bindings to other solvers can easilty be added (we will add more binding in later releases, as the need arises).
 """
 
 from __future__ import annotations
@@ -93,7 +93,7 @@ class Constraint:
         self.coeffs = coeffs
         self.sense = sense
         self.rhs = rhs
-                
+
 class Problem:
     """
     This is the main class of the ``opt`` module---it encapsulates optimization problem data (i.e., variables, constraints, objective function, optimal solution, and choice of solver), as well as methods to operate on this data (i.e., methods to build and solve the problem, and report on the optimal solution).
@@ -129,8 +129,8 @@ class Problem:
 
     def merge(self, problem: Problem) -> None:
         """
-        Merge problem with data from another problem. 
-        
+        Merge problem with data from another problem.
+
         :param problem: The problem to be merged with this one.
         """
         self._vars.update(problem._vars)
@@ -140,7 +140,7 @@ class Problem:
     def add_var(self, name: str, vtype: str, lb: float = 0., ub: float = VBNDS_INF) -> None:
         """
         The function adds a variable to the problem.
-    
+
         :param name: The variable name that needs to be unique within the problem (user is responsible for enforcing this condition) type.
         :param vtype: The variable type that has to be one of ``VTYPE_CONTINUOUS``, ``VTYPE_INTEGER``, or ``VTYPE_BINARY``.
         :param lb: The lower bound value for the variable (Default is zero).
@@ -213,14 +213,14 @@ class Problem:
     def add_constraint(self, name: str, coeffs: Dict[str, float], sense: str, rhs: float, validate: bool = False) -> None:
         """
         This function adds a constraint to the problem.
-    
+
         :param name: The constraint name should be unique within the problem (user is responsible for enforcing this condition).
         :param coeffs: Constraint coeffients should be provided as a ``dict``, keyed on variable names---length of constraint coefficient ``dict`` should match number of variables in the problem (user is responsible for enforcing this condition).
         :param sense: Constraint sense should be one of ``SENSE_EQ``, ``SENSE_GEQ``, or ``SENSE_LEQ``.
         :param rhs: The right hand side of the constraint.
 
         Note that calling this method resets the value of the optimal solution to ``None``
-    
+
         """
         if validate:
             for v in coeffs:
@@ -230,8 +230,8 @@ class Problem:
 
     def solver(self, val: Optional[str] = None) -> Optional[str]:
         """
-        Sets the solver backend (defaults to ``SOLVER_PULP`` in the class constructor). 
-        
+        Sets the solver backend (defaults to ``SOLVER_PULP`` in the class constructor).
+
         Use ``SOLVER_GUROBI`` to use Gurobi solver bindings.
         """
         if val is not None:
@@ -268,7 +268,7 @@ class Problem:
         if self.status() == STATUS_OPTIMAL:
             # Solution is stored in self._vars[k].val by the solver methods
             self._solution = {x: (self._vars[x].val or 0.0) for x in self._vars}
-                
+
     def status(self):
         """
         Checks the solution status of the current model for PuLP, Gurobi, or HiGHS (highspy).
@@ -333,15 +333,15 @@ class Problem:
             # --- Fallback ---
             case _:
                 return None
-    
+
     def get_all_constraints_lhs_values(self):
         """
         Returns the left-hand side (LHS) values for all constraints in the problem after solving.
-        
+
         :return: A dictionary where keys are constraint names and values are the LHS values.
         """
         if not self.solved():
-            raise ValueError("The problem has not been solved yet.")           
+            raise ValueError("The problem has not been solved yet.")
         lhs_values = {}
         if self._solver == SOLVER_PULP:
             for constraint_name, constraint in self._constraints.items():
@@ -352,7 +352,7 @@ class Problem:
                 lhs_value = sum(constraint.coeffs[v] * self._vars[v].val for v in constraint.coeffs)
                 lhs_values[constraint_name] = lhs_value
         else:
-            raise ValueError("Unsupported solver backend.")      
+            raise ValueError("Unsupported solver backend.")
         return lhs_values
 
     def _solve_gurobi(self, allow_feasrelax=True, threads=1, verbose=False):
@@ -418,7 +418,7 @@ class Problem:
                 _v = self._model.getVarByName(k)
                 v._solver_var = _v
                 v.val = _v.X
-                
+
     def _solve_pulp(self, threads=0, verbose=False, solver_backend="CBC"):
         """
         Solve the LP problem using the pulp solver.
@@ -481,7 +481,7 @@ class Problem:
             Number of threads for HiGHS. 0 = auto-detect.
         simplex_strategy : int
             HiGHS simplex strategy. 2 = parallel dual simplex (recommended for multi-core).
-        
+
         Returns
         -------
         status : highspy.HighsStatus
@@ -493,7 +493,7 @@ class Problem:
         import numpy as np
 
         highs = highspy.Highs()
-        highs.resetGlobalScheduler(True) 
+        highs.resetGlobalScheduler(True)
         inf = highspy.kHighsInf
 
         # ----------------------------
@@ -549,7 +549,7 @@ class Problem:
         # ----------------------------
         if getattr(self, "_warm_start", None) is not None:
             print('ws3.opt.Proble._solve_highs: detected _warm_start solution')
-            highs.setOptionValue("run_crossover", "choose")  # let HiGHS auto-decide            
+            highs.setOptionValue("run_crossover", "choose")  # let HiGHS auto-decide
             warm_start = self._warm_start
             ncols = len(warm_start)
             idx = np.arange(ncols, dtype=np.int32)

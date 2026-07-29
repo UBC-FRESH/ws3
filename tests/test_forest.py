@@ -99,6 +99,3 @@ def test_action_initialization():
     assert action.oper_p is None
     assert action.is_compiled == False
     assert action.treatment_type is None
-
-
-

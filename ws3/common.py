@@ -40,8 +40,8 @@ import numpy as np
 #   Patch line 29 in pacal/utils.py from
 #     from numpy.fft.fftpack import fft, ifft
 #   to
-#     from numpy.fft import fft, ifft 
-# 
+#     from numpy.fft import fft, ifft
+#
 if not PACAL_BROKEN:
     import pacal
 #################################################################################################
@@ -150,9 +150,9 @@ def clean_vector_data(
 
     from shapely.geometry import MultiPolygon, mapping, shape
     logging.basicConfig(filename=logfn, level=logging.INFO)
-    snk1_path = '%s/%s.shp' % (dst_path, dst_name) 
-    #snk2_path = dst_path[:-4]+'_error.shp' 
-    snk2_path = '%s/%s_error.shp' % (dst_path, dst_name) 
+    snk1_path = '%s/%s.shp' % (dst_path, dst_name)
+    #snk2_path = dst_path[:-4]+'_error.shp'
+    snk2_path = '%s/%s_error.shp' % (dst_path, dst_name)
     with fiona.open(src_path, 'r') as src:
         kwds1 = src.meta.copy()
         kwds2 = src.meta.copy()
@@ -175,7 +175,7 @@ def clean_vector_data(
                 prop_data = [('theme0', theme0)] if theme0 else []
                 if prop_types:
                     prop_data = prop_data + [(prop_types[i+len(prop_data)][0], f['properties'][pn])
-                                             for i, pn in enumerate(prop_names)]   
+                                             for i, pn in enumerate(prop_names)]
                 else:
                     prop_data = prop_data + [(pn.lower(), f['properties'][pn]) for pn in prop_names]
                 f.update(properties = OrderedDict(prop_data))
@@ -186,10 +186,10 @@ def clean_vector_data(
                         ################################
                         # HACK
                         # Something changed (maybe in fiona?) and now all GDB datasets are
-                        # loading as MultiPolygon geometry type (instead of Polygon). 
-                        # The buffer(0) trick smashes the geometry back to Polygon, 
+                        # loading as MultiPolygon geometry type (instead of Polygon).
+                        # The buffer(0) trick smashes the geometry back to Polygon,
                         # so this hack upcasts it back to MultiPolygon.
-                        # 
+                        #
                         # Not sure how robust this is going to be (guessing not robust).
                         _g = MultiPolygon([_g])
                         assert _g.is_valid
@@ -245,7 +245,7 @@ def reproject_vector_data(
             #print snk.meta
             for f in src: snk.write(reproject(f, src.crs, snk_crs))
 
-                          
+
 def rasterize_stands(
     shp_path: str,
     tif_path: str,
@@ -281,7 +281,7 @@ def rasterize_stands(
     """
     from rasterio.features import rasterize
     if verbose: print('rasterizing', shp_path)
-    if dtype == rasterio.int32: 
+    if dtype == rasterio.int32:
         nbytes = 4
     else:
         raise TypeError('Data type not implemented: %s' % dtype)
@@ -304,7 +304,7 @@ def rasterize_stands(
             try:
                 age = np.int32(math.ceil(fp[age_col]/float(age_divisor)))
             except:
-                if fp[age_col] == None: 
+                if fp[age_col] == None:
                     age = np.int32(1)
                 else:
                     raise ValueError('Bad age value in record %i: %s' % (i, str(fp[age_col])))
@@ -324,10 +324,10 @@ def rasterize_stands(
     nodata_value = -2147483648 # this really should be a function arg
     kwargs = {'out_shape':(m, n), 'transform':transform, 'dtype':dtype, 'fill':nodata_value}
     r = np.stack([rasterize(s, **kwargs) for s in shapes])
-    kwargs = {'driver':'GTiff', 
-              'width':n, 
-              'height':m, 
-              'count':3, 
+    kwargs = {'driver':'GTiff',
+              'width':n,
+              'height':m,
+              'count':3,
               'crs':crs,
               'transform':transform,
               'dtype':dtype,
@@ -338,7 +338,7 @@ def rasterize_stands(
         snk.write(r[1], indexes=2)
         snk.write(r[2], indexes=3)
     return hdt
-        
+
 
 def hash_dt(
     dt: Tuple[Any, ...],
@@ -525,7 +525,7 @@ SPECIES_GROUPS_WOODSTOCK_QC  = {
 # }
 ##########################################
 
-    
+
 def _sylv_cred_f1(P,
                   vr,
                   vp,
@@ -548,7 +548,7 @@ def _sylv_cred_f1(P,
     else:
         return sc
 
-    
+
 def _sylv_cred_f2(P,
                   vr,
                   vp,
@@ -718,7 +718,7 @@ def sylv_cred(P, vr, vp, formula):
     :param float P: Volume harvested per hectare.
     :param float vr: Mean piece size of harvested stems.
     :param float vp: mean piece size of stand before harvesting.
-    :param formula: formula index (1 to 7).        
+    :param formula: formula index (1 to 7).
     """
     f = {1:_sylv_cred_f1,
          2:_sylv_cred_f2,
@@ -734,7 +734,7 @@ def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
                  treatment_type=None, cover_type=None, formula=None,
                  P_min=20., tv_min=50., N_min=200., ps_min=0.05,
                  E_fromintegral=False, e=0.01, n=1000):
-    
+
     """
     This function returns sylviculture credit ($ per hectare).
 
@@ -744,7 +744,7 @@ def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
     :param formula: formula index (1 to 7).
 
     .. Note:: Assumes that variables (P, vr, vp) are random variates (returns expected value of function, using PaCAL packages to model random variates, assuming normal distribution for all three variables).
-        Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).   
+        Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).
     """
     if treatment_type and cover_type:
         formula = sylv_cred_formula(treatment_type, cover_type)
@@ -756,7 +756,7 @@ def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
     vp = (tv / N) | pacal.Gt(ps_min)
     #vr = vp + (vp.mean() * (1 - psr))
     # truncate again in case psr < 1 (shifts distn to the left)
-    vr = (vp + (vp.mean() * (psr - 1.))) | pacal.Gt(ps_min)  
+    vr = (vp + (vp.mean() * (psr - 1.))) | pacal.Gt(ps_min)
     f = {1:_sylv_cred_f1,
          2:_sylv_cred_f2,
          3:_sylv_cred_f3,
@@ -766,7 +766,7 @@ def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
          7:_sylv_cred_f7}
     #print ' formula', formula
     if E_fromintegral:
-        # estimate expected value E(f(P, vr, vp)) using PaCAL numerical integration functions (sssssslow!) 
+        # estimate expected value E(f(P, vr, vp)) using PaCAL numerical integration functions (sssssslow!)
         E = f[formula](P, vr, vp, rv=True)
     else:
         # estimate expected value E(f(P, vr, vp)) using Monte Carlo simulation (until convergence to E_tol)
@@ -795,18 +795,18 @@ def sylv_cred_formula(treatment_type, cover_type):
     if treatment_type == 'cj':
         return 4
     if treatment_type == 'cprog':
-        return 7 if cover_type.lower() in ['r', 'm'] else 4        
+        return 7 if cover_type.lower() in ['r', 'm'] else 4
     return 0
 
 
 def piece_size_ratio(treatment_type, cover_type, piece_size_ratios):
     """
     Returns piece size ratio.
-    
+
     Assume Action.is_harvest in [0, 1, 2, 3]
-    
+
     Assume cover_type in ['r', 'm', 'f']
-    
+
     Return vr/vp ratio, where
       - vr is mean piece size of harvested stems, and
       - vp is mean piece size of stand before harvesting.
@@ -823,7 +823,7 @@ def piece_size_ratio(treatment_type, cover_type, piece_size_ratios):
 def harv_cost(piece_size,
               is_finalcut,
               is_toleranthw,
-              partialcut_extracare=False,              
+              partialcut_extracare=False,
               A=1.97, B=0.405, C=0.169, D=0.164, E=0.202, F=13.6, G=8.83, K=0.,
               rv=False):
     """
@@ -834,7 +834,7 @@ def harv_cost(piece_size,
     :param bool is_toleranthw: Stand type (tolerant hardwood or not).
     :param bool partialcut_extracare: Partialcut "extra care" flag.
     :param float A: Series of regression coefficients (A, B, C, D, E, F, G, K, all with defaults that are extracted from MERIS technical documentation; also see Sebastien Lacroix, BMMB).
-    :param bool rv: Types of variables (default: Variables are deterministic).        
+    :param bool rv: Types of variables (default: Variables are deterministic).
     """
 
     _ifc = float(is_finalcut)
@@ -849,7 +849,7 @@ def harv_cost(piece_size,
     else:
         return hc
 
-    
+
 def harv_cost_rv(tv_mu, tv_sigma, N_mu, N_sigma, psr,
                  is_finalcut,
                  is_toleranthw,
@@ -866,9 +866,9 @@ def harv_cost_rv(tv_mu, tv_sigma, N_mu, N_sigma, psr,
     :param float A: Series of regression coefficients (A, B, C, D, E, F, G, K, all with defaults that are extracted from MERIS technical documentation; also see Sebastien Lacroix, BMMB).
     :param bool rv: Types of variables (default: Variables random variates).
 
-    Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).       
+    Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).
     """
-    
+
 
     # PaCAL overrides the | operator to implement conditional distributions
     tv = pacal.NormalDistr(tv_mu, tv_sigma) | pacal.Gt(tv_min)
@@ -878,7 +878,7 @@ def harv_cost_rv(tv_mu, tv_sigma, N_mu, N_sigma, psr,
     # truncate again in case psr < 1 (shifts distn to the left)
     vr = (vp + (vp.mean() * (psr - 1.))) | pacal.Gt(ps_min)
     if E_fromintegral:
-        # estimate expected value E(f(vr)) using PaCAL numerical integration functions (sssssslow!) 
+        # estimate expected value E(f(vr)) using PaCAL numerical integration functions (sssssslow!)
         E = harv_cost(vr, is_finalcut, is_toleranthw, rv=True)
     else:
         # estimate expected value E(f(vr)) using Monte Carlo simulation (until convergence to E_tol)
@@ -909,14 +909,11 @@ def harv_cost_wec(piece_size,
     :param bool is_toleranthw: True if tolerant hardwood cover type, False otherwise.
     :param bool sigma: Standard deviation of piece size estimator.
     :param int nsigmas: Number of standard deviations to model on either side of the mean (default 3).
-    :param float binw: Width of bins for weighted numerical integration, in multiples of sigma (default 1.0).       
+    :param float binw: Width of bins for weighted numerical integration, in multiples of sigma (default 1.0).
     """
 
     # bin centerpoints
     rv = norm(loc=piece_size, scale=sigma)
-    X = sorted([(piece_size + (sigma * (i - (1. * 0.5)) * sign)) 
+    X = sorted([(piece_size + (sigma * (i - (1. * 0.5)) * sign))
                for i in range(1, nsigmas+1) for sign in [-1, +1]])
     return sum(harv_cost(x, is_finalcut, is_toleranthw, **kwargs) * sigma * rv.pdf(x) for x in X)
-        
-
- 

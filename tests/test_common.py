@@ -14,7 +14,7 @@ def test_is_num():
     assert is_num("0.15") == True
     assert is_num("-1000") == True
     assert is_num("4.55") == True
-     
+
     # Test with invalid inputs
     assert is_num("abc") == False
     assert is_num("") == False
@@ -47,7 +47,7 @@ def test_reproject():
     # Test reprojecting a point from WGS 84 to Web Mercator
     result = reproject(feature, srs_crs, dst_crs)
     assert 'geometry' in result  # Ensure geometry is still present in the result
-    assert result['geometry']['type'] == 'Point'  
+    assert result['geometry']['type'] == 'Point'
     # Since the point is near the origin, the coordinates should remain similar in Web Mercator
     assert result['geometry']['coordinates'] == pytest.approx([0, 0], abs=1e-6)
 
@@ -69,5 +69,3 @@ def test_timed(capsys):
 
     # Ensure that the elapsed time is non-zero
     assert float(captured.out.split()[2]) > 0
-
-
