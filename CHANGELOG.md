@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Common Changelog](https://common-changelog.org/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.1.0a3 - 2026-07-29 (alpha)
+
+**Status**: Patch release. Clears code-quality debt that was blocking meaningful CI signal, and fixes runtime defects shipped in 1.1.0a2.
+
+### Fixed
+- **`_cp` period conditions were broken for `>=` and `<=`.** Two separate defects in `DevelopmentType._compile_oper_expr` meant only `_cp =` ever worked:
+  - the `<=` branch referenced an undefined `rel_opertors` (missing `a`), raising `NameError`
+  - the bound was then folded in with an unguarded `max(_plo, plo), min(_phi, phi)`; a one-sided comparison leaves the opposite bound `None`, raising `TypeError`. The parallel `_age` branch already guarded for this.
+- `resolve_tmask` called `resolve_treplace` and `resolve_tappend` without `self.`, so any model using `_REPLACE` or `_APPEND` theme expressions crashed.
+- `_evaluate_basic` referenced a bare `parent` instead of `self.parent`.
+- `resolve_replace`'s exception handler printed seven out-of-scope names, raising `NameError` inside the handler and masking the original error.
+- A debug print in the target-age resolver referenced `age` where the variable is `sage`.
+- Removed `_expand_action`, unreachable dead code that could not execute under any input.
+
+### Changed
+- **CI no longer collapses on a lint failure.** `test`, `docs`, and `build` were transitively gated on `lint`; with the lint job permanently red, none of them ever ran. They are now independent. mypy is advisory pending the Phase 2 typing debt.
+- Added `.flake8` codifying an explicit policy: correctness enforced (all pyflakes codes, `E7xx` logic errors, syntax, deprecations), style codes that conflict with long-standing project conventions documented and ignored.
+- flake8 across `ws3/` and `tests/` now exits clean, down from 1808 findings.
+
+### Added
+- Parametrized regression tests covering all three `_cp` relational operators and the invalid-operator path.
+
+### Notes
+Three tests were passing without testing anything, and are now explicitly skipped with the reason stated rather than silently vacuous:
+- `test_operate` was decorated `@pytest.fixture`, so pytest collected it as a fixture and never ran it; it also requests an `area_selector` fixture that does not exist.
+- `test_yield_curve_interpolation` calls `ws3.core.interpolate_curves`, which does not exist; absent test data triggered an early skip before the undefined name was evaluated.
+- `test_documentation` computed a section-header flag and never asserted it. The implied assertion is now present and passing.
+
 ## 1.1.0a2 - 2026-07-29 (alpha)
 
 **Status**: Second alpha release. Documentation cleanup complete (Phase 6). Ready for user testing.
