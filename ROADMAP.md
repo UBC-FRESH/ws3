@@ -258,3 +258,43 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 ### Task 7.5.5 — Release v1.1.0a3
 - Status: complete
 - Scope: version bump, CHANGELOG, tag, PyPI publish via trusted publisher.
+
+## Backlog — not yet scheduled
+
+Phase-sized work identified during Phase 7.5 and deferred to keep that phase scoped.
+
+### Typing debt remediation
+- Issue: [#98](https://github.com/UBC-FRESH/ws3/issues/98)
+- Status: not_started
+- Scope: 323 mypy errors across 10 files (69% in `forest.py`) from the incomplete Phase 2 typed refactor. The mypy CI step is `continue-on-error` until this lands. Includes 20 `union-attr` findings that are unguarded `re.search(...).group()` calls, and 12 `attr-defined` findings, one of which is already confirmed as a real `ImportError` ([#97](https://github.com/UBC-FRESH/ws3/issues/97)). Staged plan in the issue.
+
+### Known defects
+- [#97](https://github.com/UBC-FRESH/ws3/issues/97) — `advanced_modeling` imports `ws3.core.compile_scenario`, which does not exist.
+
+## Phase 7.6 — Defect Sweep from mypy Findings
+
+- Parent issue: [#99](https://github.com/UBC-FRESH/ws3/issues/99)
+- Status: complete
+- Branch: `feature/ws3-phase7.6-defect-sweep`
+- Release: `v1.1.0a4`
+- Date: 2026-07-29
+
+**Goal**: fix the subset of mypy findings representing actual defects, so Phase 8 can build symbol-validating capabilities on a package that does not reference things that do not exist. Deliberately not the full 323-error typing debt ([#98](https://github.com/UBC-FRESH/ws3/issues/98)).
+
+| Class | Before | After |
+|---|---:|---:|
+| `attr-defined` | 12 | 0 |
+| `union-attr` | 20 | 0 |
+| `unused-ignore` | 34 | 0 |
+| mypy total | 323 | 258 |
+
+### Defects fixed
+- [#100](https://github.com/UBC-FRESH/ws3/issues/100) — `sylv_cred` bound `log` to `math.exp`, returning values wrong by ~40x without raising. The existing test asserted the buggy output.
+- [#101](https://github.com/UBC-FRESH/ws3/issues/101) — every `rv=True` path raised `NameError`; PaCal was never imported. Restored via a NumPy 2.0 compatibility shim and a `ws3[rv]` extra.
+- [#97](https://github.com/UBC-FRESH/ws3/issues/97) — `advanced_modeling` imported `ws3.core.compile_scenario`, which does not exist.
+- [#103](https://github.com/UBC-FRESH/ws3/issues/103) — twelve Phase 5 entry points returned fabricated or vacuous results; now gated.
+- 20 unguarded `re.search(...).group(...)` sites in the Woodstock parsers now raise descriptive `ValueError`s.
+
+### Deferred
+- [#98](https://github.com/UBC-FRESH/ws3/issues/98) — remaining 258 mypy findings (annotation coverage). mypy stays `continue-on-error` in CI.
+- [#102](https://github.com/UBC-FRESH/ws3/issues/102) — whether to adopt PaCal as `fresh-pacal`. Gated on licence (GPL-3.0 vs ws3 MIT) and on contacting the upstream authors.

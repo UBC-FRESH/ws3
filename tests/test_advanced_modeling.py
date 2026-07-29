@@ -5,6 +5,7 @@ Tests StochasticOptimizer, MultiObjectiveOptimizer, DynamicPlanner,
 and ClimateScenarioManager classes.
 """
 
+import pytest
 from unittest.mock import MagicMock
 from ws3.advanced_modeling import (
     StochasticOptimizer,
@@ -118,15 +119,20 @@ class TestMultiObjectiveOptimizer:
         assert optimizer.objectives[0]["name"] == "npv"
 
     def test_solve_weighted_sum(self):
-        """Test weighted sum optimization (mocked)."""
-        mock_problem = MagicMock()
-        mock_problem.get_objective_value.return_value = 100.0
-        mock_problem.get_solution.return_value = {"x": [1, 2, 3]}
-        optimizer = MultiObjectiveOptimizer(mock_problem)
+        """
+        Weighted-sum solving is gated (see #103).
+
+        This test previously built a MagicMock whose get_objective_value() and
+        get_solution() returned canned values. Neither method exists on
+        ws3.opt.Problem -- MagicMock supplies any attribute requested, so the
+        test passed against an API that was never written. It also asserted
+        ``result["objective_values"] == {}``, i.e. that the stub's hardcoded
+        empty dict was correct behaviour.
+        """
+        optimizer = MultiObjectiveOptimizer(MagicMock())
         optimizer.add_objective("npv", weight=1.0, direction="maximize")
-        result = optimizer.solve_weighted_sum()
-        assert result["method"] == "weighted_sum"
-        assert result["objective_values"] == {}
+        with pytest.raises(NotImplementedError, match='stub'):
+            optimizer.solve_weighted_sum()
 
 
 class TestDynamicPlanner:
@@ -141,26 +147,16 @@ class TestDynamicPlanner:
         assert planner.plans == []
 
     def test_plan_static(self):
-        """Test static planning (mocked)."""
-        mock_problem = MagicMock()
-        mock_problem.get_objective_value.return_value = 100.0
-        mock_problem.get_solution.return_value = {"x": [1, 2, 3]}
-        planner = DynamicPlanner(mock_problem, n_periods=5)
-        plan = planner.plan_static()
-        assert plan["type"] == "static"
-        assert plan["n_periods"] == 5
-        assert len(planner.plans) == 1
+        """Static planning is gated: it calls Problem methods that do not exist (#103)."""
+        planner = DynamicPlanner(MagicMock(), n_periods=5)
+        with pytest.raises(NotImplementedError, match='stub'):
+            planner.plan_static()
 
     def test_plan_dynamic(self):
-        """Test dynamic planning with re-optimization (mocked)."""
-        mock_problem = MagicMock()
-        mock_problem.get_objective_value.return_value = 100.0
-        mock_problem.get_solution.return_value = {"x": [1, 2, 3]}
-        planner = DynamicPlanner(mock_problem, n_periods=10)
-        plan = planner.plan_dynamic(reoptimize_every=5)
-        assert plan["type"] == "dynamic"
-        assert plan["reoptimize_every"] == 5
-        assert len(plan["plans"]) == 2  # 0 and 5
+        """Dynamic planning is gated for the same reason as plan_static (#103)."""
+        planner = DynamicPlanner(MagicMock(), n_periods=10)
+        with pytest.raises(NotImplementedError, match='stub'):
+            planner.plan_dynamic(reoptimize_every=5)
 
 
 class TestClimateScenarioManager:

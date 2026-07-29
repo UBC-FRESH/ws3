@@ -463,6 +463,17 @@ class IncrementalSolver:
         :param kwargs: Additional solve arguments
         :return: True if solution improved
         """
+        raise NotImplementedError(
+            "IncrementalSolver.solve_with_warmstart() is an experimental stub and is "
+            "not production-ready.\n"
+            "\n"
+            "Missing: it calls Problem.get_solution(), which does not exist. The real "
+            "API is Problem.solution().\n"
+            "\n"
+            "The rest of this module -- MemoryProfiler, ResultCache, "
+            "PerformanceBenchmark and SolverTuner -- is functional and unaffected. "
+            "Tracked in #103."
+        )
         if self.previous_solution is None:
             print("No warm start solution available")
             return False

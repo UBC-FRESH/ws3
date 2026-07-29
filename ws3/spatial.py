@@ -437,9 +437,8 @@ class ForestRaster:
         import scipy
         _n = 0
         if not aggregate_disturbance:
-            blkid = np.unique(self._x[2][x])
+            blkid = list(np.unique(self._x[2][x]))
             np.random.shuffle(blkid)
-            blkid = list(blkid)
         else:
             disturb_heat = scipy.ndimage.gaussian_filter(
                 ((self._x[1] >= 0) & (self._x[1] <= self._disturb_thresh)).astype(float),

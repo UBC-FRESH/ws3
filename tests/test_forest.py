@@ -1,7 +1,36 @@
 import sys
 sys.path.append('../ws3/')
 import pytest
-from ws3.forest import Action, DevelopmentType
+from ws3.forest import Action, DevelopmentType, _search
+
+
+def test_search_returns_match_when_pattern_matches():
+    """_search behaves like re.search on the happy path."""
+    m = _search(r'(?<=\().*(?=\))', 'MULTIPLY(a, b)', 'test construct')
+    assert m.group(0) == 'a, b'
+
+
+def test_search_raises_descriptive_error_when_pattern_does_not_match():
+    """
+    Malformed parser input must produce a useful message.
+
+    The Woodstock parsers previously called ``re.search(...).group(...)`` directly.
+    On malformed input the search returns None and the chained ``.group()`` raised
+    ``AttributeError: 'NoneType' object has no attribute 'group'``, naming neither
+    the construct being parsed nor the offending text.
+    """
+    with pytest.raises(ValueError) as exc:
+        _search(r'(?<=\().*(?=\))', 'MULTIPLY no parens here', 'MULTIPLY arguments')
+    msg = str(exc.value)
+    assert 'MULTIPLY arguments' in msg
+    assert 'expected pattern' in msg
+    assert 'MULTIPLY no parens here' in msg
+
+
+def test_search_error_is_not_attribute_error():
+    """Specifically guards against regressing to the old bare AttributeError."""
+    with pytest.raises(ValueError):
+        _search(r'zzz', 'nothing matching', 'some construct')
 
 
 class _StubParent:

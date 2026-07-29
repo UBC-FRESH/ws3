@@ -30,6 +30,19 @@ maintainers = [
 cbm = ["libcbm"]  # pip users can `pip install ws3[cbm]`
 gurobi = ["gurobipy"]
 pulp = ["pulp"]
+# Probabilistic (random variable) financial analysis.
+#
+# PaCal is GPL-3.0-or-later while ws3 is MIT, so it is deliberately an optional
+# extra that the user installs themselves. It is never bundled with ws3.
+#
+# PaCal does not declare its own dependencies, hence sympy and setuptools here.
+# It also predates NumPy 2.0; ws3.financial applies a small compatibility shim
+# for the aliases NumPy removed. See #101 and #102.
+rv = [
+    "pacal>=1.6.1",
+    "sympy",
+    "setuptools",
+]
 docs = [
     "sphinx>=7",
     "sphinx-rtd-theme>=2",
@@ -78,7 +91,12 @@ warn_unused_configs = true
 disallow_untyped_defs = false
 ignore_missing_imports = true
 strict = true
-warn_unused_ignores = true
+# Disabled deliberately. With ignore_missing_imports = true, an absent optional
+# dependency is typed as Any, which makes every `# type: ignore` on lines touching
+# it look unused. ws3/financial.py alone flips 19 findings depending on whether
+# PaCal happens to be installed, so this check reports differently in CI than
+# locally and cannot be acted on reliably. Revisit as part of #98.
+warn_unused_ignores = false
 warn_redundant_casts = true
 check_untyped_defs = true
 

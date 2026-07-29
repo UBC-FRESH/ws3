@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Common Changelog](https://common-changelog.org/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.1.0a4 - 2026-07-29 (alpha)
+
+**Status**: Defect sweep. Fixes a silent numerical error, restores probabilistic financial analysis, and gates code paths that returned meaningless results.
+
+### Fixed
+- **`sylv_cred` returned values wrong by ~40x, silently.** Seven of eight hand-copied binding pairs in `ws3/financial.py` bound `log` to `math.exp` rather than `math.log`, so `exp(C7d*log(vp)+C8d)` evaluated as `exp(C7d*exp(vp)+C8d)`. Only `harv_cost` was correct, which established the intent. Evaluated independently at `P=10, vr=2, vp=1`: correct `80.83076`, as-coded `126.33232`. The existing test asserted `126.33` — the buggy output — because it had been written by running the code and recording the result. The eight duplicated pairs are now a single `_math_funcs()` helper.
+- **All `rv=True` paths raised `NameError`.** `PACAL_BROKEN = True` guarded the `import pacal` permanently, so the name was never bound. Neither flake8 nor mypy could see it: pyflakes treats a guarded import as binding the name.
+- **Unguarded optional access in the Woodstock parsers.** 20 sites, mostly `re.search(...).group(...)`, which raise a bare `AttributeError` on malformed input. Now raise `ValueError` naming the construct, the expected pattern, and the offending text.
+
+### Changed
+- **PaCal support restored.** The standing note said to patch `numpy.fft.fftpack` in `pacal/utils.py`, but that describes PaCal 1.6 — 1.6.1 already imports from `numpy.fft`. The real blockers were NumPy 2.0 alias removals (`Inf`, `NaN`, `asfarray`, `product`) and an undeclared `sympy` dependency. A small additive compatibility shim makes PaCal 1.6.1 work on NumPy 2.5. Available via `pip install ws3[rv]`. PaCal is GPL-3.0-or-later while ws3 is MIT, so it remains an optional dependency the user installs and is never bundled.
+- **Non-functional Phase 5 code paths are gated.** Twelve entry points across `advanced_modeling`, `perf`, and `integration` now raise `NotImplementedError` naming what is missing, rather than returning fabricated results. Most seriously, `StochasticOptimizer.solve_stochastic` reported `expected_value`, `variance`, and `std_dev` while `_apply_scenario` was a bare `pass` — scenarios were generated and never applied, so the variance across N identical solves was always exactly 0. Data structures, scenario generation, `MemoryProfiler`, `ResultCache`, and benchmarking are unaffected and still work.
+- mypy's `warn_unused_ignores` disabled: with `ignore_missing_imports`, an absent optional dependency types as `Any`, so the check reports differently depending on whether PaCal is installed.
+
+### Added
+- `ws3[rv]` extra for probabilistic financial analysis.
+- `ws3.financial.pacal_available()`.
+- `tests/test_experimental_gates.py` — 29 tests asserting every gate fires with an actionable message and that the working parts still work.
+- Regression tests for the `log`/`exp` mixup and the parser error messages.
+
+### Notes
+Several existing tests asserted the defective behaviour and had to be rewritten. They built `MagicMock` problems whose `get_objective_value()` and `get_solution()` returned canned values — neither method exists on `ws3.opt.Problem`, but `MagicMock` supplies any attribute requested, so they passed against an API that was never written. One asserted `result["objective_values"] == {}`, pinning a stub's hardcoded empty dict as correct. Tests written by recording what the code returned cannot catch the defect they were born from.
+
 ## 1.1.0a3 - 2026-07-29 (alpha)
 
 **Status**: Patch release. Clears code-quality debt that was blocking meaningful CI signal, and fixes runtime defects shipped in 1.1.0a2.
