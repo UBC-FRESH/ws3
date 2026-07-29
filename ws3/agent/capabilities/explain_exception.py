@@ -128,6 +128,37 @@ class ExplainException(Capability[Explanation]):
     )
     max_attempts = 3
 
+    input_schema = {
+        'type': 'object',
+        'properties': {
+            'exc_type': {'type': 'string', 'description': 'Exception class name.'},
+            'message': {'type': 'string', 'description': 'Exception message.'},
+            'traceback_text': {
+                'type': 'string',
+                'description': 'Formatted traceback. Optional but strongly preferred.',
+            },
+            'context': {
+                'type': 'string',
+                'description': 'What the caller was doing when it failed.',
+            },
+        },
+        'required': ['exc_type', 'message'],
+    }
+
+    def from_payload(self, payload: dict) -> ExceptionReport:
+        """Build an :py:class:`ExceptionReport` from MCP tool arguments."""
+        return ExceptionReport(
+            exc_type=str(payload.get('exc_type', '')),
+            message=str(payload.get('message', '')),
+            traceback_text=str(payload.get('traceback_text', '')),
+            context=str(payload.get('context', '')),
+        )
+
+    def render(self, value: 'Explanation') -> str:
+        """Render cause and next actions as readable text."""
+        actions = '\n'.join(f'  - {a}' for a in value.next_actions)
+        return f'{value.cause}\n\nSuggested next steps:\n{actions}'
+
     def build_messages(
         self,
         inputs: ExceptionReport,

@@ -62,6 +62,26 @@ class BuildMask(Capability[tuple]):
     )
     max_attempts = 3
 
+    input_schema = {
+        'type': 'object',
+        'properties': {
+            'description': {
+                'type': 'string',
+                'description': 'Natural-language description of the stands to '
+                               'select, e.g. "mature spruce on good sites".',
+            },
+        },
+        'required': ['description'],
+    }
+
+    def from_payload(self, payload: dict) -> MaskRequest:
+        """Build a :py:class:`MaskRequest` from MCP tool arguments."""
+        return MaskRequest(description=str(payload.get('description', '')))
+
+    def render(self, value: tuple) -> str:
+        """Render as a Woodstock-style space-separated mask, ready to paste."""
+        return ' '.join(value)
+
     def build_messages(self, inputs: MaskRequest, failures: tuple[str, ...]) -> list[dict[str, str]]:
         """Build the prompt, folding in why previous attempts were rejected."""
         content = (

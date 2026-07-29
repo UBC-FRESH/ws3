@@ -70,10 +70,45 @@ class DiagnoseImport(Capability[Diagnosis]):
         'and re-running the import: a suggestion that does not actually make the '
         'section parse is rejected.'
     )
-    #: Lower than the default. Each validation copies the model and re-parses a
-    #: section, so attempts are materially more expensive than for the other
-    #: capabilities.
     max_attempts = 2
+
+    input_schema = {
+        'type': 'object',
+        'properties': {
+            'model_path': {'type': 'string', 'description': 'Directory holding the model files.'},
+            'model_name': {'type': 'string', 'description': 'Base name shared by section files.'},
+            'section': {
+                'type': 'string',
+                'description': 'Failing section suffix.',
+                'enum': sorted(SECTION_IMPORTERS),
+            },
+            'error': {'type': 'string', 'description': 'Error text from the failed import.'},
+            'excerpt': {
+                'type': 'string',
+                'description': 'Relevant portion of the offending file, if known.',
+            },
+        },
+        'required': ['model_path', 'model_name', 'section', 'error'],
+    }
+
+    def from_payload(self, payload: dict) -> ImportFailure:
+        """Build an :py:class:`ImportFailure` from MCP tool arguments."""
+        return ImportFailure(
+            model_path=str(payload.get('model_path', '')),
+            model_name=str(payload.get('model_name', '')),
+            section=str(payload.get('section', '')),
+            error=str(payload.get('error', '')),
+            excerpt=str(payload.get('excerpt', '')),
+        )
+
+    def render(self, value: 'Diagnosis') -> str:
+        """Render the diagnosis and the verified replacement line."""
+        return (
+            f'{value.cause}\n'
+            f'\nReplace:\n  {value.original_line}\n'
+            f'\nWith:\n  {value.corrected_line}\n'
+            f'\n(verified: the section re-imports successfully with this change)'
+        )
 
     def build_messages(
         self,
