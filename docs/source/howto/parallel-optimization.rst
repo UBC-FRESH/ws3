@@ -51,24 +51,26 @@ Procedure
 .. code-block:: python
 
    from ws3.forest_helper import PersistentWorkerPool
+   import dill
 
-   pool = PersistentWorkerPool(n_workers=4)
+   # Serialize the model and coefficient functions for workers
+   blob_bytes = dill.dumps(fm)
+   serialized_funcs = {\"coeff_func\": dill.dumps(coeff_func)}
 
-   results = pool.map(
-       lambda scenario: run_scenario(fm, scenario),
-       scenarios
-   )
+   with PersistentWorkerPool(workers=4, blob_bytes=blob_bytes,\n                              serialized_funcs=serialized_funcs) as pool:
+       results = pool.map(run_scenario, scenarios)
 
 **4. Collect results**
 
 .. code-block:: python
 
    for scenario, result in zip(scenarios, results):
-       print(f"Scenario {scenario['name']}: {result}")
+       print(f\"Scenario {scenario['name']}: {result}\")
 
 Notes
 -----
 
-* Install ``dill`` for worker serialization.
-* Reset the model between scenarios to avoid state leakage.
-* Set random seeds consistently if reproducibility matters.
+* Install ``dill`` for worker serialization: ``pip install dill``.
+* The model and coefficient functions are serialized once and sent to
+  each worker, avoiding repeated serialization overhead.
+* Use the ``with`` statement to ensure the pool is properly shut down.

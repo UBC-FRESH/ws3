@@ -282,7 +282,7 @@ nb.cells.append(nbf.v4.new_markdown_cell("""## Troubleshooting
 # Cell 16: References (markdown)
 nb.cells.append(nbf.v4.new_markdown_cell("""## References
 
-- [ws3 Documentation](https://ws3.readthedocs.io)
+- [ws3 Documentation](https://ubc-fresh.github.io/ws3)
 - [Woodstock Documentation](https://woodstock.sourceforge.net)
 - [libCBM Documentation](https://libcbm.readthedocs.io)
 - [Gurobi Documentation](https://www.gurobi.com/documentation/)

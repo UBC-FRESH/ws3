@@ -4,9 +4,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Common Changelog](https://common-changelog.org/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.1.0a2 - 2026-07-29 (alpha)
+
+**Status**: Second alpha release. Documentation cleanup complete (Phase 6). Ready for user testing.
+
+### Changed
+- **Phase 6 complete**: All documentation fabricated APIs purged, legacy stubs removed, troubleshooting guide fixed
+- Documentation now uses real ws3 APIs throughout (verified against source)
+- `sphinx-build -b html docs/source _build/html -W` passes with zero errors
+
+### Removed
+- Deprecated legacy chapters (`Chapt1.rst`, `Chapt2.rst`, `intro.rst`, `aboutws3.rst`)
+- 2-line stubs (`SpaDES.rst`, `libCBM.rst`) — content covered by textbook
+
 ## 1.1.0a1 - 2026-07-26 (alpha)
 
 **Status**: Alpha release for smoke testing. Not yet stable.
+
+## Phase 7 — Release and Community Building (2026-07-27)
+
+**Status**: Complete (2026-07-29)
+
+### Added
+- Issue templates (bug_report, feature_request, question) for GitHub
+- Community channels: GitHub Discussions enabled, CONTRIBUTING.md updated with support info
+- Phase 7 planning docs and GitHub issues (#87-#91)
+- Feature branch `feature/ws3-phase7-release`
 
 ### Added
 - Phase 5 interactive notebooks (070-078) for advanced workflows

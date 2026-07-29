@@ -266,7 +266,7 @@ class Problem:
 
         # Capture solution if optimal
         if self.status() == STATUS_OPTIMAL:
-            assert self._solution is not None
+            # Solution is stored in self._vars[k].val by the solver methods
             self._solution = {x: (self._vars[x].val or 0.0) for x in self._vars}
                 
     def status(self):

@@ -108,6 +108,10 @@ todo_include_todos = True
 
 
 # -- Options for HTML output ----------------------------------------------
+
+# GitHub Pages configuration
+html_baseurl = 'https://ubc-fresh.github.io/ws3/'
+
 html_theme = "sphinx_rtd_theme"
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for

@@ -81,7 +81,7 @@ class TestDocumentationBuild:
             ws3_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             
             result = subprocess.run(
-                ["sphinx-build", "-b", "html", "docs/source", "docs/build/test_html"],
+                ["sphinx-build", "-b", "html", "docs/source", "_build/html"],
                 capture_output=True,
                 text=True,
                 cwd=ws3_root
@@ -96,7 +96,7 @@ class TestDocumentationBuild:
                     pytest.fail(f"Documentation build failed: {result.stderr}")
             
             # Check that output was created
-            html_dir = os.path.join("..", "docs", "build", "test_html")
+            html_dir = os.path.join(ws3_root, "_build", "html")
             assert os.path.exists(html_dir), f"HTML output directory not created: {html_dir}"
             
             # Check for index.html

@@ -53,11 +53,10 @@ Procedure
 
    raster.allocate_schedule(problem.solution())
 
-**4. Export results**
+**4. The allocated schedule is written to the output directory**
 
-.. code-block:: python
-
-   raster.export_schedule()
+The raster writes output files (typically GeoTIFF or schedule files) to
+the ``snk_path`` directory specified during construction.
 
 Troubleshooting
 ---------------
