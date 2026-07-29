@@ -7,8 +7,7 @@ SpaDESIntegrator, and RESTAPIServer classes.
 
 import pytest
 import pandas as pd
-import numpy as np
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 from ws3.integration import (
     FHOPSIntegrator,
     FHOPSIntegrationConfig,
@@ -98,7 +97,7 @@ class TestFEMICIntegrator:
     def test_calculate_carbon_budget(self):
         """Test carbon budget calculation (requires femic)."""
         try:
-            import femic
+            import femic  # noqa: F401  (availability probe)
         except ImportError:
             pytest.skip("femic not installed")
 

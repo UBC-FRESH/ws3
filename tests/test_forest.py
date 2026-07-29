@@ -1,7 +1,7 @@
 import sys
 sys.path.append('../ws3/')
 import pytest
-from ws3.forest import GreedyAreaSelector, Action, DevelopmentType
+from ws3.forest import Action, DevelopmentType
 
 
 class _StubParent:
@@ -60,8 +60,12 @@ def test_compile_oper_expr_rejects_bad_period_operator():
         dt._compile_oper_expr(acode, '_cp != 5')
 
 
-@pytest.fixture
-
+@pytest.mark.skip(
+    reason="Requires an 'area_selector' fixture that is not defined anywhere. "
+           "This function was also decorated with @pytest.fixture, which made pytest "
+           "collect it as a fixture rather than a test, so it silently never ran. "
+           "Unskip once a GreedyAreaSelector fixture with a populated ForestModel exists."
+)
 def test_operate(area_selector):
     period = 10
     acode = "some_action_code"
@@ -97,5 +101,5 @@ def test_action_initialization():
     assert action.is_sticky == is_sticky
     assert action.oper_a is None
     assert action.oper_p is None
-    assert action.is_compiled == False
+    assert not action.is_compiled
     assert action.treatment_type is None

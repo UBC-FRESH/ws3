@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../ws3/')
-import pytest, time
+import pytest
 #import numpy as np
 #import fiona
 #import os

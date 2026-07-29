@@ -3,7 +3,6 @@ sys.path.append('../ws3/')
 import ws3.core, ws3.common
 import pytest
 from ws3.core import Interpolator, Curve
-from bisect import bisect_left
 
 
 @pytest.fixture
@@ -45,14 +44,14 @@ def test_curve_initialization():
     curve = Curve()
     assert curve.label is None
     assert curve.id is None
-    assert curve.is_volume == False
+    assert not curve.is_volume
     assert curve.type == 'a'
     assert curve.period_length == ws3.common.PERIOD_LENGTH_DEFAULT
     assert curve.xmin == ws3.common.MIN_AGE_DEFAULT
     assert curve.xmax == ws3.common.MAX_AGE_DEFAULT
-    assert curve.is_special == False
+    assert not curve.is_special
     assert curve.epsilon == ws3.common.CURVE_EPSILON_DEFAULT
-    assert curve.is_locked == False
+    assert not curve.is_locked
     assert curve.points() == [(ws3.common.MIN_AGE_DEFAULT, 0),
                               (ws3.common.MAX_AGE_DEFAULT, 0)]
 

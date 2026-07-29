@@ -2,25 +2,22 @@ import sys
 sys.path.append('../ws3/')
 import pytest, time
 import numpy as np
-import fiona
-import os
-import math
-from ws3.common import is_num, hash_dt, reproject, timed, reproject_vector_data
+from ws3.common import is_num, hash_dt, reproject, timed
 
 
 def test_is_num():
     # Test with a valid numerical input
-    assert is_num("241") == True
-    assert is_num("0.15") == True
-    assert is_num("-1000") == True
-    assert is_num("4.55") == True
+    assert is_num("241")
+    assert is_num("0.15")
+    assert is_num("-1000")
+    assert is_num("4.55")
 
     # Test with invalid inputs
-    assert is_num("abc") == False
-    assert is_num("") == False
-    assert is_num(" ") == False
-    assert is_num("1.2.3") == False
-    assert is_num("123a") == False
+    assert not is_num("abc")
+    assert not is_num("")
+    assert not is_num(" ")
+    assert not is_num("1.2.3")
+    assert not is_num("123a")
 
 
 def test_hash_dt():

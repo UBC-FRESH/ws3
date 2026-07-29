@@ -8,10 +8,9 @@ import sys
 sys.path.append('../ws3/')
 
 import pytest
-import pandas as pd
 import numpy as np
 from ws3.forest import ForestModel
-from ws3.opt import Problem, Variable, Constraint
+from ws3.opt import Problem, Variable
 
 
 class TestForestOptIntegration:
@@ -48,29 +47,12 @@ class TestForestOptIntegration:
 
     def test_yield_curve_interpolation(self):
         """Test yield curve interpolation in optimization context."""
-        try:
-            fm = ForestModel(model_name="test", model_path="data/woodstock_model_files_tsa24", base_year=2024)
-            fm.import_yields_section(convert_periods_to_years=10)
-
-            # Get a yield curve
-            if len(fm.yields) > 0:
-                first_key = list(fm.yields.keys())[0]
-                curve = fm.yields[first_key]
-
-                # Check that curve has data
-                assert len(curve) > 0, "Empty yield curve"
-                assert 'age' in curve.columns, "Missing age column"
-                assert 'volume' in curve.columns, "Missing volume column"
-
-                # Test interpolation
-                test_ages = np.array([10, 20, 30, 40, 50])
-                volumes = interpolate_curves(curve, test_ages)
-
-                assert len(volumes) == len(test_ages), "Wrong number of volumes"
-                assert all(v >= 0 for v in volumes), "Negative volumes"
-
-        except FileNotFoundError:
-            pytest.skip("Test data not available")
+        pytest.skip(
+            "Depends on ws3.core.interpolate_curves, which does not exist. "
+            "This test only ever passed because the missing test data caused an "
+            "early skip before the undefined name was reached. Unskip once the "
+            "interpolation helper is implemented, or rewrite against the real API."
+        )
 
     def test_action_definitions(self):
         """Test action definitions in optimization context."""
@@ -97,8 +79,8 @@ class TestCoreOptIntegration:
         problem = Problem("test")
 
         # Add variables
-        x = Variable("x", "continuous", 0, 100)
-        y = Variable("y", "continuous", 0, 100)
+        Variable("x", "continuous", 0, 100)
+        Variable("y", "continuous", 0, 100)
 
         problem.add_var("x", "continuous", 0, 100)
         problem.add_var("y", "continuous", 0, 100)
@@ -162,7 +144,7 @@ class TestSpatialOptIntegration:
                 Polygon([(0, 1), (1, 1), (1, 2), (0, 2)]),
             ]
 
-            spatial_df = gpd.GeoDataFrame({
+            gpd.GeoDataFrame({
                 'dt_code': ['DT1', 'DT2', 'DT3'],
                 'area_ha': [100.0, 100.0, 100.0],
                 'geometry': polygons

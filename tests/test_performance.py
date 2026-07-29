@@ -9,7 +9,6 @@ sys.path.append('../ws3/')
 
 import pytest
 import time
-import numpy as np
 from ws3.opt import Variable, Constraint, Problem
 from ws3.forest import ForestModel
 
@@ -213,7 +212,7 @@ class TestEdgeCases:
         # Should not crash - empty problems may be valid in some contexts
         try:
             problem.solve()
-        except Exception as e:
+        except Exception:
             # If it raises, that's also acceptable
             pass
 

@@ -139,6 +139,7 @@ class TestDocumentationBuild:
 
                 # At least some lines should be section headers
                 # (This is a basic check, not comprehensive RST validation)
+                assert has_header, f"File {rst_file} has no RST section header underline"
 
 
 class TestExampleNotebooks:
@@ -225,8 +226,8 @@ class TestAPIConsistency:
         """Test that version is consistent across modules."""
         try:
             import ws3
-            from ws3.forest import ForestModel
-            from ws3.opt import Problem
+            from ws3.forest import ForestModel  # noqa: F401  (import probe)
+            from ws3.opt import Problem  # noqa: F401  (import probe)
 
             # All should have same version
             assert ws3.__version__ is not None, "ws3.__version__ is None"
@@ -245,7 +246,7 @@ class TestAPIConsistency:
                 Variable("test", "continuous", 100, 0)
 
             # Test invalid constraint creation (validate coefficients)
-            from ws3.opt import Constraint
+            from ws3.opt import Constraint  # noqa: F401  (import probe)
             # Note: Constraint doesn't currently validate sense, so we skip that test
 
         except ImportError:
