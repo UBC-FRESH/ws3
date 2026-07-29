@@ -515,11 +515,14 @@ class DevelopmentType:
                     _plo, _phi = period, period
                 elif rel_operators[i] == '>=':
                     _plo = period
-                elif rel_opertors[i] == '<=':
+                elif rel_operators[i] == '<=':
                     _phi = period
                 else:
                     raise ValueError('Bad relational operator.')
-                plo, phi = max(_plo, plo), min(_phi, phi)
+                # Guard for None, matching the _age handling below: a one-sided
+                # comparison (>= or <=) leaves the opposite bound unset.
+                if _plo is not None: plo = max(_plo, plo)
+                if _phi is not None: phi = min(_phi, phi)
             elif o == '_age':
                 age = int(rhs[i])
                 if rel_operators[i] == '=':
@@ -738,7 +741,8 @@ class Output:
     def _evaluate_basic(self, period, factors, verbose=0, cut_corners=True):
         result = 0.
         if self._invent_acodes:
-            acodes = [acode for acode in self._invent_acodes if parent.applied_actions[period][acode]]
+            acodes = [acode for acode in self._invent_acodes
+                      if self.parent.applied_actions[period][acode]]
             if cut_corners and not acodes:
                 return 0. # area will be 0...
         for k in list(self.parent.dtypes.keys()):
@@ -1830,10 +1834,9 @@ class ForestModel:
         i = int(tokens[0][3]) - 1
         try:
             return str(eval(expr.replace(tokens[0], dtk[i])))
-        except:
-            print('source', ' '.join(dtype_key))
-            print('target', ' '.join(tmask), tprop, tage, tlock, treplace, tappend)
+        except Exception:
             print('dtk', ' '.join(dtk))
+            print('expr', expr)
             raise
         
     def resolve_append(self, dtk, expr):
@@ -1866,7 +1869,7 @@ class ForestModel:
             if verbose: print('_AGE override', tage)
             targetage = tage
         elif action.targetage is None: # use source age
-            if verbose: print('source age', age)
+            if verbose: print('source age', sage)
             targetage = sage
         else: # default: age reset to 0
             if verbose: print('default age reset to 0')
@@ -2084,6 +2087,11 @@ class ForestModel:
         self.output_groups[group] = set()
         ocode = ''
         buffering_for = False
+        # Loop-carried state: bound in earlier iterations before first use, but
+        # initialized here so the bindings are explicit and statically provable.
+        for_var, for_lo, for_hi = None, 0, 0
+        for_buffer = []
+        expression, description, theme_index = '', '', None
         s = re.sub(r'\{.*?\}', '', s, flags=re.M|re.S) # remove curly-bracket comments
         for l in re.split(r'[\r\n]+', s, flags=re.M|re.S):
             if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
@@ -2269,10 +2277,6 @@ class ForestModel:
                     return 1
         return 0
                     
-    def _expand_action(self, c):
-        self._actions = t
-        return [c] if t[c] == c else list(_cfi(self._expand_action(t, c) for c in t[c]))
-                
     def _expand_theme(self, t, c, verbose=False):
         """
         Depth-first search recursive aggregate theme code expansion.
@@ -2554,9 +2558,9 @@ class ForestModel:
         """
         key = list(dt.key)
         if treplace:
-            key[treplace[0]] = resolve_treplace(dt, treplace[1])
+            key[treplace[0]] = self.resolve_treplace(dt, treplace[1])
         if tappend:
-            key[tappend[0]] = resolve_tappend(dt, tappend[1])
+            key[tappend[0]] = self.resolve_tappend(dt, tappend[1])
         for i, val in enumerate(tmask):
             if val == '?': continue # wildcard (skip it)
             key[i] = val
@@ -2626,6 +2630,7 @@ class ForestModel:
                     for x in self.resolve_condition(scond, k): # store targets
                         dt.transitions[acode, x] = sources[smask, scond] 
         acode = None
+        sources = {}
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             s = f.read()
         s = re.sub(r'\{.*?\}', '', s, flags=re.M|re.S) # remove curly-bracket comments

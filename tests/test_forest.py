@@ -3,6 +3,63 @@ sys.path.append('../ws3/')
 import pytest
 from ws3.forest import GreedyAreaSelector, Action, DevelopmentType
 
+
+class _StubParent:
+    """Minimal stand-in for ForestModel exposing only what _compile_oper_expr reads."""
+    horizon = 10
+    max_age = 200
+
+
+def _bare_dtype(acode='some_action'):
+    """
+    Build a DevelopmentType without running __init__.
+
+    _compile_oper_expr only reads self.parent.horizon, self._max_age, and writes
+    into self.operability, so a fully constructed ForestModel (which requires
+    on-disk Woodstock model files) is unnecessary here and would make this a slow
+    integration test rather than a focused regression test.
+    """
+    dt = object.__new__(DevelopmentType)
+    dt.parent = _StubParent()
+    dt._max_age = _StubParent.max_age
+    dt.operability = {acode: {}}
+    return dt
+
+
+@pytest.mark.parametrize('expr, expected_periods', [
+    ('_cp = 5', [5]),
+    ('_cp >= 5', [5, 6, 7, 8, 9, 10]),
+    ('_cp <= 5', [1, 2, 3, 4, 5]),
+])
+def test_compile_oper_expr_period_operators(expr, expected_periods):
+    """
+    Regression test for the '_cp' relational operator branches.
+
+    Two defects were present here:
+
+    1. The '<=' branch referenced an undefined name `rel_opertors` (missing 'a'),
+       raising NameError.
+    2. The bound was then folded in with an unguarded
+       `plo, phi = max(_plo, plo), min(_phi, phi)`. A one-sided comparison leaves
+       the opposite bound as None, so both '>=' and '<=' raised TypeError. The
+       parallel '_age' branch guards for None; this one did not.
+
+    Net effect: only '_cp =' worked. This test pins all three operators.
+    """
+    acode = 'some_action'
+    dt = _bare_dtype(acode)
+    dt._compile_oper_expr(acode, expr)
+    assert sorted(dt.operability[acode].keys()) == expected_periods
+
+
+def test_compile_oper_expr_rejects_bad_period_operator():
+    """A relational operator outside {=, >=, <=} must raise ValueError."""
+    acode = 'some_action'
+    dt = _bare_dtype(acode)
+    with pytest.raises(ValueError, match='Bad relational operator'):
+        dt._compile_oper_expr(acode, '_cp != 5')
+
+
 @pytest.fixture
 
 def test_operate(area_selector):
