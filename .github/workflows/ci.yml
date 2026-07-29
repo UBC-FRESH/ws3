@@ -92,6 +92,10 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        # pandoc is required by nbsphinx to render the example notebooks.
+        # docs.yml already installs it; this job did not, which is why it failed
+        # with PandocMissing the first time it was actually allowed to run.
+        sudo apt-get update && sudo apt-get install -y pandoc
         pip install -e ".[docs]"
     
     - name: Build documentation
