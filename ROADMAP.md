@@ -259,18 +259,6 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Status: complete
 - Scope: version bump, CHANGELOG, tag, PyPI publish via trusted publisher.
 
-## Backlog — not yet scheduled
-
-Phase-sized work identified during Phase 7.5 and deferred to keep that phase scoped.
-
-### Typing debt remediation
-- Issue: [#98](https://github.com/UBC-FRESH/ws3/issues/98)
-- Status: not_started
-- Scope: 323 mypy errors across 10 files (69% in `forest.py`) from the incomplete Phase 2 typed refactor. The mypy CI step is `continue-on-error` until this lands. Includes 20 `union-attr` findings that are unguarded `re.search(...).group()` calls, and 12 `attr-defined` findings, one of which is already confirmed as a real `ImportError` ([#97](https://github.com/UBC-FRESH/ws3/issues/97)). Staged plan in the issue.
-
-### Known defects
-- [#97](https://github.com/UBC-FRESH/ws3/issues/97) — `advanced_modeling` imports `ws3.core.compile_scenario`, which does not exist.
-
 ## Phase 7.6 — Defect Sweep from mypy Findings
 
 - Parent issue: [#99](https://github.com/UBC-FRESH/ws3/issues/99)
@@ -298,3 +286,80 @@ Phase-sized work identified during Phase 7.5 and deferred to keep that phase sco
 ### Deferred
 - [#98](https://github.com/UBC-FRESH/ws3/issues/98) — remaining 258 mypy findings (annotation coverage). mypy stays `continue-on-error` in CI.
 - [#102](https://github.com/UBC-FRESH/ws3/issues/102) — whether to adopt PaCal as `fresh-pacal`. Gated on licence (GPL-3.0 vs ws3 MIT) and on contacting the upstream authors.
+
+## Phase 8 — Embedded Agent Capabilities
+
+- Parent issue: [#105](https://github.com/UBC-FRESH/ws3/issues/105)
+- Status: active
+- Branch: `feature/ws3-phase8-embedded-agents`
+- Start date: 2026-07-29
+- Design doc: [planning/phase8_embedded_agents.md](planning/phase8_embedded_agents.md)
+- Companion package: [fresh-agent-core](https://github.com/UBC-FRESH/fresh-agent-core)
+
+**Goal**: give ws3 a validated, agent-backed capability surface so external coding agents operate the package through a contract-bound interface instead of inferring the Python API from documentation.
+
+**Core principle**: *a capability is a prompt plus a validator plus a retry budget. No oracle, no capability.* An LLM proposes; a validator checks the proposal against real ws3 state; output that fails validation never reaches the caller. On exhaustion the result is `ok=False` with reasons, never a best guess.
+
+**Why the timing**: Phases 7.5 and 7.6 exist because this premise needs a package that does not reference things which do not exist. Before them ws3 contained 25 undefined names, four calls to non-existent APIs, and twelve entry points returning fabricated results. Those are now zero.
+
+**Package split**: `fresh-agent-core` owns the mechanism (config, provider, `Capability` contract and retry loop, provenance, test double, MCP host). Each package owns its capabilities and validators, because the validator is the part requiring domain knowledge. Core depends on nothing in the ecosystem.
+
+| Capability | Oracle |
+|---|---|
+| `build_mask` | mask resolves against the `ForestModel` to ≥1 development type |
+| `explain_exception` | every ws3 symbol cited actually exists |
+| `diagnose_import` | the fix is applied to a scratch copy and the section re-imports |
+
+### Task 8.1 — fresh-agent-core: runtime foundation
+- GitHub issue: [#106](https://github.com/UBC-FRESH/ws3/issues/106)
+- Status: complete
+- Scope: `AgentConfig` resolution, OpenAI-compatible provider, error hierarchy, `available()` probe, `FakeProvider`. Credential redaction by substring match so unfamiliar vendor headers redact by default.
+
+### Task 8.2 — fresh-agent-core: capability framework and provenance
+- GitHub issue: [#107](https://github.com/UBC-FRESH/ws3/issues/107)
+- Status: complete
+- Scope: `Capability` ABC, validate/retry loop with failure feedback, `Verdict`, `CapabilityResult`, provenance with JSONL/memory/null sinks, `Registry`. Provider failures propagate; content failures return `ok=False`.
+
+### Task 8.3 — ws3: implement three capabilities
+- GitHub issue: [#108](https://github.com/UBC-FRESH/ws3/issues/108)
+- Status: complete
+- Scope: `build_mask`, `explain_exception`, `diagnose_import`, each with a validator consulting real ws3 state. 50 tests, all offline.
+
+### Task 8.4 — ws3: MCP wiring
+- GitHub issue: [#109](https://github.com/UBC-FRESH/ws3/issues/109)
+- Status: complete
+- Scope: generic MCP host in core, ws3 registry exposed as tools, `ws3-agent-mcp` console entry point, per-capability input schemas. Pinned `mcp>=1.0,<2`; 2.x migration tracked in [fresh-agent-core#1](https://github.com/UBC-FRESH/fresh-agent-core/issues/1).
+
+### Task 8.5 — Discoverability contract
+- GitHub issue: [#110](https://github.com/UBC-FRESH/ws3/issues/110)
+- Status: in_progress
+- Scope: `AGENTS.md` section declaring the capability surface as the supported agent interface and stating the oracle rule; `README.md` pointer; MCP registration snippet for agent-workbench.
+
+### Task 8.6 — Packaging and documentation
+- GitHub issue: [#111](https://github.com/UBC-FRESH/ws3/issues/111)
+- Status: in_progress
+- Scope: `ws3[agent]` and `ws3[agent-mcp]` extras, Sphinx guide covering configuration, capabilities, provenance and how to add a capability validator-first, worked example, CHANGELOG entry.
+
+## Backlog — not yet scheduled
+
+Work identified during earlier phases and deliberately deferred to keep those phases scoped.
+
+### Typing debt remediation
+- Issue: [#98](https://github.com/UBC-FRESH/ws3/issues/98)
+- Status: not_started
+- Scope: 258 remaining mypy findings (annotation coverage), 69% in `forest.py`, from the incomplete Phase 2 typed refactor. The defect-bearing classes were cleared in Phase 7.6; what remains threatens nothing. mypy stays `continue-on-error` in CI until this lands.
+
+### PaCal adoption decision
+- Issue: [#102](https://github.com/UBC-FRESH/ws3/issues/102)
+- Status: parked
+- Scope: whether to adopt PaCal as `fresh-pacal`. Gated on licence (PaCal is GPL-3.0-or-later, ws3 is MIT) and on contacting the upstream authors. Not blocking: PaCal works today via the compatibility shim and the `ws3[rv]` extra.
+
+### Flaky performance test
+- Issue: [#112](https://github.com/UBC-FRESH/ws3/issues/112)
+- Status: not_started
+- Scope: `test_large_problem_scalability` asserts on wall-clock time in a way dominated by warm-up rather than problem size. Reproduced on a clean checkout.
+
+### MCP 2.x migration
+- Issue: [fresh-agent-core#1](https://github.com/UBC-FRESH/fresh-agent-core/issues/1)
+- Status: not_started
+- Scope: 2.0 removed the low-level `Server` decorator API. Main prize is `MCPServer.tool()` generating schemas from type hints, which removes hand-maintained schema drift by construction. Elicitation needs a deliberate decision: it must run before the validate loop, never inside it, or the oracle guarantee weakens into a conversation.

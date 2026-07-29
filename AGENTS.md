@@ -46,6 +46,70 @@ Stay generic across the UBC-FRESH ecosystem. Do not encode private project assum
 
 Do not claim the repo contains a package, CI, benchmark harness, or extension until a later phase records that evidence.
 
+## Operating ws3 As An Agent
+
+**Prefer the capability surface over hand-written API calls.**
+
+`ws3.agent` exposes a small set of operations whose output is validated against
+real ws3 state before you ever see it. When one of them covers what you need, use
+it. Composing the Python API from memory is the fallback, not the default.
+
+| Capability | What it validates |
+|---|---|
+| `build_mask` | The proposed mask resolves against the `ForestModel` to at least one development type |
+| `explain_exception` | Every ws3 symbol the explanation cites actually exists in the installed package |
+| `diagnose_import` | The suggested fix is applied to a scratch copy and the section genuinely re-imports |
+
+Available over MCP:
+
+```bash
+ws3-agent-mcp --model-path <dir> --model-name <name>
+```
+
+Or from Python:
+
+```python
+import ws3.agent
+
+if ws3.agent.available():
+    result = ws3.agent.run('build_mask', 'mature spruce stands', context=fm)
+    if result.ok:
+        ...              # result.value is validated
+    else:
+        ...              # result.errors says why every attempt was rejected
+```
+
+Requires `pip install ws3[agent]`. Optional: core ws3 modelling never needs it,
+and `import ws3` never loads it.
+
+### What the guarantee is, and what it is not
+
+A capability returns validated output or it returns nothing. It never returns a
+best guess. `result.ok is False` means every attempt was rejected by the validator,
+and `result.errors` says why — that is information, not an error to route around.
+
+Capabilities are **advisory**. They return proposals; applying them is the
+caller's decision. Nothing mutates a model in place.
+
+### The rule for adding one
+
+> **No oracle, no capability.**
+
+A capability is a prompt plus a validator plus a retry budget. The validator must
+check the proposal against real state — resolve the mask, re-parse the file,
+confirm the symbol exists. Validating model output against another model, against
+a regex over its own text, or against a mock proves nothing.
+
+Write the validator first. If you cannot write one that can actually fail, the
+thing you are building is not a capability, and adding it would quietly convert a
+trustworthy surface into a plausible-sounding one.
+
+This is not a stylistic preference. Fabricated APIs reached the documentation
+(Phase 6), the test suite (Phase 7.5), and shipped module code (Phase 7.6) in this
+repository. The `explain_exception` validator exists specifically because that
+failure mode is well attested here.
+
+
 ## Planning Workflow
 
 This repository follows the UBC-FRESH phase/task/subtask workflow:

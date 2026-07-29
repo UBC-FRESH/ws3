@@ -61,9 +61,23 @@ dev = [
     "mypy",
     "ruff",
 ]
+# Validated, agent-backed capabilities. Entirely optional: core ws3 modelling
+# never needs it, and `import ws3` never loads it.
+agent = [
+    "fresh-agent-core>=0.1.0a1",
+]
+# Adds the MCP server, so an external coding agent discovers the capabilities as
+# tools rather than having to be told they exist.
+agent-mcp = [
+    "fresh-agent-core[mcp]>=0.1.0a1",
+]
 github-mcp = [
     "github-mcp-server",  # GitHub MCP server for enhanced GitHub integration
 ]
+
+[project.scripts]
+# MCP server exposing ws3's validated capabilities. Requires ws3[agent-mcp].
+ws3-agent-mcp = "ws3.agent.mcp_server:main"
 
 [tool.hatch.version]
 source = "code"
