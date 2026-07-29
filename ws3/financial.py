@@ -31,9 +31,89 @@ from scipy.stats import norm
 #   to
 #     from numpy.fft import fft, ifft
 #
-PACAL_BROKEN = True
-if not PACAL_BROKEN:
-    import pacal
+def _apply_numpy_compat_shim() -> None:
+    """
+    Restore NumPy aliases that PaCal 1.6.1 still uses.
+
+    PaCal was last released 2020-11-07 and predates NumPy 2.0, which removed a
+    number of long-deprecated aliases. PaCal's own code is otherwise fine on
+    modern NumPy, so re-adding the names is enough to make it importable.
+
+    Additive only: nothing is overwritten, each name is restored solely if absent.
+
+    This is a bridge, not a destination. It should be deleted once a maintained
+    fork is available (see #102).
+    """
+    import numpy as _np
+    for _old, _new in (('Inf', 'inf'), ('NaN', 'nan'), ('Infinity', 'inf'),
+                       ('NAN', 'nan'), ('product', 'prod'),
+                       ('cumproduct', 'cumprod'), ('alltrue', 'all'),
+                       ('sometrue', 'any'), ('float_', 'float64'),
+                       ('complex_', 'complex128')):
+        if not hasattr(_np, _old) and hasattr(_np, _new):
+            setattr(_np, _old, getattr(_np, _new))
+    if not hasattr(_np, 'asfarray'):
+        _np.asfarray = lambda a, dtype=_np.float64: _np.asarray(a, dtype=dtype)
+
+
+# Set True to skip the import attempt entirely and force deterministic-only mode.
+PACAL_DISABLED = False
+
+pacal: Any = None
+if not PACAL_DISABLED:
+    try:
+        _apply_numpy_compat_shim()
+        import pacal  # type: ignore[no-redef]
+    except Exception:
+        # Most likely missing PaCal itself, or its undeclared 'sympy' dependency.
+        # Deliberately broad: a partially-importable PaCal is as unusable as an
+        # absent one, and this must never prevent 'import ws3'.
+        pacal = None
+
+
+def pacal_available() -> bool:
+    """True when probabilistic (rv=True) code paths can be used."""
+    return pacal is not None
+
+
+def _require_pacal() -> None:
+    """
+    Guard for code paths that need PaCal.
+
+    Raises a message naming the cause and the way out, instead of letting an
+    unbound name surface as a bare NameError.
+    """
+    if pacal is None:
+        raise NotImplementedError(
+            "This code path requires PaCal for probabilistic (random variable) "
+            "analysis, and PaCal could not be imported.\n"
+            "\n"
+            "Install it with:  pip install ws3[rv]\n"
+            "(PaCal does not declare its dependencies, so 'sympy' is installed "
+            "alongside it.)\n"
+            "\n"
+            "Workaround: pass rv=False for deterministic (point-estimate) results.\n"
+            "\n"
+            "Note: PaCal is GPL-3.0-or-later, whereas ws3 is MIT. It is an optional "
+            "dependency you install yourself and is never bundled with ws3."
+        )
+
+
+def _math_funcs(rv: bool) -> tuple:
+    """
+    Return the (exp, log) pair appropriate to the requested mode.
+
+    Centralized deliberately. These two bindings were previously hand-copied into
+    eight functions, and seven of the copies bound ``log`` to ``math.exp``, so the
+    deterministic silvicultural credit results were wrong by roughly 40x without
+    ever raising (see #100). One definition means that class of defect cannot recur.
+    """
+    if rv:
+        _require_pacal()
+        return pacal.exp, pacal.log
+    return math.exp, math.log
+
+
 #################################################################################################
 
 
@@ -51,8 +131,7 @@ def _sylv_cred_f1(P: float,
                   C18j: float = 9.2529,
                   Kmult: float = 1.,
                   Kplus: float = 0.) -> float:
-    exp = pacal.exp if rv else math.exp
-    log = pacal.log if rv else math.exp
+    exp, log = _math_funcs(rv)
     sc = (C1a*vr**C2a-exp(C7d*log(vp)+C8d)+C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus
     if rv:
         return float(sc.mean())  # type: ignore[union-attr] # expected value, given random variates
@@ -78,8 +157,7 @@ def _sylv_cred_f2(P: float,
                   C18j: float = 7.1029,
                   Kmult: float = 1.,
                   Kplus: float = 0.) -> float:
-    exp = pacal.exp if rv else math.exp  # type: ignore[assignment]
-    log = pacal.log if rv else math.exp  # type: ignore[assignment]
+    exp, log = _math_funcs(rv)
     sc = ((exp(C3b*log(vr)+C4b)-exp(C7d*log(vp)+C8d)+C11f/vr**C12f-C13g/vp**C14g
            +C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus)
     if rv:
@@ -102,8 +180,7 @@ def _sylv_cred_f3(P: float,
                   C18j: float = 7.1029,
                   Kmult: float = 1.,
                   Kplus: float = 0.) -> float:
-    exp = pacal.exp if rv else math.exp  # type: ignore[assignment]
-    log = pacal.log if rv else math.exp  # type: ignore[assignment]
+    exp, log = _math_funcs(rv)
     sc = (exp(C3b*log(vr)+C4b)-exp(C7d*log(vp)+C8d)+C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus
     if rv:
         return float(sc.mean())  # type: ignore[union-attr] # expected value, given random variates
@@ -129,8 +206,7 @@ def _sylv_cred_f4(P: float,
                   C18j: float = 7.1029,
                   Kmult: float = 1.,
                   Kplus: float = 0.) -> float:
-    exp = pacal.exp if rv else math.exp  # type: ignore[assignment]
-    log = pacal.log if rv else math.exp  # type: ignore[assignment]
+    exp, log = _math_funcs(rv)
     sc = ((exp(C3b*log(vr)+C4b)-exp(C7d*log(vp)+C8d)+C11f/vr**C12f-C13g/vp**C14g
            +C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus)
     if rv:
@@ -157,8 +233,7 @@ def _sylv_cred_f5(P: float,
                   C18j: float = 7.1029,
                   Kmult: float = 1.,
                   Kplus: float = 0.) -> float:
-    exp = pacal.exp if rv else math.exp
-    log = pacal.log if rv else math.exp
+    exp, log = _math_funcs(rv)
     sc = ((exp(C3b*log(vr)+C4b)-exp(C7d*log(vp)+C8d)+C11f/vr**C12f-C13g/vp**C14g
            +C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus)
     if rv:
@@ -189,8 +264,7 @@ def _sylv_cred_f6(P: float,
                   C18j: float = 7.1029,
                   Kmult: float = 1.,
                   Kplus: float = 0.) -> float:
-    exp = pacal.exp if rv else math.exp
-    log = pacal.log if rv else math.exp
+    exp, log = _math_funcs(rv)
     sc = (((exp(C3b*log(vr)+C4b)+exp(C5c*log(vr)+C6c)-exp(C7d*log(vp)+C8d)-exp(C9e*log(vp)+C10e))/2
             +C11f/vr**C12f-C13g/vp**C14g+C15h*exp(C16h*P)-C17i*P+C18j*P)*Kmult+Kplus)
     if rv:
@@ -213,8 +287,7 @@ def _sylv_cred_f7(P: float,
                   C18j: float = 7.1029,
                   Kmult: float = 1.,
                   Kplus: float = 0.) -> float:
-    exp = pacal.exp if rv else math.exp  # type: ignore[assignment]
-    log = pacal.log if rv else math.exp  # type: ignore[assignment]
+    exp, log = _math_funcs(rv)
     sc = (exp(C3b*log(vr)+C4b)-exp(C7d*log(vp)+C8d)+C15h*exp(C16h*P)-C17i*P+C18j)*P*Kmult+Kplus
     if rv:
         return float(sc.mean())  # type: ignore[union-attr] # expected value, given random variates
@@ -351,8 +424,7 @@ def harv_cost(piece_size: float,
     _ifc = float(is_finalcut)
     _ith = float(is_toleranthw)
     _pce = float(partialcut_extracare)
-    log = pacal.log if rv else math.log  # type: ignore[assignment]
-    exp = pacal.exp if rv else math.exp  # type: ignore[assignment]
+    exp, log = _math_funcs(rv)
     _exp = A - (B * log(piece_size)) + (C * _pce) + (D * _ifc) - (E * (1 - _ith))
     hc = exp(_exp) + ((F * _ith) + (G * (1 - _ith))) + K
     if rv:
