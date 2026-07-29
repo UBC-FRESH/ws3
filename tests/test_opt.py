@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../ws3/')
-from ws3.opt import Variable, Constraint, Problem
+from ws3.opt import Variable, Constraint
 import pytest
 
 
@@ -37,7 +37,7 @@ def test_variable_defaults():
     assert var.vtype == vtype
     assert var.lb == 0.0
     assert var.ub == VBNDS_INF
-    assert var.val == None
+    assert var.val is None
 
 
 def test_variable_with_value():

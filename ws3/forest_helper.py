@@ -21,7 +21,7 @@ def choose_max_batch_factor(workers: int) -> int:
     :type workers: int
     :return: Optimized max_batch_factor value. An integer value that represents the optimized max_batch_factor value based on the number of workers.
     :rtype: int
- 
+
     Usage notes:
 
     * This function is designed to work with auto_batch, which controls batch sizes
@@ -62,7 +62,7 @@ def auto_batch(tasks: List[Any], workers: int, max_batch_factor: Optional[int] =
     :type size_fn: function, optional
     :return: List of task batches
     :rtype: list[list]
-    """    
+    """
 
     if not tasks:
         return []
@@ -111,7 +111,7 @@ def worker_summarize_tree_batch(args: List[Any]) -> List[Tuple[str, Dict[str, fl
     :type args: list
     :return: [(cname, coeffs, z_coeffs), ...]
     :rtype: list[list]
-    """    
+    """
     batch, z_coeff_key = args
     results = []
     for i, tree in batch:
@@ -119,7 +119,6 @@ def worker_summarize_tree_batch(args: List[Any]) -> List[Tuple[str, Dict[str, fl
         coeffs = {}
         z_coeffs = {}
         for path in tree.paths():
-            j = tuple(n.data('acode') for n in path)
             leaf_id = path[-1].data('leaf_id')
             vname = f"x_{leaf_id}"
             coeffs[vname] = 1.0
@@ -129,7 +128,7 @@ def worker_summarize_tree_batch(args: List[Any]) -> List[Tuple[str, Dict[str, fl
 
 def sanitize_func(f: Any) -> Any:
     """Make a version of f that is safe to serialize via dill in `spawn` mode
-    
+
     :param f: Function to sanitize
     :type f: function
     :return: Sanitized function
@@ -158,11 +157,11 @@ def init_worker_gen_vars(blob_bytes_local: bytes, serialized_funcs_local: Dict[s
 
     :param blob_bytes_local: Serialized `ForestModel` object
     :type blob_bytes_local: bytes
-    :param serialized_funcs_local: dict of serialized functions keyed on `coeff_funcs` keys 
+    :param serialized_funcs_local: dict of serialized functions keyed on `coeff_funcs` keys
     :type serialized_funcs_local: dict[str, bytes]
     :param workers: Number of workers, defaults to 1
     :type workers: int, optional
-    """    
+    """
     global _GLOBAL_MODEL_GEN_VARS, _GLOBAL_COEFF_FUNCS_GEN_VARS, _GLOBAL_WORKERS_GEN_VARS
     import dill
     _GLOBAL_MODEL_GEN_VARS = dill.loads(blob_bytes_local)
@@ -181,10 +180,9 @@ def worker_gen_vars(tasks: List[Tuple[str, int]], acodes: List[str]) -> List[Tup
     """
     model = _GLOBAL_MODEL_GEN_VARS
     coeff_funcs = _GLOBAL_COEFF_FUNCS_GEN_VARS
-    workers = _GLOBAL_WORKERS_GEN_VARS
-    
+
     results = []
-    for (dtk, age) in tasks: 
+    for (dtk, age) in tasks:
         if model is not None:
             model.reset()
             area = model.dtypes[dtk].area(1, age)
@@ -207,7 +205,7 @@ def worker_cmp_cflw_batch(args: List[Any]) -> List[Tuple[int, str, Tuple, Tuple,
     :type args: list[list, dict, list]
     :return: list of (t, o, i, j, value) tuples
     :rtype: list[int, str, tuple, tuple, float]
-    """    
+    """
     batch, cflw_keys, periods = args
     results = []
     for i, tree in batch:
@@ -226,7 +224,7 @@ def worker_cmp_cflw_phase3(args: Tuple[int, str, Dict[Any, float], Dict[Any, flo
     :type args: tuple(int, str, float, float, float, list[str])
     :return: list of (constraint_name, mu_lb, sense, 0.) tuples
     :rtype: list[(str, float, str, float)]
-    """    
+    """
     t, o, mu_t_o, mu_ref_o, eps, xnames = args
     results: List[Tuple[str, Dict[str, float], str, float]] = []
 
@@ -254,7 +252,7 @@ def worker_cmp_cflw_phase3_batch(batch: List[Tuple[int, str, float, float, float
     :type batch: list[tuple]
     :return: list of results
     :rtype: list[tuple]
-    """    
+    """
     batch_results = []
     for task in batch:
         batch_results.extend(worker_cmp_cflw_phase3(task))  # type: ignore[arg-type]
@@ -271,7 +269,7 @@ def worker_cmp_cgen_batch(args: List[Any]) -> List[Tuple[int, str, Tuple, Tuple,
     :type args: list[list, dict, list]
     :return: list of (t, o, i, j, value) tuples
     :rtype: list[int, str, tuple, tuple, float]
-    """    
+    """
     batch, cgen_keys, periods = args
     results = []
     for i, tree in batch:
@@ -324,7 +322,7 @@ class PersistentWorkerPool:
         :type blob_bytes: bytes, optional
         :param serialized_funcs: dict of serialzed `coeff_funcs` functions, defaults to None
         :type serialized_funcs: dict[str, function], optional
-        """        
+        """
         self.workers = workers
         self.blob_bytes = blob_bytes
         self.serialized_funcs = serialized_funcs
@@ -333,9 +331,9 @@ class PersistentWorkerPool:
     def __enter__(self) -> Any:
         """Create persistent worker pool executor
 
-        :return: 
+        :return:
         :rtype: ProcessPoolExecutor
-        """        
+        """
         if self.workers > 1:
             ctx = get_context(MP_CONTEXT)
             self.executor = ProcessPoolExecutor(  # type: ignore[arg-type]
@@ -347,6 +345,6 @@ class PersistentWorkerPool:
         return self.executor
 
     def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
-        """Shut down persisten pool executor when with block exits"""        
+        """Shut down persisten pool executor when with block exits"""
         if self.executor is not None:
             self.executor.shutdown()

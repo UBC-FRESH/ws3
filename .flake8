@@ -1,0 +1,61 @@
+# flake8 configuration for ws3
+#
+# Policy: the lint gate enforces *correctness*, not house style.
+#
+# Rationale
+# ---------
+# Before Phase 7.5 this gate reported 1808 findings and was permanently red on
+# every branch, so `test`, `docs`, and `build` (which depend on it) never ran.
+# A check that always fails carries no information and trains everyone to ignore
+# it — which is exactly how a genuine NameError (#93) survived into a published
+# release, hidden inside the noise.
+#
+# All correctness classes have been fixed and remain enforced:
+#
+#   F     pyflakes  — undefined names, unused imports, unused locals, redefinitions
+#   E7xx            — `== None`, bare `except:`, and similar logic errors
+#   E9xx  / C9xx    — syntax errors and complexity
+#   W6xx            — deprecation warnings
+#
+# The codes ignored below are stylistic and conflict with conventions used
+# consistently throughout this codebase since long before the linter was added.
+# Reformatting ~950 sites would produce an enormous diff touching nearly every
+# file, carry real regression risk, and deliver no functional benefit. They are
+# recorded here deliberately rather than suppressed inline, one by one.
+#
+# Ignored codes and why:
+#
+#   E501  Long lines. Routinely exceeded, largely in dense numeric expressions
+#         and Woodstock parsing logic where wrapping hurts readability.
+#   E701  `if cond: return x` compound statements. Used pervasively and
+#         intentionally throughout the parsing and simulation code.
+#   E741  Ambiguous variable name `l`. Used consistently for "line" in the
+#         Woodstock file parsers.
+#   E402  Module-level import not at top. Several modules defer imports for
+#         optional dependencies and to avoid circular imports.
+#   E731  Lambda assignment. Used for short objective and coefficient functions
+#         passed into the optimizer.
+#   E301, E302, E303, E305, E306
+#         Blank-line conventions around definitions.
+#   E265, E266
+#         Block comment formatting, e.g. banner and section comments.
+#   E261, E262
+#         Inline comment spacing.
+#   E231, E225, E226, E227, E228, E221, E222
+#         Whitespace around operators, colons, and commas. The codebase uses a
+#         compact style, e.g. `{p:dd(float)}` and `x*y`, throughout.
+#   E128, E127, E126, E131, E125, E124
+#         Continuation-line and closing-bracket indentation.
+#   E111, E117
+#         Indentation depth, e.g. legacy 2-space blocks.
+#   E251
+#         Spaces around keyword/parameter equals.
+#   E401
+#         Multiple imports on one line.
+#
+# See #94 for the full analysis.
+
+[flake8]
+max-line-length = 100
+extend-ignore = E501,E701,E741,E402,E731,E301,E302,E303,E305,E306,E265,E266,E261,E262,E231,E225,E226,E227,E228,E221,E222,E128,E127,E126,E131,E125,E124,E111,E117,E251,E401
+exclude = __pycache__,.git,_build,build,dist,tmp,.venv

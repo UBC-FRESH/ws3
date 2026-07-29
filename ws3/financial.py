@@ -1,5 +1,5 @@
 """
-This module contains a number of functions used for calculating 
+This module contains a number of functions used for calculating
 silviculture credits and harvest costs.
 """
 
@@ -29,14 +29,14 @@ from scipy.stats import norm
 #   Patch line 29 in pacal/utils.py from
 #     from numpy.fft.fftpack import fft, ifft
 #   to
-#     from numpy.fft import fft, ifft 
-# 
+#     from numpy.fft import fft, ifft
+#
 PACAL_BROKEN = True
 if not PACAL_BROKEN:
     import pacal
 #################################################################################################
 
-    
+
 def _sylv_cred_f1(P: float,
                   vr: float,
                   vp: float,
@@ -229,7 +229,7 @@ def sylv_cred(P: float, vr: float, vp: float, formula: int) -> float:
     :param float P: Volume harvested per hectare.
     :param float vr: Mean piece size of harvested stems.
     :param float vp: mean piece size of stand before harvesting.
-    :param formula: formula index (1 to 7).        
+    :param formula: formula index (1 to 7).
     """
     f = {1:_sylv_cred_f1,
          2:_sylv_cred_f2,
@@ -245,7 +245,7 @@ def sylv_cred_rv(P_mu: float, P_sigma: float, tv_mu: float, tv_sigma: float, N_m
                  treatment_type: Optional[str] = None, cover_type: Optional[str] = None, formula: Optional[int] = None,
                  P_min: float = 20., tv_min: float = 50., N_min: float = 200., ps_min: float = 0.05,
                  E_fromintegral: bool = False, e: float = 0.01, n: int = 1000) -> float:
-    
+
     """
     This function returns sylviculture credit ($ per hectare).
 
@@ -255,7 +255,7 @@ def sylv_cred_rv(P_mu: float, P_sigma: float, tv_mu: float, tv_sigma: float, N_m
     :param formula: formula index (1 to 7).
 
     .. note:: Assumes that variables ``(P, vr, vp)`` are random variates (returns expected value of function, using PaCAL packages to model random variates, assuming normal distribution for all three variables).
-        Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).   
+        Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).
     """
     if treatment_type and cover_type:
         formula = sylv_cred_formula(treatment_type, cover_type)
@@ -267,7 +267,7 @@ def sylv_cred_rv(P_mu: float, P_sigma: float, tv_mu: float, tv_sigma: float, N_m
     vp = (tv / N) | pacal.Gt(ps_min)
     #vr = vp + (vp.mean() * (1 - psr))
     # truncate again in case psr < 1 (shifts distn to the left)
-    vr = (vp + (vp.mean() * (psr - 1.))) | pacal.Gt(ps_min)  
+    vr = (vp + (vp.mean() * (psr - 1.))) | pacal.Gt(ps_min)
     f = {1:_sylv_cred_f1,
          2:_sylv_cred_f2,
          3:_sylv_cred_f3,
@@ -277,7 +277,7 @@ def sylv_cred_rv(P_mu: float, P_sigma: float, tv_mu: float, tv_sigma: float, N_m
          7:_sylv_cred_f7}
     #print ' formula', formula
     if E_fromintegral:
-        # estimate expected value E(f(P, vr, vp)) using PaCAL numerical integration functions (sssssslow!) 
+        # estimate expected value E(f(P, vr, vp)) using PaCAL numerical integration functions (sssssslow!)
         E = f[formula](P, vr, vp, rv=True)  # type: ignore[operator]
     else:
         # estimate expected value E(f(P, vr, vp)) using Monte Carlo simulation (until convergence to E_tol)
@@ -306,18 +306,18 @@ def sylv_cred_formula(treatment_type: str, cover_type: str) -> int:
     if treatment_type == 'cj':
         return 4
     if treatment_type == 'cprog':
-        return 7 if cover_type.lower() in ['r', 'm'] else 4        
+        return 7 if cover_type.lower() in ['r', 'm'] else 4
     return 0
 
 
 def piece_size_ratio(treatment_type: int, cover_type: str, piece_size_ratios: Optional[Dict[int, Dict[str, float]]]) -> float:
     """
     Returns piece size ratio.
-    
+
     Assume Action.is_harvest in [0, 1, 2, 3]
-    
+
     Assume cover_type in ['r', 'm', 'f']
-    
+
     Return vr/vp ratio, where
       - vr is mean piece size of harvested stems, and
       - vp is mean piece size of stand before harvesting.
@@ -334,7 +334,7 @@ def piece_size_ratio(treatment_type: int, cover_type: str, piece_size_ratios: Op
 def harv_cost(piece_size: float,
               is_finalcut: bool,
               is_toleranthw: bool,
-              partialcut_extracare: bool = False,              
+              partialcut_extracare: bool = False,
               A: float = 1.97, B: float = 0.405, C: float = 0.169, D: float = 0.164, E: float = 0.202, F: float = 13.6, G: float = 8.83, K: float = 0.,
               rv: bool = False) -> float:
     """
@@ -345,7 +345,7 @@ def harv_cost(piece_size: float,
     :param bool is_toleranthw: Stand type (tolerant hardwood or not).
     :param bool partialcut_extracare: Partialcut "extra care" flag.
     :param float A: Series of regression coefficients (A, B, C, D, E, F, G, K, all with defaults that are extracted from MERIS technical documentation; also see Sebastien Lacroix, BMMB).
-    :param bool rv: Types of variables (default Variables are deterministic).        
+    :param bool rv: Types of variables (default Variables are deterministic).
     """
 
     _ifc = float(is_finalcut)
@@ -360,7 +360,7 @@ def harv_cost(piece_size: float,
     else:
         return float(hc)  # type: ignore[misc]
 
-    
+
 def harv_cost_rv(tv_mu: float, tv_sigma: float, N_mu: float, N_sigma: float, psr: float,
                  is_finalcut: bool,
                  is_toleranthw: bool,
@@ -371,15 +371,15 @@ def harv_cost_rv(tv_mu: float, tv_sigma: float, N_mu: float, N_sigma: float, psr
     """
     Returns harvest cost.
 
-    
+
     :param bool is_finalcut: Treatment type (final cut or not).
     :param bool is_toleranthw: Stand type (tolerant hardwood or not).
     :param bool partialcut_extracare: Partialcut "extra care" flag.
     :param float A: Series of regression coefficients (A, B, C, D, E, F, G, K, all with defaults that are extracted from MERIS technical documentation; also see Sebastien Lacroix, BMMB).
     :param bool rv: Types of variables (default Variables random variates).
-        Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).       
+        Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).
     """
-    
+
 
     # PaCAL overrides the | operator to implement conditional distributions
     tv = pacal.NormalDistr(tv_mu, tv_sigma) | pacal.Gt(tv_min)
@@ -389,7 +389,7 @@ def harv_cost_rv(tv_mu: float, tv_sigma: float, N_mu: float, N_sigma: float, psr
     # truncate again in case psr < 1 (shifts distn to the left)
     vr = (vp + (vp.mean() * (psr - 1.))) | pacal.Gt(ps_min)
     if E_fromintegral:
-        # estimate expected value E(f(vr)) using PaCAL numerical integration functions (sssssslow!) 
+        # estimate expected value E(f(vr)) using PaCAL numerical integration functions (sssssslow!)
         E = harv_cost(vr, is_finalcut, is_toleranthw, rv=True)  # type: ignore[operator]
     else:
         # estimate expected value E(f(vr)) using Monte Carlo simulation (until convergence to E_tol)
@@ -420,12 +420,11 @@ def harv_cost_wec(piece_size: float,
     :param bool is_toleranthw: True if tolerant hardwood cover type, False otherwise.
     :param bool sigma: Standard deviation of piece size estimator.
     :param int nsigmas: Number of standard deviations to model on either side of the mean (default 3).
-    :param float binw: Width of bins for weighted numerical integration, in multiples of sigma (default 1.0).       
+    :param float binw: Width of bins for weighted numerical integration, in multiples of sigma (default 1.0).
     """
 
     # bin centerpoints
     rv = norm(loc=piece_size, scale=sigma)
-    X = sorted([(piece_size + (sigma * (i - (1. * 0.5)) * sign)) 
+    X = sorted([(piece_size + (sigma * (i - (1. * 0.5)) * sign))
                for i in range(1, nsigmas+1) for sign in [-1, +1]])
     return sum(harv_cost(x, is_finalcut, is_toleranthw, **kwargs) * sigma * rv.pdf(x) for x in X)  # type: ignore[misc,no-any-return]
-        

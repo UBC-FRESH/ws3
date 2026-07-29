@@ -226,3 +226,35 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - Status: complete
 - Scope: publish v1.1.0a2 to PyPI
 - Note: published via PyPI trusted publisher (OIDC); tag `v1.1.0a2` pushed and the Release Artifacts workflow succeeded.
+
+## Phase 7.5 — Code Quality Remediation and Patch Release
+
+- Parent issue: [#95](https://github.com/UBC-FRESH/ws3/issues/95)
+- Status: complete
+- Branch: `feature/ws3-phase7.5-code-quality`
+- Release: `v1.1.0a3`
+- Date: 2026-07-29
+
+**Goal**: clear the code-quality debt blocking meaningful CI signal, fix runtime defects shipped in `v1.1.0a2`, and cut a patch release so Phase 8 starts from a codebase where automated checks mean something.
+
+### Task 7.5.1 — Fix undefined-name defects
+- Status: complete
+- Issue: [#93](https://github.com/UBC-FRESH/ws3/issues/93)
+- Scope: cleared all 25 `F821` findings. Two defects in the `_cp` branch of `_compile_oper_expr` meant only `_cp =` ever worked; `resolve_tmask` crashed on `_REPLACE`/`_APPEND` models. Added parametrized regression tests.
+
+### Task 7.5.2 — Lint stage 1: mechanical whitespace
+- Status: complete
+- Scope: trailing whitespace, whitespace-only blank lines, end-of-file newlines. Whitespace only, no semantic change. 1808 -> 1001 findings.
+
+### Task 7.5.3 — Lint stage 2: correctness defects
+- Status: complete
+- Scope: `F401` unused imports (genuine probes annotated, not deleted), `E722` bare excepts narrowed, `E711`/`E712` comparisons, `F841` unused locals with side-effecting calls preserved. All pyflakes findings cleared.
+
+### Task 7.5.4 — CI restructure
+- Status: complete
+- Issue: [#94](https://github.com/UBC-FRESH/ws3/issues/94)
+- Scope: `test` no longer gated on `lint`; mypy advisory pending Phase 2 typing debt; `.flake8` policy config added. `flake8 ws3/ tests/` exits 0.
+
+### Task 7.5.5 — Release v1.1.0a3
+- Status: complete
+- Scope: version bump, CHANGELOG, tag, PyPI publish via trusted publisher.

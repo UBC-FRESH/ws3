@@ -8,7 +8,7 @@ authors = [{name = "Gregory Paradis", email = "gregory.paradis@ubc.ca"}]
 dynamic = ["version", "description"]
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
   "numpy>=1.21",
   "pandas>=1.3",
@@ -39,6 +39,14 @@ docs = [
 release = [
     "build",
     "twine",
+]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "coverage",
+    "flake8",
+    "mypy",
+    "ruff",
 ]
 github-mcp = [
     "github-mcp-server",  # GitHub MCP server for enhanced GitHub integration

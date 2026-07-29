@@ -85,8 +85,8 @@ class Interpolator:
             return _x
         else:
             raise NotImplementedError("lookup from_right not yet implemented")
-        
-            
+
+
 class Curve:
     """
     Describes change in state over time (between treatments).
@@ -198,7 +198,7 @@ class Curve:
     def _simplify(self, e: float, compile_y: bool = False) -> None:
         """
         Simplify the curve using a linear interpolation. Internal method, called from ``self.simplify()``.
-        .. note:: 
+        .. note::
            Implementation was modified so that point list is stored only once (in interp).
         """
         points = self.points()
@@ -223,7 +223,7 @@ class Curve:
     ) -> None:
         """
         Adds points to the curve and optionally simplifies point geometry.
-    
+
         :param points: The points to add to the curve.
         :param simplify: Flag indicating whether to simplify the curve after adding points. Defaults to ``True``.
         :param compile_y: Flag indicating whether to compile the y-component after adding points. Defaults to ``False``.
@@ -258,7 +258,7 @@ class Curve:
     def lookup(self, y: float, from_right: bool = False, roundx: bool = False) -> int:
         """
         Looks up the x-coordinate corresponding to the given y-coordinate.
-    
+
         :param y: The y-coordinate to look up.
         :param from_right: Flag indicating whether to search from the right. Defaults to ``False``.
         :param roundx: Flag indicating whether to round the x-coordinate to the nearest integer. Defaults to ``False``.
@@ -282,12 +282,12 @@ class Curve:
 
         :param lo: The lower bound of the range. Defaults to None.
         :param hi: The upper bound of the range. Defaults to None.
-        :param as_bounds: Flag indicating whether to return the range as a 
+        :param as_bounds: Flag indicating whether to return the range as a
             tuple of bounds. Defaults to ``False``.
-        :param left_range: Flag indicating whether to look up the upper bound 
+        :param left_range: Flag indicating whether to look up the upper bound
             from the left (default) or from the right (widest possible range).
-        :return: Returns either curve representing 
-          the range within the specified bounds, or a tuple representing lower- and upper-bound 
+        :return: Returns either curve representing
+          the range within the specified bounds, or a tuple representing lower- and upper-bound
           values (if ``as_bounds`` set to ``True``).
         :rtype: Curve or tuple
         """
@@ -300,13 +300,13 @@ class Curve:
             points.insert(0, (0, 0))
         if ub < self.xmax:
             if ub < self.xmax - 1:
-                points.append((ub+1, 0))      
+                points.append((ub+1, 0))
             points.append((self.xmax, 0))
-        if as_bounds: 
+        if as_bounds:
             return lb, ub
         else:
             return Curve(points=points)
-        
+
     def cai(self) -> Curve:
         """
         Calculates a current annual increment (CAI) curve.
@@ -333,7 +333,7 @@ class Curve:
 
     def ytp(self) -> Curve:
         """
-        Returns a years-to-peak (YTP) curve. This curve is a measure of how many years 
+        Returns a years-to-peak (YTP) curve. This curve is a measure of how many years
         it takes for the curve to reach its peak (positive values to the left of the peak,
         and negative values to the right of the peak).
         :return: A curve representing the years to peak.
@@ -345,15 +345,15 @@ class Curve:
 
     def _compile_y(self) -> None:
         """
-        Compiles the y values from the x values stored in ``self.x``, 
+        Compiles the y values from the x values stored in ``self.x``,
         and stores them in ``self._y``.
         """
         self._y = [self.interp(x) for x in self.x]
 
     def y(self, compile_y: bool = False) -> List[float]:
         """
-        Returns the y-values of the curve stored in ``self._y`` (will first compile them if ``compile_y`` is set 
-        to ``True`` and ``self._y`` is empty), else will interpolate a list of y values 
+        Returns the y-values of the curve stored in ``self._y`` (will first compile them if ``compile_y`` is set
+        to ``True`` and ``self._y`` is empty), else will interpolate a list of y values
         for each x value in ``self.x``.
 
         :param compile_y: Flag indicating whether to compile the y-component of the curve. Defaults to ``False``.
@@ -451,7 +451,7 @@ class Curve:
     __rmul__ = __mul__
     __radd__ = __add__
     __rsub__ = __sub__
-    
+
 
 class Node:
     """
@@ -474,7 +474,7 @@ class Node:
     def is_root(self):
         """
         Check if the current object is the root node.
-        
+
         :return: ``True`` if the object is the root node, ``False`` otherwise.
         :rtype: bool
         """
@@ -483,7 +483,7 @@ class Node:
     def is_leaf(self):
         """
         Checks if the current object is a leaf node (i.e., node has no children).
-        
+
         :return: ``True`` if the object is a leaf node, ``False`` otherwise.
         :rtype: bool
         """
@@ -492,7 +492,7 @@ class Node:
     def add_child(self, child):
         """
         The function adds a child node to the current object.
-        
+
         :param :py:class:`ws3.core.Node` child: The child node to be added.
         """
         self._children.append(child)
@@ -500,7 +500,7 @@ class Node:
     def parent(self):
         """
         The function gets the parent node of the current object.
-       
+
         :return: The parent node.
         :rtype:  :py:class:`ws3.core.Node`
         """
@@ -509,20 +509,20 @@ class Node:
     def children(self):
         """
         The function gets the list of child nodes of the current object.
-        
+
         :return: List of child nodes.
         :rtype: list of :py:class:`ws3.core.Node` objects.
-        """ 
+        """
         return self._children
-    
+
     def data(self, key=None):
         """
         The function gets the data associated with the current object.
         If a specific key is provided, return the corresponding value.
         If no key is provided, return the entire data dictionary.
-        
-        :param key: The key to retrieve a specific value (default is None).   
-        :return: The data associated with the ``key`` if a key is specified 
+
+        :param key: The key to retrieve a specific value (default is None).
+        :return: The data associated with the ``key`` if a key is specified
             (or the entire data dictionary if a key is not specified).
         """
         if key:
@@ -543,13 +543,13 @@ class Tree:
     def children(self, nid):
         """
         The function gets the child nodes of the node with the specified ID.
-        
+
         :param nid: The ID of the node for which to retrieve children.
         :return: List of child nodes.
         :rtype: list of :py:class:`ws3.core.Node` objects.
         """
         return [self._nodes[cid] for cid in self._nodes[nid].children()]
-        
+
     def nodes(self):
         """
         Returns all nodes in the tree.
@@ -561,19 +561,19 @@ class Tree:
     def node(self, nid):
         """
         Returns a node with the specified ID.
-        
+
         :param nid: The unique identifier of the node to be retrieved.
         :return: The node object corresponding to the specified ID.
         :rtype: :py:class:`ws3.core.Node`
         """
         return self._nodes[nid]
-    
+
     def add_node(self, data, parent=None):
         """
         Adds a new node to the tree.
-        
+
         :param data: The data associated with the new node.
-        :param parent: The parent node to which the new node will be attached.    
+        :param parent: The parent node to which the new node will be attached.
         :return: The newly created node.
         :rtype: :py:class:`ws3.core.Node`
         """
@@ -587,7 +587,7 @@ class Tree:
         The new node is added as a child of the last node in the current path.
         The current path used by the optimization problem formulation functions
         to iterate over all possible states (in a depth-first-search pattern).
-        
+
         :param data: The data associated with the new node.
         :return: The newly created node.
         :rtype: :py:class:`ws3.core.Node`
@@ -597,13 +597,13 @@ class Tree:
         parent.add_child(child.nid)
         self._path.append(child)
         return child
-        
+
     def ungrow(self):
         """
         Reduces the current path by removing the last node.
         """
         self._path.pop()
-        
+
     def leaves(self):
         """
         Returns all leaf nodes.
@@ -612,7 +612,7 @@ class Tree:
         :rtype: list of :py:class:`ws3.core.Node` objects
         """
         return [n for n in self._nodes if n.is_leaf()]
-    
+
     def root(self):
         """
         Returns the root node.
@@ -621,12 +621,12 @@ class Tree:
         :rtype: :py:class:`ws3.core.Node`
         """
         return self._nodes[0]
-    
+
     def path(self, leaf=None):
         """
         Retrieves the path from the root to a specific leaf node or to the current path.
-        
-        :param leaf: The leaf node for which the path is to be retrieved. 
+
+        :param leaf: The leaf node for which the path is to be retrieved.
             Default is ``None`` (which returns the current path).
         :return: a path
         :rtype: tuple of :py:class:`ws3.core.Node` objects
@@ -640,7 +640,7 @@ class Tree:
             n=parent
         path.reverse()
         return tuple(path)
-    
+
     def paths(self):
         """
         Retrieves paths from the root to all leaf nodes.
@@ -649,6 +649,3 @@ class Tree:
         :rtype: list of tuples of :py:class:`ws3.core.Node` objects
         """
         return [self.path(leaf) for leaf in self.leaves()]
-
-
-
