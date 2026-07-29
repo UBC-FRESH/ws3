@@ -19,7 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed `_expand_action`, unreachable dead code that could not execute under any input.
 
 ### Changed
+- **Minimum Python is now 3.10.** `ws3/opt.py` has used `match` statements (structural pattern matching, 3.10+) for some time while `requires-python` still claimed `>=3.9`, so installing on 3.9 produced an immediate `SyntaxError` on import. The metadata now states what the code actually requires. Python 3.9 reached end-of-life in October 2025.
 - **CI no longer collapses on a lint failure.** `test`, `docs`, and `build` were transitively gated on `lint`; with the lint job permanently red, none of them ever ran. They are now independent. mypy is advisory pending the Phase 2 typing debt.
+- Added a `dev` extra to `pyproject.toml`. CI ran `pip install -e ".[dev]"` against an extra that was never declared, so pytest was never installed — masked because the test job never ran.
 - Added `.flake8` codifying an explicit policy: correctness enforced (all pyflakes codes, `E7xx` logic errors, syntax, deprecations), style codes that conflict with long-standing project conventions documented and ignored.
 - flake8 across `ws3/` and `tests/` now exits clean, down from 1808 findings.
 
