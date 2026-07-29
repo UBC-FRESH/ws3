@@ -91,7 +91,12 @@ warn_unused_configs = true
 disallow_untyped_defs = false
 ignore_missing_imports = true
 strict = true
-warn_unused_ignores = true
+# Disabled deliberately. With ignore_missing_imports = true, an absent optional
+# dependency is typed as Any, which makes every `# type: ignore` on lines touching
+# it look unused. ws3/financial.py alone flips 19 findings depending on whether
+# PaCal happens to be installed, so this check reports differently in CI than
+# locally and cannot be acted on reliably. Revisit as part of #98.
+warn_unused_ignores = false
 warn_redundant_casts = true
 check_untyped_defs = true
 

@@ -81,6 +81,33 @@ from ws3.forest_helper import (
 )
 
 
+def _search(pattern: str, string: str, what: str, flags: int = 0) -> 're.Match[str]':
+    """
+    ``re.search`` that fails with a useful message instead of ``None``.
+
+    The Woodstock parsers call ``re.search(...).group(...)`` in many places. When
+    the input is malformed the search returns ``None`` and the chained ``.group()``
+    raises ``AttributeError: 'NoneType' object has no attribute 'group'`` -- which
+    says nothing about which file, which construct, or what was expected.
+
+    :param pattern: Regular expression to apply.
+    :param string: Text to search.
+    :param what: Human-readable description of the construct being parsed, used in
+        the error message.
+    :param flags: Optional ``re`` flags.
+    :return: The match object, guaranteed non-None.
+    :raises ValueError: If the pattern does not match.
+    """
+    match = re.search(pattern, string, flags)
+    if match is None:
+        raise ValueError(
+            f"Could not parse {what}.\n"
+            f"  expected pattern: {pattern}\n"
+            f"  actual input    : {string.strip()!r}"
+        )
+    return match
+
+
 class GreedyAreaSelector:
     """
     Default AreaSelector implementation. Selects areas for treatment from oldest age classes.
@@ -404,7 +431,7 @@ class DevelopmentType:
             return ycomp if ycomp else default_ycomp
 
     def _resolver_multiply(self, yname, d):
-        args = [self._o(s.lower()) for s in re.split(r'\s?,\s?', re.search(r'(?<=\().*(?=\))', d).group(0))]
+        args = [self._o(s.lower()) for s in re.split(r'\s?,\s?', _search(r'(?<=\().*(?=\))', d, f'MULTIPLY arguments for yield {yname!r}').group(0))]
         ##################################################################################################
         # NOTE: Not consistent with Remsoft documentation on 'complex-compound yields' (fix me)...
         ytype_set = set(a.type for a in args if isinstance(a, core.Curve))
@@ -412,36 +439,37 @@ class DevelopmentType:
         ##################################################################################################
 
     def _resolver_divide(self, yname, d):
-        _tmp = list(zip(re.split(r'\s?,\s?', re.search(r'(?<=\().*(?=\))', d).group(0)),
+        _tmp = list(zip(re.split(r'\s?,\s?', _search(r'(?<=\().*(?=\))', d, f'DIVIDE arguments for yield {yname!r}').group(0)),
                    (self._zero_curve, self._unit_curve)))
         args = [self._o(s, default_ycomp) for s, default_ycomp in _tmp]
         return args[0].type if not args[0].is_special else args[1].type, self._rc(args[0] / args[1])
 
     def _resolver_sum(self, yname, d):
-        args = [self._o(s.lower()) for s in re.split(r'\s?,\s?', re.search(r'(?<=\().*(?=\))', d).group(0))]
+        args = [self._o(s.lower()) for s in re.split(r'\s?,\s?', _search(r'(?<=\().*(?=\))', d, f'SUM arguments for yield {yname!r}').group(0))]
         ytype_set = set(a.type for a in args if isinstance(a, core.Curve))
         return ytype_set.pop() if len(ytype_set) == 1 else 'c', self._rc(reduce(lambda x, y: x+y, [a for a in args]))
 
     def _resolver_cai(self, yname, d):
-        arg = self._o(re.split(r'\s?,\s?', re.search(r'(?<=\().*(?=\))', d).group(0))[0])
+        arg = self._o(re.split(r'\s?,\s?', _search(r'(?<=\().*(?=\))', d, f'CAI arguments for yield {yname!r}').group(0))[0])
         return arg.type, self._rc(arg.mai())
 
     def _resolver_mai(self, yname, d):
-        arg = self._o(re.split(r'\s?,\s?', re.search(r'(?<=\().*(?=\))', d).group(0))[0])
+        arg = self._o(re.split(r'\s?,\s?', _search(r'(?<=\().*(?=\))', d, f'MAI arguments for yield {yname!r}').group(0))[0])
         return arg.type, self._rc(arg.mai())
 
     def _resolver_ytp(self, yname, d):
-        arg = self._o(re.search(r'(?<=\().*(?=\))', d).group(0).lower())
+        arg = self._o(_search(r'(?<=\().*(?=\))', d, f'YTP argument for yield {yname!r}').group(0).lower())
         return arg.type, self._rc(arg.ytp())
 
     def _resolver_range(self, yname, d):
-        args = [self._o(s.lower()) for s in re.split(r'\s?,\s?', re.search(r'(?<=\().*(?=\))', d).group(0))]
+        args = [self._o(s.lower()) for s in re.split(r'\s?,\s?', _search(r'(?<=\().*(?=\))', d, f'RANGE arguments for yield {yname!r}').group(0))]
         arg_triplets = [args[i:i+3] for i in range(0, len(args), 3)]
         return args[0].type, self._rc(reduce(lambda x, y: x*y, [t[0].range(t[1], t[2]) for t in arg_triplets]))
 
     def _compile_complex_ycomp(self, yname):
         expression = self._complex_ycomps[yname]
-        keyword = re.search(r'(?<=_)[A-Z]+(?=\()', expression).group(0)
+        keyword = _search(r'(?<=_)[A-Z]+(?=\()', expression,
+                          f'complex yield keyword in {expression.strip()!r}').group(0)
         try:
             ytype, ycomp = self._resolvers[keyword](yname, expression)
             ycomp.label = yname
@@ -532,6 +560,12 @@ class DevelopmentType:
                     raise ValueError('Bad relational operator.')
             else: # must be yname
                 ycomp = self.ycomp(o)
+                if ycomp is None:
+                    raise ValueError(
+                        f"Operability expression for action {acode!r} references yield "
+                        f"component {o!r}, which is not defined for development type "
+                        f"{' '.join(self.key)}."
+                    )
                 if rel_operators[i] == '=':
                     _alo = _ahi = ycomp.lookup(rhs[i])
                 elif rel_operators[i] == '>=':
@@ -758,6 +792,8 @@ class Output:
                 if verbose: print('f is null', f)
                 continue # one of the factors is 0, no point calculating area...
             ages = self._ages if not self._condition else dt.resolve_condition(*self._condition)
+            if ages is None:
+                continue # no ages resolved for this condition, nothing to accumulate
             for age in ages:
                 area = 0.
                 if self._is_invent:
@@ -2127,9 +2163,9 @@ class ForestModel:
                 # pattern matching may not be very robust, but works for now with:
                 # 'FOR XX := 1 to 99'
                 # TO DO: implement DOWNTO, etc.
-                for_var = re.search(r'(?<=FOR\s).+(?=:=)', l).group(0).strip()
-                for_lo = int(re.search(r'(?<=:=).+(?=to)', l).group(0))
-                for_hi = int(re.search(r'(?<=to).+', l).group(0))
+                for_var = _search(r'(?<=FOR\s).+(?=:=)', l, 'FOR loop variable').group(0).strip()
+                for_lo = int(_search(r'(?<=:=).+(?=to)', l, 'FOR loop lower bound').group(0))
+                for_hi = int(_search(r'(?<=to).+', l, 'FOR loop upper bound').group(0))
                 for_buffer = []
                 buffering_for = True
                 continue
@@ -2202,7 +2238,8 @@ class ForestModel:
         """
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
             data = f.read()
-        _data = re.search(r'\*THEME.*', data, re.M|re.S).group(0) # strip leading junk
+        _data = _search(r'\*THEME.*', data, 'landscape section (no *THEME declaration found)',
+                        re.M | re.S).group(0) # strip leading junk
         t_data = re.split(r'\*THEME.*\n', _data)[1:] # split into theme-wise chunks
         for ti, t in enumerate(t_data, start=ti_offset):
             self._themes.append({})
@@ -2217,7 +2254,7 @@ class ForestModel:
                     defining_aggregates = True
                     continue
                 if not defining_aggregates: # line defines basic theme attribute code
-                    tac = re.search(r'\S+', l.strip()).group(0).lower()
+                    tac = _search(r'\S+', l.strip(), 'theme attribute code').group(0).lower()
                     self._themes[ti][tac] = tac
                     self._theme_basecodes[ti].append(tac)
                 else: # line defines aggregate values (parse out multiple values before comment)
@@ -2520,7 +2557,7 @@ class ForestModel:
         :return str: New theme value string
         """
         if '_TH' in treplace: # assume incrementing integer theme value
-            i = int(re.search(r'(?<=_TH)\w+', treplace).group(0))
+            i = int(_search(r'(?<=_TH)\w+', treplace, '_TH theme index in _REPLACE expression').group(0))
             return eval(re.sub('_TH%i'%i, str(dt.key[i-1]), treplace))
         else:
             assert False # many other possible arguments (see Woodstock documentation for details)
@@ -2654,13 +2691,13 @@ class ForestModel:
                 except Exception:
                     tlock = None
                 try: # _REPLACE keyword (TO DO: implement other cases)
-                    args = re.split(r'\s?,\s?', re.search(r'(?<=_REPLACE\().*(?=\))', l).group(0))
+                    args = re.split(r'\s?,\s?', _search(r'(?<=_REPLACE\().*(?=\))', l, '_REPLACE arguments').group(0))
                     theme_index = int(args[0][3]) - 1
                     treplace = theme_index, args[1]
                 except Exception:
                     treplace = None
                 try: # _APPEND keyword (TO DO: implement other cases)
-                    args = re.split(r'\s?,\s?', re.search(r'(?<=_APPEND\().*(?=\))', l).group(0))
+                    args = re.split(r'\s?,\s?', _search(r'(?<=_APPEND\().*(?=\))', l, '_APPEND arguments').group(0))
                     theme_index = int(args[0][3]) - 1
                     tappend = theme_index, args[1]
                 except Exception:
