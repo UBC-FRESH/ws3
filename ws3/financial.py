@@ -53,7 +53,7 @@ def _apply_numpy_compat_shim() -> None:
         if not hasattr(_np, _old) and hasattr(_np, _new):
             setattr(_np, _old, getattr(_np, _new))
     if not hasattr(_np, 'asfarray'):
-        _np.asfarray = lambda a, dtype=_np.float64: _np.asarray(a, dtype=dtype)
+        _np.asfarray = lambda a, dtype=_np.float64: _np.asarray(a, dtype=dtype)  # type: ignore[attr-defined]
 
 
 # Set True to skip the import attempt entirely and force deterministic-only mode.

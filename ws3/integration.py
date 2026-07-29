@@ -121,9 +121,17 @@ class FHOPSIntegrator:
         :param species: Species code
         :param site_index: Site index
         """
-        # This would modify the yield curves in the ForestModel
-        # to include cost information from fhops
-        pass
+        raise NotImplementedError(
+            "FHOPSIntegrator.inject_into_model() is an experimental stub and is not "
+            "production-ready.\n"
+            "\n"
+            "Missing: the mapping from fhops cost curves onto ForestModel yield "
+            "curves. The method body was empty, so it silently did nothing while "
+            "appearing to succeed.\n"
+            "\n"
+            "generate_cost_curves() and export_curves() are functional. Tracked in "
+            "#103."
+        )
 
     def export_curves(self, cost_curves: pd.DataFrame,
                      filename: str) -> None:

@@ -1,12 +1,31 @@
 """
 Advanced modeling features for ws3.
 
-This module provides:
-- Stochastic optimization for uncertainty
-- Multi-objective optimization with trade-off analysis
-- Dynamic planning with re-optimization
-- Climate scenario integration
-- Enhanced carbon accounting
+.. warning::
+
+   **Experimental. Not production-ready.**
+
+   This module is a design sketch. Its data structures and scenario generation
+   work, but the methods that apply scenarios and solve are unimplemented stubs.
+
+   Those stubs are gated: they raise :py:exc:`NotImplementedError` rather than
+   returning results. This is deliberate. Before gating,
+   :py:meth:`StochasticOptimizer.solve_stochastic` generated random scenarios,
+   applied none of them, solved the identical problem N times, and reported the
+   variance across N identical values -- always exactly 0. Confident, plausible,
+   and meaningless.
+
+   See #103 for the full audit.
+
+Working today:
+- ``UncertaintyType``, ``StochasticScenario``
+- ``StochasticOptimizer.generate_scenarios`` / ``add_scenario`` / ``get_scenario_summary``
+- ``MultiObjectiveOptimizer.add_objective``
+- ``ClimateScenarioManager.add_scenario`` / ``get_rcp_scenarios``
+
+Gated pending implementation:
+- stochastic, multi-objective, and dynamic solve methods
+- climate effect application and analysis
 """
 
 from __future__ import annotations
@@ -16,6 +35,27 @@ import pandas as pd
 from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field
 from enum import Enum
+
+
+def _not_production_ready(what: str, missing: str) -> None:
+    """
+    Refuse to run an unimplemented code path.
+
+    Raised instead of returning fabricated or vacuous results. See #103.
+
+    :param what: The method being guarded.
+    :param missing: What is actually absent.
+    """
+    raise NotImplementedError(
+        f"{what} is an experimental stub and is not production-ready.\n"
+        f"\n"
+        f"Missing: {missing}\n"
+        f"\n"
+        f"This code is retained as a design sketch for planned functionality, and "
+        f"is gated so it cannot silently return meaningless results. Tracked in "
+        f"#103. The data structures and scenario generation in this module do work "
+        f"and remain usable."
+    )
 
 
 class UncertaintyType(Enum):
@@ -115,6 +155,13 @@ class StochasticOptimizer:
         :param method: Solution method ('sample_average', 'scenario_reduction', 'robust')
         :return: Solution results
         """
+        _not_production_ready(
+            'StochasticOptimizer.solve_stochastic()',
+            '_apply_scenario() is a no-op, so every scenario solves the identical '
+            'unmodified problem and the reported variance is always 0. It also calls '
+            'Problem.get_objective_value() and Problem.get_solution(), neither of '
+            'which exists (the real API is Problem.z and Problem.solution()).'
+        )
         if not self.scenarios:
             raise ValueError("No scenarios defined")
 
@@ -172,10 +219,12 @@ class StochasticOptimizer:
         return results
 
     def _apply_scenario(self, scenario: StochasticScenario):
-        """Apply scenario parameters to the problem."""
-        # This would modify problem parameters based on scenario
-        # Implementation depends on specific problem structure
-        pass
+        """Apply scenario parameters to the problem. Unimplemented -- see #103."""
+        _not_production_ready(
+            'StochasticOptimizer._apply_scenario()',
+            'a mapping from StochasticScenario parameters onto Problem coefficients. '
+            'Without it, generated scenarios have no effect on the solve.'
+        )
 
     def get_scenario_summary(self) -> pd.DataFrame:
         """Get summary statistics for all scenarios."""
@@ -213,6 +262,12 @@ class MultiObjectiveOptimizer:
         :param weights: Dictionary of objective weights
         :return: Solution results
         """
+        _not_production_ready(
+            'MultiObjectiveOptimizer.solve_weighted_sum()',
+            'the loop that should apply weights to the objective has an empty body, '
+            'so weights are never applied. It also calls Problem.get_solution(), '
+            'which does not exist.'
+        )
         if weights is None:
             weights = {obj['name']: obj['weight'] for obj in self.objectives}
 
@@ -242,6 +297,12 @@ class MultiObjectiveOptimizer:
         :param epsilon_constraints: Constraints on other objectives
         :return: Solution results
         """
+        _not_production_ready(
+            'MultiObjectiveOptimizer.solve_epsilon_constraint()',
+            'the loop that should add epsilon constraints has an empty body, so no '
+            'constraints are added. It also calls Problem.get_solution(), which does '
+            'not exist.'
+        )
         # Add epsilon constraints to problem
         for obj_name, epsilon in epsilon_constraints.items():
             if obj_name != primary_objective:
@@ -266,6 +327,11 @@ class MultiObjectiveOptimizer:
         :param n_points: Number of points on Pareto frontier
         :return: DataFrame with Pareto-optimal solutions
         """
+        _not_production_ready(
+            'MultiObjectiveOptimizer.find_pareto_frontier()',
+            'a working solve_weighted_sum(), which it calls in a loop. Since weights '
+            'are never applied, every point on the frontier would be identical.'
+        )
         pareto_solutions = []
 
         # Generate different weight combinations
@@ -315,10 +381,12 @@ class MultiObjectiveOptimizer:
         return df
 
     def _extract_objective_values(self) -> Dict[str, float]:
-        """Extract objective function values."""
-        # This would extract values from the solved problem
-        # Implementation depends on problem structure
-        return {}
+        """Extract objective function values. Unimplemented -- see #103."""
+        _not_production_ready(
+            'MultiObjectiveOptimizer._extract_objective_values()',
+            'extraction of per-objective values from a solved Problem. It returned a '
+            'hardcoded empty dict, which callers presented as real results.'
+        )
 
 
 class DynamicPlanner:
@@ -339,6 +407,11 @@ class DynamicPlanner:
 
         :return: Static plan
         """
+        _not_production_ready(
+            'DynamicPlanner.plan_static()',
+            'Problem.get_solution() and Problem.get_objective_value(), neither of '
+            'which exists (the real API is Problem.solution() and Problem.z).'
+        )
         self.problem.solve()
 
         plan = {
@@ -358,6 +431,10 @@ class DynamicPlanner:
         :param reoptimize_every: Re-optimize every N periods
         :return: Dynamic plan
         """
+        _not_production_ready(
+            'DynamicPlanner.plan_dynamic()',
+            'the same non-existent Problem methods relied on by plan_static().'
+        )
         plans = []
 
         for period in range(0, self.n_periods, reoptimize_every):
@@ -443,9 +520,13 @@ class ClimateScenarioManager:
         :param scenario: Climate scenario
         :return: Modified ForestModel
         """
-        # This would modify growth curves based on climate scenario
-        # Implementation depends on specific climate-growth relationships
-
+        _not_production_ready(
+            'ClimateScenarioManager.apply_climate_effects()',
+            'a real climate-growth response. It mutates fm.yields in place while '
+            'documenting that it returns a modified copy, and assumes each yield '
+            "entry is a subscriptable mapping with a 'volume' key, which is not the "
+            'ws3 yield structure.'
+        )
         temperature = scenario['temperature_change']
         precipitation = scenario['precipitation_change']
         co2 = scenario['co2_change']
@@ -469,13 +550,19 @@ class ClimateScenarioManager:
         """
         results = []
 
+        _not_production_ready(
+            'ClimateScenarioManager.run_climate_analysis()',
+            'ws3.core.compile_scenario, which does not exist anywhere in the package '
+            '(#97), plus ForestModel.copy() and a working apply_climate_effects(). '
+            'The import is function-local, so "import ws3" still succeeds and the '
+            'breakage only surfaces on first use of this method.'
+        )
+
         for scenario in self.scenarios:
             # Create modified model
             modified_fm = self.apply_climate_effects(fm.copy(), scenario)
 
-            # Compile and solve
-            from ws3.core import compile_scenario
-            problem = compile_scenario(modified_fm, scenario_name=scenario['name'])
+            problem = compile_scenario(modified_fm, scenario_name=scenario['name'])  # noqa: F821
             solution = problem.solve(solver=solver)
 
             results.append({

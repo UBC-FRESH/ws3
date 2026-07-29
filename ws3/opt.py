@@ -72,6 +72,9 @@ class Variable:
         self.lb = lb
         self.ub = ub
         self.val = val
+        # Assigned by the HiGHS backend when the column is added. Declared here
+        # so it is discoverable rather than materializing as a dynamic attribute.
+        self.index: Optional[int] = None
 
 class Constraint:
     """
@@ -126,6 +129,13 @@ class Problem:
             SOLVER_GUROBI: self._solve_gurobi,
             SOLVER_HIGHS: self._solve_highs
         }
+        # Populated by ws3.forest._bld_p_m1 rather than here. Declared so the
+        # attributes are discoverable and type-checkable instead of appearing
+        # only as dynamic assignments from another module.
+        self.trees: Optional[Any] = None
+        self._leaf_ids: Optional[Any] = None
+        self.coeff_funcs: Optional[Any] = None
+        self.formulation: Optional[int] = None
 
     def merge(self, problem: Problem) -> None:
         """

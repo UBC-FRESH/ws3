@@ -5,6 +5,7 @@ Tests SolverTuner, MemoryProfiler, PerformanceBenchmark, ResultCache,
 and IncrementalSolver classes.
 """
 
+import pytest
 from unittest.mock import MagicMock, patch
 from ws3.perf import (
     SolverTuner,
@@ -209,24 +210,22 @@ class TestIncrementalSolver:
         assert solver.previous_solution == warm_start
 
     def test_solve_with_warm_start(self):
-        """Test solving with warm start (mocked)."""
-        mock_problem = MagicMock()
-        mock_problem.solve.return_value = None
-        mock_problem.get_solution.return_value = {"x": [1.0, 2.0]}
-        solver = IncrementalSolver(mock_problem)
-        solver.warm_start({"x": [1.0, 2.0]})
+        """
+        Warm-start solving is gated (see #103).
 
-        result = solver.solve_with_warmstart()
-        # Returns False when objective values are equal (0.0 < 0.0 is False)
-        assert result is False
+        Previously mocked Problem.get_solution(), which does not exist -- the real
+        API is Problem.solution().
+        """
+        solver = IncrementalSolver(MagicMock())
+        solver.warm_start({"x": [1.0, 2.0]})
+        with pytest.raises(NotImplementedError, match='stub'):
+            solver.solve_with_warmstart()
 
     def test_solve_without_warm_start(self):
-        """Test solving without warm start returns False."""
-        mock_problem = MagicMock()
-        solver = IncrementalSolver(mock_problem)
-
-        result = solver.solve_with_warmstart()
-        assert result is False
+        """Gated regardless of whether a warm start was supplied (#103)."""
+        solver = IncrementalSolver(MagicMock())
+        with pytest.raises(NotImplementedError, match='stub'):
+            solver.solve_with_warmstart()
 
     def test_get_solution(self):
         """Test getting current solution."""

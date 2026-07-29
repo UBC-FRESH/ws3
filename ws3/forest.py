@@ -2914,10 +2914,10 @@ class ForestModel:
         :return: Dataframe containing CBM SIT age class table
         :rtype: :py:class:`pandas.DataFrame`
         """
-        data = {'name':['age_0'],
-                'class_size':[0],
-                'start_year':[0],
-                'end_year':[0]}
+        data: Dict[str, List[Any]] = {'name': ['age_0'],
+                                      'class_size': [0],
+                                      'start_year': [0],
+                                      'end_year': [0]}
         for i, ac in enumerate(range(self.period_length,
                                      self.max_age+self.period_length,
                                      self.period_length)):
