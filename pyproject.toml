@@ -40,6 +40,14 @@ release = [
     "build",
     "twine",
 ]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "coverage",
+    "flake8",
+    "mypy",
+    "ruff",
+]
 github-mcp = [
     "github-mcp-server",  # GitHub MCP server for enhanced GitHub integration
 ]
