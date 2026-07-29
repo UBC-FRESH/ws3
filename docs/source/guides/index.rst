@@ -11,3 +11,4 @@ Advanced Guides
    coding-agent-onboarding
    troubleshooting
    limitations-and-boundaries
+   agent-capabilities

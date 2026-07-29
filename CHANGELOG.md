@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Common Changelog](https://common-changelog.org/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+- **Agent capabilities** (`ws3.agent`, optional). A small set of operations designed to be driven by an AI coding agent, where the output is validated against real model state before it is returned.
+
+  | Capability | Oracle |
+  |---|---|
+  | `build_mask` | the mask resolves against the `ForestModel` to at least one development type |
+  | `explain_exception` | every ws3 symbol the explanation cites actually exists |
+  | `diagnose_import` | the suggested fix is applied to a scratch copy and the section genuinely re-imports |
+
+  A capability returns validated output or nothing at all — never a plausible guess. On exhaustion it returns `ok=False` with the reasons every attempt was rejected. Capabilities are advisory: they return proposals and never mutate a model in place.
+
+  The design rule is *no oracle, no capability*. If a proposal cannot be checked against real state, it does not become a capability. This is recorded in `AGENTS.md` with its evidence: fabricated APIs reached this repository's documentation (Phase 6), test suite (Phase 7.5), and shipped module code (Phase 7.6) before being caught. `explain_exception` exists because that failure mode is well attested here.
+
+- `ws3[agent]` and `ws3[agent-mcp]` extras, plus a `ws3-agent-mcp` console entry point exposing the capabilities as MCP tools. Tools in a tool list get called; conventions in documentation get ignored.
+- Provenance: every attempt is recorded, including failures — model, prompt digest, raw output, verdict, attempt number. No field is capable of holding a credential; the endpoint host is recorded rather than the URL, which can carry credentials, and a SHA-256 rather than the prompt body, which can embed user data.
+- New guide: `docs/source/guides/agent-capabilities.rst`, covering configuration, provenance, and how to add a capability validator-first.
+- Companion package [fresh-agent-core](https://github.com/UBC-FRESH/fresh-agent-core), which owns the shared mechanism. Each package owns its own capabilities and validators, since the validator is the part requiring domain knowledge.
+
+### Fixed
+- Eight RST errors in `docs/source/guides/troubleshooting.rst`: directives and nested lists lacking a required preceding blank line. The docs now build with zero errors.
+
+### Notes
+`import ws3` never loads the agent package, and `pip install ws3` needs none of it. The MCP dependency is pinned `<2`; the 2.x SDK removed the low-level `Server` decorator API this host is written against, and migration is tracked in [fresh-agent-core#1](https://github.com/UBC-FRESH/fresh-agent-core/issues/1).
+
 ## 1.1.0a4 - 2026-07-29 (alpha)
 
 **Status**: Defect sweep. Fixes a silent numerical error, restores probabilistic financial analysis, and gates code paths that returned meaningless results.
