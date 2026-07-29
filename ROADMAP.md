@@ -199,9 +199,10 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 ## Phase 7 — Release and Community Building
 
 - Parent issue: [#87](https://github.com/UBC-FRESH/ws3/issues/87)
-- Status: active
+- Status: complete
 - Branch: `feature/ws3-phase7-release`
 - Start date: 2026-07-27
+- Completion date: 2026-07-29
 - Documentation: [GitHub Pages](https://ubc-fresh.github.io/ws3/) (migrated from ReadTheDocs)
 
 ### Task 7.1 — Release Verification
