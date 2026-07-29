@@ -225,4 +225,4 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - GitHub issue: [#91](https://github.com/UBC-FRESH/ws3/issues/91)
 - Status: complete
 - Scope: publish v1.1.0a2 to PyPI
-- Note: Trusted publisher already configured (used for v1.1.0a1 publish). Ready to tag and push v1.1.0a2.
+- Note: published via PyPI trusted publisher (OIDC); tag `v1.1.0a2` pushed and the Release Artifacts workflow succeeded.
