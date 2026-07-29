@@ -54,6 +54,37 @@ Multiple examples are available to demonstrate the utilization of ws3. Below is 
 - [**050_dss_avoided_fire**](https://github.com/UBC-FRESH/ws3/blob/dev/examples/050_dss_avoided_fire.ipynb): This example shows the implementation of a notebook-based decision-support system (DSS) for evaluating the net system-level carbon emissions impact of an avoided fire type project.
 - [**060_dss_avoid_harvest.ipynb**](https://github.com/UBC-FRESH/ws3/blob/dev/examples/060_dss_avoid_harvest.ipynb): This example shows the implementation of a notebook-based decision-support system (DSS) for evaluating the net system-level carbon emissions impact of an avoided harvesting type project.
 
+## Agent capabilities (optional)
+
+`ws3` ships a small set of operations designed to be driven by an AI coding agent,
+where **the output is validated against real model state before it is returned**.
+
+| Capability | What it validates |
+|---|---|
+| `build_mask` | The proposed mask resolves to at least one development type |
+| `explain_exception` | Every ws3 symbol the explanation cites actually exists |
+| `diagnose_import` | The suggested fix makes the failing section genuinely re-import |
+
+A capability returns validated output or nothing at all — never a plausible guess.
+The design rule is *no oracle, no capability*: if a proposal cannot be checked
+against real state, it does not become a capability.
+
+```bash
+pip install ws3[agent]
+ws3-agent-mcp --model-path path/to/model --model-name my_model
+```
+
+```python
+import ws3.agent
+
+if ws3.agent.available():
+    result = ws3.agent.run('build_mask', 'mature spruce stands', context=fm)
+    print(result.value if result.ok else result.errors)
+```
+
+Entirely optional. Core modelling never requires it, and `import ws3` never loads
+it. Built on [fresh-agent-core](https://github.com/UBC-FRESH/fresh-agent-core).
+
 ## License
 
 **MIT License**

@@ -33,7 +33,8 @@ jobs:
     # Advisory only. ws3 carries ~323 pre-existing mypy errors from the partial
     # typing migration in Phase 2. Failing the build on them would put this job
     # back into the permanently-red state that made CI meaningless (see #94).
-    # Flip continue-on-error off once the typing debt is cleared.
+    # Tracked in #98, which has the staged remediation plan. Flip
+    # continue-on-error off once that lands.
     - name: Run mypy (advisory)
       continue-on-error: true
       run: |

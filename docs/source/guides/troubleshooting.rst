@@ -24,6 +24,7 @@ Installation Issues
 *Symptom*: Import errors for scipy, pandas, or other optional packages
 
 *Solution*:
+
 .. code-block:: bash
 
    # Install all optional dependencies
@@ -71,17 +72,21 @@ Optimization Errors
 
 *Diagnostic steps*:
 1. Check constraint feasibility:
+
    - Flow constraints: ensure min_ratio <= max_ratio
    - Area constraints: ensure sum of max_area doesn't exceed total area
 2. Simplify the problem:
+
    - Reduce planning horizon
    - Remove some constraints
    - Use simpler objective function
 3. Check model size:
+
    - Too many development types can cause solver memory issues
    - Reduce to essential DTs for debugging
 
 *Solution*:
+
 .. code-block:: python
 
    # Check if problem was solved
@@ -102,6 +107,7 @@ Optimization Errors
 4. Check that minimum age constraints aren't too restrictive
 
 *Solution*:
+
 .. code-block:: python
 
    # List all development types and their areas
@@ -150,6 +156,7 @@ Callbacks are registered via the ForestModel's callback system. Check the
 3. Check for floating-point rounding errors
 
 *Solution*:
+
 .. code-block:: python
 
    # Verify area conservation
@@ -211,6 +218,7 @@ External Dependency Issues
 *Symptom*: ImportError when using carbon callbacks
 
 *Solution*:
+
 .. code-block:: bash
 
    # Install libCBM
