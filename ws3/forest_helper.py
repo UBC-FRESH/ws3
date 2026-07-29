@@ -119,7 +119,6 @@ def worker_summarize_tree_batch(args: List[Any]) -> List[Tuple[str, Dict[str, fl
         coeffs = {}
         z_coeffs = {}
         for path in tree.paths():
-            j = tuple(n.data('acode') for n in path)
             leaf_id = path[-1].data('leaf_id')
             vname = f"x_{leaf_id}"
             coeffs[vname] = 1.0
@@ -181,7 +180,6 @@ def worker_gen_vars(tasks: List[Tuple[str, int]], acodes: List[str]) -> List[Tup
     """
     model = _GLOBAL_MODEL_GEN_VARS
     coeff_funcs = _GLOBAL_COEFF_FUNCS_GEN_VARS
-    workers = _GLOBAL_WORKERS_GEN_VARS
 
     results = []
     for (dtk, age) in tasks:

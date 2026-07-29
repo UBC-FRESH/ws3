@@ -43,10 +43,8 @@ from typing import (
     Any,
     Callable,
     Dict,
-    Iterator,
     List,
     Optional,
-    Set,
     Tuple,
     Union,
 )
@@ -63,7 +61,7 @@ import pandas as pd
 
 try:
     from ws3 import common, core, opt
-except: # "__main__" case
+except ImportError: # "__main__" case
     from ws3 import common, core, opt
 
 
@@ -114,7 +112,7 @@ class GreedyAreaSelector:
                 popped = odt.pop()
                 try:
                     dtk, ages = popped #odt.pop()
-                except:
+                except Exception:
                     print(odt)
                     print(popped)
                     raise
@@ -439,7 +437,6 @@ class DevelopmentType:
     def _resolver_range(self, yname, d):
         args = [self._o(s.lower()) for s in re.split(r'\s?,\s?', re.search(r'(?<=\().*(?=\))', d).group(0))]
         arg_triplets = [args[i:i+3] for i in range(0, len(args), 3)]
-        range_curve = self._rc(reduce(lambda x, y: x*y, [t[0].range(t[1], t[2]) for t in arg_triplets]))
         return args[0].type, self._rc(reduce(lambda x, y: x*y, [t[0].range(t[1], t[2]) for t in arg_triplets]))
 
     def _compile_complex_ycomp(self, yname):
@@ -701,9 +698,7 @@ class Output:
         s = s.replace(' (', '(')  # remove space to left of left parentheses
         t = s.lower().split(' ')
         # filter dtypes, if starts with mask
-        mask = None
         if not (t[0] == '@' or t[0] == '_' or t[0] in self.parent.actions):
-            mask = tuple(t[:self.parent.nthemes()])
             t = t[self.parent.nthemes():] # pop
         # extract @AGE or @YLD condition, if present
         self._ages = None
@@ -1500,7 +1495,7 @@ class ForestModel:
         """
         try:
             return self.dtypes[dtype_key]
-        except:
+        except Exception:
             return None
 
     def age_class_distribution(self, period, mask=None, omit_null=False):
@@ -1726,7 +1721,7 @@ class ForestModel:
                         result += eval(_expr) * area
                     except ZeroDivisionError:
                         pass # let this one go...
-                    except:
+                    except Exception:
                         print(("Unexpected error:", sys.exc_info()[0]))
                         print("evaluating expression '%s' for case:" % ' '.join(_tokens), period, [' '.join(dtk)], _acode, _age)
                         raise
@@ -1862,7 +1857,7 @@ class ForestModel:
                 print('yield-based age definition', tyield, self.dt(dtk).ycomp(tyield[0]).lookup(tyield[1], roundx=True))
             try:
                 targetage = self.dt(dtk).ycomp(tyield[0]).lookup(tyield[1], roundx=True)
-            except:
+            except Exception:
                 print(' '.join(dtk), tyield[0], self.dt(dtk).ycomps())
                 assert False
         elif tage is not None: # target age override specifed in transition
@@ -2082,7 +2077,6 @@ class ForestModel:
         :param str s: String to resolve
         :param int for_flag: Flag indicating for loop iteration (this is a recursive function)
         """
-        n = self.nthemes()
         group = 'no_group' # outputs declared at top of file assigned to 'no_group'
         self.output_groups[group] = set()
         ocode = ''
@@ -2099,7 +2093,7 @@ class ForestModel:
             for m in matches: # replace CONSTANTS variables with value
                 try:
                     l = l.replace(m, str(self.constants[m[1:].lower()]))
-                except:
+                except Exception:
                     import sys
                     print(sys.exc_info()[0])
                     print(l)
@@ -2118,7 +2112,6 @@ class ForestModel:
             l = re.sub(r'\s+', ' ', l) # separate tokens by single space
             l = l.strip().partition(';')[0].strip()
             l = l.replace(' (', '(')  # remove space to left of left parentheses
-            t = l.lower().split(' ')
             ##################################################
             # HACK ###########################################
             # substitute ugly symbols have in ocodes...
@@ -2320,7 +2313,7 @@ class ForestModel:
         else:
             try:
                 assert isinstance(mask, tuple) and len(mask) == self.nthemes()
-            except:
+            except Exception:
                 print(len(mask), type(mask), mask)
                 assert False
         dtype_keys = copy.copy(list(self.dtypes.keys())) # filter this
@@ -2384,7 +2377,6 @@ class ForestModel:
         age_multiplier = self._period_to_years_factor or 1
         period_step = self._period_to_years_factor or self.period_length
 
-        n = self.nthemes()
         ytype = ''
         mask = ('?',) * self.nthemes()
         ynames = []
@@ -2425,7 +2417,7 @@ class ForestModel:
                 if is_tabular:
                     try:
                         x = int(t[0]) * age_multiplier
-                    except:
+                    except Exception:
                         print(lnum, l)
                     for i, yname in enumerate(ynames):
                         data[yname].append((x, float(t[i+1])))
@@ -2474,8 +2466,6 @@ class ForestModel:
             def repl(match):
                 return f"{match.group(1)}{int(int(match.group(2)) * multiplier)}"
             return pattern.sub(repl, expr)
-        actions = {}
-        aggregates = {}
         partials = {}
         keyword = ''
         with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f: s = f.read().lower()
@@ -2657,23 +2647,23 @@ class ForestModel:
                     tyield = (tokens[nthemes+2].lower(), float(tokens[nthemes+3]))
                 try: # _AGE keyword
                     tage = int(tokens[tokens.index('_AGE')+1]) * age_multiplier
-                except:
+                except Exception:
                     tage = None
                 try: # _LOCK keyword
                     tlock = int(tokens[tokens.index('_LOCK')+1]) * age_multiplier
-                except:
+                except Exception:
                     tlock = None
                 try: # _REPLACE keyword (TO DO: implement other cases)
                     args = re.split(r'\s?,\s?', re.search(r'(?<=_REPLACE\().*(?=\))', l).group(0))
                     theme_index = int(args[0][3]) - 1
                     treplace = theme_index, args[1]
-                except:
+                except Exception:
                     treplace = None
                 try: # _APPEND keyword (TO DO: implement other cases)
                     args = re.split(r'\s?,\s?', re.search(r'(?<=_APPEND\().*(?=\))', l).group(0))
                     theme_index = int(args[0][3]) - 1
                     tappend = theme_index, args[1]
-                except:
+                except Exception:
                     tappend = None
                 sources[(smask, scond)].append((tmask, tprop, tyield, tage, tlock, treplace, tappend))
         flush_transitions(acode, sources)
@@ -2989,14 +2979,6 @@ class ForestModel:
                 return default_last_pass_disturbance
 
         theme_cols = [theme['__name__'] for theme in self._themes]
-        other_cols = ['species',
-                      'using_age_class',
-                      'age',
-                      'area',
-                      'delay',
-                      'landclass',
-                      'historic_disturbance',
-                      'last_pass_disturbance']
         data = {**{c:[] for c in theme_cols}, **{c:[] for c in ['age', 'area']}}
         for dtype_key in self.dtypes:
             dt = self.dtypes[dtype_key]
@@ -3061,7 +3043,7 @@ class ForestModel:
             return 'softwood' if svol_curve[x_cmai] > hvol_curve[x_cmai] else 'hardwood'
 
         schedule = self.compile_schedule()
-        p = self.add_problem('__cbm_sit_bogus', {'z':(lambda forestmodel, path: 0.)})
+        self.add_problem('__cbm_sit_bogus', {'z':(lambda forestmodel, path: 0.)})
         theme_cols = [theme['__name__'] for theme in self._themes]
         data = {**{c:[] for c in theme_cols},
                 'species':[], 'leading_species':[],
@@ -3161,7 +3143,7 @@ class ForestModel:
             targetage = self.resolve_targetage(dtk, tyield, sage, tage, acode)
             return dtk, targetage
 
-        theme_cols = colunmns = [theme['__name__'] for theme in self._themes]
+        theme_cols = [theme['__name__'] for theme in self._themes]
         columns = theme_cols.copy()
         columns += ['species',
                     'using_age_class',

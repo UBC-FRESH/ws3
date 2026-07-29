@@ -12,11 +12,9 @@ This module provides tools for:
 from __future__ import annotations
 
 import time
-import functools
 import hashlib
 import json
-import os
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional
 from pathlib import Path
 
 import pandas as pd
@@ -77,7 +75,6 @@ class SolverTuner:
 
         best_params = self.baseline_params.copy()
         best_time = float('inf')
-        best_solution = None
 
         # Generate all parameter combinations
         param_names = list(param_grid.keys())
@@ -125,7 +122,7 @@ class SolverTuner:
         """Apply parameters to the solver."""
         if self.solver == 'gurobi' and hasattr(self.problem, '_model'):
             try:
-                import gurobipy as gp
+                import gurobipy as gp  # noqa: F401  (availability probe)
                 for key, value in params.items():
                     if key != '_best_time':
                         self.problem._model.setParam(key, value)
@@ -222,7 +219,7 @@ class MemoryProfiler:
 
         # Run solve
         start_time = time.time()
-        result = solve_func(*args, **kwargs)
+        solve_func(*args, **kwargs)
         solve_time = time.time() - start_time
 
         # Take after snapshot

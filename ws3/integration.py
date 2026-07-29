@@ -16,8 +16,7 @@ from __future__ import annotations
 
 import json
 import time
-from typing import Any, Dict, List, Optional, Tuple
-from pathlib import Path
+from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, asdict
 
 import pandas as pd
@@ -55,7 +54,7 @@ class FHOPSIntegrator:
     def _check_fhops_available(self) -> bool:
         """Check if fhops is installed and accessible."""
         try:
-            import fhops
+            import fhops  # noqa: F401  (availability probe)
             return True
         except ImportError:
             return False
@@ -146,7 +145,7 @@ class FEMICIntegrator:
     def _check_femic_available(self) -> bool:
         """Check if femic is installed and accessible."""
         try:
-            import femic
+            import femic  # noqa: F401  (availability probe)
             return True
         except ImportError:
             return False
@@ -216,7 +215,7 @@ class FreshForgeIntegrator:
     def _check_freshforge_available(self) -> bool:
         """Check if freshforge is installed and accessible."""
         try:
-            import freshforge
+            import freshforge  # noqa: F401  (availability probe)
             return True
         except ImportError:
             return False
@@ -308,7 +307,7 @@ class SpaDESIntegrator:
         """Check if SpaDES integration is available."""
         # Check for reticulate and spades_ws3
         try:
-            import reticulate
+            import reticulate  # noqa: F401  (availability probe)
             return True
         except ImportError:
             return False

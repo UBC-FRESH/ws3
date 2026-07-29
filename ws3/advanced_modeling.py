@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -217,7 +217,6 @@ class MultiObjectiveOptimizer:
             weights = {obj['name']: obj['weight'] for obj in self.objectives}
 
         # Create weighted objective
-        weighted_obj = {}
         for name, weight in weights.items():
             # This would add objective terms to the problem
             # Implementation depends on problem structure
@@ -360,7 +359,6 @@ class DynamicPlanner:
         :return: Dynamic plan
         """
         plans = []
-        current_solution = None
 
         for period in range(0, self.n_periods, reoptimize_every):
             # Solve for remaining horizon
@@ -378,9 +376,6 @@ class DynamicPlanner:
                 'solution': period_solution,
                 'objective_value': self.problem.get_objective_value()
             })
-
-            # Update for next period
-            current_solution = period_solution
 
         dynamic_plan = {
             'type': 'dynamic',

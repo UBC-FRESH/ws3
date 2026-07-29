@@ -264,7 +264,6 @@ class ForestRaster:
                         to_dtk_tup = tuple(to_dtk)
                         to_age = self._forestmodel.resolve_targetage(to_dtk_tup, tyield, from_age, tage, acode, verbose=False)
                         to_age = max(to_age, minage) # hack! (yuck)
-                        tk = to_dtk_tup + (to_age,)
                         _target_area = area
                         DY = list(range(0, self._period_length, self._time_step))
                         #random.shuffle(DY)

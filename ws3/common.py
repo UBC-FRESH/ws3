@@ -52,7 +52,7 @@ import rasterio
 
 try:
     import pickle as pickle
-except:
+except ImportError:
     import pickle
 
 import math
@@ -234,10 +234,8 @@ def reproject_vector_data(
     :param driver: The driver for writing the shapefiles.
     """
     from fiona.crs import from_epsg
-    from pyproj import Proj
     with fiona.open(src_path, 'r') as src:
         snk_crs = from_epsg(snk_epsg)
-        src_proj, snk_proj = Proj(src.crs), Proj(snk_crs)
         kwds = src.meta.copy()
         kwds.update(crs=snk_crs, crs_wkt=None)
         kwds.update(driver=driver)
@@ -303,15 +301,15 @@ def rasterize_stands(
             hdt[h] = dt
             try:
                 age = np.int32(math.ceil(fp[age_col]/float(age_divisor)))
-            except:
-                if fp[age_col] == None:
+            except Exception:
+                if fp[age_col] is None:
                     age = np.int32(1)
                 else:
                     raise ValueError('Bad age value in record %i: %s' % (i, str(fp[age_col])))
             if cap_age and age > cap_age: age = cap_age
             try:
                 assert age > 0
-            except:
+            except Exception:
                 if fp[age_col] == 0:
                     age = np.int32(1)
                 else:
