@@ -290,9 +290,11 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 ## Phase 8 — Embedded Agent Capabilities
 
 - Parent issue: [#105](https://github.com/UBC-FRESH/ws3/issues/105)
-- Status: active
+- Status: complete
 - Branch: `feature/ws3-phase8-embedded-agents`
 - Start date: 2026-07-29
+- Completion date: 2026-07-29
+- Merged: [PR #113](https://github.com/UBC-FRESH/ws3/pull/113)
 - Design doc: [planning/phase8_embedded_agents.md](planning/phase8_embedded_agents.md)
 - Companion package: [fresh-agent-core](https://github.com/UBC-FRESH/fresh-agent-core)
 
@@ -332,12 +334,12 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 
 ### Task 8.5 — Discoverability contract
 - GitHub issue: [#110](https://github.com/UBC-FRESH/ws3/issues/110)
-- Status: in_progress
+- Status: complete
 - Scope: `AGENTS.md` section declaring the capability surface as the supported agent interface and stating the oracle rule; `README.md` pointer; MCP registration snippet for agent-workbench.
 
 ### Task 8.6 — Packaging and documentation
 - GitHub issue: [#111](https://github.com/UBC-FRESH/ws3/issues/111)
-- Status: in_progress
+- Status: complete
 - Scope: `ws3[agent]` and `ws3[agent-mcp]` extras, Sphinx guide covering configuration, capabilities, provenance and how to add a capability validator-first, worked example, CHANGELOG entry.
 
 ## Backlog — not yet scheduled
