@@ -11,6 +11,7 @@
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
+    <link rel="canonical" href="https://ubc-fresh.github.io/ws3/howto/parallel-optimization.html" />
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=d55fa986"></script>
@@ -136,27 +137,29 @@
 </div>
 <p><strong>3. Run parallel optimization</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.forest_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">PersistentWorkerPool</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dill</span>
 
-<span class="n">pool</span> <span class="o">=</span> <span class="n">PersistentWorkerPool</span><span class="p">(</span><span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="c1"># Serialize the model and coefficient functions for workers</span>
+<span class="n">blob_bytes</span> <span class="o">=</span> <span class="n">dill</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">fm</span><span class="p">)</span>
+<span class="n">serialized_funcs</span> <span class="o">=</span> <span class="p">{</span>\<span class="s2">&quot;coeff_func</span><span class="se">\&quot;</span><span class="s2">: dill.dumps(coeff_func)}</span>
 
-<span class="n">results</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">scenario</span><span class="p">:</span> <span class="n">run_scenario</span><span class="p">(</span><span class="n">fm</span><span class="p">,</span> <span class="n">scenario</span><span class="p">),</span>
-    <span class="n">scenarios</span>
-<span class="p">)</span>
+<span class="k">with</span> <span class="n">PersistentWorkerPool</span><span class="p">(</span><span class="n">workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">blob_bytes</span><span class="o">=</span><span class="n">blob_bytes</span><span class="p">,</span>\<span class="n">n</span>                              <span class="n">serialized_funcs</span><span class="o">=</span><span class="n">serialized_funcs</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">run_scenario</span><span class="p">,</span> <span class="n">scenarios</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>4. Collect results</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">scenario</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">scenarios</span><span class="p">,</span> <span class="n">results</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Scenario </span><span class="si">{</span><span class="n">scenario</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span>\<span class="s2">&quot;Scenario </span><span class="si">{scenario[&#39;name&#39;]}</span><span class="s2">: </span><span class="si">{result}</span><span class="se">\&quot;</span><span class="s2">)</span>
 </pre></div>
 </div>
 </section>
 <section id="notes">
 <h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Install <code class="docutils literal notranslate"><span class="pre">dill</span></code> for worker serialization.</p></li>
-<li><p>Reset the model between scenarios to avoid state leakage.</p></li>
-<li><p>Set random seeds consistently if reproducibility matters.</p></li>
+<li><p>Install <code class="docutils literal notranslate"><span class="pre">dill</span></code> for worker serialization: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">dill</span></code>.</p></li>
+<li><p>The model and coefficient functions are serialized once and sent to
+each worker, avoiding repeated serialization overhead.</p></li>
+<li><p>Use the <code class="docutils literal notranslate"><span class="pre">with</span></code> statement to ensure the pool is properly shut down.</p></li>
 </ul>
 </section>
 </section>

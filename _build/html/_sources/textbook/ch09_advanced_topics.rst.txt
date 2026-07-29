@@ -27,48 +27,48 @@ Subclassing Curve
    class CustomCurve(Curve):
        """Custom growth curve with additional methods."""
 
-       def __init__(self, x, y, name, growth_rate=0.1):
-           super().__init__(x, y, name)
+       def __init__(self, points, growth_rate=0.1, **kwargs):
+           super().__init__(points=points, **kwargs)
            self.growth_rate = growth_rate
 
        def relative_growth_rate(self, age):
            """Calculate relative growth rate at a given age."""
-           vol = self(age)
+           vol = self.lookup(age)
            if vol == 0:
                return 0
-           return (self(age + 1) - self(age)) / vol
+           return (self.lookup(age + 1) - self.lookup(age)) / vol
 
        def time_to_double(self):
            """Estimate time to double current volume."""
-           current_vol = self(self.x[-1])
+           current_vol = self.lookup(self.xmax)
            target_vol = 2 * current_vol
            for age in self.x:
-               if self(age) >= target_vol:
+               if self.lookup(age) >= target_vol:
                    return age
            return None
 
    # Use the custom curve
    custom = CustomCurve(
-       x=[0, 10, 20, 30, 40, 50],
-       y=[0, 5, 25, 65, 120, 200],
-       name="custom_DF",
+       points=[(0, 0), (10, 5), (20, 25), (30, 65), (40, 120), (50, 200)],
+       label=\"custom_DF\",
+       is_volume=True,
        growth_rate=0.15
    )
 
-   print(f"Relative growth rate at age 30: {custom.relative_growth_rate(30):.3f}")
-   print(f"Time to double: {custom.time_to_double()} years")
+   print(f\"Relative growth rate at age 30: {custom.relative_growth_rate(30):.3f}\")
+   print(f\"Time to double: {custom.time_to_double()} years\")
 
 Custom Area Selectors
 ---------------------
 
-The :py:class:`ws3.forest.AreaSelector` class can be subclassed to
+The :py:class:`ws3.forest.GreedyAreaSelector` class can be subclassed to
 implement custom harvest targeting logic.
 
 .. code-block:: python
 
-   from ws3.forest import AreaSelector
+   from ws3.forest import GreedyAreaSelector
 
-   class HabitatAreaSelector(AreaSelector):
+   class HabitatAreaSelector(GreedyAreaSelector):
        """Select harvest areas based on habitat requirements."""
 
        def __init__(self, model, min_habitat_area=100):

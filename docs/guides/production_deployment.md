@@ -349,7 +349,7 @@ git push origin feature/your-feature-name
 - Slack/Discord: (to be established)
 
 **Documentation**:
-- ReadTheDocs: https://ws3.readthedocs.io
+- ReadTheDocs: https://ubc-fresh.github.io/ws3
 - Examples: `examples/` directory
 - Notebooks: `examples/*.ipynb`
 

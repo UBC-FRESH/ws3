@@ -1,5 +1,4 @@
 [![tests](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml/badge.svg)](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml)
-[![Documentation Status](https://readthedocs.org/projects/ws3/badge/?version=dev)](https://ws3.readthedocs.io/en/dev/?badge=dev)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17331213.svg)](https://doi.org/10.5281/zenodo.17331213)
 
     
@@ -7,7 +6,7 @@
 
 **ws3** (Wood Supply Simulation System) is a Python package for modeling landscape-level wood supply planning problems.
 
-Read the tutorial [here](https://ws3.readthedocs.io/en/latest/index.html).
+Read the tutorial [here](https://ubc-fresh.github.io/ws3/).
 
 
 ## Table of Contents
@@ -76,3 +75,10 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 [Salar Ghotb](mailto:salar.ghotb@ubc.ca)
 
 For full contribution history, see [GitHub Contributors](https://github.com/UBC-FRESH/ws3/graphs/contributors).
+
+## Getting Help
+
+- **Documentation**: [Full documentation](https://ubc-fresh.github.io/ws3/)
+- **Questions**: [GitHub Discussions](https://github.com/UBC-FRESH/ws3/discussions)
+- **Bug Reports**: [Issue Tracker](https://github.com/UBC-FRESH/ws3/issues)
+- **Source Code**: [GitHub Repository](https://github.com/UBC-FRESH/ws3)

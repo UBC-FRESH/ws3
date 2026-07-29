@@ -11,6 +11,7 @@
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
+    <link rel="canonical" href="https://ubc-fresh.github.io/ws3/guides/troubleshooting.html" />
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=d55fa986"></script>
@@ -49,23 +50,20 @@
 <li class="toctree-l1"><a class="reference internal" href="../textbook/index.html">The ws3 Textbook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../howto/index.html">How-To Guides</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Advanced Guides</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="index.html#id1">Guides</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="coding-agent-onboarding.html">VS Code and Coding-Agent Onboarding</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Troubleshooting</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#installation-issues">Installation Issues</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#model-configuration-errors">Model Configuration Errors</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#optimization-errors">Optimization Errors</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#simulation-errors">Simulation Errors</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#performance-issues">Performance Issues</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#external-dependency-issues">External Dependency Issues</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#recovery-procedures">Recovery Procedures</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#prevention-best-practices">Prevention Best Practices</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#further-reading">Further Reading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coding-agent-onboarding.html">VS Code and Coding-Agent Onboarding</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Troubleshooting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#installation-issues">Installation Issues</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#model-configuration-errors">Model Configuration Errors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optimization-errors">Optimization Errors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#simulation-errors">Simulation Errors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#performance-issues">Performance Issues</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#external-dependency-issues">External Dependency Issues</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#recovery-procedures">Recovery Procedures</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prevention-best-practices">Prevention Best Practices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#further-reading">Further Reading</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="limitations-and-boundaries.html">Limitations and Boundaries</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="limitations-and-boundaries.html">Limitations and Boundaries</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">Reference</a></li>
@@ -122,11 +120,11 @@ pip install “ws3[gurobi]”  # For Gurobi solver</p>
 <section id="model-configuration-errors">
 <h2>Model Configuration Errors<a class="headerlink" href="#model-configuration-errors" title="Link to this heading"></a></h2>
 <p><strong>Issue: Development type codes conflict</strong></p>
-<p><em>Symptom</em>: Duplicate code errors when adding development types</p>
+<p><em>Symptom</em>: Errors when importing development types</p>
 <p><em>Solution</em>:
-- Ensure all development type codes are unique within the model
-- Use descriptive codes: <code class="code docutils literal notranslate"><span class="pre">DT001</span></code>, <code class="code docutils literal notranslate"><span class="pre">DT002</span></code>, etc.
-- Check for typos in code strings</p>
+- Ensure all development type keys are unique within the model
+- Development types are created automatically when importing the AREAS section
+- Check for typos in the landscape section file</p>
 <p><strong>Issue: Growth curve not found</strong></p>
 <p><em>Symptom</em>: <code class="code docutils literal notranslate"><span class="pre">KeyError</span></code> when querying volume at certain ages</p>
 <p><em>Solution</em>:
@@ -138,7 +136,7 @@ pip install “ws3[gurobi]”  # For Gurobi solver</p>
 <p><em>Solution</em>:
 - Check that all target development types in transitions are defined
 - Verify transition codes match existing development type codes
-- Use <code class="code docutils literal notranslate"><span class="pre">model.get_development_types()</span></code> to list all DTs</p>
+- List all DTs: <code class="code docutils literal notranslate"><span class="pre">print(list(fm.dtypes.keys()))</span></code></p>
 </section>
 <section id="optimization-errors">
 <h2>Optimization Errors<a class="headerlink" href="#optimization-errors" title="Link to this heading"></a></h2>
@@ -164,12 +162,16 @@ pip install “ws3[gurobi]”  # For Gurobi solver</p>
 <p><em>Solution</em>:
 .. code-block:: python</p>
 <blockquote>
-<div><p># Check solver status
-if not solution.is_feasible():</p>
+<div><p># Check if problem was solved
+if problem.solved():</p>
 <blockquote>
-<div><p>print(f”Status: {solution.solver_status}”)
-print(f”Message: {solution.solver_message}”)</p>
+<div><p>solution = problem.solution()
+print(f”Objective value: {problem.z()}”)</p>
 </div></blockquote>
+<dl class="simple">
+<dt>else:</dt><dd><p>print(“Problem was not solved successfully”)</p>
+</dd>
+</dl>
 </div></blockquote>
 <p><strong>Issue: No harvest in schedule</strong></p>
 <p><em>Symptom</em>: Schedule is empty or all areas are zero</p>
@@ -182,9 +184,10 @@ print(f”Message: {solution.solver_message}”)</p>
 .. code-block:: python</p>
 <blockquote>
 <div><p># List all development types and their areas
-for dt in model.get_development_types():</p>
+for key, dt in fm.dtypes.items():</p>
 <blockquote>
-<div><p>print(f”{dt.code}: area={dt.area:.1f} ha, age={dt.age}”)</p>
+<div><p>area = sum(dt.areas[p] for p in range(fm.horizon+1))
+print(f”{key}: area={area:.1f} ha”)</p>
 </div></blockquote>
 </div></blockquote>
 <p><strong>Issue: Solver takes too long</strong></p>
@@ -208,13 +211,8 @@ for dt in model.get_development_types():</p>
 2. Check callback signature matches expected format
 3. Ensure callbacks list includes the callback name</p>
 <p><em>Solution</em>:
-.. code-block:: python</p>
-<blockquote>
-<div><p># Register callback
-model.register_callback(‘carbon’, my_callback)</p>
-<p># Run with callbacks enabled
-results = simulate(model=model, horizon=5, callbacks=[‘carbon’])</p>
-</div></blockquote>
+Callbacks are registered via the ForestModel’s callback system. Check the
+<span class="xref std std-doc">textbook/ch10_carbon_modelling</span> chapter for integration details.</p>
 <p><strong>Issue: State inconsistency after simulation</strong></p>
 <p><em>Symptom</em>: Development type areas don’t sum to expected total</p>
 <p><em>Diagnostic steps</em>:
@@ -225,8 +223,11 @@ results = simulate(model=model, horizon=5, callbacks=[‘carbon’])</p>
 .. code-block:: python</p>
 <blockquote>
 <div><p># Verify area conservation
-total_area = sum(dt.area for dt in model.get_development_types())
-print(f”Total area: {total_area:.2f} ha”)</p>
+total_area = sum(sum(dt.areas[p] for p in range(fm.horizon+1))</p>
+<blockquote>
+<div><p>for dt in fm.dtypes.values())</p>
+</div></blockquote>
+<p>print(f”Total area: {total_area:.2f} ha”)</p>
 </div></blockquote>
 <p><strong>Issue: Negative volumes or areas in output</strong></p>
 <p><em>Symptom</em>: Schedule contains negative values</p>
@@ -237,7 +238,7 @@ print(f”Total area: {total_area:.2f} ha”)</p>
 <p><em>Solution</em>:
 - Validate input data before running simulation
 - Add assertions in custom callbacks
-- Use <span class="xref std std-doc">../howto/model-validation</span> to check output</p>
+- Check the <span class="xref std std-doc">textbook/index</span> for modeling best practices</p>
 </section>
 <section id="performance-issues">
 <h2>Performance Issues<a class="headerlink" href="#performance-issues" title="Link to this heading"></a></h2>
@@ -314,9 +315,9 @@ pip install libcbm</p>
 <section id="further-reading">
 <h2>Further Reading<a class="headerlink" href="#further-reading" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p><span class="xref std std-doc">../howto/model-validation</span> — Comprehensive validation procedures</p></li>
-<li><p><span class="xref std std-doc">../howto/reproducibility</span> — Setting up reproducible workflows</p></li>
-<li><p><span class="xref std std-doc">module_boundaries</span> — Understanding module responsibilities</p></li>
+<li><p><a class="reference internal" href="../textbook/index.html"><span class="doc">The ws3 Textbook</span></a> — Comprehensive modeling concepts</p></li>
+<li><p><a class="reference internal" href="limitations-and-boundaries.html"><span class="doc">Limitations and Boundaries</span></a> — Understanding ws3 boundaries</p></li>
+<li><p><a class="reference internal" href="../reference/contracts/index.html"><span class="doc">Technical Contracts</span></a> — Data contracts and runtime invariants</p></li>
 </ul>
 </section>
 </section>

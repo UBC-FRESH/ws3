@@ -36,42 +36,38 @@ Procedure
    fm.add_null_action()
    fm.reset_actions()
 
-**2. Create a MultiObjectiveOptimizer**
+**2. Create a Problem and add objectives**
 
 .. code-block:: python
 
+   from ws3.opt import Problem
    from ws3.advanced_modeling import MultiObjectiveOptimizer
 
-   optimizer = MultiObjectiveOptimizer(fm)
+   problem = Problem(name=\"multi_objective\", sense=1, solver=\"highs\")
+   # Add your variables and constraints here...
 
-**3. Define objectives**
+   optimizer = MultiObjectiveOptimizer(problem)
+   optimizer.add_objective(name=\"npv\", weight=0.5, direction=\"maximize\")
+   optimizer.add_objective(name=\"even_flow\", weight=0.3, direction=\"minimize_deviation\")
 
-.. code-block:: python
-
-   objectives = [
-       {"name": "npv", "weight": 0.5, "direction": "maximize"},
-       {"name": "even_flow", "weight": 0.3, "direction": "minimize_deviation"},
-       {"name": "carbon", "weight": 0.2, "direction": "maximize"}
-   ]
-
-**4. Run optimization**
+**3. Solve using weighted sum**
 
 .. code-block:: python
 
-   pareto_front = optimizer.optimize(objectives)
+   result = optimizer.solve_weighted_sum(weights={\"npv\": 0.5, \"even_flow\": 0.3})
 
-**5. Inspect results**
+**4. Inspect results**
 
 .. code-block:: python
 
-   print(f"Pareto front size: {len(pareto_front)}")
-   for solution in pareto_front:
-       print(f"NPV: {solution['npv']}, Even Flow: {solution['even_flow']}, Carbon: {solution['carbon']}")
+   print(f\"Method: {result['method']}\")
+   print(f\"Weights: {result['weights']}\")
+   solution = problem.solution()
 
 Notes
 -----
 
-* If no Pareto solutions are found, check that objectives are feasible and
-  constraint ranges are appropriate.
-* Reduce the number of objectives or simplify constraints if optimization
-  is too slow.
+* The :py:class:`ws3.advanced_modeling.MultiObjectiveOptimizer` currently
+  supports weighted sum and epsilon-constraint methods.
+* For Pareto frontier computation, run multiple optimizations with
+  different weight combinations.

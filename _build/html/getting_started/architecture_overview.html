@@ -11,6 +11,7 @@
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
+    <link rel="canonical" href="https://ubc-fresh.github.io/ws3/getting_started/architecture_overview.html" />
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=d55fa986"></script>
@@ -522,11 +523,22 @@ central coordinator.</p>
 <li><p>Provides methods for adding/removing components</p></li>
 <li><p>Tracks area and volume across the planning horizon</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add_development_type</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add_action</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add_curve</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-<span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_simulation</span><span class="p">(</span><span class="n">horizon</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.forest</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForestModel</span>
+
+<span class="n">fm</span> <span class="o">=</span> <span class="n">ForestModel</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;my_model&quot;</span><span class="p">,</span>
+    <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;path/to/model&quot;</span><span class="p">,</span>
+    <span class="n">base_year</span><span class="o">=</span><span class="mi">2020</span><span class="p">,</span>
+    <span class="n">horizon</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">period_length</span><span class="o">=</span><span class="mi">10</span>
+<span class="p">)</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_areas_section</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_yields_section</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_actions_section</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">import_transitions_section</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">initialize_areas</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">add_null_action</span><span class="p">()</span>
+<span class="n">fm</span><span class="o">.</span><span class="n">reset_actions</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -542,15 +554,8 @@ of forest stands. Each DT has:</p>
 </ul>
 <p>Development types are the fundamental unit of inventory tracking. The
 model moves area between development types as actions are applied.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dt</span> <span class="o">=</span> <span class="n">DevelopmentType</span><span class="p">(</span>
-    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;DF-SI50&quot;</span><span class="p">,</span>
-    <span class="n">area</span><span class="o">=</span><span class="mf">500.0</span><span class="p">,</span>
-    <span class="n">age</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
-    <span class="n">species</span><span class="o">=</span><span class="s2">&quot;Pseudotsuga menziesii&quot;</span><span class="p">,</span>
-    <span class="n">site_index</span><span class="o">=</span><span class="mi">50</span>
-<span class="p">)</span>
-</pre></div>
-</div>
+<p>Development types are created automatically when you import the AREAS section
+of a Woodstock model. They are accessed via <code class="docutils literal notranslate"><span class="pre">fm.dtypes</span></code>:</p>
 </section>
 <section id="action">
 <h3>Action<a class="headerlink" href="#action" title="Link to this heading"></a></h3>
@@ -561,14 +566,7 @@ model moves area between development types as actions are applied.</p>
 <li><p>Specifies which components are affected (volume, basal area, etc.)</p></li>
 <li><p>Defines transitions to new development types</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">action</span> <span class="o">=</span> <span class="n">Action</span><span class="p">(</span>
-    <span class="n">code</span><span class="o">=</span><span class="s2">&quot;HARV&quot;</span><span class="p">,</span>
-    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Clearcut harvest&quot;</span><span class="p">,</span>
-    <span class="n">components</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;volume&quot;</span><span class="p">],</span>
-    <span class="n">transitions</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;DF-SI50&quot;</span><span class="p">:</span> <span class="s2">&quot;Bare&quot;</span><span class="p">}</span>
-<span class="p">)</span>
-</pre></div>
-</div>
+<p>Actions are loaded from the ACTIONS section file of a Woodstock model:</p>
 </section>
 <section id="curve">
 <h3>Curve<a class="headerlink" href="#curve" title="Link to this heading"></a></h3>
@@ -579,12 +577,14 @@ model moves area between development types as actions are applied.</p>
 <li><p>Support arithmetic operations (add, subtract, multiply, divide)</p></li>
 <li><p>Are used to calculate volume, biomass, value at any age</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">curve</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
-    <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">],</span>
-    <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">65</span><span class="p">,</span> <span class="mi">120</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;DF_volume&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Curve</span>
+
+<span class="n">curve</span> <span class="o">=</span> <span class="n">Curve</span><span class="p">(</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;DF_volume&quot;</span><span class="p">,</span>
+    <span class="n">is_volume</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">points</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">),</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">65</span><span class="p">),</span> <span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">120</span><span class="p">),</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">200</span><span class="p">)]</span>
 <span class="p">)</span>
-<span class="n">volume_at_age_25</span> <span class="o">=</span> <span class="n">curve</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>  <span class="c1"># Interpolated value</span>
+<span class="n">volume_at_age_25</span> <span class="o">=</span> <span class="n">curve</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>  <span class="c1"># Interpolated value</span>
 </pre></div>
 </div>
 </section>
@@ -598,11 +598,13 @@ It:</p>
 <li><p>Supports multiple solvers (HiGHS, Gurobi, PuLP)</p></li>
 <li><p>Returns solution values and objective function values</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">prob</span> <span class="o">=</span> <span class="n">Problem</span><span class="p">()</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="s2">&quot;harvest_area&quot;</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="s2">&quot;continuous&quot;</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="s2">&quot;limit&quot;</span><span class="p">,</span> <span class="n">expr</span><span class="o">=</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">)</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">set_objective</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">sense</span><span class="o">=</span><span class="s2">&quot;maximize&quot;</span><span class="p">)</span>
-<span class="n">prob</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s2">&quot;highs&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.opt</span><span class="w"> </span><span class="kn">import</span> <span class="n">Problem</span><span class="p">,</span> <span class="n">SENSE_MAXIMIZE</span>
+
+<span class="n">prob</span> <span class="o">=</span> <span class="n">Problem</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;my_problem&quot;</span><span class="p">,</span> <span class="n">sense</span><span class="o">=</span><span class="n">SENSE_MAXIMIZE</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;highs&quot;</span><span class="p">)</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;harvest_area&quot;</span><span class="p">,</span> <span class="n">vtype</span><span class="o">=</span><span class="s2">&quot;continuous&quot;</span><span class="p">,</span> <span class="n">lb</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="s2">&quot;limit&quot;</span><span class="p">,</span> <span class="n">coeffs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;harvest_area&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span> <span class="n">sense</span><span class="o">=</span><span class="s2">&quot;&lt;=&quot;</span> <span class="p">,</span> <span class="n">rhs</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">z</span><span class="p">({</span><span class="s2">&quot;harvest_area&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">})</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -616,8 +618,20 @@ It:</p>
 <li><p>Enforces spatial constraints (contiguity, adjacency)</p></li>
 <li><p>Outputs spatially explicit harvest maps</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">raster</span> <span class="o">=</span> <span class="n">ForestRaster</span><span class="p">(</span><span class="s2">&quot;inventory.tif&quot;</span><span class="p">)</span>
-<span class="n">raster</span><span class="o">.</span><span class="n">allocate_harvest</span><span class="p">(</span><span class="n">target_area</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.spatial</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForestRaster</span>
+
+<span class="n">raster</span> <span class="o">=</span> <span class="n">ForestRaster</span><span class="p">(</span>
+    <span class="n">hdt_map</span><span class="o">=</span><span class="n">hdt_map</span><span class="p">,</span>
+    <span class="n">hdt_func</span><span class="o">=</span><span class="n">hdt_func</span><span class="p">,</span>
+    <span class="n">src_path</span><span class="o">=</span><span class="s2">&quot;inventory.tif&quot;</span><span class="p">,</span>
+    <span class="n">snk_path</span><span class="o">=</span><span class="s2">&quot;output&quot;</span><span class="p">,</span>
+    <span class="n">acode_map</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;harvest&quot;</span><span class="p">:</span> <span class="s2">&quot;harvest&quot;</span><span class="p">},</span>
+    <span class="n">forestmodel</span><span class="o">=</span><span class="n">fm</span><span class="p">,</span>
+    <span class="n">base_year</span><span class="o">=</span><span class="mi">2020</span><span class="p">,</span>
+    <span class="n">horizon</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">period_length</span><span class="o">=</span><span class="mi">10</span>
+<span class="p">)</span>
+<span class="n">raster</span><span class="o">.</span><span class="n">allocate_schedule</span><span class="p">(</span><span class="n">prob</span><span class="o">.</span><span class="n">solution</span><span class="p">())</span>
 </pre></div>
 </div>
 </section>
@@ -631,8 +645,10 @@ parallel computation. It:</p>
 <li><p>Provides automatic batching for large workloads</p></li>
 <li><p>Manages worker lifecycle (creation, reuse, shutdown)</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pool</span> <span class="o">=</span> <span class="n">PersistentWorkerPool</span><span class="p">(</span><span class="n">n_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-<span class="n">results</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">process_function</span><span class="p">,</span> <span class="n">work_items</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.forest_helper</span><span class="w"> </span><span class="kn">import</span> <span class="n">PersistentWorkerPool</span>
+
+<span class="k">with</span> <span class="n">PersistentWorkerPool</span><span class="p">(</span><span class="n">workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">process_function</span><span class="p">,</span> <span class="n">work_items</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -642,7 +658,9 @@ parallel computation. It:</p>
 <code class="xref py py-class docutils literal notranslate"><span class="pre">ws3.forest.GreedyAreaSelector</span></code>) determines which development
 types to harvest when a target area is specified. The greedy selector
 always harvests from the oldest stands first.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">selector</span> <span class="o">=</span> <span class="n">GreedyAreaSelector</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ws3.forest</span><span class="w"> </span><span class="kn">import</span> <span class="n">GreedyAreaSelector</span>
+
+<span class="n">selector</span> <span class="o">=</span> <span class="n">GreedyAreaSelector</span><span class="p">(</span><span class="n">fm</span><span class="p">)</span>
 <span class="n">selector</span><span class="o">.</span><span class="n">operate</span><span class="p">(</span><span class="n">period</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">acode</span><span class="o">=</span><span class="s2">&quot;HARV&quot;</span><span class="p">,</span> <span class="n">target_area</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
 </pre></div>
 </div>

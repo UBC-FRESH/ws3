@@ -37,12 +37,12 @@ Model Configuration Errors
 
 **Issue: Development type codes conflict**
 
-*Symptom*: Duplicate code errors when adding development types
+*Symptom*: Errors when importing development types
 
 *Solution*:
-- Ensure all development type codes are unique within the model
-- Use descriptive codes: :code:`DT001`, :code:`DT002`, etc.
-- Check for typos in code strings
+- Ensure all development type keys are unique within the model
+- Development types are created automatically when importing the AREAS section
+- Check for typos in the landscape section file
 
 **Issue: Growth curve not found**
 
@@ -60,7 +60,7 @@ Model Configuration Errors
 *Solution*:
 - Check that all target development types in transitions are defined
 - Verify transition codes match existing development type codes
-- Use :code:`model.get_development_types()` to list all DTs
+- List all DTs: :code:`print(list(fm.dtypes.keys()))`
 
 Optimization Errors
 -------------------
@@ -84,10 +84,12 @@ Optimization Errors
 *Solution*:
 .. code-block:: python
 
-   # Check solver status
-   if not solution.is_feasible():
-       print(f"Status: {solution.solver_status}")
-       print(f"Message: {solution.solver_message}")
+   # Check if problem was solved
+   if problem.solved():
+       solution = problem.solution()
+       print(f"Objective value: {problem.z()}")
+   else:
+       print("Problem was not solved successfully")
 
 **Issue: No harvest in schedule**
 
@@ -103,8 +105,9 @@ Optimization Errors
 .. code-block:: python
 
    # List all development types and their areas
-   for dt in model.get_development_types():
-       print(f"{dt.code}: area={dt.area:.1f} ha, age={dt.age}")
+   for key, dt in fm.dtypes.items():
+       area = sum(dt.areas[p] for p in range(fm.horizon+1))
+       print(f"{key}: area={area:.1f} ha")
 
 **Issue: Solver takes too long**
 
@@ -134,13 +137,8 @@ Simulation Errors
 3. Ensure callbacks list includes the callback name
 
 *Solution*:
-.. code-block:: python
-
-   # Register callback
-   model.register_callback('carbon', my_callback)
-
-   # Run with callbacks enabled
-   results = simulate(model=model, horizon=5, callbacks=['carbon'])
+Callbacks are registered via the ForestModel's callback system. Check the
+:doc:`textbook/ch10_carbon_modelling` chapter for integration details.
 
 **Issue: State inconsistency after simulation**
 
@@ -155,7 +153,8 @@ Simulation Errors
 .. code-block:: python
 
    # Verify area conservation
-   total_area = sum(dt.area for dt in model.get_development_types())
+   total_area = sum(sum(dt.areas[p] for p in range(fm.horizon+1))
+                    for dt in fm.dtypes.values())
    print(f"Total area: {total_area:.2f} ha")
 
 **Issue: Negative volumes or areas in output**
@@ -170,7 +169,7 @@ Simulation Errors
 *Solution*:
 - Validate input data before running simulation
 - Add assertions in custom callbacks
-- Use :doc:`../howto/model-validation` to check output
+- Check the :doc:`textbook/index` for modeling best practices
 
 Performance Issues
 ------------------
@@ -267,6 +266,6 @@ Prevention Best Practices
 Further Reading
 ---------------
 
-- :doc:`../howto/model-validation` — Comprehensive validation procedures
-- :doc:`../howto/reproducibility` — Setting up reproducible workflows
-- :doc:`module_boundaries` — Understanding module responsibilities
+- :doc:`../textbook/index` — Comprehensive modeling concepts
+- :doc:`limitations-and-boundaries` — Understanding ws3 boundaries
+- :doc:`../reference/contracts/index` — Data contracts and runtime invariants

@@ -82,11 +82,22 @@ The :py:class:`ws3.forest.ForestModel` class is the central hub. It:
 
 .. code-block:: python
 
-   model = ForestModel()
-   model.add_development_type(...)
-   model.add_action(...)
-   model.add_curve(...)
-   results = model.run_simulation(horizon=20)
+   from ws3.forest import ForestModel
+
+   fm = ForestModel(
+       model_name="my_model",
+       model_path="path/to/model",
+       base_year=2020,
+       horizon=20,
+       period_length=10
+   )
+   fm.import_areas_section()
+   fm.import_yields_section()
+   fm.import_actions_section()
+   fm.import_transitions_section()
+   fm.initialize_areas()
+   fm.add_null_action()
+   fm.reset_actions()
 
 DevelopmentType
 ~~~~~~~~~~~~~~~
@@ -102,15 +113,8 @@ of forest stands. Each DT has:
 Development types are the fundamental unit of inventory tracking. The
 model moves area between development types as actions are applied.
 
-.. code-block:: python
-
-   dt = DevelopmentType(
-       code="DF-SI50",
-       area=500.0,
-       age=20,
-       species="Pseudotsuga menziesii",
-       site_index=50
-   )
+Development types are created automatically when you import the AREAS section
+of a Woodstock model. They are accessed via ``fm.dtypes``:
 
 Action
 ~~~~~~
@@ -122,14 +126,7 @@ An :py:class:`ws3.forest.Action` is a management intervention. Each action:
 - Specifies which components are affected (volume, basal area, etc.)
 - Defines transitions to new development types
 
-.. code-block:: python
-
-   action = Action(
-       code="HARV",
-       descr="Clearcut harvest",
-       components=["volume"],
-       transitions={"DF-SI50": "Bare"}
-   )
+Actions are loaded from the ACTIONS section file of a Woodstock model:
 
 Curve
 ~~~~~
@@ -143,12 +140,14 @@ A :py:class:`ws3.core.Curve` defines a growth trajectory. Curves:
 
 .. code-block:: python
 
+   from ws3.core import Curve
+
    curve = Curve(
-       x=[0, 10, 20, 30, 40, 50],
-       y=[0, 5, 25, 65, 120, 200],
-       name="DF_volume"
+       label="DF_volume",
+       is_volume=True,
+       points=[(0, 0), (10, 5), (20, 25), (30, 65), (40, 120), (50, 200)]
    )
-   volume_at_age_25 = curve(25)  # Interpolated value
+   volume_at_age_25 = curve.lookup(25)  # Interpolated value
 
 Problem (Optimization)
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -163,11 +162,13 @@ It:
 
 .. code-block:: python
 
-   prob = Problem()
-   x = prob.add_variable("harvest_area", vtype="continuous", lb=0)
-   prob.add_constraint("limit", expr=x <= 100)
-   prob.set_objective(x, sense="maximize")
-   prob.solve(solver="highs")
+   from ws3.opt import Problem, SENSE_MAXIMIZE
+
+   prob = Problem(name="my_problem", sense=SENSE_MAXIMIZE, solver="highs")
+   prob.add_var("harvest_area", vtype="continuous", lb=0)
+   prob.add_constraint("limit", coeffs={"harvest_area": 1.0}, sense="<=" , rhs=100)
+   prob.z({"harvest_area": 1.0})
+   prob.solve()
 
 ForestRaster (Spatial)
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -182,8 +183,20 @@ It:
 
 .. code-block:: python
 
-   raster = ForestRaster("inventory.tif")
-   raster.allocate_harvest(target_area=100)
+   from ws3.spatial import ForestRaster
+
+   raster = ForestRaster(
+       hdt_map=hdt_map,
+       hdt_func=hdt_func,
+       src_path="inventory.tif",
+       snk_path="output",
+       acode_map={"harvest": "harvest"},
+       forestmodel=fm,
+       base_year=2020,
+       horizon=20,
+       period_length=10
+   )
+   raster.allocate_schedule(prob.solution())
 
 PersistentWorkerPool (Parallel)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -198,8 +211,10 @@ parallel computation. It:
 
 .. code-block:: python
 
-   pool = PersistentWorkerPool(n_workers=4)
-   results = pool.map(process_function, work_items)
+   from ws3.forest_helper import PersistentWorkerPool
+
+   with PersistentWorkerPool(workers=4) as pool:
+       results = pool.map(process_function, work_items)
 
 AreaSelector
 ~~~~~~~~~~~~
@@ -211,7 +226,9 @@ always harvests from the oldest stands first.
 
 .. code-block:: python
 
-   selector = GreedyAreaSelector(model)
+   from ws3.forest import GreedyAreaSelector
+
+   selector = GreedyAreaSelector(fm)
    selector.operate(period=0, acode="HARV", target_area=50)
 
 Module Map

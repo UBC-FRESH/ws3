@@ -83,6 +83,13 @@ Do not create placeholder issue bodies with only a title and a short checklist u
 - Propose new features through a GitHub issue that includes the motivation, scope, and any implementation sketch.
 - Link the relevant issue in pull requests and describe how the change was validated.
 
+## Getting Help
+
+- **Questions**: Use [GitHub Discussions](https://github.com/UBC-FRESH/ws3/discussions) for usage questions and general discussion.
+- **Bug Reports**: Use the [bug report template](https://github.com/UBC-FRESH/ws3/issues/new?template=bug_report.md) for bugs.
+- **Feature Requests**: Use the [feature request template](https://github.com/UBC-FRESH/ws3/issues/new?template=feature_request.md) for new features.
+- **Documentation**: See the [full documentation](https://ubc-fresh.github.io/ws3/) for tutorials and API reference.
+
 ## Code of Conduct
 
 All contributors are expected to follow the community standards in [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).
