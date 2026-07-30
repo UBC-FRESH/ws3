@@ -80,16 +80,21 @@ def _require_core() -> Any:
     return _core
 
 
-def registry() -> Any:
+def registry(fm: Any = None) -> Any:
     """
     The ws3 capability registry.
 
     Built lazily so that importing this module does not construct capabilities
     that may never be used.
+
+    :param fm: Optional :py:class:`~ws3.forest.ForestModel`. Some capabilities
+        need model state at *construction* time, not just at validation time --
+        :py:class:`~ws3.agent.capabilities.build_mask.BuildMask` reads the theme
+        count in order to assemble masks at the right arity.
     """
     _require_core()
     from ws3.agent.capabilities import build_registry
-    return build_registry()
+    return build_registry(fm)
 
 
 def available() -> bool:
@@ -116,14 +121,28 @@ def list_capabilities() -> list[dict[str, str]]:
     return list(registry().describe())
 
 
-def get(name: str) -> Any:
+def _as_forest_model(context: Any) -> Any:
+    """
+    Return *context* if it looks like a :py:class:`~ws3.forest.ForestModel`.
+
+    Duck-typed rather than isinstance-checked so that importing :py:mod:`ws3.agent`
+    does not drag in :py:mod:`ws3.forest`. Capabilities take other kinds of
+    context, so this filters rather than assumes.
+    """
+    return context if hasattr(context, 'nthemes') and hasattr(context, '_themes') else None
+
+
+def get(name: str, fm: Any = None) -> Any:
     """
     Look up a capability by name.
 
+    :param name: Capability name.
+    :param fm: Optional model, passed to capabilities that need it at
+        construction time.
     :raises KeyError: With the available names, since this is usually reached by
         an agent that guessed.
     """
-    return registry().get(name)
+    return registry(fm).get(name)
 
 
 def run(
@@ -155,7 +174,10 @@ def run(
         provider was supplied.
     """
     core = _require_core()
-    capability = get(name)
+    # Some capabilities need model state to build their prompt and to interpret
+    # the response, not merely to validate it, so the context has to reach
+    # construction as well as validation.
+    capability = get(name, _as_forest_model(context))
 
     resolved = config if config is not None else core.config.resolve()
     if resolved is None:

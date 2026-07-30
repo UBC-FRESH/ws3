@@ -177,10 +177,190 @@ class TestBuildMaskParsing:
         with pytest.raises(ParseError, match='mask'):
             BuildMask(fm).parse('I think the mask should be ? ? ?')
 
-    def test_rejects_json_without_a_mask_key(self, fm):
+    def test_rejects_json_without_a_recognised_key(self, fm):
         from fresh_agent_core.capability import ParseError
-        with pytest.raises(ParseError, match='mask'):
+        with pytest.raises(ParseError, match='constraints'):
             BuildMask(fm).parse(json.dumps({'answer': 'a b'}))
+
+
+class TestBuildMaskArityIsStructural:
+    """
+    Mask arity comes from the model, never from the language model.
+
+    The theme count is authoritative state read from the LANDSCAPE section, so a
+    capability that asks the model to reproduce it is inventing a failure mode.
+    A live 9B model returned ten entries for this five-theme model, which is what
+    prompted assembling the mask here instead.
+    """
+
+    def _constraints(self, mapping):
+        return json.dumps({'constraints': mapping, 'reasoning': 'because'})
+
+    def test_no_constraints_yields_all_wildcards(self, fm):
+        mask = BuildMask(fm).parse(self._constraints({}))
+        assert mask == tuple(['?'] * fm.nthemes())
+
+    def test_sparse_constraints_are_padded_to_full_arity(self, fm):
+        key = list(fm.dtypes)[0]
+        mask = BuildMask(fm).parse(self._constraints({'1': key[1]}))
+        assert len(mask) == fm.nthemes()
+        assert mask[1] == key[1].lower()
+        assert all(m == '?' for i, m in enumerate(mask) if i != 1)
+
+    def test_arity_holds_for_every_subset_of_constrained_themes(self, fm):
+        """The property that makes the redesign worth it, checked exhaustively."""
+        capability = BuildMask(fm)
+        key = list(fm.dtypes)[0]
+        for size in range(fm.nthemes() + 1):
+            mapping = {str(i): key[i] for i in range(size)}
+            mask = capability.parse(self._constraints(mapping))
+            assert len(mask) == fm.nthemes(), f'arity broke for {size} constraints'
+
+    def test_assembled_mask_always_resolves(self, fm):
+        """Assembly plus the real oracle: a wildcard-padded key must match."""
+        capability = BuildMask(fm)
+        key = list(fm.dtypes)[0]
+        mask = capability.parse(self._constraints({'0': key[0]}))
+        assert capability.validate(mask, fm).ok is True
+
+    def test_out_of_range_position_is_rejected(self, fm):
+        from fresh_agent_core.capability import ParseError
+        with pytest.raises(ParseError, match='out of range'):
+            BuildMask(fm).parse(self._constraints({str(fm.nthemes()): 'x'}))
+
+    def test_non_integer_position_is_rejected(self, fm):
+        from fresh_agent_core.capability import ParseError
+        with pytest.raises(ParseError, match='not a position number'):
+            BuildMask(fm).parse(self._constraints({'not_a_theme': 'x'}))
+
+    def test_theme_name_is_accepted_as_a_position(self, fm):
+        """
+        A live model keys constraints by the theme name it was shown.
+
+        The name identifies the theme unambiguously, so resolving it is
+        deterministic. Rejecting it burned retries and, worse, pushed the model
+        into declaring a perfectly groundable request ungroundable.
+        """
+        key = list(fm.dtypes)[0]
+        name = fm._themes[1]['__name__']
+        mask = BuildMask(fm).parse(self._constraints({name: key[1]}))
+        assert len(mask) == fm.nthemes()
+        assert mask[1] == key[1].lower()
+
+    def test_theme_name_matching_is_case_insensitive(self, fm):
+        key = list(fm.dtypes)[0]
+        name = fm._themes[1]['__name__'].upper()
+        assert BuildMask(fm).parse(self._constraints({name: key[1]}))[1] == key[1].lower()
+
+    def test_constraints_must_be_an_object(self, fm):
+        from fresh_agent_core.capability import ParseError
+        with pytest.raises(ParseError, match='must be a mapping'):
+            BuildMask(fm).parse(json.dumps({'constraints': ['a', 'b']}))
+
+    def test_prompt_does_not_ask_the_model_to_assemble_the_mask(self, fm):
+        from ws3.agent.capabilities.build_mask import MaskRequest
+        prompt = BuildMask(fm).build_messages(MaskRequest('everything'), ())[0]['content']
+        assert 'Do not assemble the mask yourself' in prompt
+        assert str(fm.nthemes()) in prompt
+
+
+class TestBuildMaskAggregates:
+    """
+    Aggregates are valid mask values and carry the modeller's own semantics.
+
+    ``unmask`` expands them via ``_expand_theme``, so treating one as an unknown
+    code would reject a better answer than the model could otherwise give.
+    """
+
+    @pytest.fixture
+    def fm_agg(self):
+        from ws3.forest import ForestModel
+
+        model = ForestModel(
+            model_name='agg', model_path='.', base_year=2020,
+            horizon=1, period_length=10, max_age=100,
+        )
+        model.add_theme('species', basecodes=['sw', 'pl', 'aw'],
+                        aggs={'conifer': ['sw', 'pl']})
+        model.add_theme('site', basecodes=['good', 'poor'])
+        return model
+
+    def test_prompt_lists_aggregates_separately_from_basecodes(self, fm_agg):
+        from ws3.agent.themes import ThemeSchema
+        summary = ThemeSchema.from_model(fm_agg).describe()
+        assert 'aggregate conifer: sw, pl' in summary
+        # The aggregate must not be muddled in with the basecode listing.
+        codes_line = next(l for l in summary.splitlines() if l.strip().startswith('codes:'))
+        assert 'conifer' not in codes_line
+
+    def test_aggregate_is_accepted_as_a_code(self, fm_agg):
+        capability = BuildMask(fm_agg)
+        mask = capability.parse(
+            json.dumps({'constraints': {'0': 'conifer'}, 'reasoning': 'x'})
+        )
+        assert mask == ('conifer', '?')
+        # No dtypes are loaded, so this cannot resolve -- but the failure must be
+        # "matched nothing", not "conifer is not a code for this theme".
+        assert not any(
+            'not a code' in e for e in capability.validate(mask, fm_agg).errors
+        )
+
+    def test_unknown_code_feedback_offers_the_aggregate(self, fm_agg):
+        verdict = BuildMask(fm_agg).validate(('softwood', '?'), fm_agg)
+        assert verdict.ok is False
+        assert any('conifer' in e for e in verdict.errors)
+
+
+class TestRunSuppliesModelAtConstruction:
+    """
+    ``ws3.agent.run`` must build the capability *with* the model.
+
+    Every other test here constructs ``BuildMask(fm)`` by hand, so none of them
+    exercised the real entry point -- which built a model-blind capability and
+    could not assemble a mask at all. Caught only by a live call; kept as a
+    regression test because the offline suite was structurally blind to it.
+    """
+
+    def test_run_can_assemble_a_mask(self, fm):
+        raw = json.dumps({'constraints': {}, 'reasoning': 'everything'})
+        result = ws3.agent.run(
+            'build_mask', 'all stands',
+            context=fm, provider=FakeProvider([raw], repeat_last=True),
+        )
+        assert result.ok is True, result.errors
+        assert result.value == tuple(['?'] * fm.nthemes())
+
+    def test_get_passes_the_model_through(self, fm):
+        from ws3.agent.capabilities.build_mask import MaskRequest
+        capability = ws3.agent.get('build_mask', fm)
+        prompt = capability.build_messages(MaskRequest('x'), ())[0]['content']
+        assert f'has {fm.nthemes()} themes' in prompt
+
+    def test_non_model_context_is_not_mistaken_for_a_model(self, fm):
+        """
+        Other capabilities take other context, which must not reach BuildMask.
+
+        The guard sits in ``run``, where ``context`` is deliberately untyped;
+        ``get`` takes an explicit model by contract.
+        """
+        from ws3.agent import _as_forest_model
+        assert _as_forest_model(fm) is fm
+        assert _as_forest_model(None) is None
+        assert _as_forest_model(ImportFailure(
+            model_path='p', model_name='n', section='lan', error='e',
+        )) is None
+
+    def test_run_tolerates_a_non_model_context(self):
+        """Constructing the registry must not explode on unrelated context."""
+        raw = json.dumps({
+            'cause': 'something went wrong', 'next_actions': ['check the file'],
+            'symbols_referenced': [],
+        })
+        result = ws3.agent.run(
+            'explain_exception', ValueError('boom'),
+            context=None, provider=FakeProvider([raw], repeat_last=True),
+        )
+        assert result.ok is True, result.errors
 
 
 class TestBuildMaskEndToEnd:
