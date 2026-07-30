@@ -1,0 +1,2781 @@
+keywords:
+  '*A':
+    arguments:
+    - StartAge
+    - AreaValue
+    article_id: '737'
+    syntax:
+    - '*A mask age AreaValue [_LOCK Number or _NA Interval]'
+    - '*A mask StartAge AreaValue1 AreaValue2 ...'
+    used_in:
+    - Areas
+  '*AA':
+    arguments:
+    - Aacode
+    article_id: '738'
+    syntax:
+    - '*AA mask age area aacode [_LOCK Number or _NA Interval]'
+    used_in:
+    - Areas
+  '*AACONTROL':
+    arguments:
+    - Switch
+    - ActionCode
+    - PercentOperable
+    article_id: '739'
+    syntax:
+    - '*AACONTROL Switch [ActionCode] [PercentOperable] [_BINARY]'
+    - Woodstock
+    - Woodstock
+    - 'Rule(s):'
+    - •
+    - Woodstock
+    used_in:
+    - Control
+  '*ACTION':
+    arguments:
+    - ActionName
+    - DefaultAgeReset
+    - ActionDescription
+    - Mask1-X
+    - OperableCondition
+    article_id: '740'
+    syntax:
+    - '*ACTION ActionName DefaultAgeReset [ActionDescription]'
+    - '*OPERABLE ActionName'
+    - Mask1 OperableCondition1
+    - Mask2 OperableCondition2
+    - Maskn OperableConditionn
+    used_in:
+    - Actions
+  '*ADDCOMMENTSTOMATRIX':
+    article_id: '1795'
+  '*AGGREGATE':
+    article_id: '742'
+    syntax:
+    - 'Landscape section:'
+    - '*THEME [ThemeDescription]'
+    - BasicAttributeCode1 [AttributeDescription1]
+    - BasicAttributeCode2 [AttributeDescription2]
+    - BasicAttributeCoden [AttributeDescriptionn]*AGGREGATE AggregateAttributeCode1
+    - BasicCode1  BasicCode2
+    - '*AGGREGATE AggregateAttributeCode2'
+    - AggName1 BasicCoden
+    - 'Actions section:'
+    - '*ACTION ActionName1 DefaultAgeReset [ActionDescription]'
+    - '*ACTION ActionName2 DefaultAgeReset [ActionDescription]*AGGREGATE AggregateName1'
+    - ActionName1 ActionName2
+    - '*AGGREGATE AggregateName1'
+    - '*AGGREGATE(_TH1) AggregateAttributeCode1'
+    - BasicCode1
+    - BasicCode2
+    used_in:
+    - Landscape
+    - Actions
+    - Allocation
+  '*AODOWNGRADES':
+    arguments:
+    - Switch
+    article_id: '3086'
+    syntax:
+    - '*AODOWNGRADES Switch'
+  '*AVAILABLE':
+    arguments:
+    - ActionName
+    - YieldName
+    - EventArea
+    article_id: '743'
+    syntax:
+    - '*AVAILABLE ActionName'
+    - Mask YieldName EventArea
+    used_in:
+    - Queue
+  '*BUILD':
+    arguments:
+    - Switch
+    article_id: '744'
+    syntax:
+    - '*BUILD Switch'
+    used_in:
+    - Control
+  '*CACHEDLLCALLS':
+    article_id: '1739'
+  '*CASE':
+    arguments:
+    - ActionName
+    article_id: '745'
+    syntax:
+    - '*CASE ActionName'
+    - '*SOURCE mask'
+    - '*TARGET mask percent'
+    used_in:
+    - Transitions
+  '*COMPRESSTIME':
+    arguments:
+    - StartPeriod
+    - PeriodWidth
+    article_id: '746'
+    syntax:
+    - '*COMPRESSTIME StartPeriod,PeriodWidth,StartPeriod,PeriodWidth'
+    used_in:
+    - Control
+  '*CONSTRAINTS':
+    article_id: '747'
+    syntax:
+    - '*CONSTRAINTS'
+    used_in:
+    - Optimize
+    - Allocation
+  '*CUTCOMPLETECLASS':
+    arguments:
+    - Switch
+    - Interval
+    - ActionName
+    - Aggregatename
+    article_id: '748'
+    syntax:
+    - '*CUTCOMPLETECLASS Switch [Actionname or Aggregatename]'
+    - OR
+    - '*CUTCOMPLETECLASS Interval [Actionname or Aggregatename]'
+    used_in:
+    - Control
+  '*DEBUG':
+    arguments:
+    - Switch
+    article_id: '749'
+    syntax:
+    - '*DEBUG Switch [YieldName1,YieldName2,YieldNameN]'
+    used_in:
+    - Control
+  '*DEFINE':
+    arguments:
+    - DefineName
+    - Product
+    - Outputn
+    article_id: '1815'
+    syntax:
+    - '*DEFINE DefineName<(_AGE)>'
+    - Product = Output1 / Output2
+    used_in:
+    - Allocation
+  '*DELIVER':
+    arguments:
+    - Period
+    - Volume
+    - Product
+    - Origin
+    - Destination
+    article_id: '947'
+    syntax:
+    - '*DELIVER Period Volume Product Origin Destination'
+    used_in:
+    - Schedule
+  '*DESTINATION':
+    article_id: '750'
+    syntax:
+    - 'Structure:'
+    - '*DESTINATION Name Description'
+    - _INPUTS ProductName MinVolume MaxVolume MinPercent MaxPercent
+    - _OUTPUTS ResidualName <- ConversionFactor ProductName
+    - _CAPACITIES MinVolume MaxVolume
+    - _INVALIDORIGINS Origin1,Origin2, OriginN
+    used_in:
+    - Allocation
+  '*EXCLUDE':
+    arguments:
+    - Interval
+    article_id: '751'
+    syntax:
+    - 'Areas section:'
+    - '*EXCLUDE'
+    - Mask1 Interval
+    - Mask2 Interval
+    - 'Optimize section:'
+    - '*EXCLUDE'
+    - ActionName1 Interval
+    - ActionName2 Interval
+    used_in:
+    - Areas
+    - Optimize
+  '*EXTERNAL':
+    arguments:
+    - ProductName
+    - MinVolume
+    - MaxVolume
+    article_id: '752'
+    syntax:
+    - '*EXTERNAL Source -> ProductName MinVolume MaxVolume'
+    used_in:
+    - Allocation
+  '*FORMAT':
+    arguments:
+    - SolverName
+    article_id: '756'
+    syntax:
+    - '*FORMAT SolverName'
+    used_in:
+    - Optimize
+  '*GRAPHICS':
+    arguments:
+    - Switch
+    article_id: '757'
+    syntax:
+    - '*GRAPHICS Switch'
+    used_in:
+    - Control
+  '*GROUP':
+    arguments:
+    - GroupName
+    - ConstantDeclaration
+    article_id: '1395'
+    syntax:
+    - 'Constants Section:'
+    - '*GROUP GroupName'
+    - ConstantDeclaration1
+    - ConstantDeclaration2
+    used_in:
+    - Constants. Outputs. Optimize. Yields
+  '*HIDDEN':
+    arguments:
+    - Mask
+    - Interval
+    article_id: '1431'
+    syntax:
+    - '*HIDDEN'
+    - Mask Interval
+    used_in:
+    - Areas
+  '*IMAGE':
+    arguments:
+    - Switch
+    article_id: '758'
+    syntax:
+    - '*IMAGE Switch'
+    used_in:
+    - Control
+  '*INCLUDE':
+    arguments:
+    - FileName
+    - Extension
+    article_id: '1748'
+    syntax:
+    - '*INCLUDE FileName.Extension'
+    used_in:
+    - All
+  '*INCLUDEIF':
+    arguments:
+    - PropertyName
+    - Operator
+    - SourceScenario
+    article_id: '3103'
+    syntax:
+    - '*INCLUDEIF (_PROPERTIES(PropertyName) operator Value) (SourceScenario) FileName.ext'
+    used_in:
+    - All
+  '*INVENTORY':
+    arguments:
+    - Destination
+    - Product
+    - Volume
+    - Period
+    article_id: '948'
+    syntax:
+    - '*INVENTORY Destination Product Volume Period'
+    used_in:
+    - Schedule
+  '*LENGTH':
+    arguments:
+    - Value
+    article_id: '760'
+    syntax:
+    - '*LENGTH Value'
+    used_in:
+    - Control
+  '*LEVEL':
+    arguments:
+    - LevelName
+    - LevelDescription
+    article_id: '761'
+    syntax:
+    - Unsourced
+    - '*LEVEL LevelName[(_THn)] Level Description'
+    - Sourced basic
+    - '*LEVEL LevelName Level Description'
+    - '*SOURCE <[P0]> Value1 <[P1]> Value2 <[P2]> Value3 ... <[Pn]> Valuen'
+    - Sourced theme-based
+    - '*LEVEL LevelName(_THn) Level Description'
+    - '*SOURCE (ThemeAttribute1) <[P0]> Value1 <[P1]> Value2 <[P2]> Value3 ... <[Pn]> Valuen'
+  '*LPSCHEDULE':
+    arguments:
+    - Switch
+    article_id: '763'
+    syntax:
+    - '*LPSCHEDULE Switch'
+    - '*LPSCHEDULE Interval'
+    used_in:
+    - Control
+  '*MINAREA':
+    arguments:
+    - Value
+    article_id: '764'
+    syntax:
+    - '*MINAREA Value'
+    used_in:
+    - Control
+  '*N':
+    arguments:
+    - TotalArea
+    - StartAge
+    article_id: '765'
+    syntax:
+    - '*A mask'
+    - '*N TotalArea'
+    used_in:
+    - Areas
+  '*NEGVOL':
+    arguments:
+    - Value
+    article_id: '766'
+    syntax:
+    - '*NEGVOL Value'
+    used_in:
+    - Control
+  '*OBJECTIVE':
+    arguments:
+    - ObjectiveSense
+    - Interval
+    - Constant
+    article_id: '767'
+    syntax:
+    - '*OBJECTIVE'
+    - ObjectiveSense f(Output1,Output2,..[Constant] * OutputX) Interval
+    used_in:
+    - Optimize
+  '*OPERABLE':
+    arguments:
+    - ActionName
+    - DefaultAgeReset
+    - ActionDescription
+    - Interval
+    - Mask1-X
+    - OperableCondition
+    - RegimeName
+    - OperableCondition1-X
+    - PrescriptionName
+    - Mask
+    article_id: '768'
+    syntax:
+    - 'Actions section:'
+    - '*ACTION ActionName DefaultAgeReset [ActionDescription]'
+    - '*OPERABLE ActionName [_CP Interval]'
+    - Mask1 OperableCondition1
+    - Mask2 OperableCondition2
+    - MaskX OperableConditionX
+    - _CP is a keyword to reference the current planning period,
+    - 'Regimes section:'
+    - '*REGIME Regime Name'
+    - '*OPERABLE RegimeName [_CP Interval]'
+    - Mask1 OperableCondition1
+    - Mask2 OperableCondition2
+    - MaskX OperableConditionX
+    - _CP is a keyword to reference the current planning period,
+    - '*PRESCRIPTION Prescription Name'
+    - '*OPERABLE Mask1 OperableCondition1'
+    - Mask2 OperableCondition2
+    - MaskX OperableConditionX
+    - _CP is a keyword to reference the current planning period,
+    used_in:
+    - Actions
+    - Regimes
+  '*OPERABLEINVENTORYBYPRESCRIPTION':
+    article_id: '3059'
+  '*OPTIMIZE':
+    arguments:
+    - Switch
+    - StartPeriod
+    - CommandLineToken
+    article_id: '769'
+    syntax:
+    - '*OPTIMIZE Switch or [StartPeriod] or [CommandLineToken]'
+    used_in:
+    - Control
+  '*ORIGIN':
+    arguments:
+    - THEMEx
+    article_id: '770'
+    syntax:
+    - '*ORIGIN _THEMEx'
+    used_in:
+    - Allocation
+  '*OUTPUT':
+    arguments:
+    - OutputName
+    - mask
+    - AreaLookup
+    - ValueToSum
+    article_id: '771'
+    syntax:
+    - 'Basic output:'
+    - '*OUTPUT OutputName(_THx) OutputDescription'
+    - 'Summary output:'
+    - '*OUTPUT OutputName(_THx) OutputDescription'
+    - '*SOURCE OutputName1 [×, ÷ Constant or TimeYield]'
+    - '*SOURCE OutputName1 +, - OutputName2 +,-  ...'
+    - 'Rule(s):'
+    - 'Examples of general formulation:'
+    - 'Basic outputs:'
+    - 'Action outputs:'
+    - '*OUTPUT oHarvestVolume Total volume harvested'
+    - '*SOURCE ? ? ? aClearcut yTRV + ? ? ? aLightThin'
+    - '*OUTPUT oHarvestVolume(_TH3) Total volume harvested'
+    - '*SOURCE ? ? ? aClearcut yTRV  + ? ? ? aLightThin'
+    - '*OUTPUT oTotalClearcutAge Total sum of clearcut ages'
+    - '*SOURCE ? ? ? aClearcut _AGE'
+    - '*OUTPUT oAreaClearcut Total area clearcut'
+    - '*SOURCE ? ? ? aClearcut _AREA'
+    - '*OUTPUT oTotalRevenue Total revenue'
+    - '*SOURCE ? ? ? aClearcut      yPulp *   yPulp$ +'
+    - '? ? ? aLightThin   yLTPulp *   yPulp$ +'
+    - '? ? ? aHeavyThin   yHTPulp *   yPulp$ +'
+    - '? ? ? aClearcut      yLogs *   yLogs$ +'
+    - '? ? ? aLightThin   yLTLogs *   yLogs$ +'
+    - '? ? ? aHeavyThin   yHTLogs *   yLogs$ +'
+    - '? ? ? aClearcut    yVeneer * yVeneer$ +'
+    - '? ? ? aLightThin yLTVeneer * yVeneer$ +'
+    - '? ? ? aHeavyThin yHTVeneer * yVeneer$'
+    - 'Inventory outputs:'
+    - '*OUTPUT oGrowingstock Total standing inventory'
+    - '*SOURCE ? ? ?  _INVENT yTRV'
+    - '*OUTPUT oOperableStock Standing inventory available for harvest'
+    - '*SOURCE ? ? ? _INVENT(aClearcut)    yTRV +'
+    - '? ? ? _INVENT(aLightThin,aHeavyThin) yhttrv'
+    - 'Summary outputs:'
+    - '*OUTPUT oPVTotalRev Present value of total revenue'
+    - '*SOURCE oTotalRevenue * yDisc10%'
+    - '*OUTPUT oAvgClearcutAge Area-weighted average clearcut age'
+    - '*SOURCE oTotalClearcutAge / oAreaClearcut'
+    - '*OUTPUT oNPV Net income'
+    - '*SOURCE oPVTotalRev - oPVTotalCost'
+    used_in:
+    - Outputs
+  '*P':
+    arguments:
+    - Mask
+    - Percent
+    - StartAge
+    - Percent1-3
+    article_id: '772'
+    syntax:
+    - 'Areas section:'
+    - '*A mask'
+    - '*P percent'
+    - 'Yields section:'
+    - '*Y or *YT mask'
+    - '*P percent'
+    - '*P percent'
+    - '*Y or *YT mask'
+    - _AGE or   _CP   YieldName1 YieldName2 YieldName3 ...
+    - '*P                    percent1     percent2       percent3'
+    - Age1     Period1    Value1       Value1          Value1
+    - Age2     Period2    Value2       Value2          Value2
+    - Age3     Period3    Value3       Value3          Value3
+    - Woodstock
+    used_in:
+    - Areas
+    - Yields
+  '*PARTIAL':
+    arguments:
+    - ActionName
+    - YieldTable
+    article_id: '774'
+    syntax:
+    - '*ACTION ActionName DefaultAgeReset [ActionDescription]'
+    - '*OPERABLE ActionName'
+    - Mask1 OperableCondition1
+    - Mask2 OperableCondition2
+    - Maskn OperableConditionn
+    - '*PARTIAL ActionName'
+    - YieldTable1 YieldTable2 YieldTable3
+    used_in:
+    - Actions
+  '*PAUSE':
+    arguments:
+    - Value
+    article_id: '775'
+    used_in:
+    - Control
+  '*PAUSEWHENDONE':
+    arguments:
+    - Switch
+    article_id: '776'
+    syntax:
+    - '*PAUSEWHENDONE Switch'
+    used_in:
+    - Control
+  '*PERIODS':
+    arguments:
+    - UnitDescription
+    article_id: '1458'
+    syntax:
+    - '*PERIODS  UnitDescription'
+    - _CP[1]   Label1
+    - _CP[2]   Label2
+    - _CP[n]   Labeln
+    - Woodstock
+    used_in:
+    - Control
+  '*PRESCRIPTION':
+    arguments:
+    - RegimeName
+    - PrescriptionName
+    - ActionName
+    - EntryType
+    - Value
+    article_id: '777'
+    syntax:
+    - '*PRESCRIPTION'
+    - '*REGIME RegimeName'
+    - '*OPERABLE RegimeOperabilityRule1'
+    - RegimeOperabilityRule2
+    - '*PRESCRIPTION PrescriptionName'
+    - '*Operable PrescriptionOperabilityRule1'
+    - '[*TARGET TargetMask1 Percent1'
+    - TargetMask2 Percent2]
+    - _RXPERIOD _ACTION _ENTRY [YieldName]
+    - Period1 ActionName EntryType [Value]
+    - Period2 ActionName EntryType [Value]
+    used_in:
+    - Regimes
+  '*PROCESS':
+    arguments:
+    - Destination
+    - Product
+    - Origin
+    - Period
+    article_id: '946'
+    syntax:
+    - '*PROCESS Destination Product Volume Period'
+    used_in:
+    - Schedule
+  '*PRODUCT':
+    arguments:
+    - OutputName
+    - Proportion
+    - ProductName
+    article_id: '778'
+    syntax:
+    - Product shipped unchanged
+    - '*PRODUCT OutputName'
+    - 'Product with fixed conversion:'
+    - '*PRODUCT OutputName -> Proportion ProductName1,[ Proportion ProductName2,]...'
+    - '[-> Proportion ProductName3,[ Proportion ProductName4,]...]'
+    - 'Product with optional conversion:'
+    - '*PRODUCT OutputName -> 1 Outputname'
+    - '[-> Proportion ProductName3,[ Proportion ProductName4,]...]'
+    - 'Product with downgrade:'
+    - '*PRODUCT OutputName -> 1 Outputname'
+    - -> 1.0 »ProductName1
+    - '[-> 1.0 »ProductName2]'
+    - '[-> 1.0 »ProductNameN]'
+    - Woodstock
+    - Woodstock
+  '*QUEUE':
+    arguments:
+    - Switch
+    article_id: '779'
+    syntax:
+    - '*QUEUE Switch'
+    used_in:
+    - Control
+  '*REGIME':
+    arguments:
+    - RegimeName
+    - PrescriptionName
+    - ActionName
+    - EntryType
+    - Value
+    article_id: '780'
+    syntax:
+    - 'Regimes section:'
+    - '*REGIME RegimeName'
+    - '*PRESCRIPTION PrescriptionName'
+    - '*OPERABLE OperabilityRule1'
+    - OperabilityRule2
+    - '[*TARGET TargetMask1 Percent1'
+    - TargetMask2 Percent2]
+    - _RXPERIOD _ACTION _ENTRY [YieldName]
+    - Period1 ActionName EntryType [Value]
+    - Period2 ActionName EntryType [Value]
+    - 'Actions section:'
+    - '*REGIME RegimeName'
+    - 'Rule(s):'
+    used_in:
+    - Regimes. Actions
+  '*REPORTS':
+    arguments:
+    - Switch
+    article_id: '781'
+    syntax:
+    - '*REPORTS Switch'
+    used_in:
+    - Control
+  '*RESIDUALS':
+    arguments:
+    - ResidualName
+    article_id: '782'
+    syntax:
+    - '*RESIDUALS ResidualName, ResidualName1,…'
+    used_in:
+    - Allocation
+  '*RUNS':
+    arguments:
+    - Number
+    article_id: '783'
+    syntax:
+    - '*RUNS Number'
+    used_in:
+    - Control
+  '*SCHEDULE':
+    arguments:
+    - Switch
+    - Interval
+    article_id: '785'
+    syntax:
+    - '*SCHEDULE Switch'
+    - '*SCHEDULE Interval'
+    used_in:
+    - Control
+  '*SELECT':
+    arguments:
+    - ActionName
+    article_id: '787'
+    syntax:
+    - '*SELECT ActionName'
+    - Rule1
+    - Rule2
+    - Rule3
+    - …
+    used_in:
+    - Queue
+  '*SEQUENCES':
+    article_id: '3038'
+    used_in:
+    - where Theme 8 represents harvest unit
+    - beginning with harvest unit S1004
+    - where Theme 8 represents harvest unit
+  '*SEQUENCETOSEQUENCE':
+    article_id: '3039'
+  '*SLACK':
+    arguments:
+    - Switch
+    article_id: '788'
+    syntax:
+    - '*SLACK Switch'
+    used_in:
+    - Control
+  '*SMALLCHOICESFILE':
+    article_id: '3055'
+  '*SOURCE':
+    arguments:
+    - ActionName
+    - mask1-4
+    - percent
+    - Mask
+    - OutputName
+    - AreaLookup
+    - ValueToSum
+    - OutputName1-2
+    - Constant
+    - AO_Output
+    - TimeYield
+    article_id: '789'
+    syntax:
+    - 'Transitions section:'
+    - '*CASE ActionName'
+    - '*SOURCE mask1'
+    - '*TARGET mask2 percent'
+    - '*SOURCE mask3'
+    - '*TARGET mask4 percent'
+    - '*TARGET mask4 percent'
+    - …
+    - 'Queue section:'
+    - '*TARGET OutputName =,<=,>= Value Interval [_MAX]   *SOURCE [mask] ActionName Percent'
+    - '*SOURCE [mask] ActionName Percent'
+    - 'Outputs section:'
+    - '*OUTPUT OutputName[_THx] OutputDescription *SOURCE [mask1] [@AGE or @YLD] AreaLookUp ValueToSum
+      [×, ÷ Constant or TimeYield] +'
+    - 'Summary output:'
+    - '*OUTPUT OutputName[_THx] OutputDescription *SOURCE OutputName1 [×, ÷ Constant or TimeYield]'
+    - '*SOURCE OutputName1 +, - OutputName2 +,-  ...'
+    - '*SOURCE AO_Output'
+    used_in:
+    - Transitions
+    - Queue
+    - Outputs
+  '*STRATA':
+    arguments:
+    - Mask
+    - Area
+    article_id: '1432'
+    syntax:
+    - '*STRATA mask area'
+    used_in:
+    - Schedule
+  '*TABLE':
+    arguments:
+    - TableName
+    - Index1-4
+    - Index1-4Value
+    - TableValue
+    article_id: '791'
+    syntax:
+    - '*TABLE TableName(_Index1[,_Index2,_Index3,_Index4])'
+    - Index1Value [Index2Value Index3Value Index4Value]  TableValue
+    used_in:
+    - Allocation
+  '*TARGET':
+    arguments:
+    - Percent1-2
+    - Number
+    - AgeValue
+    - YieldName
+    - YieldValue
+    - Mask1-3
+    - OutputName
+    - Value
+    - Interval
+    - FileName
+    - EXT
+    - OutputName1-3
+    - VariableName
+    - yTimeYield
+    - f
+    - SystemReport
+    - YieldTableName1-2
+    article_id: '792'
+    syntax:
+    - 'Transitions section:'
+    - '*CASE ActionName'
+    - '*SOURCE mask1'
+    - '*TARGET mask2 percent1 [_LOCK Number]'
+    - '*TARGET mask3 percent2 [_AGE AgeValue or YieldName YieldValue]'
+    - '*TARGET mask4 percent3 [_REPLACE(_THx,string) or _APPEND(_THx,string)]'
+    - '*SOURCE mask5'
+    - '*TARGET mask6 percent1'
+    - '*TARGET mask7 percent2'
+    - 'Regimes section:'
+    - '*PRESCRIPTION PrescriptionName'
+    - '*OPERABLE mask1 condition'
+    - '*TARGET mask2 percent1 [_LOCK Number]'
+    - '*TARGET mask3 percent1 [_AGE AgeValue or YieldName YieldValue]'
+    - '*TARGET mask4 percent2 [_REPLACE(_THx,string) or _APPEND(_THx,string)]'
+    - 'Queue section:'
+    - '*TARGET OutputName =,<=,>= Value Interval [_MAX or _MIN]'
+    - '*SOURCE [mask] ActionName Percent'
+    - '*SOURCE [mask] ActionName Percent'
+    - 'Reports section:'
+    - '*TARGET FileName.EXT [_FORM2] [_RESET n] [_PROPERTIES(PropertyName)]'
+    - OutputName1 Interval
+    - OutputName2 Interval
+    - OutputName3 * yTimeYield Interval
+    - VariableName Interval
+    - _SUM(OutputName) Interval
+    - _MIN(OutputName) Interval
+    - _MAX(OutputName)  Interval
+    - _AVG(OutputName)  Interval
+    - …
+    - SystemReport Interval
+    - YieldTableName1 [Interval]
+    - YieldTableName2 [Interval]
+  '*THEME':
+    arguments:
+    - ThemeDescription
+    article_id: '793'
+    syntax:
+    - 'Landscape section:'
+    - '*THEME [ThemeDescription]'
+    - BasicAttributeCode1 [AttributeDescription1]
+    - BasicAttributeCode2 [AttributeDescription2]
+    - BasicAttributeCoden [AttributeDescriptionn]
+    - '*AGGREGATE AggregateAttributeCode1'
+    - BasicAttributeCode1  BasicAttributeCode2
+    - '*AGGREGATE AggregateAttributeCode2'
+    - AggName1 BasicAttributeCoden
+    - …
+    used_in:
+    - Landscape
+  '*TOLERANCE':
+    arguments:
+    - Number
+    - Percent
+    article_id: '794'
+    syntax:
+    - '*TOLERANCE Number or Percent'
+    used_in:
+    - Control
+  '*USECATEGORIES':
+    arguments:
+    - Switch
+    article_id: '719'
+    syntax:
+    - '*USECATEGORIES Switch'
+    - 'Rule(s):'
+    used_in:
+    - Control
+  '*USETHEMEDESCRIPTIONS':
+    article_id: '3036'
+    used_in:
+    - where it is declared in the Control
+    - 'set to “On”.  See Also: ALIASMODE'
+  '*VARIABLE':
+    arguments:
+    - VarName
+    - Keyword
+    article_id: '795'
+    syntax:
+    - '*VARIABLE'
+    - VarName [Keyword]
+    used_in:
+    - Optimize
+  '*WARNINGS':
+    arguments:
+    - Switch
+    - WarningCode
+    article_id: '797'
+    syntax:
+    - '*WARNINGS Switch [WarningCode1,WarningCode2…]'
+    used_in:
+    - Control
+  '*Y':
+    arguments:
+    - Mask
+    - StartAge
+    - Percent1-3
+    article_id: '799'
+    syntax:
+    - '*Y mask'
+    - '[*P percent]'
+    - '*Y mask'
+    - _AGE  YieldName1 YieldName2 YieldName3 ...
+    - '[*P        Percent1      Percent2       Percent3]'
+    - Age1     Value1         Value1          Value1
+    - Age2     Value2         Value2          Value2
+    - Age3     Value3         Value3          Value3
+    used_in:
+    - Yields
+  '*YC':
+    arguments:
+    - YieldName
+    - f
+    - YieldName1-2
+    article_id: '800'
+    syntax:
+    - '*YC mask'
+    - YieldName f(YieldName1,YieldName2…)
+    - '*YC mask _OVERRIDE'
+    - YieldName f(YieldName)
+    used_in:
+    - Yields
+  '*YT':
+    arguments:
+    - Mask
+    - StartPeriod
+    - Percent1-3
+    article_id: '802'
+    syntax:
+    - '*YT mask'
+    - '[*P percent]'
+    - '*YT mask'
+    - _CP      YieldName1 YieldName2 YieldName3 ...
+    - '[*P          Percent1      Percent2       Percent3]'
+    - Period1    Value1         Value1          Value1
+    - Period2    Value2         Value2          Value2
+    - Period3    Value3         Value3          Value3
+    used_in:
+    - Yields
+  '@AGE':
+    article_id: '607'
+    documented_as: '@AGE()'
+    syntax:
+    - 'Transitions section:'
+    - '*CASE Actioncode'
+    - '*SOURCE mask @AGE(agerange)'
+    - '*TARGET mask percent'
+    - 'Outputs section:'
+    - '*OUTPUT OutputName OutputDescription'
+    - '*SOURCE mask @AGE(agerange) AreaLookup ValueToSum'
+    used_in:
+    - Transitions
+    - Outputs
+  '@YLD':
+    arguments:
+    - YieldName
+    article_id: '730'
+    syntax:
+    - '*CASE ActionName'
+    - '*SOURCE mask @YLD(YieldName,ValueRange)'
+    - '*TARGET mask percent'
+    - '*OUTPUT OutputName OutputDescription'
+    - '*SOURCE mask @YLD(YieldName,ValueRange) AreaLookUp ValueToSum'
+    used_in:
+    - Transitions
+    - Outputs
+  Creating New Types (*NEWTYPES and *CREATE):
+    article_id: '1740'
+    used_in:
+    - delivery of products in short-term
+    - at yard
+    - at mill
+    - report on them
+    - display age class distributions
+    - apply actions to them.  Remember
+  _AA:
+    arguments:
+    - OutputName
+    - mask
+    - AreaLookup
+    - ValueToSum
+    - FileName
+    - EXT
+    - ActionName
+    - Interval
+    - OutputNamen
+    article_id: '803'
+    documented_as: _AA()
+    syntax:
+    - 'Outputs:'
+    - '*OUTPUT OutputName[_AA] Output Description'
+    - '*SOURCE [mask] AreaLookUp ValueToSum'
+    - 'Reports:'
+    - '*TARGET FileName.EXT'
+    - _AA[(ActionName)] Interval
+    - '[OutputName1][OutputName2]'
+    - 'Other activity schedule reports:'
+    - _ACTIVITY
+    - _DETAIL
+    used_in:
+    - Outputs
+    - Reports
+  _ACTION:
+    arguments:
+    - RegimeName
+    - PrescriptionName
+    - ActionName
+    - EntryType
+    - Value
+    - Enumerator
+    - Expression_Enumerator
+    article_id: '804'
+    syntax:
+    - 'Regimes:'
+    - '*REGIME RegimeName'
+    - '*PRESCRIPTION PrescriptionName'
+    - '*OPERABLE OperabilityRule1'
+    - OperabilityRule2
+    - '[*TARGET TargetMask1 Percent1'
+    - TargetMask2 Percent2]
+    - _RXPERIOD _ACTION _ENTRY [YieldName]
+    - Period1 ActionName EntryType [Value]
+    - Period2 ActionName EntryType [Value]
+    - 'Loops:'
+    - FOREACH Enumerator IN (_ACTION)
+    - Expression_Enumerator
+    - ENDFOR
+    used_in:
+    - Regimes
+    - Integrator/FOREACH loops (anywhere)
+  _ACTIVITY:
+    arguments:
+    - FileName
+    - EXT
+    - ActionName
+    - Interval
+    - OutputNamen
+    article_id: '805'
+    syntax:
+    - '*TARGET FileName.EXT'
+    - _ACTIVITY[(ActionName)] Interval
+    - '[OutputName1][OutputName2]'
+    - 'Example of declaration:'
+    - _ACTIVITY report for prescriptions
+    - 'Declaring an _ACTIVITY report in the Reports section:'
+    - ; Report
+    - '*TARGET MyActivityReport.dbf'
+    - _ACTIVITY 1.._LENGTH
+    - Example of prescriptions in an _ACTIVITY report
+    - '*REGIME Thin_And_CC'
+    - '*OPERABLE Thin_And_CC'
+    - '*PRESCRIPTION LightThinPrad@15'
+    - '*OPERABLE prad ? _AGE = 15'
+    - _RXPERIOD    _ACTION   _ENTRY
+    - 0 aLightThin _INITIAL
+    - 0          -        -
+    - 5          -        -
+    - 10  aclearcut   _FINAL
+    - 15  aclearcut   _FINAL
+    - 20  aclearcut   _FINAL
+    - 25  aclearcut   _FINAL
+    - '_ACTIVITY report with yields and outputs:'
+    - 'Normalized _ACTIVITY report:'
+    - 'See also:'
+    - _TOTAL
+    - _PERUNITAREA
+    - _NORMALIZE
+    - _AA
+    - _DETAIL
+    used_in:
+    - Reports
+  _AGE:
+    article_id: '806'
+    used_in:
+    - Yields
+    - Actions
+    - Regimes
+    - Transitions
+    - Outputs
+    - Queue
+  _AGECLASS:
+    arguments:
+    - Mask1-2
+    - Interval
+    article_id: '807'
+    syntax:
+    - 'Reports section:'
+    - '*TARGET FileName.EXT'
+    - _AGECLASS [Mask1] Interval
+    - _AGECLASS [Mask2] Interval
+    used_in:
+    - Graphics
+    - Reports
+  _ALAP:
+    article_id: '808'
+    syntax:
+    - '*ACTIONSERIES'
+    - Action1 -> Action2 ->… -> ActionX _ASAP
+    used_in:
+    - Actions
+  _ALL:
+    arguments:
+    - ObjFunction
+    - Interval
+    article_id: '809'
+    syntax:
+    - 'Optimize section:'
+    - '*OBJECTIVE'
+    - ObjFunction - _PENALTY(_ALL) Interval
+    - _GOAL(_ALL)
+    - 'Reports section:'
+    - '*TARGET Filename.Ext [_NORMALIZE]'
+    - _ALL Interval
+    - '_ALL Report drill down feature:'
+    used_in:
+    - Optimize
+    - Reports
+  _APPEND:
+    arguments:
+    - ActionName
+    - Mask1-3
+    - Percent1-2
+    - String
+    - YieldTable
+    article_id: '811'
+    documented_as: _APPEND()
+    syntax:
+    - '*CASE ActionName'
+    - '*SOURCE Mask1'
+    - '*TARGET Mask2 percent1 [_LOCK Number] [_AGE AgeValue]'
+    - '*TARGET Mask3 percent2  [_APPEND(_THx,String or YieldTable)]'
+    used_in:
+    - Transitions
+  _AREA:
+    arguments:
+    - OutputName
+    - Mask
+    - AreaLookup
+    - FileName
+    - EXT
+    - Interval
+    article_id: '812'
+    syntax:
+    - 'Outputs section:'
+    - '*OUTPUT OutputName[_THx] OutputDescription'
+    - '*SOURCE [mask1] [@AGE or @YLD] AreaLookUp _AREA [×, ÷ Constant or TimeYield] + [mask2] [@AGE or
+      @YLD] AreaLookUp _AREA [×, ÷ Constant or TimeYield]'
+    - 'Reports section:'
+    - '*TARGET FileName.EXT'
+    - _AREA Interval
+    used_in:
+    - Outputs
+    - Reports
+  _ARRAY:
+    article_id: '1247'
+    used_in:
+    - '='
+    - '>= Number]  ‘Arrayname’ is a unique'
+    - user-defined array code
+    - upper (<=)
+    - or lower (>=) bound
+  _ASAP:
+    article_id: '813'
+    syntax:
+    - 'Actions section:'
+    - '*ACTIONSERIES'
+    - Action1 -> Action2 ->… -> ActionX _ASAP
+    - 'Regimes section:'
+    - '*SEQUENCES _THX _THY _ASAP'
+    used_in:
+    - Actions
+    - Regimes
+  _AVG:
+    arguments:
+    - OutputName
+    - GraphWindowNumber
+    - ScaleFactor
+    - RHS
+    - Interval
+    - Interval1
+    - FileName
+    - EXT
+    article_id: '814'
+    documented_as: _AVG()
+    syntax:
+    - 'Graphics section:'
+    - '*LINES'
+    - _AVG(OutputName) GraphWindowNumber ScaleFactor SeriesFormat “LegendText”
+    - 'Optimize section:'
+    - '*CONSTRAINTS'
+    - _AVG(OutputName) >=/=/<= RHS Interval
+    - OutputName = _AVG(OutputName,Interval1) Interval
+    - 'Reports section:'
+    - '*TARGET FileName.EXT'
+    - _AVG(OutputName) Interval
+    used_in:
+    - Graphics
+    - Optimize
+    - Reports
+  _BIGM:
+    arguments:
+    - M
+    article_id: '1828'
+    syntax:
+    - '*OUTPUT oOutputName(_THn) Output description'
+    - '*SOURCE _IF(OutputName2,Condition,ValueIfTrue,[ValueIfFalse],[_BIGM = M])'
+    - _BIGM is optional and if not declared
+    - Woodstock
+    used_in:
+    - Outputs
+  _BINARY:
+    arguments:
+    - VarName
+    - ActionName
+    - DefaultAgeReset
+    - ActionDescription
+    - Mask1
+    - OperableCondition
+    - Switch
+    article_id: '1161'
+    syntax:
+    - 'Optimize section:'
+    - '*VARIABLE'
+    - VarName _BINARY
+    - 'Actions section:'
+    - '*ACTION ActionName DefaultAgeReset ActionDescription _BINARY'
+    - '*OPERABLE ActionName'
+    - Mask1 OperableCondition1
+    - 'Regimes section:'
+    - '*REGIME RegimeName RegimeDescription _BINARY'
+    - (...)
+    - 'Control section:'
+    - '*AACONTROL Switch _BINARY'
+    - Woodstock
+    used_in:
+    - Optimize
+    - Actions
+    - Regimes
+    - Control
+  _BINARYARRAY:
+    arguments:
+    - Arrayname
+    article_id: '1236'
+    syntax:
+    - '*VARIABLE'
+    - Arrayname _BINARYARRAY
+    used_in:
+    - Optimize
+  _CAI:
+    arguments:
+    - Mask
+    - NewYieldName
+    - YieldName
+    - YearsPerPeriod
+    article_id: '820'
+    documented_as: _CAI()
+    syntax:
+    - '*YC Mask'
+    - NewYieldName _CAI(YieldName[,YearsPerPeriod])
+    - CAI = (Yield[Ageclass] - Yield[Ageclass-1]) ÷ YearsPerPeriod
+    used_in:
+    - Yields
+  _CAPACITIES:
+    arguments:
+    - MinimumCapacity
+    - MaximumCapacity
+    - HoldoverCapacity
+    article_id: '821'
+    syntax:
+    - _CAPACITIES MinimumCapacity MaximumCapacity HoldoverCapacity [Interval]
+    used_in:
+    - Allocation
+  _CDECL:
+    arguments:
+    - Mask
+    - YieldName
+    - NumParameters
+    - DLLFunction
+    - AgeRange
+    - ScaleFactor
+    - DLLName
+    - DLLParameters
+    article_id: '958'
+    syntax:
+    - 'Fixed Call:'
+    - '*YC Mask'
+    - YieldName _DLL(NumParameters,_CDECL) DLLPath DLLFunction(DLLParameters) (AgeRange) (ScaleFactor)
+    - 'Variant Call:'
+    - '*YC Mask'
+    - YieldName _DLL(CallingProtocol, _CDECL) DLLName DLLFunction(DLLParameters) (AgeRange) (ScaleFactor)
+    - 'Rule(s):'
+    used_in:
+    - Yields
+  _CONDITION:
+    arguments:
+    - FileName
+    - EXT
+    - Interval
+    - OutputNamen
+    article_id: '823'
+    syntax:
+    - '*TARGET FileName.EXT'
+    - _CONDITION Interval
+    - '[OutputName1]'
+    - '[OutputName2]'
+    used_in:
+    - Reports
+  _CONSTRAINTREPORT:
+    article_id: '3088'
+  _CONSTRUCTION:
+    article_id: '3071'
+    used_in:
+    - _VARIABLENAME = vc
+    - _THEME1 = FR
+    - _UPDATESCHEDULE = vc ->aConstr_R
+    - the Woodstock action
+    - to be used for schedule playback
+    - _ISACTIVE = True
+    - _VARIABLENAME = vC
+    - _THEME3 = FR
+    - _ISACTIVE = False
+    - _VARIABLENAME = vB
+    - _THEME3 = BR
+    - there are two construction actions
+    - one for road attribute 'FR'
+    - will be minimized
+  _CP:
+    arguments:
+    - UnitDescription
+    - ActionName
+    - Interval
+    - Mask1-2
+    - OperableCondition
+    - RegimeName
+    - Percent1-2
+    - Mask
+    article_id: '824'
+    syntax:
+    - 'Control section:'
+    - '*PERIODS  UnitDescription'
+    - _CP[1]   Label1
+    - _CP[2]   Label2
+    - _CP[n]   Labeln
+    - 'Actions section:'
+    - '*ACTION ActionName DefaultAgeReset [ActionDescription]'
+    - '*OPERABLE ActionName [_CP Interval]'
+    - Mask1 OperableCondition1
+    - Mask2 OperableCondition2
+    - '*OPERABLE ActionName [_CP Interval]'
+    - Mask1 OperableCondition3
+    - Mask2 OperableCondition4
+    - _CP is a keyword to reference the current planning period,
+    - 'Regimes section:'
+    - '*REGIME RegimeName [RegimeDescription]'
+    - '*OPERABLE RegimeName [_CP Interval]'
+    - Mask1 OperableCondition1
+    - Mask2 OperableCondition2
+    - '*OPERABLE RegimeName [_CP Interval]'
+    - Mask1 OperableCondition3
+    - Mask2 OperableCondition4
+    - 'Transitions section:'
+    - '*CASE ActionName [_CP Interval]'
+    - '*SOURCE mask1'
+    - '*TARGET mask2 percent1'
+    - '*TARGET mask3 percent2'
+    - '*CASE ActionName [_CP Interval]'
+    - '*SOURCE mask1'
+    - '*TARGET mask4 percent1'
+    - '*TARGET mask5 percent2'
+    - 'Yields section:'
+    - '*YT mask'
+    - _CP      YieldName1 YieldName2 YieldName3 ...
+    - Period1    Value1         Value1          Value1
+    - Period2    Value2         Value2          Value2
+    - Period3    Value3         Value3          Value3
+    used_in:
+    - Control
+    - Actions
+    - Regimes
+    - Transitions
+    - Yields
+  _CREATELEVELS:
+    article_id: '3102'
+    syntax:
+    - '*TARGET FileName.ext'
+    - _CREATELEVELS(<numeric:W:D>,<nocomma>,<linelength>)
+    - OutputName1 NewLevelName1 Interval
+    - OutputName1 NewLevelName2 <f(Interval)>
+    - OutputName2 NewLevelName3 Interval
+    - Woodstock
+  _DEATH:
+    article_id: '827'
+    used_in:
+    - Actions
+    - Transitions
+    - Outputs
+    - Schedule
+    - LpSchedule
+    - Reports
+  _DECAY:
+    article_id: '3101'
+  _DEFAULT:
+    article_id: '3061'
+    used_in:
+    - fixed movement cost for the Regime
+    - _DEFAULT = 16500) In this example
+  _DELETE:
+    article_id: '3087'
+    used_in:
+    - OutputName2
+    - ‘EXT’ is the report type (.txt
+    - .dbf
+    - .xlsx
+    - mdb
+    - .htm
+    - .SQLite)
+    - all tables in a .mdb or SQLite database
+  _DELIVER:
+    article_id: '1032'
+    documented_as: About the _DELIVER keyword
+  _DELTA:
+    arguments:
+    - Mask
+    - NewYieldName
+    - YieldName
+    - PeriodicOffset
+    article_id: '829'
+    documented_as: _DELTA()
+    syntax:
+    - '*YC Mask'
+    - NewYieldName _DELTA(YieldName,PeriodicOffset)
+    - 'Rule(s):'
+    used_in:
+    - Yields
+  _DESTINATION:
+    arguments:
+    - TableName
+    - Index1-4
+    - Index1-4Value
+    - TableValue
+    - Enumerator
+    - Expression_Enumerator
+    article_id: '942'
+    syntax:
+    - 'Allocation:'
+    - '*TABLE TableName(_Index1[,_Index2,_Index3,_Index4])'
+    - Index1Value [Index2Value Index3Value Index4Value] TableValue
+    - 'Loops:'
+    - FOREACH Enumerator IN (_DESTINATION)
+    - Expression_Enumerator
+    - ENDFOR
+    used_in:
+    - Allocation
+    - Integrator/FOREACH loops (anywhere)
+  _DETAIL:
+    arguments:
+    - FileName
+    - EXT
+    - Filter
+    - YieldNamen
+    - OutputNamen
+    - Interval
+    - n
+    - d
+    article_id: '1452'
+    syntax:
+    - '*TARGET FileName.EXT'
+    - _DETAIL(Filter)  Interval
+    - '[YieldName1]'
+    - '[YieldName2]'
+    - '[YieldNamen]'
+    - '[OutputName1]'
+    - '[OutputName2]'
+    - '[OutputNamen]'
+    - '*TARGET FileName.EXT'
+    - _DETAIL(aActionName,numeric:n:d)    Interval
+    - (...)
+    used_in:
+    - Reports
+  _DISCOUNTFACTOR:
+    arguments:
+    - Mask
+    - YieldName
+    - YearsPerPeriod
+    article_id: '831'
+    documented_as: _DISCOUNTFACTOR()
+    syntax:
+    - '*YT Mask'
+    - YieldName _DISCOUNTFACTOR(iRate,YearsPerPeriod,Timing)
+    used_in:
+    - Yields
+  _DIVIDE:
+    arguments:
+    - Mask
+    - YieldName
+    article_id: '832'
+    documented_as: _DIVIDE()
+    syntax:
+    - '*YC Mask'
+    - YieldName _DIVIDE(ValueToDivide1,ValueToDivide2)
+    used_in:
+    - Yields
+  _DLL:
+    arguments:
+    - Mask
+    - YieldName
+    - NumParameters
+    - DLLFunction
+    - AgeRange
+    - ScaleFactor
+    - DLLName
+    - DLLParameters
+    article_id: '952'
+    syntax:
+    - 'Fixed Call:'
+    - '*YC Mask'
+    - YieldName _DLL(NumParameters) DLLPath DLLFunction(DLLParameters) (AgeRange) (ScaleFactor)
+    - 'Variant Call:'
+    - '*YC Mask'
+    - YieldName _DLL(CallingProtocol,CallingConvention) DLLName DLLFunction(DLLParameters) (AgeRange)
+      (ScaleFactor)
+    - 'Rule(s):'
+    used_in:
+    - Yields
+  _EACH:
+    arguments:
+    - ThOutputName
+    - SystemConstraint
+    - RHS
+    - DestinationName
+    - ProductName
+    - OriginName
+    - Interval
+    article_id: '835'
+    syntax:
+    - 'Optimize section:'
+    - '*CONSTRAINTS'
+    - ThOutputName(_EACH) >=/=/<= RHS Interval
+    - SystemConstraint(OutputCode(_EACH)) Interval
+    - _DELIVER(DestinationCode,ProductCode,OriginCode) >=/=/<= RHS Interval
+    - _PROCESS(DestinationCode,ProductCode) >=/=/<= RHS Interval
+    - _INVENTORY(DestinationCode,ProductCode) >=/=/<= RHS Interval
+    used_in:
+    - Optimize
+    - Reports
+  _ENDPOINT:
+    arguments:
+    - Mask
+    - YieldName
+    - YieldName1
+    - FirstEndPoint
+    - LastEndPoint
+    article_id: '838'
+    documented_as: _ENDPOINT()
+    syntax:
+    - '*YC Mask'
+    - YieldName _ENDPOINT(YieldName1, FirstEndPoint, YieldName1, LastEndPoint)
+    used_in:
+    - Yields
+  _ENTRY:
+    arguments:
+    - RegimeName
+    - PrescriptionName
+    - ActionName
+    - EntryType
+    - Value
+    article_id: '837'
+    syntax:
+    - '*REGIME RegimeName'
+    - '*PRESCRIPTION PrescriptionName'
+    - '*OPERABLE OperabilityRule1'
+    - OperabilityRule2
+    - '[*TARGET TargetMask1 Percent1'
+    - TargetMask2 Percent2]
+    - _RXPERIOD _ACTION _ENTRY [YieldName]
+    - Period1 ActionName EntryType [Value]
+    - Period2 ActionName EntryType [Value]
+    used_in:
+    - Regimes
+  _EQUALS:
+    arguments:
+    - Output
+    - Period
+    - Value
+    article_id: '1470'
+    syntax:
+    - _EQUALS(Output)[Period] = Value
+  _EQUATION:
+    arguments:
+    - Mask
+    - YieldName
+    - yield
+    - constant
+    article_id: '1317'
+    documented_as: _EQUATION()
+    syntax:
+    - 'Yields section:'
+    - '*YC Mask'
+    - YieldName _EQUATION f(yield,_AGE,thematic index,_THn,constant,LN(),EXP())
+  _EVEN:
+    arguments:
+    - OutputName
+    - Variation
+    article_id: '839'
+    documented_as: _EVEN()
+    syntax:
+    - '*CONSTRAINTS'
+    - _EVEN(OutputName[,Variation])  Interval
+    - _GOAL may not be used with the _EVEN constraint.
+    - '_EVEN() can be written using three separate constraints to utilize _GOAL():'
+    - '*CONSTRAINTS'
+    - OutputName >= LowerBound  Interval _GOAL
+    - OutputName <= UpperBound  Interval
+    - (1-(variation/100)) * UpperBound - LowerBound <= 0  1..1
+    used_in:
+    - Optimize
+  _FINAL:
+    arguments:
+    - ActionName
+    - EntryType
+    - YieldName
+    - Value
+    article_id: '843'
+    syntax:
+    - _RXPERIOD   _ACTION      _ENTRY     YieldName
+    - Period1      ActionName   EntryType      Value
+    - Period2      ActionName   EntryType      Value
+    used_in:
+    - Regimes
+  _FIRSTDATE:
+    article_id: '3060'
+    used_in:
+    - 2026-12-01) or a Character string (e.g.
+    - “Frozen2026”
+  _FIXEDCOST:
+    article_id: '3037'
+    used_in:
+    - _DEFAULT = 165000) In this example
+  _FORM2:
+    arguments:
+    - FileName
+    - EXT
+    - OutputName1-2
+    - f
+    - Interval
+    article_id: '844'
+    syntax:
+    - '*TARGET FileName.EXT [_FORM2]'
+    - OutputName1 Interval
+    - OutputName2 Interval
+    used_in:
+    - Reports
+  _FORMFEED:
+    arguments:
+    - FileName
+    - EXT
+    - OutputName1-2
+    - f
+    - Interval
+    article_id: '845'
+    syntax:
+    - '*TARGET FileName.EXT [_FORM2]'
+    - OutputName1 Interval
+    - OutputName2 Interval
+    - _FORMFEED Interval
+    used_in:
+    - Reports
+  _GOAL:
+    arguments:
+    - Constraint3
+    - RHS
+    - Interval
+    - OverPenalty
+    - UnderPenalty
+    article_id: '847'
+    syntax:
+    - 'Optimize section:'
+    - '*OBJECTIVE'
+    - _GOAL(GoalName1,GoalName2,GoalName3…)
+    - '*CONSTRAINTS'
+    - Constraint1 >= RHS Interval  _GOAL(GoalName1,UnderPenalty)
+    - Constraint2 <= RHS Interval  _GOAL(GoalName2,OverPenalty)
+    - Constraint3   = RHS Interval  _GOAL(GoalName3,OverPenalty,UnderPenalty)
+    - 'Allocation section:'
+    - Constraint1 >= RHS Interval _GOAL(GoalName1,UnderPenalty)
+    - Constraint2 <= RHS Interval _GOAL(GoalName2,OverPenalty)
+    - Constraint3 = RHS Interval _GOAL(GoalName3,OverPenalty,UnderPenalty)
+    - Integrator
+    used_in:
+    - Optimize
+    - Allocation
+  _GREENUPCONSTRAINTS:
+    article_id: '1467'
+    documented_as: _GREENUPCONSTRAINTS()
+  _IF:
+    arguments:
+    - YieldName
+    - ValueIfTrue
+    - ValueIfFalse
+    - M
+    article_id: '1465'
+    syntax:
+    - 'Yields Section:'
+    - '*YC mask'
+    - YieldName _IF(YieldCondition,ValueIfTrue,ValueIfFalse)
+    - 'Outputs Section:'
+    - '*OUTPUT oOutputName(_THn) Output description'
+    - '*SOURCE _IF(OutputName2,Condition,ValueIfTrue,[ValueIfFalse],[_BIGM = M])'
+    - Woodstock
+    used_in:
+    - Yields
+    - Outputs
+  _IGNOREIF:
+    article_id: '1762'
+  _INDEX:
+    arguments:
+    - BasicCode
+    - Value
+    article_id: '850'
+    syntax:
+    - '*THEME [Description]'
+    - BasicCode [Description] _INDEX(IndexCode1=Value,IndexCode2=Value,…)
+    - 'Examples of general formulation:'
+    - ; Landscape
+    - '*THEME species'
+    - ; Yields
+    - '*YC ? ? ?'
+    - ; Landscape
+    - '*THEME Block id'
+    - S103 _INDEX(hc=27.54)
+    - S11 _INDEX(hc=29.27)
+    - S110 _INDEX(hc=25.00)
+    - S12 _INDEX(hc=29.71)
+    - ; Yields
+    - '*YC ? ? ?'
+    used_in:
+    - Landscape
+  _INFLATIONFACTOR:
+    arguments:
+    - Mask
+    - YearsPerPeriod
+    article_id: '949'
+    syntax:
+    - '*YT Mask'
+    - YieldName _INFLATIONFACTOR(iRate,YearsPerPeriod,Timing)
+    - Woodstock
+    used_in:
+    - Yields
+  _INITIAL:
+    arguments:
+    - RegimeName
+    - PrescriptionName
+    - ActionName
+    - EntryType
+    - Value
+    article_id: '851'
+    syntax:
+    - '*REGIME RegimeName'
+    - '*PRESCRIPTION PrescriptionName'
+    - '*OPERABLE OperabilityRule1'
+    - OperabilityRule2
+    - '[*TARGET TargetMask1 Percent1'
+    - TargetMask2 Percent2]
+    - _RXPERIOD _ACTION _ENTRY [YieldName]
+    - Period1 ActionName EntryType [Value]
+    - Period2 ActionName EntryType [Value]
+    used_in:
+    - Regimes
+  _INPROGRESS:
+    arguments:
+    - Mask
+    - Age
+    - Area
+    - PrescriptionName
+    - RXPeriod
+    - FinalEntryPeriod
+    article_id: '755'
+    syntax:
+    - Mask age area _INPROGRESS(PrescriptionName,RXPeriod,[FinalEntryPeriod])
+    used_in:
+    - LPSchedule
+  _INPUTS:
+    arguments:
+    - DestinationName
+    - AbsMin
+    - AbsMax
+    article_id: '852'
+    syntax:
+    - '*DESTINATION DestinationName'
+    - _INPUTS ProductName1 AbsMin AbsMax %Min %Max
+    - ProductName2 AbsMin AbsMax %Min %Max
+    used_in:
+    - Allocation
+  _INTEGER:
+    arguments:
+    - Number
+    - ActionName
+    - DefaultAgeReset
+    - ActionDescription
+    - Mask1
+    - OperableCondition
+    article_id: '853'
+    syntax:
+    - 'Optimize section:'
+    - '*VARIABLE'
+    - VariableCode1
+    - VariableCode2 _INTEGER [<=/>= Number]
+    - 'Actions section:'
+    - '*ACTION ActionName DefaultAgeReset ActionDescription _INTEGER'
+    - '*OPERABLE ActionName'
+    - Mask1 OperableCondition1
+    - 'Regimes section:'
+    - '*REGIME RegimeName RegimeDescription _INTEGER'
+    used_in:
+    - Optimize
+    - Actions
+    - Regimes
+  _INTEGERARRAY:
+    arguments:
+    - Arrayname
+    - NaturalNumber
+    article_id: '1235'
+    syntax:
+    - '*VARIABLE'
+    - Arrayname  _INTEGERARRAY [ <=, = , >=  NaturalNumber]
+    used_in:
+    - Optimize
+  _INTERVAL:
+    article_id: '1749'
+    used_in:
+    - maximum will be tested
+  _INVALIDORIGINS:
+    arguments:
+    - DestinationName
+    - AbsMin
+    - AbsMax
+    article_id: '854'
+    syntax:
+    - '*DESTINATION DestinationName'
+    - _INPUTS ProductName1 AbsMin AbsMax %Min %Max
+    - ProductName2 AbsMin AbsMax %Min %Max
+    - _INVALIDORIGINS OriginCode1,OriginCode2,…
+    used_in:
+    - Allocation
+  _INVENT:
+    article_id: '855'
+    syntax:
+    - 'Standing inventory:'
+    - '*OUTPUT OutputName[_THx] OutputDescription'
+    - '*SOURCE [Mask1] [@AGE or @YLD] _INVENT ValueToSum +'
+    - '[Mask2] [@AGE or @YLD] _INVENT ValueToSum'
+    - Or
+    - 'Operable inventory:'
+    - '*OUTPUT OutputName[_THx] OutputDescription'
+    - '*SOURCE [Mask1] [@AGE or @YLD] _INVENT(ActionCode1,ActionCode2,…) ValueToSum +'
+    - '[Mask2] [@AGE or @YLD] _INVENT(ActionCode1,ActionCode2,…) ValueToSum'
+    used_in:
+    - Outputs
+  _INVENTORY:
+    article_id: '1034'
+    documented_as: About the _INVENTORY keyword
+  _INVLOCK:
+    arguments:
+    - OutputName
+    - Mask1-2
+    - ValueToSum
+    article_id: '857'
+    syntax:
+    - '*OUTPUT OutputName[_THx] OutputDescription'
+    - '*SOURCE [Mask1] [@AGE or @YLD] _INVLOCK ValueToSum +'
+    - '[Mask2] [@AGE or @YLD] _INVLOCK ValueToSum'
+    used_in:
+    - Outputs
+  _IRR:
+    arguments:
+    - MyRevenueOutput
+    - MyCostOutput
+    - ConstantCapitalInvestment
+    article_id: '1485'
+    syntax:
+    - '*OUTPUT OutputName Output Description'
+    - '*SOURCE _IRR(MyRevenueOutput,MyCostOutput,[ConstantCapitalInvestment],[%])'
+    - 'Rule(s):'
+    used_in:
+    - Outputs
+  _KEEPAASGOING:
+    article_id: '1827'
+  _LENGTH:
+    article_id: '860'
+    syntax:
+    - FirstPeriod..LastPeriod
+    used_in:
+    - Areas
+    - Actions
+    - Transitions
+    - Queue
+    - Optimize
+    - Reports
+    - Allocation
+  _LOCK:
+    arguments:
+    - mask
+    - age
+    - AreaValue
+    - aacode
+    - Number
+    - ActionName
+    - Percent1
+    - Percent
+    article_id: '862'
+    syntax:
+    - 'Areas section:'
+    - '*A mask Age AreaValue _LOCK Number'
+    - '*AA mask Age AreaValue aacode _LOCK Number'
+    - 'Transitions section:'
+    - '*CASE ActionName'
+    - '*SOURCE Mask1'
+    - '*TARGET Mask2 percent1 _LOCK Number'
+    - 'Regimes sections:'
+    - '*PRESCRIPTION PrescriptionName'
+    - '*TARGET Mask percent _LOCK Number'
+    used_in:
+    - Areas
+    - Transitions
+    - Regimes
+  _LOCKEXEMPT:
+    arguments:
+    - ActionName
+    - DefaultAgeReset
+    - ActionDescription
+    article_id: '864'
+    syntax:
+    - '*ACTION ActionName DefaultAgeReset _LOCKEXEMPT [ActionDescription]'
+    - '*OPERABLE ActionName'
+    - Mask1 OperableCondition1
+    - Mask2 OperableCondition2
+    - Maskn OperableConditionn
+    used_in:
+    - Actions
+  _LOWERLIMIT:
+    arguments:
+    - Output
+    - Period
+    - Value
+    - GraphWindowNumber
+    - ScaleFactor
+    article_id: '1471'
+    syntax:
+    - 'Schedule section:'
+    - _LOWERLIMIT(Output)[Period] = Value
+    - 'Graphics section:'
+    - _LOWERLIMIT(Output) GraphWindowNumber ScaleFactor SeriesFormat "LegendText"
+  _MAI:
+    arguments:
+    - Mask
+    - NewYieldName
+    - YieldName
+    - YearsPerPeriod
+    article_id: '863'
+    documented_as: _MAI()
+    syntax:
+    - '*YC mask'
+    - NewYieldName _MAI(YieldName[,YearsPerPeriod])
+    - MAI = Yield / Ageclass / YearsPerPeriod
+    used_in:
+    - Yields
+  _MAINTENANCE:
+    article_id: '1803'
+    documented_as: _MAINTENANCE()
+    used_in:
+    - Reports
+  _MAX:
+    arguments:
+    - FileName
+    - EXT
+    - OutputName
+    - Interval
+    - GraphWindowNumber
+    - ScaleFactor
+    - Value
+    - Mask
+    - ActionName1-2
+    - Percent
+    - ActionName
+    - ObjectiveSense
+    - Constant
+    article_id: '867'
+    syntax:
+    - 'Reports section:'
+    - '*TARGET FileName.EXT [_FORM2] [_RESET n]'
+    - _MAX(OutputName) Interval
+    - 'Graphics section:'
+    - '*LINES'
+    - _MAX(OutputName) GraphWindowNumber ScaleFactor SeriesFormat “LegendText”
+    - _MIN(OutputName) GraphWindowNumber ScaleFactor SeriesFormat “LegendText”
+    - 'Queue section:'
+    - '*TARGET OutputName =,<=,>= Value Interval [_MAX]'
+    - '*SOURCE [Mask] ActionName1 Percent'
+    - '*SOURCE [Mask] ActionName2 Percent'
+    - '*SELECT ActionName'
+    - _MAX _AGE or YieldName
+    - _MIN _AGE or YieldName
+    - …
+    - 'Optimize section:'
+    - '*OBJECTIVE'
+    - ObjectiveSense f(Output1,Output2,..[Constant] * OutputX) Interval
+    - 'Yields section:'
+    - '*YC [Mask]'
+    - YieldName1 _MAX(YieldName,Value)
+    - YieldName2 _MAX(YieldName,...,YieldNameN)
+    used_in:
+    - Reports
+    - Graphics
+    - Queue
+    - Optimize
+    - Yields
+  _MAXAGE:
+    article_id: '868'
+  _MAXDELTA:
+    arguments:
+    - ActionName
+    - YieldName
+    - Offset
+    article_id: '869'
+    syntax:
+    - '*SELECT ActionName'
+    - _MAXDELTA YieldName Offset
+    - …
+    used_in:
+    - Queue
+  _MAXMIN:
+    arguments:
+    - Interval
+    - Constant
+    article_id: '870'
+    syntax:
+    - '*OBJECTIVE'
+    - _MAXMIN f(Output1,Output2,..[Constant] * OutputX) Interval
+    used_in:
+    - Optimize
+  _MIN:
+    arguments:
+    - FileName
+    - EXT
+    - OutputName
+    - Interval
+    - GraphWindowNumber
+    - ScaleFactor
+    - Value
+    - Mask
+    - ActionName1-2
+    - Percent
+    - ActionName
+    - ObjectiveSense
+    - Constant
+    article_id: '872'
+    syntax:
+    - 'Reports section:'
+    - '*TARGET FileName.EXT [_FORM2] [_RESET n]'
+    - _MIN(OutputName) Interval
+    - 'Graphics section:'
+    - '*LINES'
+    - _MIN(OutputName) GraphWindowNumber ScaleFactor SeriesFormat “LegendText”
+    - _MAX(OutputName) GraphWindowNumber ScaleFactor SeriesFormat “LegendText”
+    - 'Queue section:'
+    - '*TARGET OutputName =,<=,>= Value Interval [_MIN]'
+    - '*SOURCE [Mask] ActionName1 Percent'
+    - '*SOURCE [Mask] ActionName2 Percent'
+    - '*SELECT ActionName'
+    - _MIN _AGE or YieldName
+    - _MAX _AGE or YieldName
+    - …
+    - 'Optimize section:'
+    - '*OBJECTIVE'
+    - ObjectiveSense f(Output1,Output2,..[Constant] * OutputX) Interval
+    - 'Yields section:'
+    - '*YC [Mask]'
+    - YieldName1 _MIN(YieldName,Value)
+    - YieldName2 _MIN(YieldName,...,YieldNameN)
+    used_in:
+    - Reports
+    - Graphics
+    - Queue
+    - Optimize
+    - Yields
+  _MINDELTA:
+    arguments:
+    - ActionName
+    - YieldName
+    - Offset
+    article_id: '873'
+    syntax:
+    - '*SELECT ActionName'
+    - _MINDELTA YieldName Offset
+    - …
+    used_in:
+    - Queue
+  _MINMAX:
+    arguments:
+    - Interval
+    - Constant
+    article_id: '874'
+    syntax:
+    - '*OBJECTIVE'
+    - _MAXMIN f(Output1,Output2,..[Constant] * OutputX) Interval
+    - _MINMAX is not a commonly-used objective function.
+    used_in:
+    - Optimize
+  _MULTIPLY:
+    arguments:
+    - Mask
+    - YieldName
+    article_id: '875'
+    documented_as: _MULTIPLY()
+    syntax:
+    - '*YC Mask'
+    - YieldName _MULTIPLY(ValueToMultiply1,ValueToMultiply2,…)
+    used_in:
+    - Yields
+  _NA:
+    arguments:
+    - mask
+    - age
+    - AreaValue
+    - aacode
+    - Interval
+    article_id: '877'
+    syntax:
+    - '*A mask age AreaValue _NA Interval'
+    - '*AA mask age AreaValue aacode _NA Interval'
+    - Rules
+    used_in:
+    - Areas
+  _NDY:
+    arguments:
+    - OutputName
+    article_id: '878'
+    documented_as: _NDY()
+    syntax:
+    - '*CONSTRAINTS'
+    - _NDY(OutputName)  Interval
+    used_in:
+    - Optimize
+  _NEGDELTA:
+    arguments:
+    - Mask
+    - NewYieldName
+    - YieldName
+    - PeriodicOffset
+    article_id: '879'
+    documented_as: _NEGDELTA()
+    syntax:
+    - '*YC Mask'
+    - NewYieldName _NEGDELTA(YieldName,PeriodicOffset)
+    - 'Rule(s):'
+    used_in:
+    - Yields
+  _NORMALIZE:
+    article_id: '1816'
+    used_in:
+    - …
+    - xlsx
+    - '*'
+    - Forest)
+    - '*'
+    - Forest)
+    - '*'
+    - Forest)
+    - '*'
+    - Forest)
+    - '*'
+    - Forest)
+    - '*'
+    - Forest)
+    - joinID for the first five rows
+    - then the next
+    - so on.  Also note the outputnames
+  _OPERABLE:
+    arguments:
+    - FileName
+    - EXT
+    - Interval
+    article_id: '881'
+    documented_as: _OPERABLE()
+    syntax:
+    - '*TARGET FileName.EXT'
+    - _OPERABLE([ActionName1,ActionName2,…]) Interval
+    used_in:
+    - Reports
+  _ORIGIN:
+    arguments:
+    - TableName
+    - Index1-4
+    - Index1-4Value
+    - TableValue
+    article_id: '884'
+    syntax:
+    - '*TABLE TableName(_Index1[,_Index2,_Index3,_Index4])'
+    - Index1Value [Index2Value Index3Value Index4Value] TableValue
+    used_in:
+    - Allocation
+  _OUTPUTS:
+    arguments:
+    - DestinationName
+    - Description
+    - Factor
+    article_id: '885'
+    syntax:
+    - 'Allocation Section:'
+    - '*DESTINATION DestinationName Description'
+    - _OUTPUTS ResidualProductName1 <- Factor ProductName1
+    - ResidualProductName2 <- Factor ProductName2
+    - 'Integrator :'
+    - Foreach xx in (_OUTPUTS)
+    - Endfor
+    used_in:
+    - Allocation
+    - Integrator/FOREACH  loops (anywhere)
+  _OVERRIDE:
+    article_id: '1476'
+  _PEAKMAI:
+    arguments:
+    - Mask
+    - NewYieldName
+    - YieldName
+    - YearsPerPeriod
+    article_id: '887'
+    documented_as: _PEAKMAI()
+    syntax:
+    - '*YC Mask'
+    - NewYieldName  _PEAKMAI(YieldName[,YearsPerPeriod])
+    - 'Rule(s):'
+    used_in:
+    - Yields
+  _PENALTY:
+    arguments:
+    - ObjectiveSense
+    - Function
+    - Interval
+    article_id: '888'
+    documented_as: _PENALTY()
+    syntax:
+    - '*OBJECTIVE'
+    - ObjectiveSense Function - _PENALTY(GoalsToPenalize) Interval
+    - Woodstock
+    - Allocation Optimizer
+    used_in:
+    - Optimize
+  _PERIOD:
+    arguments:
+    - TableName
+    - Index1-4
+    - Index1-4Value
+    - TableValue
+    article_id: '889'
+    syntax:
+    - '*TABLE TableName(_Index1[,_Index2,_Index3,_Index4])'
+    - Index1Value [Index2Value Index3Value Index4Value] TableValue
+    used_in:
+    - Allocation
+  _PERUNITAREA:
+    arguments:
+    - FileName
+    - EXT
+    - SystemReport
+    - Interval
+    - OutputName
+    article_id: '1483'
+    syntax:
+    - '*TARGET FileName.EXT'
+    - SystemReport Interval
+    - _TOTAL
+    - OutputName1
+    - OutputName2
+    - _PERUNITAREA
+    - OutputName1
+    - OutputName2
+    - _AA
+    - _ACTIVITY
+    - _CONDITION
+    - _DETAIL
+  _POSDELTA:
+    arguments:
+    - Mask
+    - NewYieldName
+    - YieldName
+    - PeriodicOffset
+    article_id: '891'
+    documented_as: _POSDELTA()
+    syntax:
+    - '*YC Mask'
+    - NewYieldName _POSDELTA(YieldName,PeriodicOffset)
+    - 'Rule(s):'
+    used_in:
+    - Yields
+  _PROCESS:
+    article_id: '1033'
+    documented_as: About the _PROCESS keyword
+  _PRODUCT:
+    arguments:
+    - TableName
+    - Index1-4
+    - Index1-4Value
+    - TableValue
+    - Enumerator
+    - Expression_Enumerator
+    article_id: '893'
+    syntax:
+    - 'Allocation section:'
+    - '*TABLE TableName(_Index1[,_Index2,_Index3,_Index4])'
+    - Index1Value [Index2Value Index3Value Index4Value] TableValue
+    - 'FOREACH loops:'
+    - FOREACH Enumerator IN (_PRODUCT)
+    - Expression_Enumerator
+    - ENDFOR
+    used_in:
+    - Allocation
+    - Integrator/FOREACH loops (anywhere)
+  _PRODUCTIONRATE:
+    article_id: '3040'
+    used_in:
+    - ScaleFactor
+    - harvest unit.  Note that
+    - yScaleFactor
+    - _PRODUCTIONRATE points to the yProdRate
+  _PROPERTIES:
+    arguments:
+    - FileName
+    - EXT
+    - PropertyName
+    - Reportcontent
+    article_id: '3009'
+    syntax:
+    - '*TARGET FileName.EXT _PROPERTIES(PropertyName1[,PropertyName2,...,PropertyNameN])'
+    - Reportcontent
+    - Rules
+  _RANDOM:
+    arguments:
+    - ActionName
+    - Mask
+    - Percent
+    - EventArea
+    - ProbabilityYield
+    - Enumerator
+    - Expression_Enumerator
+    article_id: '895'
+    syntax:
+    - 'Transitions section:'
+    - '*CASE ActionName _RANDOM EventArea'
+    - '*SOURCE Mask'
+    - '*TARGET Mask Percent'
+    - 'Queue section:'
+    - '*SELECT ActionName'
+    - _RANDOM
+    - '*AVAILABLE ActionName'
+    - Mask ProbabilityYield EventArea
+    - 'FOREACH:'
+    - FOREACH Enumertor IN _RANDOM(NumberOfDraws,[MinValue],MaxValue)
+    - Expression_Enumerator
+    - ENDFOR
+    - 'Rule(s):'
+    used_in:
+    - Transitions
+    - Queue
+    - All (FOREACH only)
+  _RANGE:
+    arguments:
+    - Mask
+    - YieldName
+    - FirstValue
+    - LastValue
+    article_id: '950'
+    syntax:
+    - '*YC Mask'
+    - YieldName _RANGE(YieldName1,FirstValue,LastValue,YieldName2,FirstValue,LastValue,…)
+    - 'Rule(s):'
+    used_in:
+    - Yields
+  _REGISTER:
+    arguments:
+    - Mask
+    - YieldName
+    - NumParameters
+    - DLLFunction
+    - AgeRange
+    - ScaleFactor
+    - DLLName
+    - DLLParameters
+    article_id: '954'
+    syntax:
+    - 'Fixed Call:'
+    - '*YC Mask'
+    - YieldName _DLL(NumParameters,_REGISTER) DLLPath DLLFunction(DLLParameters) (AgeRange) (ScaleFactor)
+    - 'Variant Call:'
+    - '*YC Mask'
+    - YieldName _DLL(CallingProtocol, _REGISTER) DLLName DLLFunction(DLLParameters) (AgeRange) (ScaleFactor)
+    - 'Rule(s):'
+    used_in:
+    - Yields
+  _REPLACE:
+    arguments:
+    - ActionName
+    - Mask
+    - Percent
+    - String
+    - YieldTable
+    article_id: '896'
+    documented_as: _REPLACE()
+    syntax:
+    - '*CASE ActionName'
+    - '*SOURCE Mask'
+    - '*TARGET Mask Percent _REPLACE(_THn, String or YieldTable)'
+    - '*TARGET Mask Percent _REPLACE(_THn, String or YieldTable, THn, String or YieldTable, THn, String
+      or YieldTable, ... )'
+    used_in:
+    - Transitions
+  _RESET:
+    arguments:
+    - FileName
+    - OutputName
+    - Interval
+    article_id: '897'
+    syntax:
+    - '*TARGET FileName.TXT'
+    - OutputName Interval
+    - 'Rule(s):'
+    used_in:
+    - Reports
+  _RX:
+    arguments:
+    - Mask
+    - Age
+    - Area
+    - RegimeName
+    - Period
+    - Condition
+    - PrescriptionName
+    - FinalEntryPeriod
+    article_id: '754'
+    syntax:
+    - 'Schedule section:'
+    - Mask Age Area RegimeName Period Condition _RX(PrescriptionName,FinalEntryPeriod)
+    - _RX is a keyword to indicate the prescription to schedule,
+    - 'LPSchedule section:'
+    - Mask Age Area RegimeName Period _RX(PrescriptionName,[FinalEntryPeriod])
+    - _RX is a keyword to indicate the prescription to schedule,
+    used_in:
+    - Schedule
+    - LPSchedule
+  _RXPERIOD:
+    arguments:
+    - RegimeName
+    - PrescriptionName
+    - Interval
+    - Mask
+    - OperableCondition
+    article_id: '1233'
+    syntax:
+    - '*REGIME RegimeName'
+    - '*OPERABLE RegimeName [_CP Interval]'
+    - Mask OperableCondition
+    - '*PRESCRIPTION PrescriptionName'
+    - _RXPERIOD _ACTION _ENTRY Yield1 Yield2 …
+    - _CP is a keyword to reference the current planning period,
+    used_in:
+    - Regimes
+  _SAMEAS:
+    arguments:
+    - DefaultAgeReset
+    - ActionDescription
+    - Mask1-X
+    - OperableCondition
+    article_id: '899'
+    syntax:
+    - 'In Actions section (with operable declaration):'
+    - '*ACTION ActionName DefaultAgeReset ActionDescription'
+    - '*OPERABLE ActionName _SAMEAS OtherActionName'
+    - 'In Actions section (with partial declaration):'
+    - '*ACTION ActionName DefaultAgeReset [ActionDescription]'
+    - '*OPERABLE ActionName'
+    - Mask1 OperableCondition1
+    - Mask2 OperableCondition2
+    - Maskn OperableConditionn
+    - '*PARTIAL ActionName    _SAMEAS OtherPartialActionName'
+    - 'In Transitions section:'
+    - '*CASE ActionName _SAMEAS OtherActionName'
+    used_in:
+    - Actions
+    - Transitions
+  _SCALEBY:
+    arguments:
+    - YieldType
+    - Mask
+    - YieldName
+    - DLLCall
+    - ScaleFactor
+    article_id: '900'
+    syntax:
+    - YieldType Mask
+    - YieldName DLLCall _SCALEBY ScaleFactor
+    used_in:
+    - Yields
+  _SCHEDULE:
+    arguments:
+    - FileName
+    - EXT
+    - Interval
+    article_id: '902'
+    documented_as: _SCHEDULE()
+    syntax:
+    - '*TARGET FileName.EXT'
+    - _SCHEDULE([ActionName1,ActionName2,…]) Interval
+    - 'Rule(s):'
+    used_in:
+    - Reports
+  _SELECT:
+    arguments:
+    - FileName
+    - EXT
+    - ActionName
+    - Interval
+    article_id: '903'
+    documented_as: _SELECT()
+    syntax:
+    - '*TARGET FileName.EXT'
+    - _SELECT(ActionName) Interval
+    used_in:
+    - Reports
+  _SEQ:
+    arguments:
+    - OutputName
+    - PercentIncrease
+    - PercentDecrease
+    article_id: '904'
+    documented_as: _SEQ()
+    syntax:
+    - _SEQ(OutputName,PercentIncrease,PercentDecrease)
+    used_in:
+    - Optimize
+  _SHIFT:
+    arguments:
+    - Mask
+    - NewYieldName
+    - YieldName
+    - PeriodstoShift
+    article_id: '905'
+    documented_as: _SHIFT()
+    syntax:
+    - '*YC Mask'
+    - NewYieldName  _SHIFT(YieldName,PeriodstoShift)
+    used_in:
+    - Yields
+  _STDCALL:
+    arguments:
+    - Mask
+    - YieldName
+    - NumParameters
+    - DLLFunction
+    - AgeRange
+    - ScaleFactor
+    - DLLName
+    - DLLParameters
+    article_id: '957'
+    syntax:
+    - 'Fixed Call:'
+    - '*YC Mask'
+    - YieldName _DLL(NumParameters,_STDCALL) DLLPath DLLFunction(DLLParameters) (AgeRange) (ScaleFactor)
+    - 'Variant Call:'
+    - '*YC Mask'
+    - YieldName _DLL(CallingProtocol, _STDCALL) DLLName DLLFunction(DLLParameters) (AgeRange) (ScaleFactor)
+    - 'Rule(s):'
+    used_in:
+    - Yields
+  _STEP:
+    arguments:
+    - AmountIncrease
+    - AmountDecrease
+    article_id: '911'
+    documented_as: _STEP()
+    syntax:
+    - _STEP(OutputName,AmountIncrease,AmountDecrease)
+    used_in:
+    - Optimize
+  _SUBSTR:
+    article_id: '1745'
+  _SUBTRACT:
+    arguments:
+    - Mask
+    - YieldName
+    article_id: '1327'
+    documented_as: _SUBTRACT()
+    syntax:
+    - '*YC Mask'
+    - YieldName _SUBTRACT(ValueToSubtract1,ValueToSubtract2)
+    used_in:
+    - Yields
+  _SUM:
+    arguments:
+    - Mask
+    - YieldName
+    - OutputName
+    - FileName
+    - EXT
+    - Interval
+    - VariableName
+    - Interval1
+    - RHS
+    article_id: '912'
+    documented_as: _SUM()
+    syntax:
+    - 'Yields Section:'
+    - '*YC Mask'
+    - YieldName _SUM(ValuetoSum1,ValuetoSum2,...)
+    - 'Graphics Section:'
+    - _SUM(OutputName)«Window and Series Properties»
+    - 'Reports Section:'
+    - '*TARGET FileName.EXT'
+    - _SUM(OutputName) Interval
+    - 'Optimize Section:'
+    - VariableName - _SUM(OutputName) = 0 Interval
+    - _SUM(OutputName,Interval1) = RHS Interval
+    used_in:
+    - Yields
+    - Graphics
+    - Reports
+    - Optimize
+  _TH:
+    arguments:
+    - OutputName
+    - OutputDescription
+    - Mask
+    - AreaLookup
+    - ValueToSum
+    - ActionName
+    - Percent
+    - String
+    - Enumerator
+    - Expression_Enumerator
+    article_id: '913'
+    documented_as: _THn
+    syntax:
+    - 'Outputs section:'
+    - '*OUTPUT OutputName(_THn) OutputDescription'
+    - '*SOURCE Mask [@AGE or @YLD] AreaLookUp ValueToSum'
+    - 'Transitions section:'
+    - '*CASE ActionName'
+    - '*SOURCE Mask'
+    - '*TARGET Mask Percent _REPLACE(_THn, String)'
+    - 'Yields section:'
+    - 'FOREACH:'
+    - FOREACH Enumerator IN (_THn)
+    - Expression_Enumerator
+    - ENDFOR
+    - 'Rule(s):'
+    used_in:
+    - Outputs
+    - Transitions
+    - Yields
+    - FOREACH loops
+  _THEMEn:
+    article_id: '943'
+    syntax:
+    - '*ORIGIN _THEMEn'
+    used_in:
+    - Allocation
+  _TOTAL:
+    arguments:
+    - FileName
+    - EXT
+    - SystemReport
+    - Interval
+    - OutputName
+    article_id: '1482'
+    syntax:
+    - '*TARGET FileName.EXT'
+    - SystemReport Interval
+    - _TOTAL
+    - OutputName1
+    - OutputName2
+    - OutputName3
+    - _AA
+    - _ACTIVITY
+    - _CONDITION
+    - _DETAIL
+  _TRACE:
+    arguments:
+    - Tag
+    article_id: '914'
+    syntax:
+    - '*CASE ActionName'
+    - '*SOURCE Mask1  _TRACE(Tag)'
+    - '*TARGET  Mask2  Percent'
+    - 'Rule(s):'
+    - •
+    - Woodstock
+    used_in:
+    - Transitions
+  _TSLA:
+    arguments:
+    - Mask
+    - Operator
+    - RHS
+    article_id: '1488'
+    syntax:
+    - '*ACTION ActionName DefaultAgeReset [ActionDescription]'
+    - '*OPERABLE ActionName [_CP Interval]'
+    - Mask _TSLA operator RHS
+    used_in:
+    - Actions
+  _UPPERLIMIT:
+    arguments:
+    - Output
+    - Period
+    - Value
+    - GraphWindowNumber
+    - ScaleFactor
+    article_id: '1472'
+    syntax:
+    - 'Schedule section:'
+    - _UPPERLIMIT(Output)[Period] = Value
+    - 'Graphics section:'
+    - _UPPERLIMIT(Output) GraphWindowNumber ScaleFactor SeriesFormat "LegendText"
+  _VARIABLE:
+    article_id: '1806'
+  _VARIANT:
+    arguments:
+    - Mask
+    - YieldName
+    - DLLName
+    - DLLFunction
+    - DLLParameters
+    - AgeRange
+    - ScaleFactor
+    article_id: '955'
+    syntax:
+    - 'Variant Call:'
+    - '*YC Mask'
+    - YieldName _DLL(CallingProtocol,CallingConvention) DLLName DLLFunction(DLLParameters) (AgeRange)
+      (ScaleFactor)
+    - 'Rule(s):'
+    used_in:
+    - Yields
+  _VIEW:
+    arguments:
+    - Mask
+    - Yieldn
+    article_id: '1234'
+    syntax:
+    - '*Y Mask _VIEW'
+    - _AGE Yield1 Yield2
+    used_in:
+    - Yields
+  _YIELD:
+    arguments:
+    - FileName
+    - EXT
+    - Filter
+    - Period
+    - YieldName
+    article_id: '920'
+    syntax:
+    - 'Reports:'
+    - '*TARGET FileName.EXT'
+    - _YIELD[(Filter)] Period
+    - '[YieldName]'
+    used_in:
+    - Reports
+    - Integrator /FOREACH loops (anywhere)
+  _YTP:
+    arguments:
+    - Mask
+    - YieldName
+    article_id: '921'
+    documented_as: _YTP()
+    syntax:
+    - '*YC Mask'
+    - YieldName  _YTP(YieldName)
+    - 'Rule(s):'
+    used_in:
+    - Yields
+meta:
+  description: 'Keyword contract for the Woodstock model input data format: which section each keyword
+    belongs to, its syntax skeleton, and its argument names.'
+  keyword_count: 198
+  name: woodstock-input-format-contract
+  note: This file describes the Woodstock format. Which parts of it ws3 reads is recorded in ws3.woodstock,
+    alongside the importers that provide it.
+  provenance: Keyword names, section scoping and syntax skeletons derived from the vendor documentation.
+    Interface facts only -- no vendor prose is reproduced here. Descriptive text remains in the private
+    reference repository.
+  sections:
+    Actions:
+      file_extension: act
+    Allocation:
+      file_extension: alloc
+    Areas:
+      file_extension: are
+    Constants:
+      file_extension: con
+    Control:
+      file_extension: run
+    Graphics:
+      file_extension: gra
+    Landscape:
+      file_extension: lan
+    Lifespan:
+      file_extension: lif
+    LpSchedule:
+      file_extension: lps
+    Optimize:
+      file_extension: opt
+    Outputs:
+      file_extension: out
+    Queue:
+      file_extension: que
+    Regimes:
+      file_extension: rgm
+    Reports:
+      file_extension: rep
+    Schedule:
+      file_extension: seq
+    Transitions:
+      file_extension: trn
+    Yields:
+      file_extension: yld
