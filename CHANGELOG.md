@@ -8,10 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `ws3.woodstock`: machine-readable contract for the Woodstock input data format (201 keywords)
+- `ws3.woodstock`: machine-readable contract for the Woodstock input data format (198 keywords)
   and `lint_dataset`, which reports sections and keywords ws3 does not read. Previously these
   were ignored silently, so a dataset could import cleanly and produce a model that was not the
   model that was written.
+- New reference page, *Woodstock Format: What ws3 Reads*, documenting the supported subset and
+  the two deliberate divergences from Woodstock (periods versus years, one-based versus
+  zero-based theme indexing). Its support tables are generated from the contract at docs build
+  time rather than transcribed, so they cannot drift from the importers.
 
 ### Fixed
 

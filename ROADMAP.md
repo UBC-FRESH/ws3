@@ -382,14 +382,18 @@ authoritative source for the theme vector.
 | P9.1 Ship the keyword contract as package data | #115 | complete |
 | P9.2 Preserve theme descriptions on LANDSCAPE import | #116 | complete |
 | P9.3 Dataset linter for unsupported sections and keywords | #117 | complete |
-| P9.4 Document the supported subset and divergences | #118 | pending |
+| P9.4 Document the supported subset and divergences | #118 | complete |
 
 Measured support: Landscape, Areas, Yields, Transitions, Outputs, Constants and Schedule are
 implemented; Actions is partial; Optimize, Control, Graphics and Lifespan are stubs that import
-nothing; Regimes, Reports, Queue, Allocation and LpSchedule have no importer. 201 keywords
-catalogued, 27 read by ws3.
+nothing; Regimes, Reports, Queue, Allocation and LpSchedule have no importer. 198 keywords
+catalogued, 25 read by ws3.
 
 Recorded divergences from Woodstock, intentional and not defects:
 
 - Woodstock measures age and action timing in periods; ws3 measures them in years.
 - Woodstock counts themes from one (`_THn`); ws3 stores themes zero-indexed.
+
+Documented at `docs/source/reference/contracts/woodstock_format.rst`. The support tables on
+that page are generated at build time from `ws3.woodstock` by the `docs/source/_ext/ws3_woodstock.py`
+Sphinx extension, so the documented subset cannot drift from the implemented one.

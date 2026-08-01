@@ -28,6 +28,7 @@ Contract Pages
    :maxdepth: 1
 
    data_contracts
+   woodstock_format
    runtime_invariants
    module_boundaries
    output_format_spec
