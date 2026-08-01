@@ -101,6 +101,23 @@ class DiagnoseImport(Capability[Diagnosis]):
             excerpt=str(payload.get('excerpt', '')),
         )
 
+    def coerce_input(self, inputs: Any) -> ImportFailure:
+        """
+        Accept a dict as well as an :py:class:`ImportFailure`.
+
+        No string shorthand here: this capability needs the model path and section
+        to run its oracle at all, so there is no single field that could stand in
+        for the rest.
+        """
+        if isinstance(inputs, ImportFailure):
+            return inputs
+        if isinstance(inputs, dict):
+            return self.from_payload(inputs)
+        raise TypeError(
+            f'diagnose_import takes a dict or an ImportFailure; '
+            f'got {type(inputs).__name__}'
+        )
+
     def render(self, value: 'Diagnosis') -> str:
         """Render the diagnosis and the verified replacement line."""
         return (

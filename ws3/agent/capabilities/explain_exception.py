@@ -19,6 +19,7 @@ from __future__ import annotations
 import importlib
 import json
 import re
+import traceback
 from dataclasses import dataclass
 from typing import Any, Iterable
 
@@ -152,6 +153,34 @@ class ExplainException(Capability[Explanation]):
             message=str(payload.get('message', '')),
             traceback_text=str(payload.get('traceback_text', '')),
             context=str(payload.get('context', '')),
+        )
+
+    def coerce_input(self, inputs: Any) -> ExceptionReport:
+        """
+        Accept a live exception as well as an :py:class:`ExceptionReport`.
+
+        Passing the caught exception straight through is the obvious call at a
+        ``except`` site, and it also captures the traceback automatically -- which
+        materially improves the explanation, and which a hand-built report usually
+        omits.
+        """
+        if isinstance(inputs, ExceptionReport):
+            return inputs
+        if isinstance(inputs, BaseException):
+            return ExceptionReport(
+                exc_type=type(inputs).__name__,
+                message=str(inputs),
+                traceback_text=''.join(
+                    traceback.format_exception(
+                        type(inputs), inputs, inputs.__traceback__
+                    )
+                ),
+            )
+        if isinstance(inputs, dict):
+            return self.from_payload(inputs)
+        raise TypeError(
+            f'explain_exception takes an Exception, a dict, or an ExceptionReport; '
+            f'got {type(inputs).__name__}'
         )
 
     def render(self, value: 'Explanation') -> str:

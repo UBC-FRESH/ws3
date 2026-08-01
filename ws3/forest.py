@@ -2240,11 +2240,16 @@ class ForestModel:
             data = f.read()
         _data = _search(r'\*THEME.*', data, 'landscape section (no *THEME declaration found)',
                         re.M | re.S).group(0) # strip leading junk
-        t_data = re.split(r'\*THEME.*\n', _data)[1:] # split into theme-wise chunks
-        for ti, t in enumerate(t_data, start=ti_offset):
+        # Capture the text trailing each *THEME declaration rather than discarding it.
+        # That text is the modeller's own description of the theme (e.g. "Analysis Unit
+        # (AU)"), and it is the only thing in the dataset that says what a theme position
+        # means -- theme order and meaning are entirely user-defined in this format.
+        _chunks = re.split(r'\*THEME(.*)\n', _data)[1:] # [desc, body, desc, body, ...]
+        t_data = list(zip(_chunks[::2], _chunks[1::2]))
+        for ti, (t_description, t) in enumerate(t_data, start=ti_offset):
             self._themes.append({})
             self._themes[-1]['__name__'] = 'theme%i' % ti
-            self._themes[-1]['__description__'] = '' # TO DO: extract comments in theme declaration
+            self._themes[-1]['__description__'] = t_description.strip().lstrip(';').strip()
             self._theme_basecodes.append([])
             defining_aggregates = False
             for l in [l for l in t.split('\n') if not re.match(r'^\s*(;|{|$)', l)]:

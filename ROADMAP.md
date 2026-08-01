@@ -365,3 +365,35 @@ Work identified during earlier phases and deliberately deferred to keep those ph
 - Issue: [fresh-agent-core#1](https://github.com/UBC-FRESH/fresh-agent-core/issues/1)
 - Status: not_started
 - Scope: 2.0 removed the low-level `Server` decorator API. Main prize is `MCPServer.tool()` generating schemas from type hints, which removes hand-maintained schema drift by construction. Elicitation needs a deliberate decision: it must run before the validate loop, never inside it, or the oracle guarantee weakens into a conversation.
+
+## Phase 9 — Woodstock Format Contract and Dataset Linting
+
+Parent issue: #114
+Branch: `phase9-woodstock-format-contract`
+Status: active
+
+Give ws3 a machine-readable contract for the Woodstock input data format, and use it to report
+what ws3 does and does not read from a dataset. The format is deliberately open ended: a model
+instance declares its own theme set, order and codes, and the LANDSCAPE section is the
+authoritative source for the theme vector.
+
+| Task | Issue | Status |
+| --- | --- | --- |
+| P9.1 Ship the keyword contract as package data | #115 | complete |
+| P9.2 Preserve theme descriptions on LANDSCAPE import | #116 | complete |
+| P9.3 Dataset linter for unsupported sections and keywords | #117 | complete |
+| P9.4 Document the supported subset and divergences | #118 | complete |
+
+Measured support: Landscape, Areas, Yields, Transitions, Outputs, Constants and Schedule are
+implemented; Actions is partial; Optimize, Control, Graphics and Lifespan are stubs that import
+nothing; Regimes, Reports, Queue, Allocation and LpSchedule have no importer. 198 keywords
+catalogued, 25 read by ws3.
+
+Recorded divergences from Woodstock, intentional and not defects:
+
+- Woodstock measures age and action timing in periods; ws3 measures them in years.
+- Woodstock counts themes from one (`_THn`); ws3 stores themes zero-indexed.
+
+Documented at `docs/source/reference/contracts/woodstock_format.rst`. The support tables on
+that page are generated at build time from `ws3.woodstock` by the `docs/source/_ext/ws3_woodstock.py`
+Sphinx extension, so the documented subset cannot drift from the implemented one.

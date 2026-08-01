@@ -22,6 +22,7 @@ import sys
 sys.path.insert(0, os.path.abspath('../..'))
 import ws3
 sys.path.insert(0, os.path.abspath('../../ws3'))
+sys.path.insert(0, os.path.abspath('_ext'))
 
 # -- Misc Stuff -----------------------------------------------------------
 intersphinx_mapping = {'http://docs.python.org/3': None}
@@ -57,7 +58,8 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinxcontrib.mermaid',
     'nbsphinx',
-    'sphinx_rtd_theme']
+    'sphinx_rtd_theme',
+    'ws3_woodstock']
 
 # Skip notebook execution entirely (data files not available in CI)
 nbsphinx_execute = 'never'

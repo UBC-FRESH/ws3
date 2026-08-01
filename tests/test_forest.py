@@ -1,7 +1,58 @@
 import sys
 sys.path.append('../ws3/')
+import textwrap
+from pathlib import Path
+
 import pytest
-from ws3.forest import Action, DevelopmentType, _search
+from ws3.forest import Action, DevelopmentType, ForestModel, _search
+
+
+class TestLandscapeThemeDescriptions:
+    """
+    Theme descriptions must survive import.
+
+    Theme order and meaning are entirely user-defined in the Woodstock format, so
+    the text trailing a ``*THEME`` declaration is the only thing in the dataset
+    that states what a theme position represents. The importer used to discard it,
+    which left every theme anonymous downstream.
+    """
+
+    @pytest.fixture
+    def model(self, tmp_path: Path) -> ForestModel:
+        (tmp_path / 'm.lan').write_text(textwrap.dedent("""\
+            *THEME Timber Supply Area (TSA)
+            tsa24
+            *THEME Leading tree species
+            sw
+            pl
+            *AGGREGATE conifer
+            sw pl
+            *THEME
+            1
+            2
+            """))
+        fm = ForestModel(model_name='m', model_path=str(tmp_path),
+                         base_year=2020, horizon=1, period_length=10, max_age=100)
+        fm.import_landscape_section()
+        return fm
+
+    def test_descriptions_are_extracted(self, model):
+        assert model._themes[0]['__description__'] == 'Timber Supply Area (TSA)'
+        assert model._themes[1]['__description__'] == 'Leading tree species'
+
+    def test_undescribed_theme_yields_empty_description(self, model):
+        """Absent is absent -- it must not be filled in with the placeholder name."""
+        assert model._themes[2]['__description__'] == ''
+
+    def test_theme_count_and_codes_are_unaffected(self, model):
+        assert model.nthemes() == 3
+        assert model.theme_basecodes(0) == ['tsa24']
+        assert model.theme_basecodes(1) == ['sw', 'pl']
+        assert model.theme_basecodes(2) == ['1', '2']
+
+    def test_aggregates_still_parse(self, model):
+        """The declaration line now feeds a capture group; aggregates must survive."""
+        assert model._themes[1]['conifer'] == ['sw', 'pl']
 
 
 def test_search_returns_match_when_pattern_matches():
