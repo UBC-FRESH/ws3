@@ -366,11 +366,17 @@ Work identified during earlier phases and deliberately deferred to keep those ph
 - Status: not_started
 - Scope: 2.0 removed the low-level `Server` decorator API. Main prize is `MCPServer.tool()` generating schemas from type hints, which removes hand-maintained schema drift by construction. Elicitation needs a deliberate decision: it must run before the validate loop, never inside it, or the oracle guarantee weakens into a conversation.
 
+### Lint tooling split and notebook cell-type defects
+- Issue: [#120](https://github.com/UBC-FRESH/ws3/issues/120)
+- Status: not_started
+- Scope: the repo configures two linters and enforces one. `flake8 ws3/ tests/` is the CI gate and passes; `ruff` is configured in `pyproject.toml` but wired to no job, while `AGENTS.md` and `CONTRIBUTING.md` tell contributors to run it. Two real defects hide in the resulting noise: notebooks `071` and `078` store Markdown in `code` cells (they raise `SyntaxError` if executed, and cause 12 Sphinx warnings), and `[tool.ruff] target-version = "py39"` contradicts `requires-python = ">=3.10"`. Residual after aligning scope and policy is 515 cosmetic findings with zero F-codes.
+
 ## Phase 9 — Woodstock Format Contract and Dataset Linting
 
 Parent issue: #114
 Branch: `phase9-woodstock-format-contract`
-Status: active
+PR: #119, merged
+Status: complete
 
 Give ws3 a machine-readable contract for the Woodstock input data format, and use it to report
 what ws3 does and does not read from a dataset. The format is deliberately open ended: a model
