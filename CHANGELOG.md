@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Started Phase 10 companion work for FEMIC #305 in issue #121 and branch
+  `feature/p10-femic-model-contract`.
+- Defined the ws3 responsibility as a typed model contract and deterministic
+  verification-oracle surface behind FEMIC, while FreshForge owns workflow
+  orchestration.
+
 - `ws3.woodstock`: machine-readable contract for the Woodstock input data format (198 keywords)
   and `lint_dataset`, which reports sections and keywords ws3 does not read. Previously these
   were ignored silently, so a dataset could import cleanly and produce a model that was not the
