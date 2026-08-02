@@ -408,7 +408,7 @@ Sphinx extension, so the documented subset cannot drift from the implemented one
 
 - Parent program: [FEMIC #305](https://github.com/UBC-FRESH/femic/issues/305)
 - Companion issue: [#121](https://github.com/UBC-FRESH/ws3/issues/121)
-- Status: planned
+- Status: active
 - Branch: `feature/p10-femic-model-contract`
 
 ### Goal
@@ -434,5 +434,12 @@ Provide the narrow ws3 domain contract that FEMIC can call while FreshForge owns
 ### Immediate task
 
 Define the typed contract and workspace-facing adapter boundary, then write the first public-fixture extraction/import verification test. Do not add an LLM provider in this task.
+
+Initial extraction and structural verification are complete in
+`ws3.agent.themes.ModelContract`: the contract captures model metadata, theme
+schema, and development-type inventory; L0 checks cover theme arity, basecodes,
+development-type key length, and known theme codes; L1 reports duplicate keys as
+warnings. The next bounded slice is import/lint round-trip verification and
+domain coverage for areas, yields, actions, and transitions.
 
 Detailed plan: `planning/phase10_femic_model_contract.md`.

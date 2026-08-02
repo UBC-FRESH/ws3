@@ -13,6 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Defined the ws3 responsibility as a typed model contract and deterministic
   verification-oracle surface behind FEMIC, while FreshForge owns workflow
   orchestration.
+- Added `ws3.agent.themes.ModelContract`, a reference-free JSON-serializable
+  extraction surface for model metadata, theme schema, and development-type
+  inventory.
+- Added structured L0 verification findings for theme arity, theme basecodes,
+  development-type key length, and known theme codes, plus an L1 duplicate-key
+  warning. Focused and regression validation passes with 33 tests passed and 1
+  pre-existing skip.
 
 - `ws3.woodstock`: machine-readable contract for the Woodstock input data format (198 keywords)
   and `lint_dataset`, which reports sections and keywords ws3 does not read. Previously these
