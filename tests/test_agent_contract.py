@@ -633,3 +633,154 @@ class TestDevelopmentTypeEntry:
         d = entry.to_dict()
         roundtrip = json.loads(json.dumps(d))
         assert roundtrip == d
+
+
+# ---------------------------------------------------------------------------
+# Action and transition extraction
+# ---------------------------------------------------------------------------
+
+class TestActionTransitionExtraction:
+    """Action codes and transition targets must be extracted from existing APIs."""
+
+    def test_action_codes_extracted_from_oper_expr(self, tsa24_model: ForestModel):
+        """Action codes from oper_expr must be captured per development type."""
+        # Add an action to the model to test extraction.
+        tsa24_model.add_null_action(acode='test_action')
+        contract = ModelContract.from_model(tsa24_model)
+        for entry in contract.development_types:
+            assert 'test_action' in entry.action_codes
+
+    def test_transition_targets_extracted_from_transitions(self, tsa24_model: ForestModel):
+        """Transition targets must be extracted from DevelopmentType.transitions."""
+        tsa24_model.add_null_action(acode='test_action')
+        contract = ModelContract.from_model(tsa24_model)
+        for entry in contract.development_types:
+            assert 'test_action' in entry.transition_targets
+
+    def test_action_codes_are_sorted(self, tsa24_model: ForestModel):
+        """Action codes must be sorted in the extracted tuple."""
+        tsa24_model.add_null_action(acode='z_action')
+        tsa24_model.add_null_action(acode='a_action')
+        contract = ModelContract.from_model(tsa24_model)
+        for entry in contract.development_types:
+            assert list(entry.action_codes) == sorted(entry.action_codes)
+
+    def test_transition_targets_are_sorted(self, tsa24_model: ForestModel):
+        """Transition targets must be sorted in the extracted tuple."""
+        tsa24_model.add_null_action(acode='z_action')
+        tsa24_model.add_null_action(acode='a_action')
+        contract = ModelContract.from_model(tsa24_model)
+        for entry in contract.development_types:
+            assert list(entry.transition_targets) == sorted(entry.transition_targets)
+
+    def test_declared_actions_in_metadata(self, tsa24_model: ForestModel):
+        """Declared action codes must be in contract metadata."""
+        tsa24_model.add_null_action(acode='test_action')
+        contract = ModelContract.from_model(tsa24_model)
+        assert 'test_action' in contract.metadata['declared_actions']
+
+    def test_action_transition_roundtrips_through_json(self, tsa24_model: ForestModel):
+        """Action/transition fields must survive JSON round-trip."""
+        tsa24_model.add_null_action(acode='test_action')
+        contract = ModelContract.from_model(tsa24_model)
+        payload = contract.to_dict()
+        roundtrip = json.loads(json.dumps(payload))
+        for entry in roundtrip['development_types']:
+            assert 'action_codes' in entry
+            assert 'transition_targets' in entry
+            assert isinstance(entry['action_codes'], list)
+            assert isinstance(entry['transition_targets'], list)
+
+
+# ---------------------------------------------------------------------------
+# Verification -- action_orphan and transition_target_invalid
+# ---------------------------------------------------------------------------
+
+class TestVerificationActionTransition:
+    """Orphan action references and invalid transition targets must be flagged."""
+
+    def test_action_orphan_is_warning(self):
+        """An action code in oper_expr not in declared_actions must be flagged."""
+        from ws3.agent.themes import Theme, ThemeSchema
+
+        schema = ThemeSchema(
+            themes=(
+                Theme(
+                    index=0, name='tsa', description='',
+                    basecodes=('tsa24',), aggregates={},
+                ),
+            )
+        )
+        contract = ModelContract(
+            metadata={
+                'model_name': 'orphan', 'base_year': 2020, 'horizon': 1,
+                'period_length': 10, 'max_age': 100,
+                'area_epsilon': 0.01, 'curve_epsilon': 1e-06,
+                'n_development_types': 1, 'n_actions': 0,
+                'declared_actions': (),  # No actions declared
+            },
+            schema=schema,
+            development_types=[DevelopmentTypeEntry(
+                key=('tsa24',), n_age_classes=1, total_area=100.0,
+                age_classes=(0,), yield_components=(), yield_compiled={},
+                action_codes=('orphan_action',),  # Not declared
+                transition_targets=(),
+            )],
+        )
+        result = contract.verify()
+        assert result.is_valid  # warnings do not invalidate
+        orphan_warnings = [
+            f for f in result.warnings if f.category == 'action_orphan'
+        ]
+        assert len(orphan_warnings) == 1
+        assert 'orphan_action' in orphan_warnings[0].message
+
+    def test_transition_target_invalid_is_warning(self):
+        """A transition target not in declared_actions must be flagged."""
+        from ws3.agent.themes import Theme, ThemeSchema
+
+        schema = ThemeSchema(
+            themes=(
+                Theme(
+                    index=0, name='tsa', description='',
+                    basecodes=('tsa24',), aggregates={},
+                ),
+            )
+        )
+        contract = ModelContract(
+            metadata={
+                'model_name': 'invalid_target', 'base_year': 2020, 'horizon': 1,
+                'period_length': 10, 'max_age': 100,
+                'area_epsilon': 0.01, 'curve_epsilon': 1e-06,
+                'n_development_types': 1, 'n_actions': 0,
+                'declared_actions': (),  # No actions declared
+            },
+            schema=schema,
+            development_types=[DevelopmentTypeEntry(
+                key=('tsa24',), n_age_classes=1, total_area=100.0,
+                age_classes=(0,), yield_components=(), yield_compiled={},
+                action_codes=(),
+                transition_targets=('invalid_target',),  # Not declared
+            )],
+        )
+        result = contract.verify()
+        assert result.is_valid  # warnings do not invalidate
+        target_warnings = [
+            f for f in result.warnings if f.category == 'transition_target_invalid'
+        ]
+        assert len(target_warnings) == 1
+        assert 'invalid_target' in target_warnings[0].message
+
+    def test_valid_action_references_produce_no_findings(self, tsa24_model: ForestModel):
+        """Valid action references must not produce findings."""
+        tsa24_model.add_null_action(acode='valid_action')
+        contract = ModelContract.from_model(tsa24_model)
+        result = contract.verify()
+        orphan_warnings = [
+            f for f in result.warnings if f.category == 'action_orphan'
+        ]
+        target_warnings = [
+            f for f in result.warnings if f.category == 'transition_target_invalid'
+        ]
+        assert len(orphan_warnings) == 0
+        assert len(target_warnings) == 0

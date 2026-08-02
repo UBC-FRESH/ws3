@@ -275,6 +275,11 @@ class DevelopmentTypeEntry:
       this development type (from :py:meth:`ws3.forest.DevelopmentType.ycomps`).
     - ``yield_compiled``: dict mapping each yield component name to a boolean
       indicating whether its curve has been compiled (i.e. is not ``None``).
+    - ``action_codes``: sorted tuple of action codes declared in this
+      development type's ``oper_expr`` (recoverable from existing APIs).
+    - ``transition_targets``: sorted tuple of action codes referenced as
+      transition targets in this development type's ``transitions`` dict
+      (recoverable from existing APIs).
 
     Frozen so the contract remains immutable once built from a model.
     """
@@ -285,6 +290,8 @@ class DevelopmentTypeEntry:
     age_classes: tuple[int, ...]
     yield_components: tuple[str, ...]
     yield_compiled: dict[str, bool]
+    action_codes: tuple[str, ...] = ()
+    transition_targets: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -294,6 +301,8 @@ class DevelopmentTypeEntry:
             'age_classes': list(self.age_classes),
             'yield_components': list(self.yield_components),
             'yield_compiled': dict(self.yield_compiled),
+            'action_codes': list(self.action_codes),
+            'transition_targets': list(self.transition_targets),
         }
 
 #: Severity levels for verification findings.
@@ -410,6 +419,7 @@ class ModelContract:
             'curve_epsilon': fm.curve_epsilon,
             'n_development_types': len(fm.dtypes),
             'n_actions': len(fm.actions),
+            'declared_actions': tuple(sorted(fm.actions.keys())),
         }
 
         development_types = []
@@ -423,6 +433,13 @@ class ModelContract:
                 yname: dt.ycomp(yname, silent_fail=False) is not None
                 for yname in ycomps
             }
+            # Extract action codes from oper_expr (recoverable from existing API).
+            action_codes = tuple(sorted(dt.oper_expr.keys()))
+            # Extract transition target action codes from transitions dict.
+            # Keys are (acode, age) tuples; we collect unique acodes.
+            transition_targets = tuple(sorted({
+                acode for (acode, _age) in dt.transitions.keys()
+            }))
             development_types.append(
                 DevelopmentTypeEntry(
                     key=key,
@@ -431,6 +448,8 @@ class ModelContract:
                     age_classes=age_classes,
                     yield_components=tuple(sorted(ycomps)),
                     yield_compiled=yield_compiled,
+                    action_codes=action_codes,
+                    transition_targets=transition_targets,
                 )
             )
 
@@ -594,11 +613,41 @@ class ModelContract:
                         severity=SEVERITY_WARNING,
                     )
                 )
-        # L1: action_orphan
-        # This requires the original model's actions dict, which the contract
-        # does not carry. Skip this check here -- it belongs to a richer
-        # verification pass that keeps a reference to the model, or to a
-        # separate capability. Documented as a known limitation.
+
+        # L1: action_orphan -- action codes in oper_expr not declared in model
+        declared = set(self.metadata.get('declared_actions', ()))
+        for entry in self.development_types:
+            for acode in entry.action_codes:
+                if acode and acode not in declared:
+                    findings.append(
+                        VerificationFinding(
+                            level='L1',
+                            category='action_orphan',
+                            message=(
+                                f'development type {entry.key!r} references '
+                                f'action code {acode!r} in oper_expr, but it is '
+                                f'not declared in the model'
+                            ),
+                            severity=SEVERITY_WARNING,
+                        )
+                    )
+
+        # L1: transition_target_invalid -- transition targets not declared in model
+        for entry in self.development_types:
+            for target in entry.transition_targets:
+                if target and target not in declared:
+                    findings.append(
+                        VerificationFinding(
+                            level='L1',
+                            category='transition_target_invalid',
+                            message=(
+                                f'development type {entry.key!r} references '
+                                f'transition target {target!r}, which is not '
+                                f'declared in the model'
+                            ),
+                            severity=SEVERITY_WARNING,
+                        )
+                    )
 
         return VerificationResult(findings=findings)
 

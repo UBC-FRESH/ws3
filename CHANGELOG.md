@@ -24,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   period-0 area inventory and yield-component coverage, plus L1 warnings for
   empty area inventory and missing yield coverage. The full ws3 suite passes:
   306 tests passed and 9 skipped.
+- Added deterministic action and transition inventory to each development-type
+  entry, with L1 warnings for references not present in the model's declared
+  action set. The full ws3 suite passes again: 315 tests passed and 9 skipped.
 
 - `ws3.woodstock`: machine-readable contract for the Woodstock input data format (198 keywords)
   and `lint_dataset`, which reports sections and keywords ws3 does not read. Previously these

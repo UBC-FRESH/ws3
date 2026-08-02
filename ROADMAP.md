@@ -440,7 +440,8 @@ Initial extraction and structural verification are complete in
 schema, development-type inventory, period-0 area inventory, and yield-component
 coverage; L0 checks cover theme arity, basecodes, development-type key length,
 and known theme codes; L1 reports duplicate keys, empty area inventory, and
-missing yield coverage as warnings. The next bounded slice is import/lint
-round-trip verification and domain coverage for actions and transitions.
+missing yield coverage as warnings. Action references from `oper_expr` and
+transition action codes are now captured and checked against declared actions;
+the next bounded slice is import/lint round-trip verification.
 
 Detailed plan: `planning/phase10_femic_model_contract.md`.
