@@ -444,7 +444,14 @@ missing yield coverage as warnings. Action references from `oper_expr` and
 transition action codes are now captured and checked against declared actions;
 the source-backed `verify_source()` oracle now runs Woodstock lint and a
 scratch-model landscape/areas import, returning structured findings for
-unsupported, malformed, or missing source data. The next bounded slice is a
-bounded compile/solve smoke oracle where the existing APIs support it.
+unsupported, malformed, or missing source data. The bounded compile/solve smoke
+oracle has landed: `verify_compile_solve()` attempts action compilation and
+returns a `CompileSolveCapability` record covering compile availability, solve
+availability, per-development-type yield compilation status, and an explicit
+deferral reason when a model defines no optimization problem. It does not invoke
+`Problem.solve()`, because coefficient functions are not guaranteed safe to call
+without user context, so an unavailable tier is never reported as a pass. The
+next bounded slice is deterministic emission and adapter hooks, so FEMIC can
+construct a model without a language model generating raw Woodstock syntax.
 
 Detailed plan: `planning/phase10_femic_model_contract.md`.
