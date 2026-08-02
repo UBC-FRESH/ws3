@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   development-type key length, and known theme codes, plus an L1 duplicate-key
   warning. Focused and regression validation passes with 33 tests passed and 1
   pre-existing skip.
+- Extended `ModelContract` with typed development-type entries containing
+  period-0 area inventory and yield-component coverage, plus L1 warnings for
+  empty area inventory and missing yield coverage. The full ws3 suite passes:
+  306 tests passed and 9 skipped.
 
 - `ws3.woodstock`: machine-readable contract for the Woodstock input data format (198 keywords)
   and `lint_dataset`, which reports sections and keywords ws3 does not read. Previously these

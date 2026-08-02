@@ -258,6 +258,44 @@ def schema_for(fm: Any | None) -> ThemeSchema | None:
 
 from dataclasses import asdict, dataclass, field  # noqa: E402
 
+
+@dataclass(frozen=True)
+class DevelopmentTypeEntry:
+    """
+    One development type's deterministic domain inventory snapshot.
+
+    Captures what is observable from existing ForestModel / DevelopmentType
+    APIs without holding a reference to the model:
+
+    - ``key``: the theme-code tuple identifying this development type.
+    - ``n_age_classes``: number of distinct age classes in period-0 area inventory.
+    - ``total_area``: sum of period-0 area across all age classes.
+    - ``age_classes``: sorted tuple of age-class keys present in period 0.
+    - ``yield_components``: sorted tuple of yield component names declared for
+      this development type (from :py:meth:`ws3.forest.DevelopmentType.ycomps`).
+    - ``yield_compiled``: dict mapping each yield component name to a boolean
+      indicating whether its curve has been compiled (i.e. is not ``None``).
+
+    Frozen so the contract remains immutable once built from a model.
+    """
+
+    key: tuple[str, ...]
+    n_age_classes: int
+    total_area: float
+    age_classes: tuple[int, ...]
+    yield_components: tuple[str, ...]
+    yield_compiled: dict[str, bool]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            'key': list(self.key),
+            'n_age_classes': self.n_age_classes,
+            'total_area': self.total_area,
+            'age_classes': list(self.age_classes),
+            'yield_components': list(self.yield_components),
+            'yield_compiled': dict(self.yield_compiled),
+        }
+
 #: Severity levels for verification findings.
 SEVERITY_ERROR = 'error'
 SEVERITY_WARNING = 'warning'
@@ -333,7 +371,7 @@ class ModelContract:
     1. **Metadata** -- model name, base year, horizon, period length, max age.
     2. **Theme schema** -- the :py:class:`ThemeSchema` of the model.
     3. **Development types** -- the set of keys actually present, each reduced to
-       its theme-code tuple and a count of period-0 area buckets.
+       its theme-code tuple, period-0 area inventory, and yield coverage.
 
     Structural verification runs deterministic L0 and L1 checks and returns
     findings rather than raising, so ordinary model invalidity is observable
@@ -341,14 +379,14 @@ class ModelContract:
 
     :param metadata: Flat dict of scalar model metadata.
     :param schema: The theme schema.
-    :param development_types: List of ``(key, n_age_classes)`` pairs.
+    :param development_types: List of :py:class:`DevelopmentTypeEntry` instances.
     """
 
     def __init__(
         self,
         metadata: dict[str, Any],
         schema: ThemeSchema,
-        development_types: list[tuple[tuple[str, ...], int]],
+        development_types: list[DevelopmentTypeEntry],
     ) -> None:
         self.metadata = metadata
         self.schema = schema
@@ -376,8 +414,25 @@ class ModelContract:
 
         development_types = []
         for key in sorted(fm.dtypes.keys()):
-            n_ages = len(fm.dtypes[key]._areas[0])
-            development_types.append((key, n_ages))
+            dt = fm.dtypes[key]
+            period0 = dt._areas[0]
+            age_classes = tuple(sorted(period0.keys()))
+            total_area = float(sum(period0[a] for a in age_classes))
+            ycomps = dt.ycomps()
+            yield_compiled = {
+                yname: dt.ycomp(yname, silent_fail=False) is not None
+                for yname in ycomps
+            }
+            development_types.append(
+                DevelopmentTypeEntry(
+                    key=key,
+                    n_age_classes=len(age_classes),
+                    total_area=total_area,
+                    age_classes=age_classes,
+                    yield_components=tuple(sorted(ycomps)),
+                    yield_compiled=yield_compiled,
+                )
+            )
 
         return cls(
             metadata=metadata,
@@ -458,15 +513,15 @@ class ModelContract:
                 )
 
         # L0: dtype_key_length
-        for key, _n_ages in self.development_types:
-            if len(key) != nthemes:
+        for entry in self.development_types:
+            if len(entry.key) != nthemes:
                 findings.append(
                     VerificationFinding(
                         level='L0',
                         category='dtype_key_length',
                         message=(
-                            f'development type key {key!r} has length {len(key)}, '
-                            f'expected {nthemes}'
+                            f'development type key {entry.key!r} has length '
+                            f'{len(entry.key)}, expected {nthemes}'
                         ),
                         severity=SEVERITY_ERROR,
                     )
@@ -474,8 +529,8 @@ class ModelContract:
 
         # L0: dtype_code_known
         theme_by_index = {t.index: t for t in self.schema.themes}
-        for key, _n_ages in self.development_types:
-            for pos, code in enumerate(key):
+        for entry in self.development_types:
+            for pos, code in enumerate(entry.key):
                 if pos >= nthemes:
                     continue
                 theme = theme_by_index[pos]
@@ -489,7 +544,7 @@ class ModelContract:
                             level='L0',
                             category='dtype_code_known',
                             message=(
-                                f'development type {key!r} position {pos} '
+                                f'development type {entry.key!r} position {pos} '
                                 f'({theme.name}): {code!r} is not a known code '
                                 f'(valid: {shown})'
                             ),
@@ -499,18 +554,46 @@ class ModelContract:
 
         # L1: dtype_duplicate_key (cheap assertion of an invariant)
         seen_keys: set[tuple[str, ...]] = set()
-        for key, _n_ages in self.development_types:
-            if key in seen_keys:
+        for entry in self.development_types:
+            if entry.key in seen_keys:
                 findings.append(
                     VerificationFinding(
                         level='L1',
                         category='dtype_duplicate_key',
-                        message=f'development type key {key!r} appears more than once',
+                        message=f'development type key {entry.key!r} appears more than once',
                         severity=SEVERITY_WARNING,
                     )
                 )
-            seen_keys.add(key)
+            seen_keys.add(entry.key)
+        # L1: area_inventory_empty
+        for entry in self.development_types:
+            if entry.total_area <= 0.0:
+                findings.append(
+                    VerificationFinding(
+                        level='L1',
+                        category='area_inventory_empty',
+                        message=(
+                            f'development type {entry.key!r} has no period-0 area '
+                            f'inventory (total_area={entry.total_area})'
+                        ),
+                        severity=SEVERITY_WARNING,
+                    )
+                )
 
+        # L1: yield_coverage_missing
+        for entry in self.development_types:
+            if not entry.yield_components:
+                findings.append(
+                    VerificationFinding(
+                        level='L1',
+                        category='yield_coverage_missing',
+                        message=(
+                            f'development type {entry.key!r} has no yield '
+                            f'components declared'
+                        ),
+                        severity=SEVERITY_WARNING,
+                    )
+                )
         # L1: action_orphan
         # This requires the original model's actions dict, which the contract
         # does not carry. Skip this check here -- it belongs to a richer
@@ -537,8 +620,8 @@ class ModelContract:
                 ],
             },
             'development_types': [
-                {'key': list(k), 'n_age_classes': n}
-                for k, n in self.development_types
+                entry.to_dict()
+                for entry in self.development_types
             ],
         }
 

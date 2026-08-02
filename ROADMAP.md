@@ -437,9 +437,10 @@ Define the typed contract and workspace-facing adapter boundary, then write the 
 
 Initial extraction and structural verification are complete in
 `ws3.agent.themes.ModelContract`: the contract captures model metadata, theme
-schema, and development-type inventory; L0 checks cover theme arity, basecodes,
-development-type key length, and known theme codes; L1 reports duplicate keys as
-warnings. The next bounded slice is import/lint round-trip verification and
-domain coverage for areas, yields, actions, and transitions.
+schema, development-type inventory, period-0 area inventory, and yield-component
+coverage; L0 checks cover theme arity, basecodes, development-type key length,
+and known theme codes; L1 reports duplicate keys, empty area inventory, and
+missing yield coverage as warnings. The next bounded slice is import/lint
+round-trip verification and domain coverage for actions and transitions.
 
 Detailed plan: `planning/phase10_femic_model_contract.md`.

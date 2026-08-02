@@ -20,6 +20,7 @@ import pytest
 
 from ws3.agent.themes import (
     SEVERITY_ERROR,
+    DevelopmentTypeEntry,
     ModelContract,
     VerificationFinding,
     VerificationResult,
@@ -102,7 +103,7 @@ class TestModelContractExtraction:
         assert set(species.aggregates['conifer']) == {'sw', 'pl'}
 
     def test_development_types_count_and_keys(self, tsa24_contract: ModelContract):
-        keys = {k for k, _ in tsa24_contract.development_types}
+        keys = {entry.key for entry in tsa24_contract.development_types}
         assert keys == {
             ('tsa24', 'sw', '1'),
             ('tsa24', 'sw', '2'),
@@ -111,9 +112,13 @@ class TestModelContractExtraction:
         }
 
     def test_development_types_include_age_class_count(self, tsa24_contract: ModelContract):
-        for _key, n_ages in tsa24_contract.development_types:
-            assert isinstance(n_ages, int)
-            assert n_ages >= 1
+        for entry in tsa24_contract.development_types:
+            assert isinstance(entry.n_age_classes, int)
+            assert entry.n_age_classes >= 1
+            assert isinstance(entry.total_area, float)
+            assert entry.total_area > 0.0
+            assert isinstance(entry.age_classes, tuple)
+            assert len(entry.age_classes) == entry.n_age_classes
 
     def test_to_dict_is_json_roundtrip(self, tsa24_contract: ModelContract):
         """The dict form must survive a JSON round-trip -- it is the portable surface."""
@@ -121,6 +126,14 @@ class TestModelContractExtraction:
         roundtrip = json.loads(json.dumps(payload))
         assert roundtrip['metadata']['model_name'] == 'm'
         assert len(roundtrip['development_types']) == 4
+        # Each entry now has the extended area/yield fields.
+        for entry in roundtrip['development_types']:
+            assert 'key' in entry
+            assert 'n_age_classes' in entry
+            assert 'total_area' in entry
+            assert 'age_classes' in entry
+            assert 'yield_components' in entry
+            assert 'yield_compiled' in entry
 
 
 # ---------------------------------------------------------------------------
@@ -142,9 +155,10 @@ class TestVerificationHappyPath:
     def test_to_dict_summary_counts(self, tsa24_contract: ModelContract):
         result = tsa24_contract.verify()
         summary = result.to_dict()['summary']
-        assert summary['total'] == 0
         assert summary['errors'] == 0
-        assert summary['warnings'] == 0
+        # The test fixture has no yields, so we expect 4 yield_coverage_missing warnings
+        # (one per development type). No area_inventory_empty warnings since all have area.
+        assert summary['warnings'] == 4
 
 
 # ---------------------------------------------------------------------------
@@ -179,7 +193,14 @@ class TestVerificationL0Errors:
                       'area_epsilon': 0.01, 'curve_epsilon': 1e-06,
                       'n_development_types': 1, 'n_actions': 0},
             schema=schema,
-            development_types=[(('tsa24', 'sw', 'extra'), 1)],
+            development_types=[DevelopmentTypeEntry(
+                key=('tsa24', 'sw', 'extra'),
+                n_age_classes=1,
+                total_area=100.0,
+                age_classes=(0,),
+                yield_components=(),
+                yield_compiled={},
+            )],
         )
         result = contract.verify()
         assert not result.is_valid
@@ -208,7 +229,14 @@ class TestVerificationL0Errors:
                       'area_epsilon': 0.01, 'curve_epsilon': 1e-06,
                       'n_development_types': 1, 'n_actions': 0},
             schema=schema,
-            development_types=[(('tsa24', 'norway_spruce'), 1)],
+            development_types=[DevelopmentTypeEntry(
+                key=('tsa24', 'norway_spruce'),
+                n_age_classes=1,
+                total_area=100.0,
+                age_classes=(0,),
+                yield_components=(),
+                yield_compiled={},
+            )],
         )
         result = contract.verify()
         assert not result.is_valid
@@ -304,7 +332,16 @@ class TestVerificationL1Warnings:
                       'area_epsilon': 0.01, 'curve_epsilon': 1e-06,
                       'n_development_types': 1, 'n_actions': 0},
             schema=schema,
-            development_types=[(('tsa24',), 1), (('tsa24',), 2)],
+            development_types=[
+                DevelopmentTypeEntry(
+                    key=('tsa24',), n_age_classes=1, total_area=100.0,
+                    age_classes=(0,), yield_components=(), yield_compiled={},
+                ),
+                DevelopmentTypeEntry(
+                    key=('tsa24',), n_age_classes=2, total_area=200.0,
+                    age_classes=(0, 10), yield_components=(), yield_compiled={},
+                ),
+            ],
         )
         result = contract.verify()
         assert result.is_valid  # warnings do not invalidate
@@ -348,3 +385,251 @@ class TestContractEndToEnd:
         assert d['category'] == 'dtype_code_known'
         assert d['message'] == 'test message'
         assert d['severity'] == SEVERITY_ERROR
+
+
+# ---------------------------------------------------------------------------
+# Area inventory extraction
+# ---------------------------------------------------------------------------
+
+class TestAreaInventoryExtraction:
+    """Period-0 area inventory must be captured per development type."""
+
+    def test_total_area_matches_sum_of_age_classes(self, tsa24_contract: ModelContract):
+        """Total area must equal the sum of per-age-class areas (already validated
+        by the model's area() method; here we just confirm consistency)."""
+        for entry in tsa24_contract.development_types:
+            assert entry.total_area >= 0.0
+            assert entry.total_area > 0.0, (
+                f'{entry.key} has zero total area'
+            )
+
+    def test_total_area_values_are_correct(self, tsa24_model: ForestModel):
+        contract = ModelContract.from_model(tsa24_model)
+        expected = {
+            ('tsa24', 'sw', '1'): 100.0,
+            ('tsa24', 'sw', '2'): 200.0,
+            ('tsa24', 'pl', '1'): 150.0,
+            ('tsa24', 'pl', '2'): 50.0,
+        }
+        for entry in contract.development_types:
+            assert entry.total_area == expected[entry.key], (
+                f'{entry.key}: expected {expected[entry.key]}, got {entry.total_area}'
+            )
+
+    def test_age_classes_are_sorted(self, tsa24_contract: ModelContract):
+        for entry in tsa24_contract.development_types:
+            assert list(entry.age_classes) == sorted(entry.age_classes)
+
+    def test_n_age_classes_matches_age_classes_length(self, tsa24_contract: ModelContract):
+        for entry in tsa24_contract.development_types:
+            assert len(entry.age_classes) == entry.n_age_classes
+
+    def test_area_inventory_roundtrips_through_json(self, tsa24_contract: ModelContract):
+        payload = tsa24_contract.to_dict()
+        roundtrip = json.loads(json.dumps(payload))
+        for entry in roundtrip['development_types']:
+            assert 'total_area' in entry
+            assert 'age_classes' in entry
+            assert isinstance(entry['total_area'], (int, float))
+            assert isinstance(entry['age_classes'], list)
+
+
+# ---------------------------------------------------------------------------
+# Yield coverage extraction
+# ---------------------------------------------------------------------------
+
+class TestYieldCoverageExtraction:
+    """Yield component names must be captured per development type."""
+
+    def test_yield_components_is_tuple(self, tsa24_contract: ModelContract):
+        for entry in tsa24_contract.development_types:
+            assert isinstance(entry.yield_components, tuple)
+
+    def test_yield_components_are_sorted(self, tsa24_contract: ModelContract):
+        for entry in tsa24_contract.development_types:
+            assert list(entry.yield_components) == sorted(entry.yield_components)
+
+    def test_yield_compiled_matches_yield_components(self, tsa24_contract: ModelContract):
+        for entry in tsa24_contract.development_types:
+            assert set(entry.yield_compiled.keys()) == set(entry.yield_components)
+
+    def test_yield_coverage_roundtrips_through_json(self, tsa24_contract: ModelContract):
+        payload = tsa24_contract.to_dict()
+        roundtrip = json.loads(json.dumps(payload))
+        for entry in roundtrip['development_types']:
+            assert 'yield_components' in entry
+            assert 'yield_compiled' in entry
+            assert isinstance(entry['yield_components'], list)
+            assert isinstance(entry['yield_compiled'], dict)
+
+
+# ---------------------------------------------------------------------------
+# Verification -- area_inventory_empty
+# ---------------------------------------------------------------------------
+
+class TestVerificationAreaInventoryEmpty:
+    """An L1 warning must fire when a development type has no period-0 area."""
+
+    def test_area_inventory_empty_is_warning(self):
+        from ws3.agent.themes import Theme, ThemeSchema
+
+        schema = ThemeSchema(
+            themes=(
+                Theme(
+                    index=0, name='tsa', description='',
+                    basecodes=('tsa24',), aggregates={},
+                ),
+            )
+        )
+        contract = ModelContract(
+            metadata={'model_name': 'empty', 'base_year': 2020, 'horizon': 1,
+                      'period_length': 10, 'max_age': 100,
+                      'area_epsilon': 0.01, 'curve_epsilon': 1e-06,
+                      'n_development_types': 1, 'n_actions': 0},
+            schema=schema,
+            development_types=[DevelopmentTypeEntry(
+                key=('tsa24',), n_age_classes=0, total_area=0.0,
+                age_classes=(), yield_components=(), yield_compiled={},
+            )],
+        )
+        result = contract.verify()
+        assert result.is_valid  # warnings do not invalidate
+        area_warnings = [
+            f for f in result.warnings if f.category == 'area_inventory_empty'
+        ]
+        assert len(area_warnings) == 1
+        assert 'tsa24' in area_warnings[0].message
+
+    def test_area_inventory_empty_is_not_error(self):
+        from ws3.agent.themes import Theme, ThemeSchema
+
+        schema = ThemeSchema(
+            themes=(
+                Theme(
+                    index=0, name='tsa', description='',
+                    basecodes=('tsa24',), aggregates={},
+                ),
+            )
+        )
+        contract = ModelContract(
+            metadata={'model_name': 'empty', 'base_year': 2020, 'horizon': 1,
+                      'period_length': 10, 'max_age': 100,
+                      'area_epsilon': 0.01, 'curve_epsilon': 1e-06,
+                      'n_development_types': 1, 'n_actions': 0},
+            schema=schema,
+            development_types=[DevelopmentTypeEntry(
+                key=('tsa24',), n_age_classes=0, total_area=0.0,
+                age_classes=(), yield_components=(), yield_compiled={},
+            )],
+        )
+        result = contract.verify()
+        area_errors = [
+            f for f in result.errors if f.category == 'area_inventory_empty'
+        ]
+        assert len(area_errors) == 0
+
+
+# ---------------------------------------------------------------------------
+# Verification -- yield_coverage_missing
+# ---------------------------------------------------------------------------
+
+class TestVerificationYieldCoverageMissing:
+    """An L1 warning must fire when a development type has no yield components."""
+
+    def test_yield_coverage_missing_is_warning(self):
+        from ws3.agent.themes import Theme, ThemeSchema
+
+        schema = ThemeSchema(
+            themes=(
+                Theme(
+                    index=0, name='tsa', description='',
+                    basecodes=('tsa24',), aggregates={},
+                ),
+            )
+        )
+        contract = ModelContract(
+            metadata={'model_name': 'no_ycomps', 'base_year': 2020, 'horizon': 1,
+                      'period_length': 10, 'max_age': 100,
+                      'area_epsilon': 0.01, 'curve_epsilon': 1e-06,
+                      'n_development_types': 1, 'n_actions': 0},
+            schema=schema,
+            development_types=[DevelopmentTypeEntry(
+                key=('tsa24',), n_age_classes=1, total_area=100.0,
+                age_classes=(0,), yield_components=(), yield_compiled={},
+            )],
+        )
+        result = contract.verify()
+        assert result.is_valid  # warnings do not invalidate
+        yield_warnings = [
+            f for f in result.warnings if f.category == 'yield_coverage_missing'
+        ]
+        assert len(yield_warnings) == 1
+        assert 'tsa24' in yield_warnings[0].message
+
+    def test_yield_coverage_missing_is_not_error(self):
+        from ws3.agent.themes import Theme, ThemeSchema
+
+        schema = ThemeSchema(
+            themes=(
+                Theme(
+                    index=0, name='tsa', description='',
+                    basecodes=('tsa24',), aggregates={},
+                ),
+            )
+        )
+        contract = ModelContract(
+            metadata={'model_name': 'no_ycomps', 'base_year': 2020, 'horizon': 1,
+                      'period_length': 10, 'max_age': 100,
+                      'area_epsilon': 0.01, 'curve_epsilon': 1e-06,
+                      'n_development_types': 1, 'n_actions': 0},
+            schema=schema,
+            development_types=[DevelopmentTypeEntry(
+                key=('tsa24',), n_age_classes=1, total_area=100.0,
+                age_classes=(0,), yield_components=(), yield_compiled={},
+            )],
+        )
+        result = contract.verify()
+        yield_errors = [
+            f for f in result.errors if f.category == 'yield_coverage_missing'
+        ]
+        assert len(yield_errors) == 0
+
+
+# ---------------------------------------------------------------------------
+# DevelopmentTypeEntry dataclass
+# ---------------------------------------------------------------------------
+
+class TestDevelopmentTypeEntry:
+    """The DevelopmentTypeEntry dataclass must be frozen and serialisable."""
+
+    def test_entry_is_frozen(self):
+        entry = DevelopmentTypeEntry(
+            key=('tsa24',), n_age_classes=1, total_area=100.0,
+            age_classes=(0,), yield_components=(), yield_compiled={},
+        )
+        with pytest.raises(AttributeError):
+            entry.key = ('other',)
+
+    def test_entry_to_dict(self):
+        entry = DevelopmentTypeEntry(
+            key=('tsa24', 'sw'), n_age_classes=2, total_area=300.0,
+            age_classes=(0, 10), yield_components=('vol', 'biomass'),
+            yield_compiled={'vol': True, 'biomass': False},
+        )
+        d = entry.to_dict()
+        assert d['key'] == ['tsa24', 'sw']
+        assert d['n_age_classes'] == 2
+        assert d['total_area'] == 300.0
+        assert d['age_classes'] == [0, 10]
+        assert d['yield_components'] == ['vol', 'biomass']
+        assert d['yield_compiled'] == {'vol': True, 'biomass': False}
+
+    def test_entry_to_dict_is_json_roundtrip(self):
+        entry = DevelopmentTypeEntry(
+            key=('tsa24', 'sw'), n_age_classes=2, total_area=300.0,
+            age_classes=(0, 10), yield_components=('vol', 'biomass'),
+            yield_compiled={'vol': True, 'biomass': False},
+        )
+        d = entry.to_dict()
+        roundtrip = json.loads(json.dumps(d))
+        assert roundtrip == d
