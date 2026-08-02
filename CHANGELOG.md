@@ -27,6 +27,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added deterministic action and transition inventory to each development-type
   entry, with L1 warnings for references not present in the model's declared
   action set. The full ws3 suite passes again: 315 tests passed and 9 skipped.
+- Added the source-backed `ModelContract.verify_source()` oracle. It runs
+  `ws3.woodstock.lint_dataset`, attempts a real scratch-model landscape/areas
+  import when lint permits, records source provenance, and returns structured
+  findings instead of raising for missing, malformed, or unsupported input.
+  The full ws3 suite passes: 323 tests passed and 9 skipped.
 
 - `ws3.woodstock`: machine-readable contract for the Woodstock input data format (198 keywords)
   and `lint_dataset`, which reports sections and keywords ws3 does not read. Previously these

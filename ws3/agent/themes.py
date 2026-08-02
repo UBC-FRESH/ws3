@@ -389,6 +389,9 @@ class ModelContract:
     :param metadata: Flat dict of scalar model metadata.
     :param schema: The theme schema.
     :param development_types: List of :py:class:`DevelopmentTypeEntry` instances.
+    :param source_path: Directory the contract was extracted from, if any.
+        Recorded for provenance; not used by verification.
+    :param source_name: Base file name of the source dataset, if any.
     """
 
     def __init__(
@@ -396,10 +399,14 @@ class ModelContract:
         metadata: dict[str, Any],
         schema: ThemeSchema,
         development_types: list[DevelopmentTypeEntry],
+        source_path: str | None = None,
+        source_name: str | None = None,
     ) -> None:
         self.metadata = metadata
         self.schema = schema
         self.development_types = development_types
+        self.source_path = source_path
+        self.source_name = source_name
 
     @classmethod
     def from_model(cls, fm: Any) -> ModelContract:
@@ -458,6 +465,113 @@ class ModelContract:
             schema=ThemeSchema.from_model(fm),
             development_types=development_types,
         )
+
+    @classmethod
+    def verify_source(
+        cls,
+        model_path: str,
+        model_name: str,
+        sections_to_check: list[str] | None = None,
+    ) -> VerificationResult:
+        """
+        Deterministic import/lint round-trip oracle.
+
+        Runs :py:func:`ws3.woodstock.lint_dataset` against the declared source
+        files, and where the lint is clean (no ``error``-severity findings)
+        builds a scratch :py:class:`~ws3.forest.ForestModel`, extracts a
+        :py:class:`ModelContract`, and runs :py:meth:`verify` on it.
+
+        Findings from every stage are merged into a single
+        :py:class:`VerificationResult`. Ordinary import failures (missing
+        files, malformed sections) are returned as findings rather than raised,
+        so the oracle is safe to call on untrusted input.
+
+        :param model_path: Directory holding the Woodstock section files.
+        :param model_name: Base name shared by the section files.
+        :param sections_to_check: Optional subset of sections to lint.
+        :return: A :py:class:`VerificationResult` with all findings from lint
+            and structural verification.
+        """
+        from ws3.woodstock import lint_dataset  # local to avoid circular import
+
+        result = VerificationResult()
+
+        # Stage 1: lint the source files.
+        try:
+            lint_findings = lint_dataset(
+                model_path, model_name,
+                sections_to_check=sections_to_check,
+            )
+        except Exception as exc:  # pragma: no cover - filesystem error
+            result.findings.append(
+                VerificationFinding(
+                    level='L0',
+                    category='source_lint_failed',
+                    message=f'lint_dataset raised: {exc}',
+                    severity=SEVERITY_ERROR,
+                )
+            )
+            return result
+
+        for lf in lint_findings:
+            if lf.severity == 'error':
+                result.findings.append(
+                    VerificationFinding(
+                        level='L0',
+                        category='source_lint_error',
+                        message=(
+                            f'{lf.section}: {lf.message}'
+                            + (f' (line {lf.line})' if lf.line else '')
+                        ),
+                        severity=SEVERITY_ERROR,
+                    )
+                )
+            elif lf.severity == 'warning':
+                result.findings.append(
+                    VerificationFinding(
+                        level='L1',
+                        category='source_lint_warning',
+                        message=(
+                            f'{lf.section}: {lf.message}'
+                            + (f' (line {lf.line})' if lf.line else '')
+                        ),
+                        severity=SEVERITY_WARNING,
+                    )
+                )
+
+        # Stage 2: if lint is clean, attempt a full import + contract extract.
+        if result.errors:
+            return result
+
+        try:
+            from ws3.forest import ForestModel  # local import
+
+            fm = ForestModel(  # type: ignore[no-untyped-call, call-arg]
+                model_name=model_name,
+                model_path=model_path,
+                base_year=2020,
+                horizon=10,
+                period_length=10,
+                max_age=100,
+            )
+            fm.import_landscape_section()  # type: ignore[no-untyped-call]
+            fm.import_areas_section(convert_periods_to_years=10)  # type: ignore[no-untyped-call]
+            contract = cls.from_model(fm)
+            contract.source_path = model_path
+            contract.source_name = model_name
+            verify_result = contract.verify()
+            result.findings.extend(verify_result.findings)
+        except Exception as exc:
+            result.findings.append(
+                VerificationFinding(
+                    level='L0',
+                    category='source_import_failed',
+                    message=f'import raised: {exc}',
+                    severity=SEVERITY_ERROR,
+                )
+            )
+
+        return result
 
     def verify(self) -> VerificationResult:
         """
@@ -672,6 +786,10 @@ class ModelContract:
                 entry.to_dict()
                 for entry in self.development_types
             ],
+            'source': {
+                'path': self.source_path,
+                'name': self.source_name,
+            },
         }
 
 

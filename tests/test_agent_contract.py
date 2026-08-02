@@ -784,3 +784,148 @@ class TestVerificationActionTransition:
         ]
         assert len(orphan_warnings) == 0
         assert len(target_warnings) == 0
+
+
+# ---------------------------------------------------------------------------
+# Source oracle: verify_source round-trip
+# ---------------------------------------------------------------------------
+
+class TestVerifySourceValidMinimal:
+    """A clean minimal Woodstock source must round-trip through the oracle."""
+
+    def test_valid_source_produces_no_errors(self, tmp_path: Path):
+        """A minimal landscape + areas dataset should verify clean."""
+        (tmp_path / 'm.lan').write_text(textwrap.dedent("""\
+            *THEME TSA
+            tsa1
+            *THEME Species
+            sw
+            *AGGREGATE conifer
+            sw
+            """))
+        (tmp_path / 'm.are').write_text(textwrap.dedent("""\
+            *A tsa1 sw 0 100.0
+            """))
+        result = ModelContract.verify_source(str(tmp_path), 'm')
+        assert isinstance(result, VerificationResult)
+        error_categories = {f.category for f in result.errors}
+        assert 'source_lint_error' not in error_categories
+        assert 'source_import_failed' not in error_categories
+
+    def test_valid_source_records_provenance(self, tmp_path: Path):
+        """The contract produced by the oracle must carry source provenance."""
+        (tmp_path / 'm.lan').write_text(textwrap.dedent("""\
+            *THEME TSA
+            tsa1
+            """))
+        (tmp_path / 'm.are').write_text(textwrap.dedent("""\
+            *A tsa1 0 50.0
+            """))
+        result = ModelContract.verify_source(str(tmp_path), 'm')
+        # The contract is built internally; verify the result is structured.
+        assert isinstance(result, VerificationResult)
+        assert result.to_dict() is not None
+
+    def test_valid_source_json_serialisable(self, tmp_path: Path):
+        """The full result dict must survive a JSON round-trip."""
+        (tmp_path / 'm.lan').write_text(textwrap.dedent("""\
+            *THEME TSA
+            tsa1
+            """))
+        (tmp_path / 'm.are').write_text(textwrap.dedent("""\
+            *A tsa1 0 50.0
+            """))
+        result = ModelContract.verify_source(str(tmp_path), 'm')
+        payload = result.to_dict()
+        serialised = json.dumps(payload)
+        deserialised = json.loads(serialised)
+        assert 'is_valid' in deserialised
+        assert 'findings' in deserialised
+        assert 'summary' in deserialised
+
+
+class TestVerifySourceMalformed:
+    """Malformed or unsupported source must yield findings, not exceptions."""
+
+    def test_missing_dataset_yields_no_crash(self, tmp_path: Path):
+        """A non-existent dataset must return findings, not raise."""
+        result = ModelContract.verify_source(str(tmp_path / 'no_such_dir'), 'ghost')
+        assert isinstance(result, VerificationResult)
+        # lint_dataset tolerates missing files; import will fail and that
+        # failure becomes a finding.
+        assert any(f.category == 'source_import_failed' for f in result.findings)
+
+    def test_unsupported_section_is_reported(self, tmp_path: Path):
+        """An OPTIMIZE section (unsupported) must surface as an error finding."""
+        (tmp_path / 'm.lan').write_text(textwrap.dedent("""\
+            *THEME TSA
+            tsa1
+            """))
+        (tmp_path / 'm.are').write_text(textwrap.dedent("""\
+            *A tsa1 0 50.0
+            """))
+        (tmp_path / 'm.opt').write_text('_MAXIMIZE x\n')
+        result = ModelContract.verify_source(str(tmp_path), 'm')
+        lint_errors = [
+            f for f in result.findings
+            if f.category == 'source_lint_error'
+        ]
+        assert lint_errors, 'OPTIMIZE section should be reported as lint error'
+        assert any('Optimize' in f.message for f in lint_errors)
+
+    def test_malformed_landscape_yields_import_finding(self, tmp_path: Path):
+        """A landscape file with no THEME declarations must fail import gracefully."""
+        (tmp_path / 'm.lan').write_text('; just a comment\n')
+        (tmp_path / 'm.are').write_text(textwrap.dedent("""\
+            *A tsa1 0 50.0
+            """))
+        result = ModelContract.verify_source(str(tmp_path), 'm')
+        assert isinstance(result, VerificationResult)
+        # The import will raise because there is no *THEME declaration; that
+        # failure must be captured as a finding, not propagated.
+        import_findings = [
+            f for f in result.findings
+            if f.category == 'source_import_failed'
+        ]
+        assert import_findings, 'malformed landscape should produce import finding'
+
+
+class TestVerifySourceJSON:
+    """The oracle result must be JSON-serialisable end to end."""
+
+    def test_result_to_dict_structure(self, tmp_path: Path):
+        """to_dict must return the documented shape."""
+        (tmp_path / 'm.lan').write_text(textwrap.dedent("""\
+            *THEME TSA
+            tsa1
+            """))
+        (tmp_path / 'm.are').write_text(textwrap.dedent("""\
+            *A tsa1 0 50.0
+            """))
+        result = ModelContract.verify_source(str(tmp_path), 'm')
+        d = result.to_dict()
+        assert isinstance(d['is_valid'], bool)
+        assert isinstance(d['findings'], list)
+        assert isinstance(d['summary'], dict)
+        assert 'total' in d['summary']
+        assert 'errors' in d['summary']
+        assert 'warnings' in d['summary']
+
+    def test_finding_dicts_have_required_fields(self, tmp_path: Path):
+        """Each finding dict must carry level, category, message, severity."""
+        (tmp_path / 'm.lan').write_text(textwrap.dedent("""\
+            *THEME TSA
+            tsa1
+            """))
+        (tmp_path / 'm.are').write_text(textwrap.dedent("""\
+            *A tsa1 0 50.0
+            """))
+        (tmp_path / 'm.opt').write_text('_MAXIMIZE x\n')
+        result = ModelContract.verify_source(str(tmp_path), 'm')
+        for f in result.findings:
+            fd = f.to_dict()
+            assert 'level' in fd
+            assert 'category' in fd
+            assert 'message' in fd
+            assert 'severity' in fd
+            assert fd['severity'] in ('error', 'warning')

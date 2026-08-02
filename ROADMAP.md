@@ -442,6 +442,9 @@ coverage; L0 checks cover theme arity, basecodes, development-type key length,
 and known theme codes; L1 reports duplicate keys, empty area inventory, and
 missing yield coverage as warnings. Action references from `oper_expr` and
 transition action codes are now captured and checked against declared actions;
-the next bounded slice is import/lint round-trip verification.
+the source-backed `verify_source()` oracle now runs Woodstock lint and a
+scratch-model landscape/areas import, returning structured findings for
+unsupported, malformed, or missing source data. The next bounded slice is a
+bounded compile/solve smoke oracle where the existing APIs support it.
 
 Detailed plan: `planning/phase10_femic_model_contract.md`.
