@@ -20,6 +20,7 @@ import pytest
 
 from ws3.agent.themes import (
     SEVERITY_ERROR,
+    CompileSolveCapability,
     DevelopmentTypeEntry,
     ModelContract,
     VerificationFinding,
@@ -929,3 +930,102 @@ class TestVerifySourceJSON:
             assert 'message' in fd
             assert 'severity' in fd
             assert fd['severity'] in ('error', 'warning')
+
+
+# ---------------------------------------------------------------------------
+# Compile/solve smoke oracle
+# ---------------------------------------------------------------------------
+
+class TestCompileSolveSmokeOracle:
+    """The compile/solve smoke oracle must report capability without crashing."""
+
+    def test_compile_available_for_valid_model(self, tsa24_model: ForestModel):
+        """A model with development types must report compile as available."""
+        contract = ModelContract.from_model(tsa24_model)
+        result, capability = contract.verify_compile_solve(tsa24_model)
+        assert capability.compile_available is True
+        assert isinstance(result, VerificationResult)
+        # No errors from compile (yields are None in this minimal model, but
+        # compile_actions does not raise).
+        compile_errors = [
+            f for f in result.errors if f.category == 'compile_failed'
+        ]
+        assert len(compile_errors) == 0
+
+    def test_solve_deferred_when_no_problems(self, tsa24_model: ForestModel):
+        """A model without optimization problems must record solve as deferred."""
+        contract = ModelContract.from_model(tsa24_model)
+        result, capability = contract.verify_compile_solve(tsa24_model)
+        assert capability.solve_available is False
+        assert capability.deferred_reason is not None
+        assert 'no optimization problems' in capability.deferred_reason
+
+    def test_compile_returns_none_model(self):
+        """Calling with None must return a capability with both unavailable."""
+        contract = ModelContract(
+            metadata={'model_name': 'test', 'base_year': 2020, 'horizon': 1,
+                      'period_length': 10, 'max_age': 100,
+                      'area_epsilon': 0.01, 'curve_epsilon': 1e-06,
+                      'n_development_types': 0, 'n_actions': 0},
+            schema=ModelContract.from_model.__class__.__bases__[0] if False else None,  # type: ignore
+            development_types=[],
+        )
+        # Use a minimal contract with a valid schema.
+        from ws3.agent.themes import Theme, ThemeSchema
+        schema = ThemeSchema(
+            themes=(Theme(
+                index=0, name='tsa', description='',
+                basecodes=('tsa1',), aggregates={},
+            ),)
+        )
+        contract = ModelContract(
+            metadata={'model_name': 'test', 'base_year': 2020, 'horizon': 1,
+                      'period_length': 10, 'max_age': 100,
+                      'area_epsilon': 0.01, 'curve_epsilon': 1e-06,
+                      'n_development_types': 0, 'n_actions': 0},
+            schema=schema,
+            development_types=[],
+        )
+        result, capability = contract.verify_compile_solve(None)
+        assert capability.compile_available is False
+        assert capability.solve_available is False
+        assert len(result.findings) == 0
+
+    def test_capability_to_dict_is_json_roundtrip(self, tsa24_model: ForestModel):
+        """The capability dict must survive a JSON round-trip."""
+        contract = ModelContract.from_model(tsa24_model)
+        result, capability = contract.verify_compile_solve(tsa24_model)
+        payload = capability.to_dict()
+        serialised = json.dumps(payload)
+        deserialised = json.loads(serialised)
+        assert deserialised['compile_available'] is True
+        assert deserialised['solve_available'] is False
+        assert 'deferred_reason' in deserialised
+        assert 'yield_compilation_status' in deserialised
+
+    def test_yield_compilation_status_recorded(self, tsa24_model: ForestModel):
+        """Yield compilation status must be recorded per development type."""
+        contract = ModelContract.from_model(tsa24_model)
+        result, capability = contract.verify_compile_solve(tsa24_model)
+        # The minimal model has no yields, so each DT should have an empty dict.
+        for key in tsa24_model.dtypes.keys():
+            assert key in capability.yield_compilation_status
+            assert capability.yield_compilation_status[key] == {}
+
+    def test_capability_is_frozen_dataclass(self):
+        """CompileSolveCapability must be a frozen dataclass."""
+        cap = CompileSolveCapability(
+            compile_available=True,
+            solve_available=False,
+            deferred_reason='test',
+        )
+        with pytest.raises(AttributeError):
+            cap.compile_available = False
+
+    def test_deferred_reason_is_explicit(self, tsa24_model: ForestModel):
+        """The deferred reason must be explicit and not None when solve is unavailable."""
+        contract = ModelContract.from_model(tsa24_model)
+        result, capability = contract.verify_compile_solve(tsa24_model)
+        assert capability.deferred_reason is not None
+        # The reason must mention the requirement for user-defined problems.
+        assert 'add_problem' in capability.deferred_reason

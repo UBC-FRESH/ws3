@@ -765,6 +765,81 @@ class ModelContract:
 
         return VerificationResult(findings=findings)
 
+    def verify_compile_solve(self, fm: Any | None = None) -> tuple[VerificationResult, CompileSolveCapability]:
+        """
+        Bounded compile/solve smoke oracle.
+
+        Attempts to compile yield curves for all development types and checks
+        whether any optimization problem is defined. Returns a structured
+        capability record rather than raising, so ordinary model limitations
+        are observable without interrupting the caller.
+
+        Compile is always attempted (it is safe and deterministic). Solve is
+        only reported as available if a problem exists; the oracle does not
+        invoke ``Problem.solve()`` because coefficient functions may not be
+        safe to call without user context.
+
+        :param fm: Optional ForestModel to compile. If None, returns a
+            capability record with both compile and solve marked unavailable.
+        :return: A tuple of (VerificationResult, CompileSolveCapability).
+            The VerificationResult contains any errors from compile.
+            The CompileSolveCapability records what the pipeline can do.
+        """
+        result = VerificationResult()
+        capability = CompileSolveCapability(
+            compile_available=False,
+            solve_available=False,
+        )
+
+        if fm is None:
+            return result, capability
+
+        # Stage 1: compile actions (yields).
+        compile_ok = False
+        yield_status: dict[str, dict[str, bool]] = {}
+        try:
+            fm.compile_actions()
+            compile_ok = True
+
+            # Record yield compilation status per development type.
+            for key in fm.dtypes.keys():
+                dt = fm.dtypes[key]
+                ycomps = dt.ycomps()
+                compilation_status = {
+                    yname: dt.ycomp(yname, silent_fail=False) is not None
+                    for yname in ycomps
+                }
+                yield_status[key] = compilation_status
+
+        except Exception as exc:
+            result.findings.append(
+                VerificationFinding(
+                    level='L0',
+                    category='compile_failed',
+                    message=f'compile_actions raised: {exc}',
+                    severity=SEVERITY_ERROR,
+                )
+            )
+            return result, capability
+
+        # Stage 2: check for optimization problems.
+        if not fm.problems:
+            deferred_reason = (
+                'no optimization problems defined in model; '
+                'solve requires user-defined problems via ForestModel.add_problem()'
+            )
+        else:
+            deferred_reason = None
+
+        capability = CompileSolveCapability(
+            compile_available=compile_ok,
+            solve_available=compile_ok and bool(fm.problems),
+            deferred_reason=deferred_reason,
+            yield_compilation_status=yield_status,
+        )
+
+        return result, capability
+
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serialisable dict representation."""
         return {
@@ -796,3 +871,36 @@ class ModelContract:
 def contract_for(fm: Any) -> ModelContract:
     """Convenience: return the :py:class:`ModelContract` for *fm*."""
     return ModelContract.from_model(fm)
+
+
+# ---------------------------------------------------------------------------
+# Compile/solve smoke oracle: bounded verification of the compile pipeline.
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class CompileSolveCapability:
+    """
+    Structured record of what the compile/solve pipeline can do for a model.
+
+    :param compile_available: Whether ``compile_actions()`` ran successfully.
+    :param solve_available: Whether any optimization problem is defined.
+    :param deferred_reason: Explanation if solve is not available.
+    :param yield_compilation_status: Per-development-type yield compilation state.
+    """
+
+    compile_available: bool
+    solve_available: bool
+    deferred_reason: str | None = None
+    yield_compilation_status: dict[str, dict[str, bool]] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        # Convert tuple keys to string keys for JSON serialization.
+        yield_status_serialisable = {
+            '.'.join(k): v for k, v in self.yield_compilation_status.items()
+        }
+        return {
+            'compile_available': self.compile_available,
+            'solve_available': self.solve_available,
+            'deferred_reason': self.deferred_reason,
+            'yield_compilation_status': yield_status_serialisable,
+        }
