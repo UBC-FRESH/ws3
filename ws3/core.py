@@ -629,7 +629,8 @@ class Tree:
         :return: a path
         :rtype: tuple of :py:class:`ws3.core.Node` objects
         """
-        if not leaf: return self._path[1:]
+        if not leaf:
+            return self._path[1:]
         path = []
         n = leaf
         while not (n.is_root()):

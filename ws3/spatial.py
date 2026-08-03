@@ -255,16 +255,19 @@ class ForestRaster:
             for acode in self._forestmodel.applied_actions[p]:
                 for dtk in self._forestmodel.applied_actions[p][acode]:
                     if mask:
-                        if dtk not in dtype_keys: continue
+                        if dtk not in dtype_keys:
+                            continue
                     for from_age in self._forestmodel.applied_actions[p][acode][dtk]:
                         area = self._forestmodel.applied_actions[p][acode][dtk][from_age][0]
                         #print('processing case', p, acode, dtk, from_age, area) # DEBUG
-                        if not area: continue
+                        if not area:
+                            continue
                         from_dtk = list(dtk)
                         trn = self._forestmodel.dtypes[dtk].transitions[acode, from_age][0]
                         tmask, tprop, tyield, tage, tlock, treplace, tappend = trn
                         to_dtk = [t if tmask[i] == '?' else tmask[i] for i, t in enumerate(from_dtk)]
-                        if treplace: to_dtk[treplace[0]] = self._forestmodel.resolve_replace(from_dtk, treplace[1])
+                        if treplace:
+                            to_dtk[treplace[0]] = self._forestmodel.resolve_replace(from_dtk, treplace[1])
                         to_dtk_tup = tuple(to_dtk)
                         to_age = self._forestmodel.resolve_targetage(to_dtk_tup, tyield, from_age, tage, acode, verbose=False)
                         to_age = max(to_age, minage) # hack! (yuck)
@@ -302,7 +305,8 @@ class ForestRaster:
                         for dy in range(0, self._period_length, self._time_step):
                             x = np.where(self._snkd[(acode, dy)] == 1)
                             xn = len(x[0])
-                            if not xn: continue # bug fix (is this OK?)
+                            if not xn:
+                                continue # bug fix (is this OK?)
                             r = np.random.choice(xn, int(_p * xn), replace=False)
                             ix = x[0][r], x[1][r]
                             self._snkd[(_acode, dy)][ix] = 1
@@ -314,7 +318,8 @@ class ForestRaster:
                 if verbose > 0:
                     print(f'saving {year} post-harvest pixels to {snk_filename}')
                 snk.write(__x)
-            if self._horizon is not None and p < self._horizon: self.grow()
+            if self._horizon is not None and p < self._horizon:
+                self.grow()
 
 
     def __enter__(self) -> ForestRaster:

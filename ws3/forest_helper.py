@@ -188,7 +188,8 @@ def worker_gen_vars(tasks: list[tuple[str, int]], acodes: list[str]) -> list[tup
         if model is not None:
             model.reset()
             area = model.dtypes[dtk].area(1, age)
-            if not area: continue
+            if not area:
+                continue
             tree = model._bld_tree_m1(
                 area, dtk, age, coeff_funcs,
                 tree=None, period=1,

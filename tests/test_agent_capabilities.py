@@ -290,7 +290,7 @@ class TestBuildMaskAggregates:
         summary = ThemeSchema.from_model(fm_agg).describe()
         assert 'aggregate conifer: sw, pl' in summary
         # The aggregate must not be muddled in with the basecode listing.
-        codes_line = next(l for l in summary.splitlines() if l.strip().startswith('codes:'))
+        codes_line = next(line_ for line_ in summary.splitlines() if line_.strip().startswith('codes:'))
         assert 'conifer' not in codes_line
 
     def test_aggregate_is_accepted_as_a_code(self, fm_agg):
@@ -588,7 +588,7 @@ class TestDiagnoseImportValidator:
         fm = ForestModel(
             model_name=MODEL_NAME, model_path=str(broken_model), base_year=2020
         )
-        with pytest.raises(Exception):
+        with pytest.raises(Exception):  # noqa: B017
             fm.import_landscape_section()
 
     def test_a_fix_that_works_is_accepted(self, broken_model):

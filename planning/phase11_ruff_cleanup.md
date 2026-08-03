@@ -98,9 +98,23 @@ Ruff, and no P10-touched `forest.py` line is currently flagged.
 
 ### 11.4 Apply low-risk package and test cleanup
 
-- Apply reviewed mechanical fixes for imports, modern typing aliases, unused
-  loop variables, safe comprehensions, and equivalent formatting.
-- Run focused tests after each batch and preserve behavior in public APIs.
+**Status: COMPLETE** (verified 2026-08-03)
+
+**Pass 1 (auto-fix):** `ruff check ws3/ tests/ --fix --unsafe-fixes`
+- 544 errors fixed across 31 files (ws3/ 17 files, tests/ 14 files)
+- No new errors introduced
+- Commit `92b10e1`: "WIP 11.4: auto-fix safe ruff rules (pass 1)"
+
+**Pass 2 (remaining 181 errors — all behavior-sensitive, deferred to 11.5):**
+```
+119 E701  multiple-statements-on-one-line-colon   (105 in forest.py)
+ 23 E741  ambiguous-variable-name                  (22 in forest.py)
+ 16 E402  module-import-not-at-top-of-file
+ 14 UP031 printf-string-formatting                  (26 in forest.py)
+  7 B904  raise-without-from-inside-except
+  1 B017  assert-raises-exception
+  1 F401  unused-import
+```
 
 ### 11.5 Review behavior-sensitive `forest.py` debt
 

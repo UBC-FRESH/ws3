@@ -14,14 +14,26 @@ Attributes:
 
 from __future__ import annotations
 
+import hashlib
+import math
+import re
+import time
 from collections.abc import Callable
 from typing import Any
 
-PACAL_BROKEN = True
-
-import time
-
 import numpy as np
+import rasterio
+
+try:
+    import pickle as pickle
+except ImportError:
+    import pickle
+
+import fiona
+from fiona.crs import from_epsg
+from fiona.transform import transform_geom
+
+PACAL_BROKEN = True
 
 #################################################################################################
 # PaCal breaks when trying to import numpy.fft.fftpack (names have changed or some such... yuck).
@@ -46,22 +58,8 @@ import numpy as np
 if not PACAL_BROKEN:
     import pacal
 #################################################################################################
-import hashlib
-import re
 
-import rasterio
-
-try:
-    import pickle as pickle
-except ImportError:
-    import pickle
-
-import math
-
-#from math import exp, log
-import fiona
-from fiona.crs import from_epsg
-from fiona.transform import transform_geom
+# from math import exp, log
 
 
 def hex_id(obj: Any, digest_size: int = 10) -> str:
@@ -406,7 +404,9 @@ def timed(func: Callable[..., Any]) -> Callable[..., Any]:
         print(f'{func.__name__} took {t:.3f} seconds.')
         return result
     return wrapper
-from scipy.stats import norm
+
+
+from scipy.stats import norm  # noqa: E402
 
 HORIZON_DEFAULT = 30
 PERIOD_LENGTH_DEFAULT = 10
