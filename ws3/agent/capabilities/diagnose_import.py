@@ -248,7 +248,7 @@ def _try_import(model_path: Path, model_name: str, importer: str) -> str | None:
     from ws3.forest import ForestModel
 
     try:
-        fm = ForestModel(
+        fm = ForestModel(  # type: ignore[no-untyped-call]
             model_name=model_name,
             model_path=str(model_path),
             base_year=2020,
@@ -256,7 +256,7 @@ def _try_import(model_path: Path, model_name: str, importer: str) -> str | None:
         # Landscape defines the themes every other section depends on, so it is
         # imported first unless it is itself the section under test.
         if importer != 'import_landscape_section':
-            fm.import_landscape_section()
+            fm.import_landscape_section()  # type: ignore[no-untyped-call]
         getattr(fm, importer)()
     except Exception as exc:
         return f'{type(exc).__name__}: {exc}'

@@ -29,7 +29,7 @@ def _load_model(model_path: str, model_name: str, **kwargs: Any) -> Any:
     """Load and partially import a ForestModel for use as validator context."""
     from ws3.forest import ForestModel
 
-    fm = ForestModel(
+    fm = ForestModel(  # type: ignore[no-untyped-call]
         model_name=model_name,
         model_path=model_path,
         base_year=kwargs.get('base_year', 2020),
@@ -40,8 +40,8 @@ def _load_model(model_path: str, model_name: str, **kwargs: Any) -> Any:
     # Landscape defines the themes build_mask validates against; areas populate
     # the development types a mask has to match. Later sections are not needed to
     # validate a mask and are skipped so startup stays fast.
-    fm.import_landscape_section()
-    fm.import_areas_section(convert_periods_to_years=kwargs.get('period_length', 10))
+    fm.import_landscape_section()  # type: ignore[no-untyped-call]
+    fm.import_areas_section(convert_periods_to_years=kwargs.get('period_length', 10))  # type: ignore[no-untyped-call]
     return fm
 
 

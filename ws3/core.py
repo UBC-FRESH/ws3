@@ -7,6 +7,7 @@ state trees.
 from __future__ import annotations
 
 import copy
+from typing import Any
 from bisect import bisect_left
 
 from ws3 import common
@@ -469,7 +470,7 @@ class Node:
         self._parent = parent
         self._children = []
 
-    def is_root(self):
+    def is_root(self) -> bool:
         """
         Check if the current object is the root node.
 
@@ -478,7 +479,7 @@ class Node:
         """
         return self._parent is None
 
-    def is_leaf(self):
+    def is_leaf(self) -> bool:
         """
         Checks if the current object is a leaf node (i.e., node has no children).
 
@@ -487,7 +488,7 @@ class Node:
         """
         return not self._children
 
-    def add_child(self, child):
+    def add_child(self, child: int) -> None:
         """
         The function adds a child node to the current object.
 
@@ -495,14 +496,14 @@ class Node:
         """
         self._children.append(child)
 
-    def parent(self):
+    def parent(self) -> int:
         """
         The function gets the parent node of the current object.
 
         :return: The parent node.
         :rtype:  :py:class:`ws3.core.Node`
         """
-        return self._parent
+        return self._parent  # type: ignore[no-any-return]
 
     def children(self):
         """
@@ -535,7 +536,7 @@ class Tree:
     """
     def __init__(self, period=1):
         self._period = period
-        self._nodes = [Node(0)]
+        self._nodes = [Node(0)]  # type: ignore[no-untyped-call]
         self._path = [self._nodes[0]]
 
     def children(self, nid):
@@ -548,7 +549,7 @@ class Tree:
         """
         return [self._nodes[cid] for cid in self._nodes[nid].children()]
 
-    def nodes(self):
+    def nodes(self) -> list[Node]:
         """
         Returns all nodes in the tree.
         :returns: List of all nodes in the tree.
@@ -556,7 +557,7 @@ class Tree:
         """
         return self._nodes
 
-    def node(self, nid):
+    def node(self, nid: int) -> Node:
         """
         Returns a node with the specified ID.
 
@@ -564,9 +565,9 @@ class Tree:
         :return: The node object corresponding to the specified ID.
         :rtype: :py:class:`ws3.core.Node`
         """
-        return self._nodes[nid]
+        return self._nodes[nid]  # type: ignore[no-any-return]
 
-    def add_node(self, data, parent=None):
+    def add_node(self, data: Any, parent: int | None = None) -> Node:
         """
         Adds a new node to the tree.
 
@@ -575,7 +576,7 @@ class Tree:
         :return: The newly created node.
         :rtype: :py:class:`ws3.core.Node`
         """
-        n = Node(len(self._nodes), data, parent)
+        n = Node(len(self._nodes), data, parent)  # type: ignore[no-untyped-call]
         self._nodes.append(n)
         return n
 
@@ -602,7 +603,7 @@ class Tree:
         """
         self._path.pop()
 
-    def leaves(self):
+    def leaves(self) -> list[Node]:
         """
         Returns all leaf nodes.
 
@@ -620,7 +621,7 @@ class Tree:
         """
         return self._nodes[0]
 
-    def path(self, leaf=None):
+    def path(self, leaf: Node | None = None) -> tuple[Node, ...]:
         """
         Retrieves the path from the root to a specific leaf node or to the current path.
 
@@ -630,7 +631,7 @@ class Tree:
         :rtype: tuple of :py:class:`ws3.core.Node` objects
         """
         if not leaf:
-            return self._path[1:]
+            return list(self._path[1:])  # type: ignore[return-value]
         path = []
         n = leaf
         while not (n.is_root()):
@@ -640,7 +641,7 @@ class Tree:
         path.reverse()
         return tuple(path)
 
-    def paths(self):
+    def paths(self) -> list[tuple[Node, ...]]:
         """
         Retrieves paths from the root to all leaf nodes.
 

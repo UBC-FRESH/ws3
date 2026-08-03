@@ -33,10 +33,9 @@ jobs:
     # Advisory only. ws3 carries ~323 pre-existing mypy errors from the partial
     # typing migration in Phase 2. Failing the build on them would put this job
     # back into the permanently-red state that made CI meaningless (see #94).
-    # Tracked in #98, which has the staged remediation plan. Flip
-    # continue-on-error off once that lands.
-    - name: Run mypy (advisory)
-      continue-on-error: true
+    # Tracked in #98, fully resolved by Stage 5 (forest.py) + Stage 6
+    # (core.py Tree/Node annotations, external call ignores). mypy is now blocking.
+    - name: Run mypy
       run: |
         mypy ws3/ --ignore-missing-imports
     
