@@ -1498,7 +1498,7 @@ class ForestModel:
         :param int maxage: Maximum age at which the new null action is operable.
         """
         mask = tuple(['?' for _ in range(self.nthemes())])
-        oe = '_age >= 0 and _age <= %i' % self.max_age
+        oe = f'_age >= 0 and _age <= {self.max_age}'
         target = [(mask, 1.0, None, None, None, None, None)]
         self.actions[acode] = Action(acode)
         self.oper_expr[acode] = {mask:oe}
@@ -1816,7 +1816,7 @@ class ForestModel:
             # try to make up for missing area...
             target_area = old_area - new_area
             if verbose:
-                print(' patched %i of %i solution hectares, missing' % (int(new_area), int(old_area)), target_area)
+                print(f' patched {int(new_area)} of {int(old_area)} solution hectares, missing', target_area)
             if areaselector is None: # use default area selector
                 areaselector = self.areaselector
             areaselector.operate(period, acode, target_area)
@@ -2264,7 +2264,7 @@ class ForestModel:
         t_data = list(zip(_chunks[::2], _chunks[1::2], strict=False))
         for ti, (t_description, t) in enumerate(t_data, start=ti_offset):
             self._themes.append({})
-            self._themes[-1]['__name__'] = 'theme%i' % ti
+            self._themes[-1]['__name__'] = f'theme{ti}'
             self._themes[-1]['__description__'] = t_description.strip().lstrip(';').strip()
             self._theme_basecodes.append([])
             defining_aggregates = False
@@ -2581,7 +2581,7 @@ class ForestModel:
         """
         if '_TH' in treplace: # assume incrementing integer theme value
             i = int(_search(r'(?<=_TH)\w+', treplace, '_TH theme index in _REPLACE expression').group(0))
-            return eval(re.sub('_TH%i'%i, str(dt.key[i-1]), treplace))
+            return eval(re.sub(f'_TH{i}', str(dt.key[i-1]), treplace))
         else:
             raise AssertionError() # many other possible arguments (see Woodstock documentation for details)
 
@@ -2981,7 +2981,7 @@ class ForestModel:
         for i, ac in enumerate(range(self.period_length,
                                      self.max_age+self.period_length,
                                      self.period_length)):
-            data['name'].append('age_%i' % (i+1))
+            data['name'].append(f'age_{i+1}')
             data['class_size'].append(self.period_length)
             data['start_year'].append(ac - self.period_length + 1)
             data['end_year'].append(ac)
@@ -3107,7 +3107,7 @@ class ForestModel:
         theme_cols = [theme['__name__'] for theme in self._themes]
         data = {**{c:[] for c in theme_cols},
                 'species':[], 'leading_species':[],
-                **{'v%i' % i:[] for i in range(n_yield_vals + 1)}}
+                **{f'v{i}':[] for i in range(n_yield_vals + 1)}}
         for dtype_key in self.dtypes:
             dt = self.dt(dtype_key)
             dt.leading_species = leading_species(dt)
@@ -3115,7 +3115,7 @@ class ForestModel:
                 for i, c in enumerate(theme_cols): data[c].append(dtype_key[i])
                 data['species'].append(species)
                 data['leading_species'].append(dt.leading_species)
-                for i in range(n_yield_vals + 1): data['v%i' % i].append(dt.ycomp(yname)[i * self.period_length])
+                for i in range(n_yield_vals + 1): data[f'v{i}'].append(dt.ycomp(yname)[i * self.period_length])
         result = pd.DataFrame(data)
         self.apply_schedule(schedule) # running add_problem above broke the schedule so restore from backup we stashed
         return result
@@ -3232,7 +3232,7 @@ class ForestModel:
                     data['max_hardwood_age'].append(sage)
                     data['disturbance_type'].append(acode)
                     to_dtype_key, to_age = resolve_target(dtype_key, target, sage)
-                    for i in range(len(theme_cols)): data['to_theme%i' % i].append(to_dtype_key[i])  # Monkey patch
+                    for i in range(len(theme_cols)): data[f'to_theme{i}'].append(to_dtype_key[i])  # Monkey patch
                     target_dt = self.dt(to_dtype_key)
                     target_species = target_dt.leading_species if target_dt else dt.leading_species
                     data['to_species'].append(target_species)
