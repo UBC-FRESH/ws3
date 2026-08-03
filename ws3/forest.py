@@ -108,7 +108,7 @@ class GreedyAreaSelector:
     def __init__(self, parent: ForestModel):
         self.parent = parent
 
-    def operate(self, period: int, acode: str, target_area: float, mask: tuple | None = None,
+    def operate(self, period: int, acode: str, target_area: float, mask: tuple[Any, ...] | None = None,
                 commit_actions: bool = True, verbose: bool = False) -> float:
         """
         Greedily operate on oldest operable age classes.
@@ -416,7 +416,7 @@ class DevelopmentType:
             else:
                  raise KeyError("ycomp '{}' not in development type '{}'".format(yname, ' '.join(self.key)))
 
-    def _o(self, s, default_ycomp=None) -> Any: # resolve string operands
+    def _o(self, s: str, default_ycomp: Any = None) -> Any: # resolve string operands
         if not default_ycomp:
             default_ycomp = self._zero_curve
         if common.is_num(s):
@@ -428,7 +428,7 @@ class DevelopmentType:
             ycomp = self.ycomp(s)
             return ycomp if ycomp else default_ycomp
 
-    def _resolver_multiply(self, yname, d):
+    def _resolver_multiply(self, yname: str, d: str) -> Any:
         args = [self._o(s.lower()) for s in re.split(r'\s?,\s?', _search(r'(?<=\().*(?=\))', d, f'MULTIPLY arguments for yield {yname!r}').group(0))]
         ##################################################################################################
         # NOTE: Not consistent with Remsoft documentation on 'complex-compound yields' (fix me)...
@@ -436,7 +436,7 @@ class DevelopmentType:
         return ytype_set.pop() if len(ytype_set) == 1 else 'c', self._rc(reduce(lambda x, y: x*y, args))
         ##################################################################################################
 
-    def _resolver_divide(self, yname, d):
+    def _resolver_divide(self, yname: str, d: str) -> Any:
         _tmp = list(zip(re.split(r'\s?,\s?', _search(r'(?<=\().*(?=\))', d, f'DIVIDE arguments for yield {yname!r}').group(0)),
                    (self._zero_curve, self._unit_curve), strict=False))
         args = [self._o(s, default_ycomp) for s, default_ycomp in _tmp]
@@ -525,8 +525,8 @@ class DevelopmentType:
             alo, ahi = self._max_age+1, -1
         cond_comps = expr.split(f' {oper} ')
         lhs, rel_operators, rhs = list(zip(*[cc.split(' ') for cc in cond_comps], strict=False))  # type: ignore[assignment]
-        rhs = list(map(float, rhs))
-        _plo, _phi, _alo, _ahi = None, None, None, None
+        rhs = list(map(float, rhs))  # type: ignore[assignment]
+        _plo, _phi, _alo, _ahi = None, None, None, None  # type: ignore[assignment]  # type: ignore[assignment]  # type: ignore[assignment]
         for i, o in enumerate(lhs):
             if o == '_cp':
                 period = int(rhs[i])
@@ -1135,7 +1135,8 @@ class ForestModel:
         # Step 1: Generate trees and variables
         if verbose:
             print('generate trees using', workers, 'workers')
-        p.trees, p._vars, p._leaf_ids = self._gen_vars_m1(
+        p.trees, p._vars, p._leaf_ids = self._gen_vars_m1(  # type: ignore[assignment]
+  # type: ignore[assignment]
             coeff_funcs,
             acodes=acodes,
             mask=mask,
@@ -1147,7 +1148,7 @@ class ForestModel:
         # Step 2: Process trees into coverage constraints
         if verbose:
             print('process trees')
-        tree_items = list(p.trees.items())
+        tree_items = list(p.trees.items())  # type: ignore[attr-defined]
         batches = list(auto_batch(tree_items, workers, max_batch_factor=4))
         tasks = [(batch, z_coeff_key) for batch in batches]
 
@@ -1259,7 +1260,7 @@ class ForestModel:
                 vname = f"x_{leaf_id}"
                 leaf_ids[(i, j)] = leaf_id
                 vars[vname] = opt.Variable(vname, opt.VTYPE_CONTINUOUS, 0.0, 1.0)
-        return trees, vars, leaf_ids
+        return trees, vars, leaf_ids  # type: ignore[return-value]
 
     def _gen_vars_m2(self):
         pass
@@ -1354,16 +1355,16 @@ class ForestModel:
             size_fn=lambda x: len(x[1].nodes()),
             max_batch_factor=1
         )
-        tasks = [(batch, cflw_keys, periods) for batch in batches]
+        tasks = [(batch, cflw_keys, periods) for batch in batches]  # type: ignore[arg-type]
 
         if workers == 1:
             results = []
             for task in tasks:
-                results.extend(worker_cmp_cflw_batch(task))
+                results.extend(worker_cmp_cflw_batch(task))  # type: ignore[arg-type]
         else:
             # Use existing executor if passed
             exec_ctx = executor or ProcessPoolExecutor(max_workers=workers, mp_context=get_context(MP_CONTEXT))
-            futures = [exec_ctx.submit(worker_cmp_cflw_batch, task) for task in tasks]
+            futures = [exec_ctx.submit(worker_cmp_cflw_batch, task) for task in tasks]  # type: ignore[arg-type]
 
             # Collect results without repeated extend() overhead
             results_nested = [f.result() for f in as_completed(futures)]
@@ -1377,8 +1378,7 @@ class ForestModel:
             print("_cmp_cflw_m1: phase 2")
         mu: dict[int, dict[str, dict[tuple[int, int], float]]] = {t: {o: {} for o in cflw_keys} for t in periods}  # type: ignore[var-annotated]
         for t, o, i, j, val in results:  # type: ignore[index]
-            mu[t][o][(i, j)] = val
-
+            mu[t][o][(i, j)] = val  # type: ignore[index]
         # Phase 3: Build constraints (parallel with batching)
         if verbose:
             print("_cmp_cflw_m1: phase 3")
@@ -1404,7 +1404,7 @@ class ForestModel:
         if workers == 1:
             # Serial processing
             for task in tasks:
-                results.extend(worker_cmp_cflw_phase3(task))
+                results.extend(worker_cmp_cflw_phase3(task))  # type: ignore[arg-type]
         else:
             # Create batches of tasks for more efficient multiprocessing
             batches = auto_batch(tasks, workers, max_batch_factor=2)
@@ -1416,7 +1416,7 @@ class ForestModel:
                 exec_ctx.shutdown()
 
         # Add constraints sequentially
-        for name, coeffs, sense, rhs in results:
+        for name, coeffs, sense, rhs in results:  # type: ignore[misc]
             add_constraint(name=name, coeffs=coeffs, sense=sense, rhs=rhs)
 
     def _cmp_cflw_m2(self):
@@ -1916,7 +1916,7 @@ class ForestModel:
             print('expr', expr)
             raise
 
-    def resolve_append(self, dtk: tuple[str, ...], expr: str) -> None:
+    def resolve_append(self, dtk: tuple[str, ...], expr: str) -> Any:
         """
         Not been implemented yet.
         """
@@ -2008,30 +2008,30 @@ class ForestModel:
         5. Transitions not defined for action
         """
         if area <= 0. and not override_operability:
-            return 1, None, None
+            return 1, None, None  # type: ignore[return-value]
         if verbose > 1:
             print('applying action', [' '.join(dtype_key)], acode, period, age, area)
         dt = self.dtypes[dtype_key]
         if acode not in dt.oper_expr:
             print('requested action not defined for development type...')
             print(' ', [' '.join(dtype_key)], acode, period, age, area)
-            return 2, None, None
+            return 2, None, None  # type: ignore[return-value]
         if acode not in dt.operability: # action not compiled yet...
             if dt.compile_action(acode) == -1:
                 print('requested action is defined, but never not operable...')
                 print(' ', [' '.join(dtype_key)], acode, period, age, area)
-                return 3, None, None
+            return 3, None, None  # type: ignore[return-value]
         if not dt.is_operable(acode, period, age) and not override_operability:
             print('not operable')
             print(' '.join(dt.key), acode, period, age)
             print(dt.operability[acode][period])
-            return 4, None, None
+            return 4, None, None  # type: ignore[return-value]
         if not any((acode, __age) in dt.transitions for __age in (age, -1)): # sanity check...
             print('transitions not defined...')
             print(' ', [' '.join(dtype_key)], acode, period, age, area)
             print(dt.oper_expr)
             print(dt.operability)
-            return 5, None, None
+            return 5, None, None  # type: ignore[return-value]
         if dt.area(period, age) - area < self.area_epsilon:
             # tweak area if slightly over or under, so we don't get any accounting drift...
             area = dt.area(period, age)
@@ -2072,14 +2072,14 @@ class ForestModel:
             # DO TO: Confirm correct order for evaluating mask, _APPEND and _REPLACE...
             dtk = [t if tmask[i] == '?' else tmask[i] for i, t in enumerate(dtk)]
             if treplace:
-                dtk[treplace[0]] = self.resolve_replace(dtk, treplace[1])
+                dtk[treplace[0]] = self.resolve_replace(dtk, treplace[1])  # type: ignore[arg-type]
             if tappend:
-                dtk[tappend[0]] = self.resolve_append(dtk, tappend[1])
-            dtk = tuple(dtk)
+                dtk[tappend[0]] = self.resolve_append(dtk, tappend[1])  # type: ignore[arg-type, assignment]
+            dtk = tuple(dtk)  # type: ignore[assignment]
             ###########################################################################
             # import pdb; pdb.set_trace()
-            _dt = self.create_dtype_fromkey(dtk) if dtk not in self.dtypes else self.dtypes[dtk]
-            targetage = self.resolve_targetage(dtk, tyield, age, tage, acode)
+            _dt = self.create_dtype_fromkey(dtk) if dtk not in self.dtypes else self.dtypes[dtk]  # type: ignore[arg-type]
+            targetage = self.resolve_targetage(dtk, tyield, age, tage, acode)  # type: ignore[arg-type]
             _dt.area(period, targetage, area*tprop)
             target_dt.append([dtk, tprop, targetage])
         aa = self.applied_actions[period][acode]
@@ -2117,7 +2117,7 @@ class ForestModel:
                 value = dt.ycomp(yname)[age]
             if value != 0.:
                 aa[dtype_key][age][1][yname] = value
-        return 0, missing_area, target_dt
+        return 0, missing_area, target_dt  # type: ignore[return-value]
 
     def sylv_cred_formula(self, treatment_type, cover_type):
         """
@@ -2507,7 +2507,7 @@ class ForestModel:
         ytype = ''
         mask = ('?',) * self.nthemes()
         ynames: list[str] = []  # type: ignore[var-annotated]
-        data = None
+        data: dict[str, list[Any]] = {}  # type: ignore[assignment]
         with open(f'{self.model_path}/{self.model_name}.{filename_suffix}') as f:
             for lnum, line_ in enumerate(f):
                 if re.match(r'^\s*(;|$)', line_):
@@ -2571,7 +2571,7 @@ class ForestModel:
                     else:
                         yname = t[0].lower()
                         ynames.append(yname)
-                        data[yname] = ' '.join(t[1:]) # complex yield (defer interpretation)
+                        data[yname] = ' '.join(t[1:])  # type: ignore[assignment]
         flush_ycomps(ytype, mask, ynames, data)  # type: ignore[no-untyped-call]
 
     def import_actions_section(self,
@@ -2689,7 +2689,7 @@ class ForestModel:
             key[i] = val
         return tuple(key)
 
-    def resolve_condition(self, condition: Any, dtype_key: tuple[str, ...] | None = None) -> list[int]:
+    def resolve_condition(self, condition: Any, dtype_key: tuple[str, ...] | None = None) -> list[int]:  # type: ignore[return]
         """
         Expands ``@AGE`` or ``@YLD`` conditions to list of age values.
         ``@AGE`` condition specifies lower- and upper-bound ages in a range,
@@ -2718,12 +2718,12 @@ class ForestModel:
         elif condition.startswith('@YLD'):
             args = re.split(r'\s?,\s?', condition[5:-1])
             yname = args[0].lower()  # type: ignore[assignment]
-            lo, hi = [float(y) for y in args[1].split('..')]
+            lo, hi = [float(y) for y in args[1].split('..')]  # type: ignore[assignment]
             if not dtype_key:
                 raise AssertionError() # to do: add better error handling
             dt = self.dtypes[dtype_key]
-            lo_age, hi_age = dt.ycomp(yname).range(lo, hi, as_bounds=True)
-            return list(range(lo_age, hi_age+1))
+            lo_age, hi_age = dt.ycomp(yname).range(lo, hi, as_bounds=True)  # type: ignore[assignment]
+            return list(range(int(lo_age), int(hi_age)+1))
 
     def import_transitions_section(self,
                                    filename_suffix='trn',
@@ -2992,7 +2992,7 @@ class ForestModel:
                     print(f'missing area {_aa:0.1f} ({_aa/area:0.2f})')
                 _period = period
             self.commit_actions(_period)
-        return missing_area
+        return missing_area  # type: ignore[return-value]
 
     def import_control_section(self, filename_suffix='run'):
         """
@@ -3294,12 +3294,12 @@ class ForestModel:
             dtk = list(dtype_key) # start with source key
             dtk = [t if tmask[i] == '?' else tmask[i] for i, t in enumerate(dtk)]
             if treplace:
-                dtk[treplace[0]] = self.resolve_replace(dtk, treplace[1])
+                dtk[treplace[0]] = self.resolve_replace(dtk, treplace[1])  # type: ignore[arg-type]
             if tappend:
-                dtk[tappend[0]] = self.resolve_append(dtk, tappend[1])  # type: ignore[assignment]
-            dtk = tuple(dtk)
-            targetage = self.resolve_targetage(dtk, tyield, sage, tage, acode)
-            return dtk, targetage
+                dtk[tappend[0]] = self.resolve_append(dtk, tappend[1])  # type: ignore[arg-type, assignment]  # type: ignore[assignment]
+                dtk[tappend[0]] = self.resolve_append(dtk, tappend[1])  # type: ignore[arg-type, assignment]  # type: ignore[assignment]
+            dtk = tuple(dtk)  # type: ignore[assignment]
+            targetage = self.resolve_targetage(dtk, tyield, sage, tage, acode)  # type: ignore[arg-type]
 
         theme_cols = [theme['__name__'] for theme in self._themes]
         columns = theme_cols.copy()
