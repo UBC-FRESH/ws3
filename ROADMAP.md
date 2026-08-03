@@ -534,10 +534,26 @@ errors enough to make the remaining forest.py work manageable in Stage 5.
 - Stage 5: `ws3/forest.py` (189 remaining errors, 89% of total)
 - Stage 6: Remove `continue-on-error` from mypy CI step to make it blocking
 
-## Proposed Phase 12 — forest.py mypy Stage 5
+## Phase 11d — mypy Typing Debt Stage 5 (forest.py)
 
 - Parent issue: [#98](https://github.com/UBC-FRESH/ws3/issues/98)
-- Status: planned
-- Scope: Annotate `ws3/forest.py` (~189 mypy errors). 89% of remaining typing debt.
-  Deliberately last — stages 1–4 establish patterns first.
+- Status: complete
+- Branch: `feature/phase11d-mypy-stage5`
+- Key result: `ws3/forest.py` mypy errors 189 → 0 (0 remaining across whole package)
+
+### Goal
+
+Clear the remaining ~189 mypy errors in `ws3/forest.py`, the last and largest piece
+of the typing debt cleanup (issue #98). Stages 1–4 established patterns first.
+
+### Scope
+
+- Stage 5: `ws3/forest.py` — annotate method signatures, add `type: ignore` pragmas
+  for externally-typed calls (batch workers, PaCal operators), fix control-flow false
+  positives, resolve tuple↔list type corruptions from `Any`-returning helpers
+- Remove `continue-on-error` from mypy CI step (Stage 6)
+
+### Child task checklist
+
+- [x] 11d.1 Stage 5 — annotate forest.py (189 → 0 errors, PR pending)
 

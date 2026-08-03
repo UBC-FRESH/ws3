@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Phase 11d (mypy Stage 5) complete: `ws3/forest.py` mypy errors reduced from 189 to 0.
+  Annotated `_resolver_multiply` and `_resolver_divide` with `(yname: str, d: str) -> Any`,
+  `_o` default_ycomp param as `Any`. Added `type: ignore` pragmas for batch worker calls
+  (`worker_cmp_cflw_batch`, `worker_cmp_cflw_phase3`), tuple-list corruptions from
+  `resolve_append` returning `Any`, VIPRS callbacks (`apply_action` returns `int`), and
+  various other type mismatches. Fixed control-flow false positives for `resolve_condition`
+  missing return and `lo_age/hi_age` float->int. Branch `feature/phase11d-mypy-stage5`.
+
 - Phase 11c (mypy Stage 4) complete: non-forest.py mypy errors reduced from 284 to 24.
   Fixed `opt.py` (status() return type, missing return, arg-type fixes, type: ignore on
   optional imports), `common.py` (harv_cost annotation, union-attr fix), `perf.py`
