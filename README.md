@@ -1,4 +1,5 @@
 [![tests](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml/badge.svg)](https://github.com/UBC-FRESH/ws3/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/UBC-FRESH/ws3/branch/main/graph/badge.svg)](https://codecov.io/gh/UBC-FRESH/ws3)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17331213.svg)](https://doi.org/10.5281/zenodo.17331213)
 
     

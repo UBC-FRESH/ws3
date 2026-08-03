@@ -65,8 +65,14 @@ jobs:
         pip install -e ".[dev]"
     
     - name: Run tests
-      run: pytest tests/ -v --tb=short
-    
+      run: pytest tests/ -v --tb=short --cov=ws3 --cov-report=term-missing
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
+
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@v4
