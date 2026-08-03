@@ -36,6 +36,33 @@ def test_hash_dt():
     assert isinstance(result_2, np.int32)
     assert isinstance(result_3, np.int32)
 
+    # Determinism: same input must produce same output across calls
+    assert hash_dt(dt_1) == result_1
+    assert hash_dt(dt_2) == result_2
+    assert hash_dt(dt_3) == result_3
+
+    # Different inputs must produce different outputs (MD5 collision-resistant)
+    assert hash_dt(dt_1) != hash_dt(dt_2)
+    assert hash_dt(dt_1) != hash_dt(dt_3)
+    assert hash_dt(dt_2) != hash_dt(dt_3)
+
+    # Test with larger/more complex inputs that stress the int32 conversion
+    dt_large = ['tsa24', '0', '999999', '999999', '999999', '100', '200', '300']
+    result_large = hash_dt(dt_large)
+    assert isinstance(result_large, np.int32)
+    # Should be deterministic
+    assert hash_dt(dt_large) == result_large
+
+    # Stress the int32 range with inputs that produce very large md5 prefixes.
+    # The struct.unpack('<i', ...) path is what replaced the overflow-prone
+    # int(binascii.hexlify(...), 16).  The struct approach wraps correctly
+    # (two's complement) whereas the old path would overflow on values > 2**31-1.
+    dt_overflow = ['z' * 100, str(2**30), 'x' * 50]
+    result_overflow = hash_dt(dt_overflow)
+    assert isinstance(result_overflow, np.int32)
+    # Result must be a valid int32 — np.int32 range is [-2**31, 2**31-1]
+    assert np.iinfo(np.int32).min <= int(result_overflow) <= np.iinfo(np.int32).max
+
 
 def test_reproject():
     # Create a sample feature dictionary with geometry
