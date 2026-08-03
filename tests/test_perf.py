@@ -5,14 +5,16 @@ Tests SolverTuner, MemoryProfiler, PerformanceBenchmark, ResultCache,
 and IncrementalSolver classes.
 """
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from ws3.perf import (
-    SolverTuner,
+    IncrementalSolver,
     MemoryProfiler,
     PerformanceBenchmark,
     ResultCache,
-    IncrementalSolver,
+    SolverTuner,
 )
 
 

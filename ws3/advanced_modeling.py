@@ -30,11 +30,12 @@ Gated pending implementation:
 
 from __future__ import annotations
 
-import numpy as np
-import pandas as pd
-from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
+
+import numpy as np
+import pandas as pd
 
 
 def _not_production_ready(what: str, missing: str) -> None:
@@ -72,9 +73,9 @@ class StochasticScenario:
     """A scenario for stochastic optimization."""
     name: str
     probability: float
-    parameters: Dict[str, Any] = field(default_factory=dict)
+    parameters: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             'name': self.name,
             'probability': self.probability,
@@ -92,7 +93,7 @@ class StochasticOptimizer:
 
     def __init__(self, problem: Any):
         self.problem = problem
-        self.scenarios: List[StochasticScenario] = []
+        self.scenarios: list[StochasticScenario] = []
 
     def add_scenario(self, scenario: StochasticScenario):
         """Add a scenario to the optimization."""
@@ -102,7 +103,7 @@ class StochasticOptimizer:
                           uncertainty_type: UncertaintyType,
                           n_scenarios: int = 100,
                           mean: float = 1.0,
-                          std: float = 0.1) -> List[StochasticScenario]:
+                          std: float = 0.1) -> list[StochasticScenario]:
         """
         Generate scenarios based on uncertainty type.
 
@@ -148,7 +149,7 @@ class StochasticOptimizer:
         self.scenarios = scenarios
         return scenarios
 
-    def solve_stochastic(self, method: str = "sample_average") -> Dict[str, Any]:
+    def solve_stochastic(self, method: str = "sample_average") -> dict[str, Any]:
         """
         Solve stochastic optimization problem.
 
@@ -244,7 +245,7 @@ class MultiObjectiveOptimizer:
 
     def __init__(self, problem: Any):
         self.problem = problem
-        self.objectives: List[Dict[str, Any]] = []
+        self.objectives: list[dict[str, Any]] = []
 
     def add_objective(self, name: str, weight: float = 1.0,
                      direction: str = "maximize"):
@@ -255,7 +256,7 @@ class MultiObjectiveOptimizer:
             'direction': direction
         })
 
-    def solve_weighted_sum(self, weights: Optional[Dict[str, float]] = None) -> Dict[str, Any]:
+    def solve_weighted_sum(self, weights: dict[str, float] | None = None) -> dict[str, Any]:
         """
         Solve using weighted sum method.
 
@@ -272,7 +273,7 @@ class MultiObjectiveOptimizer:
             weights = {obj['name']: obj['weight'] for obj in self.objectives}
 
         # Create weighted objective
-        for name, weight in weights.items():
+        for _name, _weight in weights.items():
             # This would add objective terms to the problem
             # Implementation depends on problem structure
             pass
@@ -289,7 +290,7 @@ class MultiObjectiveOptimizer:
 
     def solve_epsilon_constraint(self,
                                 primary_objective: str,
-                                epsilon_constraints: Dict[str, float]) -> Dict[str, Any]:
+                                epsilon_constraints: dict[str, float]) -> dict[str, Any]:
         """
         Solve using epsilon-constraint method.
 
@@ -304,7 +305,7 @@ class MultiObjectiveOptimizer:
             'not exist.'
         )
         # Add epsilon constraints to problem
-        for obj_name, epsilon in epsilon_constraints.items():
+        for obj_name, _epsilon in epsilon_constraints.items():
             if obj_name != primary_objective:
                 # Add constraint: obj_name >= epsilon (for maximization)
                 pass
@@ -353,7 +354,7 @@ class MultiObjectiveOptimizer:
 
         return pareto_df
 
-    def _filter_pareto_optimal(self, solutions: List[Dict]) -> pd.DataFrame:
+    def _filter_pareto_optimal(self, solutions: list[dict]) -> pd.DataFrame:
         """Filter to Pareto-optimal solutions."""
         if not solutions:
             return pd.DataFrame()
@@ -380,7 +381,7 @@ class MultiObjectiveOptimizer:
 
         return df
 
-    def _extract_objective_values(self) -> Dict[str, float]:
+    def _extract_objective_values(self) -> dict[str, float]:
         """Extract objective function values. Unimplemented -- see #103."""
         _not_production_ready(
             'MultiObjectiveOptimizer._extract_objective_values()',
@@ -399,9 +400,9 @@ class DynamicPlanner:
     def __init__(self, problem: Any, n_periods: int = 10):
         self.problem = problem
         self.n_periods = n_periods
-        self.plans: List[Dict[str, Any]] = []
+        self.plans: list[dict[str, Any]] = []
 
-    def plan_static(self) -> Dict[str, Any]:
+    def plan_static(self) -> dict[str, Any]:
         """
         Generate a static plan (single optimization).
 
@@ -424,7 +425,7 @@ class DynamicPlanner:
         self.plans.append(plan)
         return plan
 
-    def plan_dynamic(self, reoptimize_every: int = 5) -> Dict[str, Any]:
+    def plan_dynamic(self, reoptimize_every: int = 5) -> dict[str, Any]:
         """
         Generate a dynamic plan with periodic re-optimization.
 
@@ -464,7 +465,7 @@ class DynamicPlanner:
         self.plans.append(dynamic_plan)
         return dynamic_plan
 
-    def compare_plans(self, plan1: Dict, plan2: Dict) -> Dict[str, Any]:
+    def compare_plans(self, plan1: dict, plan2: dict) -> dict[str, Any]:
         """Compare two planning approaches."""
         return {
             'plan1_type': plan1['type'],
@@ -487,7 +488,7 @@ class ClimateScenarioManager:
     """
 
     def __init__(self):
-        self.scenarios: List[Dict[str, Any]] = []
+        self.scenarios: list[dict[str, Any]] = []
 
     def add_scenario(self, name: str, temperature_change: float,
                     precipitation_change: float, co2_change: float = 0.0):
@@ -500,7 +501,7 @@ class ClimateScenarioManager:
         }
         self.scenarios.append(scenario)
 
-    def get_rcp_scenarios(self) -> List[Dict[str, Any]]:
+    def get_rcp_scenarios(self) -> list[dict[str, Any]]:
         """Get standard RCP scenarios."""
         rcp_scenarios = [
             {'name': 'RCP2.6', 'temperature': 1.5, 'precipitation': 0.05, 'co2': 420},
@@ -512,7 +513,7 @@ class ClimateScenarioManager:
         self.scenarios = rcp_scenarios
         return rcp_scenarios
 
-    def apply_climate_effects(self, fm: Any, scenario: Dict[str, Any]) -> Any:
+    def apply_climate_effects(self, fm: Any, scenario: dict[str, Any]) -> Any:
         """
         Apply climate effects to a ForestModel.
 
@@ -535,7 +536,7 @@ class ClimateScenarioManager:
         growth_modifier = 1.0 + 0.02 * temperature + 0.01 * precipitation + 0.001 * co2
 
         # Apply to yield curves
-        for key, curve in fm.yields.items():
+        for _key, curve in fm.yields.items():
             curve['volume'] = curve['volume'] * growth_modifier
 
         return fm

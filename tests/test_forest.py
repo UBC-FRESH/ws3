@@ -1,9 +1,11 @@
 import sys
+
 sys.path.append('../ws3/')
 import textwrap
 from pathlib import Path
 
 import pytest
+
 from ws3.forest import Action, DevelopmentType, ForestModel, _search
 
 

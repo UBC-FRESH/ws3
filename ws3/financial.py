@@ -6,10 +6,11 @@ silviculture credits and harvest costs.
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, Optional
+from typing import Any
 
 import numpy as np
 from scipy.stats import norm
+
 
 #################################################################################################
 # PaCal breaks when trying to import numpy.fft.fftpack (names have changed or some such... yuck).
@@ -315,7 +316,7 @@ def sylv_cred(P: float, vr: float, vp: float, formula: int) -> float:
 
 
 def sylv_cred_rv(P_mu: float, P_sigma: float, tv_mu: float, tv_sigma: float, N_mu: float, N_sigma: float, psr: float,
-                 treatment_type: Optional[str] = None, cover_type: Optional[str] = None, formula: Optional[int] = None,
+                 treatment_type: str | None = None, cover_type: str | None = None, formula: int | None = None,
                  P_min: float = 20., tv_min: float = 50., N_min: float = 200., ps_min: float = 0.05,
                  E_fromintegral: bool = False, e: float = 0.01, n: int = 1000) -> float:
 
@@ -358,7 +359,7 @@ def sylv_cred_rv(P_mu: float, P_sigma: float, tv_mu: float, tv_sigma: float, N_m
         dE = np.inf
         i = 1
         while dE > e:
-            args = list(zip(P.rand(n), vr.rand(n), vp.rand(n)))
+            args = list(zip(P.rand(n), vr.rand(n), vp.rand(n), strict=False))
             while len(args) > 0: # process random args in in n-length chunks
                 _E = E
                 E = ((i - 1) * E + f[formula](*args.pop())) / i  # type: ignore[operator]
@@ -383,7 +384,7 @@ def sylv_cred_formula(treatment_type: str, cover_type: str) -> int:
     return 0
 
 
-def piece_size_ratio(treatment_type: int, cover_type: str, piece_size_ratios: Optional[Dict[int, Dict[str, float]]]) -> float:
+def piece_size_ratio(treatment_type: int, cover_type: str, piece_size_ratios: dict[int, dict[str, float]] | None) -> float:
     """
     Returns piece size ratio.
 

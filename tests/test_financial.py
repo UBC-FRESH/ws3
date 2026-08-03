@@ -1,12 +1,15 @@
 import sys
+
 sys.path.append('../ws3/')
-import pytest
 #import numpy as np
 #import fiona
 #import os
 import math
+
+import pytest
+
 import ws3.financial
-from ws3.financial import sylv_cred, sylv_cred_formula, piece_size_ratio, harv_cost
+from ws3.financial import harv_cost, piece_size_ratio, sylv_cred, sylv_cred_formula
 
 
 def test_math_funcs_returns_exp_and_log_not_exp_twice():

@@ -5,10 +5,12 @@ Tests interaction between different ws3 components.
 """
 
 import sys
+
 sys.path.append('../ws3/')
 
-import pytest
 import numpy as np
+import pytest
+
 from ws3.forest import ForestModel
 from ws3.opt import Problem, Variable
 

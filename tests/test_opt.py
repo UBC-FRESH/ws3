@@ -1,8 +1,9 @@
 import sys
+
 sys.path.append('../ws3/')
-from ws3.opt import Variable, Constraint
 import pytest
 
+from ws3.opt import Constraint, Variable
 
 VBNDS_INF = float('inf')  # Define VBNDS_INF for testing
 SENSE_EQ = '=' # same as GRB.EQUAL

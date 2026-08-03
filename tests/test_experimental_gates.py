@@ -24,7 +24,6 @@ import ws3.advanced_modeling as am
 import ws3.integration as ig
 import ws3.perf as perf
 
-
 GATED_CALLS = [
     ('StochasticOptimizer.solve_stochastic',
      lambda: am.StochasticOptimizer(None).solve_stochastic()),

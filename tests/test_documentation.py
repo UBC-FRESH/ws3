@@ -5,11 +5,13 @@ Tests that documentation examples are correct and runnable.
 """
 
 import sys
+
 sys.path.append('../ws3/')
 
-import pytest
 import os
 import subprocess
+
+import pytest
 
 
 class TestDocumentationExamples:
@@ -35,7 +37,7 @@ class TestDocumentationExamples:
     def test_opt_import(self):
         """Test opt module import."""
         try:
-            from ws3.opt import Problem, Variable, Constraint
+            from ws3.opt import Constraint, Problem, Variable
             assert Problem is not None
             assert Variable is not None
             assert Constraint is not None
@@ -53,7 +55,7 @@ class TestDocumentationExamples:
     def test_perf_import(self):
         """Test perf module import."""
         try:
-            from ws3.perf import SolverTuner, MemoryProfiler, PerformanceBenchmark
+            from ws3.perf import MemoryProfiler, PerformanceBenchmark, SolverTuner
             assert SolverTuner is not None
             assert MemoryProfiler is not None
             assert PerformanceBenchmark is not None
@@ -63,7 +65,7 @@ class TestDocumentationExamples:
     def test_integration_import(self):
         """Test integration module import."""
         try:
-            from ws3.integration import FHOPSIntegrator, FEMICIntegrator
+            from ws3.integration import FEMICIntegrator, FHOPSIntegrator
             assert FHOPSIntegrator is not None
             assert FEMICIntegrator is not None
         except ImportError as e:
@@ -121,7 +123,7 @@ class TestDocumentationBuild:
         for rst_file in rst_files:
             filepath = os.path.join(docs_dir, rst_file)
             if os.path.exists(filepath):
-                with open(filepath, 'r') as f:
+                with open(filepath) as f:
                     content = f.read()
 
                 # Check for basic RST structure
@@ -180,7 +182,7 @@ class TestExampleNotebooks:
         for notebook in notebooks_to_check:
             filepath = os.path.join(examples_dir, notebook)
             if os.path.exists(filepath):
-                with open(filepath, 'r') as f:
+                with open(filepath) as f:
                     nb = json.load(f)
 
                 # Check basic structure
@@ -188,7 +190,7 @@ class TestExampleNotebooks:
                 assert len(nb["cells"]) > 0, f"{notebook} has no cells"
 
                 # Check cell types
-                cell_types = set(cell["cell_type"] for cell in nb["cells"])
+                cell_types = {cell["cell_type"] for cell in nb["cells"]}
                 assert "markdown" in cell_types or "code" in cell_types, \
                     f"{notebook} has no markdown or code cells"
 
@@ -203,7 +205,7 @@ class TestExampleNotebooks:
         filepath = os.path.join(examples_dir, notebook_file)
 
         if os.path.exists(filepath):
-            with open(filepath, 'r') as f:
+            with open(filepath) as f:
                 nb = json.load(f)
 
             # Find code cells with imports

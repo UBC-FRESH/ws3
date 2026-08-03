@@ -16,7 +16,7 @@ import shutil
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from fresh_agent_core.capability import Capability, ParseError, Verdict
 
@@ -118,7 +118,7 @@ class DiagnoseImport(Capability[Diagnosis]):
             f'got {type(inputs).__name__}'
         )
 
-    def render(self, value: 'Diagnosis') -> str:
+    def render(self, value: Diagnosis) -> str:
         """Render the diagnosis and the verified replacement line."""
         return (
             f'{value.cause}\n'
@@ -239,7 +239,7 @@ class DiagnoseImport(Capability[Diagnosis]):
         return Verdict.invalid(f'the section still fails after the fix: {outcome}')
 
 
-def _try_import(model_path: Path, model_name: str, importer: str) -> Optional[str]:
+def _try_import(model_path: Path, model_name: str, importer: str) -> str | None:
     """
     Re-run the failing import against a patched copy.
 

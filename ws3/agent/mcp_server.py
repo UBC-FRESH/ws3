@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import argparse
 import sys
-from typing import Any, Optional
+from typing import Any
 
 __all__ = ['build_ws3_server', 'main']
 
@@ -47,8 +47,8 @@ def _load_model(model_path: str, model_name: str, **kwargs: Any) -> Any:
 
 def build_ws3_server(
     *,
-    model_path: Optional[str] = None,
-    model_name: Optional[str] = None,
+    model_path: str | None = None,
+    model_name: str | None = None,
     provider: Any = None,
     config: Any = None,
     sink: Any = None,
@@ -117,7 +117,7 @@ def build_ws3_server(
     )
 
 
-def main(argv: Optional[list[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     """Console entry point for ``ws3-agent-mcp``."""
     parser = argparse.ArgumentParser(
         prog='ws3-agent-mcp',

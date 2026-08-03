@@ -35,7 +35,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 from fresh_agent_core.capability import Capability, ParseError, Verdict
 
@@ -254,11 +254,11 @@ class BuildMask(Capability[tuple]):
 
         return Verdict.valid()
 
-    def __init__(self, fm: Optional[Any] = None) -> None:
+    def __init__(self, fm: Any | None = None) -> None:
         """
         :param fm: Model supplying the theme schema. The theme count is what makes
             mask assembly deterministic, so without a model the capability can
             describe nothing and assemble nothing.
         """
         super().__init__()
-        self._schema: Optional[ThemeSchema] = schema_for(fm)
+        self._schema: ThemeSchema | None = schema_for(fm)

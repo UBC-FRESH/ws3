@@ -5,12 +5,15 @@ Tests solver performance, memory usage, and scalability.
 """
 
 import sys
+
 sys.path.append('../ws3/')
 
-import pytest
 import time
-from ws3.opt import Variable, Constraint, Problem
+
+import pytest
+
 from ws3.forest import ForestModel
+from ws3.opt import Constraint, Problem, Variable
 
 
 class TestPerformance:
@@ -198,7 +201,7 @@ class TestSolverComparison:
             sol1 = list(results.values())[0]
             sol2 = list(results.values())[1]
 
-            max_diff = max(abs(v1 - v2) for v1, v2 in zip(sol1.values(), sol2.values()))
+            max_diff = max(abs(v1 - v2) for v1, v2 in zip(sol1.values(), sol2.values(), strict=False))
             assert max_diff < 10.0, f"Solutions differ too much: {max_diff}"
 
 

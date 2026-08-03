@@ -16,23 +16,23 @@ from __future__ import annotations
 
 import json
 import time
-from typing import Any, Dict, List, Optional
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
+from typing import Any
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 @dataclass
 class FHOPSIntegrationConfig:
     """Configuration for fhops integration."""
     inventory_file: str
-    terrain_file: Optional[str] = None
-    roads_file: Optional[str] = None
-    species_params: Optional[Dict[str, Any]] = None
+    terrain_file: str | None = None
+    roads_file: str | None = None
+    species_params: dict[str, Any] | None = None
     output_dir: str = "."
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -47,7 +47,7 @@ class FHOPSIntegrator:
     - Species (harvesting techniques)
     """
 
-    def __init__(self, config: Optional[FHOPSIntegrationConfig] = None):
+    def __init__(self, config: FHOPSIntegrationConfig | None = None):
         self.config = config
         self._fhops_available = self._check_fhops_available()
 
@@ -160,7 +160,7 @@ class FEMICIntegrator:
 
     def calculate_carbon_budget(self,
                                schedule: pd.DataFrame,
-                               landscape: pd.DataFrame) -> Dict[str, float]:
+                               landscape: pd.DataFrame) -> dict[str, float]:
         """
         Calculate carbon budget for a harvest schedule.
 
@@ -191,7 +191,7 @@ class FEMICIntegrator:
             'carbon_flux_per_ha': carbon_flux / total_area if total_area > 0 else 0,
         }
 
-    def get_carbon_pools(self) -> List[str]:
+    def get_carbon_pools(self) -> list[str]:
         """Get list of carbon pools tracked by FEMIC."""
         return [
             'above_ground_biomass',
@@ -202,7 +202,7 @@ class FEMICIntegrator:
             'harvested_product',
         ]
 
-    def export_carbon_report(self, budget: Dict[str, float],
+    def export_carbon_report(self, budget: dict[str, float],
                             filename: str) -> None:
         """Export carbon budget report to JSON."""
         with open(filename, 'w') as f:
@@ -230,7 +230,7 @@ class FreshForgeIntegrator:
 
     def create_pipeline(self,
                        name: str,
-                       steps: List[Dict[str, Any]]) -> Dict[str, Any]:
+                       steps: list[dict[str, Any]]) -> dict[str, Any]:
         """
         Create a FreshForge pipeline for ws3 workflows.
 
@@ -254,7 +254,7 @@ class FreshForgeIntegrator:
                                  model_path: str,
                                  scenario_name: str,
                                  objective: str,
-                                 output_dir: str) -> Dict[str, Any]:
+                                 output_dir: str) -> dict[str, Any]:
         """
         Run a complete optimization pipeline.
 
@@ -292,7 +292,7 @@ class FreshForgeIntegrator:
 
         return pipeline
 
-    def export_pipeline(self, pipeline: Dict[str, Any],
+    def export_pipeline(self, pipeline: dict[str, Any],
                        filename: str) -> None:
         """Export pipeline configuration to JSON."""
         with open(filename, 'w') as f:
@@ -323,7 +323,7 @@ class SpaDESIntegrator:
     def create_spades_config(self,
                             model_path: str,
                             landscape_raster: str,
-                            scheduling_mode: str = 'optimize') -> Dict[str, Any]:
+                            scheduling_mode: str = 'optimize') -> dict[str, Any]:
         """
         Create SpaDES configuration for ws3 integration.
 
@@ -352,7 +352,7 @@ class SpaDESIntegrator:
 
         return config
 
-    def export_config(self, config: Dict[str, Any],
+    def export_config(self, config: dict[str, Any],
                      filename: str) -> None:
         """Export SpaDES configuration to JSON."""
         with open(filename, 'w') as f:
@@ -400,7 +400,7 @@ class RESTAPIServer:
             objective_value: float
             num_variables: int
             num_constraints: int
-            schedule_url: Optional[str] = None
+            schedule_url: str | None = None
 
         @app.get("/")
         async def root():
@@ -453,7 +453,7 @@ class RESTAPIServer:
 
 # Convenience functions
 
-def create_fhops_integrator(config: Optional[FHOPSIntegrationConfig] = None) -> FHOPSIntegrator:
+def create_fhops_integrator(config: FHOPSIntegrationConfig | None = None) -> FHOPSIntegrator:
     """Create an fhops integrator instance."""
     return FHOPSIntegrator(config)
 

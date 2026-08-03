@@ -37,16 +37,11 @@ import itertools
 import operator
 import re
 import sys
+from collections.abc import Callable
 from functools import reduce
 from itertools import chain
 from typing import (
     Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    Union,
 )
 
 _cfi = chain.from_iterable
@@ -81,7 +76,7 @@ from ws3.forest_helper import (
 )
 
 
-def _search(pattern: str, string: str, what: str, flags: int = 0) -> 're.Match[str]':
+def _search(pattern: str, string: str, what: str, flags: int = 0) -> re.Match[str]:
     """
     ``re.search`` that fails with a useful message instead of ``None``.
 
@@ -117,7 +112,7 @@ class GreedyAreaSelector:
     def __init__(self, parent: ForestModel):
         self.parent = parent
 
-    def operate(self, period: int, acode: str, target_area: float, mask: Optional[Tuple] = None,
+    def operate(self, period: int, acode: str, target_area: float, mask: tuple | None = None,
                 commit_actions: bool = True, verbose: bool = False) -> float:
         """
         Greedily operate on oldest operable age classes.
@@ -130,8 +125,9 @@ class GreedyAreaSelector:
         :param bool commit_actions: Flag indicating whether to commit actions. Defaults to True.
         :param bool verbose: Verbosity flag. Defaults to False.
         """
-        key = lambda item: max(item[1])
-        odt = sorted(list(self.parent.operable_dtypes(acode, period, mask).items()), key=key)
+        def key(item):
+            return max(item[1])
+        odt = sorted(self.parent.operable_dtypes(acode, period, mask).items(), key=key)
         if verbose:
             print(' entering selector.operate()', len(odt), 'operable dtypes')
         while target_area > 0 and odt:
@@ -150,15 +146,15 @@ class GreedyAreaSelector:
                 target_area -= area
                 if area < 0:
                     print('negative area', area, oa, target_area, acode, period, age)
-                    assert False
+                    raise AssertionError()
                 if verbose:
                     print(' selector found area', [' '.join(dtk)], acode, period, age, area)
                 self.parent.apply_action(dtk, acode, period, age, area, compile_c_ycomps=True,
                                          fuzzy_age=False, recourse_enabled=False, verbose=verbose)
-            odt = sorted(list(self.parent.operable_dtypes(acode, period, mask).items()), key=key)
+            odt = sorted(self.parent.operable_dtypes(acode, period, mask).items(), key=key)
         self.parent.commit_actions(period, repair_future_actions=True)
         if verbose:
-            print('GreedyAreaSelector.operate done (remaining target_area: %0.1f)' % target_area)
+            print(f'GreedyAreaSelector.operate done (remaining target_area: {target_area:0.1f})')
         return target_area
 
 class Action:
@@ -166,25 +162,25 @@ class Action:
     Encapsulates data for an action.
     """
     code: str
-    targetage: Optional[int]
+    targetage: int | None
     descr: str
     lockexempt: bool
-    oper_a: Optional[Any]
-    oper_p: Optional[Any]
-    components: List[str]
-    partial: List[str]
+    oper_a: Any | None
+    oper_p: Any | None
+    components: list[str]
+    partial: list[str]
     is_compiled: bool
     is_harvest: int
     is_sticky: int
-    treatment_type: Optional[Any]
+    treatment_type: Any | None
 
     def __init__(self,
                  code: str,
-                 targetage: Optional[int] = None,
+                 targetage: int | None = None,
                  descr: str = '',
                  lockexempt: bool = False,
-                 components: Optional[List[str]] = None,
-                 partial: Optional[List[str]] = None,
+                 components: list[str] | None = None,
+                 partial: list[str] | None = None,
                  is_harvest: int = 0,
                  is_sticky: int = 0):
         self.code = code
@@ -206,25 +202,25 @@ class DevelopmentType:
     to operate on the data. This is the core class in this module, with respect
     to tracking forest inventory and simulating growth and actions.
     """
-    _bo: Dict[str, Callable[[Any, Any], Any]] = {'AND':operator.and_, '&':operator.and_, 'OR':operator.or_, '|':operator.or_}
+    _bo: dict[str, Callable[[Any, Any], Any]] = {'AND':operator.and_, '&':operator.and_, 'OR':operator.or_, '|':operator.or_}
 
-    key: Tuple[str, ...]
+    key: tuple[str, ...]
     parent: ForestModel
     _rc: Callable[[core.Curve], core.Curve]
     _max_age: int
-    _ycomps: Dict[str, Optional[core.Curve]]
-    _complex_ycomps: Dict[str, str]
+    _ycomps: dict[str, core.Curve | None]
+    _complex_ycomps: dict[str, str]
     _zero_curve: core.Curve
     _unit_curve: core.Curve
     _ages_curve: core.Curve
-    _resolvers: Dict[str, Callable[[str, str], Tuple[str, core.Curve]]]
-    transitions: Dict[Tuple[str, int], List[Any]]
-    _areas: Dict[int, dd[float]]  # type: ignore[type-arg]
+    _resolvers: dict[str, Callable[[str, str], tuple[str, core.Curve]]]
+    transitions: dict[tuple[str, int], list[Any]]
+    _areas: dict[int, dd[float]]  # type: ignore[type-arg]
     oper_expr: dd[list]  # type: ignore[type-arg]
-    operability: Dict[str, Dict[int, Optional[Tuple[int, int]]]]
+    operability: dict[str, dict[int, tuple[int, int] | None]]
 
     def __init__(self,
-                 key: Tuple[str, ...],
+                 key: tuple[str, ...],
                  parent: ForestModel):
         """
         :param tuple key: Development type key (a unique combination of theme values).
@@ -256,7 +252,7 @@ class DevelopmentType:
         self.oper_expr = dd(list)
         self.operability = {}
 
-    def operable_ages(self, acode: str, period: int) -> Optional[List[int]]:
+    def operable_ages(self, acode: str, period: int) -> list[int] | None:
         """
         Finds list of ages at which ``self`` is operable, given an action code and period index.
         Takes into account both action operability age range and current inventory at the specified period.
@@ -278,7 +274,7 @@ class DevelopmentType:
             lo, hi = period_oper
             return list(set(range(lo, hi+1)).intersection(list(self._areas[period].keys())))
 
-    def is_operable(self, acode: str, period: int, age: Optional[int] = None, verbose: bool = False) -> Union[bool, Tuple[int, int]]:
+    def is_operable(self, acode: str, period: int, age: int | None = None, verbose: bool = False) -> bool | tuple[int, int]:
         """
         Test hypothetical operability, given an action code, a period, and optional age.
         Does not imply that there is any operable area in current inventory at the specified period.
@@ -307,7 +303,7 @@ class DevelopmentType:
             else:
                 return lo, hi
 
-    def operable_area(self, acode: str, period: int, age: Optional[int] = None, cleanup: bool = True) -> float:
+    def operable_area(self, acode: str, period: int, age: int | None = None, cleanup: bool = True) -> float:
         """
         Compiles operable area, given an action code, a period, and optional age.
 
@@ -334,10 +330,10 @@ class DevelopmentType:
             return self._areas[period][age]  # type: ignore[no-any-return]
         else:
             return 0.0  # type: ignore[no-any-return]
-        assert False  # type: ignore[unreachable]
+        raise AssertionError()  # type: ignore[unreachable]
 
 
-    def area(self, period: int, age: Optional[int] = None, area: Optional[float] = None, delta: bool = True) -> Optional[float]:
+    def area(self, period: int, age: int | None = None, area: float | None = None, delta: bool = True) -> float | None:
         """
         If area not specified, returns area inventory for period (with optional age filter), else sets area for period and age.
         If delta switch active (default ``True``), area value is interpreted as an increment on current inventory
@@ -366,7 +362,7 @@ class DevelopmentType:
             return None
         return None
 
-    def resolve_condition(self, yname: str, lo: float, hi: float) -> List[int]:
+    def resolve_condition(self, yname: str, lo: float, hi: float) -> list[int]:
         """
         Compile list of ages corresponding to lower- and and upper-bound values of specified yield component
         Yield bounds are interpreted as first occurence of lower-bound value (reading curve from left to right)
@@ -380,7 +376,7 @@ class DevelopmentType:
         """
         return [x for x, y in enumerate(self.ycomp(yname)) if y >= lo and y <= hi]  # type: ignore[arg-type]
 
-    def reset_areas(self, period: Optional[int] = None) -> None:
+    def reset_areas(self, period: int | None = None) -> None:
         """
         Reset areas dictionary. By default will reset all periods (except for period 0),
         unless period is specified.
@@ -391,14 +387,14 @@ class DevelopmentType:
         for period in periods:
             self._areas[period] = dd(float)
 
-    def ycomps(self) -> List[str]:
+    def ycomps(self) -> list[str]:
         """
         :return: List of yield component names.
         """
         return list(self._ycomps.keys())
 
 
-    def ycomp(self, yname: str, silent_fail: bool = True) -> Optional[core.Curve]:
+    def ycomp(self, yname: str, silent_fail: bool = True) -> core.Curve | None:
         """
         Returns the yield components associated with the given yield name.
 
@@ -417,7 +413,7 @@ class DevelopmentType:
             if silent_fail:
                 return None
             else:
-                 raise KeyError("ycomp '%s' not in development type '%s'" % (yname, ' '.join(self.key)))
+                 raise KeyError("ycomp '{}' not in development type '{}'".format(yname, ' '.join(self.key)))
 
     def _o(self, s, default_ycomp=None): # resolve string operands
         if not default_ycomp: default_ycomp = self._zero_curve
@@ -434,20 +430,20 @@ class DevelopmentType:
         args = [self._o(s.lower()) for s in re.split(r'\s?,\s?', _search(r'(?<=\().*(?=\))', d, f'MULTIPLY arguments for yield {yname!r}').group(0))]
         ##################################################################################################
         # NOTE: Not consistent with Remsoft documentation on 'complex-compound yields' (fix me)...
-        ytype_set = set(a.type for a in args if isinstance(a, core.Curve))
+        ytype_set = {a.type for a in args if isinstance(a, core.Curve)}
         return ytype_set.pop() if len(ytype_set) == 1 else 'c', self._rc(reduce(lambda x, y: x*y, args))
         ##################################################################################################
 
     def _resolver_divide(self, yname, d):
         _tmp = list(zip(re.split(r'\s?,\s?', _search(r'(?<=\().*(?=\))', d, f'DIVIDE arguments for yield {yname!r}').group(0)),
-                   (self._zero_curve, self._unit_curve)))
+                   (self._zero_curve, self._unit_curve), strict=False))
         args = [self._o(s, default_ycomp) for s, default_ycomp in _tmp]
         return args[0].type if not args[0].is_special else args[1].type, self._rc(args[0] / args[1])
 
     def _resolver_sum(self, yname, d):
         args = [self._o(s.lower()) for s in re.split(r'\s?,\s?', _search(r'(?<=\().*(?=\))', d, f'SUM arguments for yield {yname!r}').group(0))]
-        ytype_set = set(a.type for a in args if isinstance(a, core.Curve))
-        return ytype_set.pop() if len(ytype_set) == 1 else 'c', self._rc(reduce(lambda x, y: x+y, [a for a in args]))
+        ytype_set = {a.type for a in args if isinstance(a, core.Curve)}
+        return ytype_set.pop() if len(ytype_set) == 1 else 'c', self._rc(reduce(lambda x, y: x+y, list(args)))
 
     def _resolver_cai(self, yname, d):
         arg = self._o(re.split(r'\s?,\s?', _search(r'(?<=\().*(?=\))', d, f'CAI arguments for yield {yname!r}').group(0))[0])
@@ -476,7 +472,7 @@ class DevelopmentType:
             ycomp.type = ytype
             self._ycomps[yname] = ycomp
         except KeyError:
-                raise ValueError('Problem compiling complex yield: %s, %s' % (yname, expression))
+                raise ValueError(f'Problem compiling complex yield: {yname}, {expression}')
 
     def compile_actions(self, verbose=False):
         """
@@ -523,8 +519,8 @@ class DevelopmentType:
         elif 'or' in expr:
             oper = 'or'
             alo, ahi = self._max_age+1, -1
-        cond_comps = expr.split(' %s ' % oper)
-        lhs, rel_operators, rhs = list(zip(*[cc.split(' ') for cc in cond_comps]))
+        cond_comps = expr.split(f' {oper} ')
+        lhs, rel_operators, rhs = list(zip(*[cc.split(' ') for cc in cond_comps], strict=False))
         rhs = list(map(float, rhs))
         _plo, _phi, _alo, _ahi = None, None, None, None
         for i, o in enumerate(lhs):
@@ -810,7 +806,7 @@ class Output:
                     else:
                         area += dt.area(period, age)
                 else:
-                    assert False # not implemented yet...
+                    raise AssertionError() # not implemented yet...
                 y = 1. if self._is_area else dt.ycomp(self._ycomp)[age]
                 result += y * area * f
         return result
@@ -827,7 +823,9 @@ class Output:
     def _evaluate_summed_themed(self, period):
         pass
 
-    def __call__(self, period, factors=[(1., 1)]):
+    def __call__(self, period, factors=None):
+        if factors is None:
+            factors = [(1.0, 1)]
         if self.is_basic:
             return self._evaluate_basic(period, factors)
         else:
@@ -836,14 +834,14 @@ class Output:
     def __add__(self, other):
         # assume Output + Output
         if self.is_themed:
-            return [i + j for i, j in zip(self(), other())]
+            return [i + j for i, j in zip(self(), other(), strict=False)]
         else:
             return self() + other()
 
     def __sub__(self, other):
         # assume Output - Output
         if self.is_themed:
-            return [i - j for i, j in zip(self(), other())]
+            return [i - j for i, j in zip(self(), other(), strict=False)]
         else:
             return self() - other()
 
@@ -1479,7 +1477,7 @@ class ForestModel:
         if not sln: return None
         for i, tree in list(problem.trees.items()):
             for path in tree.paths():
-                x = 'x_%s' % common.hex_id((i, tuple(n.data('acode') for n in path)))
+                x = 'x_{}'.format(common.hex_id((i, tuple(n.data('acode') for n in path))))
                 if not sln[x]: continue
                 for t, n in enumerate(path):
                     d = n.data()
@@ -1544,7 +1542,7 @@ class ForestModel:
 
         :return dict: A dictionary where keys are ages and values are the corresponding area distributions.
         """
-        result = {age:0. for age in self.ages}
+        result = dict.fromkeys(self.ages, 0.0)
         dtype_keys = self.unmask(mask) if mask else list(self.dtypes.keys())
         for dtk in dtype_keys:
             dt = self.dtypes[dtk]
@@ -1759,7 +1757,7 @@ class ForestModel:
                         pass # let this one go...
                     except Exception:
                         print(("Unexpected error:", sys.exc_info()[0]))
-                        print("evaluating expression '%s' for case:" % ' '.join(_tokens), period, [' '.join(dtk)], _acode, _age)
+                        print("evaluating expression '{}' for case:".format(' '.join(_tokens)), period, [' '.join(dtk)], _acode, _age)
                         raise
         return result
 
@@ -1874,7 +1872,7 @@ class ForestModel:
         """
         Not been implemented yet.
         """
-        assert False # brick wall (deal with this case later, as needed)
+        raise AssertionError() # brick wall (deal with this case later, as needed)
 
     def resolve_targetage(self, dtk, tyield, sage, tage, acode, verbose=False):
         """
@@ -1895,7 +1893,7 @@ class ForestModel:
                 targetage = self.dt(dtk).ycomp(tyield[0]).lookup(tyield[1], roundx=True)
             except Exception:
                 print(' '.join(dtk), tyield[0], self.dt(dtk).ycomps())
-                assert False
+                raise AssertionError()
         elif tage is not None: # target age override specifed in transition
             if verbose: print('_AGE override', tage)
             targetage = tage
@@ -2134,7 +2132,7 @@ class ForestModel:
                     print(sys.exc_info()[0])
                     print(l)
                     print(matches, m)
-                    assert False
+                    raise AssertionError()
             if buffering_for:
                 if l.strip().startswith('ENDFOR'):
                     for i in range(for_lo, for_hi+1):
@@ -2219,11 +2217,11 @@ class ForestModel:
 
         :param str filename_suffix: Filename suffix in which to look for OUTPUTS section data.
         """
-        with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
+        with open(f'{self.model_path}/{self.model_name}.{filename_suffix}') as f:
             s = f.read()
         self._resolve_outputs_buffer(s)
 
-    def add_theme(self, name, basecodes=[], aggs={}, description=''):
+    def add_theme(self, name, basecodes=None, aggs=None, description=''):
         """
         Adds a theme to the model.
 
@@ -2232,6 +2230,10 @@ class ForestModel:
         :param dict aggs: Dictionary containing aggregate values for the theme.
         :param str description: Description of the theme.
         """
+        if aggs is None:
+            aggs = {}
+        if basecodes is None:
+            basecodes = []
         self._themes.append({})
         self._themes[-1]['__name__'] = name
         self._themes[-1]['__description__'] = description
@@ -2250,7 +2252,7 @@ class ForestModel:
         :param str filename_suffix: Filename suffix in which to look for LANDSCAPE section data
         :param str ti_offset: Theme index offset. Will bump theme index by this value. Defaults to 0.
         """
-        with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
+        with open(f'{self.model_path}/{self.model_name}.{filename_suffix}') as f:
             data = f.read()
         _data = _search(r'\*THEME.*', data, 'landscape section (no *THEME declaration found)',
                         re.M | re.S).group(0) # strip leading junk
@@ -2259,7 +2261,7 @@ class ForestModel:
         # (AU)"), and it is the only thing in the dataset that says what a theme position
         # means -- theme order and meaning are entirely user-defined in this format.
         _chunks = re.split(r'\*THEME(.*)\n', _data)[1:] # [desc, body, desc, body, ...]
-        t_data = list(zip(_chunks[::2], _chunks[1::2]))
+        t_data = list(zip(_chunks[::2], _chunks[1::2], strict=False))
         for ti, (t_description, t) in enumerate(t_data, start=ti_offset):
             self._themes.append({})
             self._themes[-1]['__name__'] = 'theme%i' % ti
@@ -2309,7 +2311,7 @@ class ForestModel:
         model_path = self.model_path if not model_path else model_path
         model_name = self.model_name if not model_name else model_name
         multiplier = self._resolve_period_multiplier(convert_periods_to_years)
-        with open('%s/%s.%s' % (model_path, model_name, filename_suffix)) as f:
+        with open(f'{model_path}/{model_name}.{filename_suffix}') as f:
             for l in f:
                 try:
                     if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
@@ -2322,7 +2324,7 @@ class ForestModel:
                     if key not in self.dtypes: self.dtypes[key] = DevelopmentType(key, self)
                     self.dtypes[key].area(0, age, area)
                 except Exception:
-                    print('Failed AREAS import on line: \n%s' % l)
+                    print(f'Failed AREAS import on line: \n{l}')
                     return 1
         return 0
 
@@ -2371,7 +2373,7 @@ class ForestModel:
                 assert isinstance(mask, tuple) and len(mask) == self.nthemes()
             except Exception:
                 print(len(mask), type(mask), mask)
-                assert False
+                raise AssertionError()
         dtype_keys = copy.copy(list(self.dtypes.keys())) # filter this
         for ti, tac in enumerate(mask):
             if tac == '?': continue # wildcard matches all
@@ -2388,8 +2390,8 @@ class ForestModel:
         :param str filename_suffix: Suffix for CONSTANTS section file name.
 
         """
-        with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
-            for lnum, l in enumerate(f):
+        with open(f'{self.model_path}/{self.model_name}.{filename_suffix}') as f:
+            for _lnum, l in enumerate(f):
                 if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
                 l = l.strip().partition(';')[0].strip() # strip leading whitespace, trailing comments
                 t = re.split(r'\s+', l)
@@ -2409,17 +2411,19 @@ class ForestModel:
         """
         def flush_ycomps(t, m, n, c):
             if t == 'a': # age-based ycomps
-                _c = lambda y: self.register_curve(core.Curve(y,
-                                                              points=c[y],
-                                                              type='a',
-                                                              period_length=self.period_length))
+                def _c(y):
+                    return self.register_curve(core.Curve(y,
+                                                                              points=c[y],
+                                                                              type='a',
+                                                                              period_length=self.period_length))
                 ycomps = [(y, _c(y)) for y in n]
             elif t == 't': # time-based ycomps (skimp on x range)
-                _c = lambda y: self.register_curve(core.Curve(y,
-                                                              points=c[y],
-                                                              type='t',
-                                                              xmax=self.horizon,
-                                                              period_length=self.period_length))
+                def _c(y):
+                    return self.register_curve(core.Curve(y,
+                                                                              points=c[y],
+                                                                              type='t',
+                                                                              xmax=self.horizon,
+                                                                              period_length=self.period_length))
                 ycomps = [(y, _c(y)) for y in n]
             else: # complex ycomps
                 ycomps = [(y, c[y]) for y in n]
@@ -2437,7 +2441,7 @@ class ForestModel:
         mask = ('?',) * self.nthemes()
         ynames = []
         data = None
-        with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
+        with open(f'{self.model_path}/{self.model_name}.{filename_suffix}') as f:
             for lnum, l in enumerate(f):
                 if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
                 l = l.strip().partition(';')[0].strip() # strip leading whitespace and trailing comments
@@ -2524,7 +2528,7 @@ class ForestModel:
             return pattern.sub(repl, expr)
         partials = {}
         keyword = ''
-        with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f: s = f.read().lower()
+        with open(f'{self.model_path}/{self.model_name}.{filename_suffix}') as f: s = f.read().lower()
         s = re.sub(r'\{.*?\}', '', s, flags=re.M|re.S) # remove curly-bracket comments
         for l in re.split(r'[\r\n]+', s, flags=re.M|re.S):
             if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
@@ -2579,7 +2583,7 @@ class ForestModel:
             i = int(_search(r'(?<=_TH)\w+', treplace, '_TH theme index in _REPLACE expression').group(0))
             return eval(re.sub('_TH%i'%i, str(dt.key[i-1]), treplace))
         else:
-            assert False # many other possible arguments (see Woodstock documentation for details)
+            raise AssertionError() # many other possible arguments (see Woodstock documentation for details)
 
     def resolve_tappend(self, dt, tappend):
         """
@@ -2589,7 +2593,7 @@ class ForestModel:
         .. warning::
             Not implemented yet.
         """
-        assert False # brick wall (not implemented yet)
+        raise AssertionError() # brick wall (not implemented yet)
 
     def resolve_tmask(self, dt, tmask, treplace, tappend):
         """
@@ -2642,7 +2646,7 @@ class ForestModel:
             args = re.split(r'\s?,\s?', condition[5:-1])
             yname = args[0].lower()
             lo, hi = [float(y) for y in args[1].split('..')]
-            if not dtype_key: assert False # to do: add better error handling
+            if not dtype_key: raise AssertionError() # to do: add better error handling
             dt = self.dtypes[dtype_key]
             lo_age, hi_age = dt.ycomp(yname).range(lo, hi, as_bounds=True)
             return list(range(lo_age, hi_age+1))
@@ -2677,7 +2681,7 @@ class ForestModel:
                         dt.transitions[acode, x] = sources[smask, scond]
         acode = None
         sources = {}
-        with open('%s/%s.%s' % (self.model_path, self.model_name, filename_suffix)) as f:
+        with open(f'{self.model_path}/{self.model_name}.{filename_suffix}') as f:
             s = f.read()
         s = re.sub(r'\{.*?\}', '', s, flags=re.M|re.S) # remove curly-bracket comments
         for l in re.split(r'[\r\n]+', s, flags=re.M|re.S):
@@ -2769,8 +2773,8 @@ class ForestModel:
         age_multiplier = self._resolve_period_multiplier(convert_periods_to_years)
         schedule = []
         n = self.nthemes()
-        with open('%s/%s.%s' % (self.model_path, filename_prefix, filename_suffix)) as f:
-            for lnum, l in enumerate(f):
+        with open(f'{self.model_path}/{filename_prefix}.{filename_suffix}') as f:
+            for _lnum, l in enumerate(f):
                 if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
                 l = l.lower().strip().partition(';')[0].strip() # strip leading whitespace and trailing comments
                 t = re.split(r'\s+', l)
@@ -2864,11 +2868,11 @@ class ForestModel:
         if reset: self.reset()
         missing_area = 0.
         for _period in self.periods:
-            for dtype_key, age, area, acode, period, etype in schedule:
+            for dtype_key, age, area, acode, period, _etype in schedule:
                 if period != _period: continue
                 if scale_area: area = area * scale_area
                 if period > _period:
-                    if verbose: print('apply_schedule: committing actions for period', _period, '(missing area %0.1f)' % missing_area)
+                    if verbose: print('apply_schedule: committing actions for period', _period, f'(missing area {missing_area:0.1f})')
                     self.commit_actions(_period)
                 if period > max_period: return
                 if force_integral_area:
@@ -2897,7 +2901,7 @@ class ForestModel:
                         raise
                     else:
                         missing_area += _aa
-                if verbose: print('missing area %0.1f (%0.2f)' % (_aa, _aa/area))
+                if verbose: print(f'missing area {_aa:0.1f} ({_aa/area:0.2f})')
                 _period = period
             self.commit_actions(_period)
         return missing_area
@@ -2970,7 +2974,7 @@ class ForestModel:
         :return: Dataframe containing CBM SIT age class table
         :rtype: :py:class:`pandas.DataFrame`
         """
-        data: Dict[str, List[Any]] = {'name': ['age_0'],
+        data: dict[str, list[Any]] = {'name': ['age_0'],
                                       'class_size': [0],
                                       'start_year': [0],
                                       'end_year': [0]}
@@ -3107,7 +3111,7 @@ class ForestModel:
         for dtype_key in self.dtypes:
             dt = self.dt(dtype_key)
             dt.leading_species = leading_species(dt)
-            for species, yname in zip(('softwood', 'hardwood'), (softwood_volume_yname, hardwood_volume_yname)):
+            for species, yname in zip(('softwood', 'hardwood'), (softwood_volume_yname, hardwood_volume_yname), strict=False):
                 for i, c in enumerate(theme_cols): data[c].append(dtype_key[i])
                 data['species'].append(species)
                 data['leading_species'].append(dt.leading_species)
@@ -3159,7 +3163,7 @@ class ForestModel:
                     'disturbance_type',
                     'disturbance_year']
         data = {c:[] for c in columns}
-        for dtype_key, age, area, acode, period, _ in self.compile_schedule():
+        for dtype_key, _age, area, acode, period, _ in self.compile_schedule():
             #set_trace()
             for i, c in enumerate(theme_cols): data[c].append(dtype_key[i])
             data['species'].append(self.dt(dtype_key).leading_species)
@@ -3208,7 +3212,7 @@ class ForestModel:
                     'min_hardwood_age',
                     'max_hardwood_age',
                     'disturbance_type']
-        columns += ['to_%s' % c for c in theme_cols]
+        columns += [f'to_{c}' for c in theme_cols]
         columns += ['to_species',
                     'regen_delay',
                     'reset_age',

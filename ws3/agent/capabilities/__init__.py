@@ -33,7 +33,7 @@ __all__ = [
 ]
 
 
-def build_registry(fm: Optional[Any] = None) -> Registry:
+def build_registry(fm: Any | None = None) -> Registry:
     """
     Build the ws3 capability registry.
 

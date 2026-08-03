@@ -422,7 +422,7 @@ class ModelSpec:
         if len(non_empty) > 1:
             raise ModelSpecError(
                 f'Yield {y.mask}: mixed point formats detected '
-                f'({dict(zip(y.ynames, [next(iter(non_empty)) for _ in non_empty]), strict=False)})'
+                f'({dict(zip(y.ynames, [next(iter(non_empty)) for _ in non_empty], strict=False), strict=False)})'
             )
 
         if 'pairs' in non_empty:
