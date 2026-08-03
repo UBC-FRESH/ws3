@@ -408,7 +408,7 @@ Sphinx extension, so the documented subset cannot drift from the implemented one
 
 - Parent program: [FEMIC #305](https://github.com/UBC-FRESH/femic/issues/305)
 - Companion issue: [#121](https://github.com/UBC-FRESH/ws3/issues/121)
-- Status: active
+- Status: active; implementation complete, PR #127 open for review
 - Branch: `feature/p10-femic-model-contract`
 
 ### Goal
@@ -462,9 +462,9 @@ trip. The FEMIC-side bridge regression compares all five bridge files byte-for-
 byte with ws3 typed emission and checks imported action and transition state
 without making FEMIC a ws3 runtime dependency. Current evidence is 76 focused
 ws3 tests passed, 406 full-suite tests passed with 9 skips, and 10 FEMIC bridge
-tests passed. The remaining Phase 10 work is closeout: audit adapter ownership
-and intentionally lossy fields, link cross-repository evidence, and synchronize
-the phase records before a PR decision.
+tests passed. Adapter ownership, intentionally lossy fields, cross-repository
+evidence, and phase-record synchronization are complete. Commit `8369a68` is
+published in PR #127; merge and parent issue closure remain pending review.
 
 Detailed plan: `planning/phase10_femic_model_contract.md`.
 

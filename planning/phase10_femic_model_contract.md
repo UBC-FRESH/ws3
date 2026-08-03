@@ -176,7 +176,8 @@ the documented contract for this slice.
 - [x] Update `ROADMAP.md`, `CHANGELOG.md`, this plan, and issue #121 so their
   status and evidence agree.
 - [x] Review the complete diff, preserving unrelated user worktree material.
-- [ ] Ask the maintainer before any commit, PR, merge, or parent-issue closeout.
+- [x] Ask the maintainer before the commit/PR step; approval was received.
+  Merge and parent-issue closeout remain pending review and merge.
 
 Final closeout evidence recorded on 2026-08-03:
 
@@ -189,19 +190,19 @@ Final closeout evidence recorded on 2026-08-03:
 - Worktree review found five modified tracked files and the expected new P10
   implementation/test/plan files. Existing local artifacts (`=`, `runtime/`,
   and `tmp/foo.txt`) remain untouched.
-- Final tracked diff summary: 5 modified files, 319 insertions, 12 deletions;
-  new P10 implementation files are intentionally still untracked pending the
-  maintainer's commit decision.
+- Commit `8369a68` contains 10 intended files, 3,631 insertions, and 12
+  deletions. The branch is published as
+  `feature/p10-femic-model-contract` and PR #127 is open against `main`.
 
-Maintainer decision gate: no commit, push, PR, merge, or parent issue closure
-has been performed.
+Maintainer decision gate: approval was received for the commit and PR. No
+merge or parent issue closure has been performed.
 
-Closeout state: implementation and technical verification are complete; the
-branch is awaiting maintainer approval for the commit/PR step. The Sphinx
-warning backlog should be handled separately from Phase 10.
+Closeout state: implementation and technical verification are complete; PR #127
+is open for review. The Sphinx warning backlog should be handled separately from
+Phase 10.
 
-The next bounded action is maintainer review of this packet and approval or
-rejection of the commit/PR step.
+The next bounded action is review and merge decision for PR #127. The parent
+issue remains open until that merge is complete.
 
 ## Acceptance criteria
 
@@ -218,7 +219,7 @@ rejection of the commit/PR step.
   intact.
 - [x] Adapter ownership and any remaining lossy fields are documented.
 - [x] Cross-repository evidence is linked from the phase records.
-- [ ] Final verification and closeout records are synchronized.
+- [x] Final verification and closeout records are synchronized.
 
 ## Verification commands
 
