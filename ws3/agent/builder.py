@@ -125,7 +125,7 @@ class ModelBuilder:
         # Import a fresh ForestModel.
         from ws3.forest import ForestModel
 
-        model = ForestModel(
+        model = ForestModel(  # type: ignore[no-untyped-call]
             model_name=self.spec.model_name,
             model_path=str(output_dir),
             base_year=self.spec.base_year,
@@ -136,27 +136,27 @@ class ModelBuilder:
 
         # Import landscape section.
         if self.spec.themes:
-            model.import_landscape_section()
+            model.import_landscape_section()  # type: ignore[no-untyped-call]
 
         # Import areas section with period-to-year conversion.
         if self.spec.areas:
-            model.import_areas_section(convert_periods_to_years=self.spec.period_length)
+            model.import_areas_section(convert_periods_to_years=self.spec.period_length)  # type: ignore[no-untyped-call]
 
         # Import yields section with period-to-year conversion.
         if self.spec.yields:
-            model.import_yields_section(convert_periods_to_years=self.spec.period_length)
+            model.import_yields_section(convert_periods_to_years=self.spec.period_length)  # type: ignore[no-untyped-call]
 
         # Import actions section with period-to-year conversion.
         if self.spec.actions:
-            model.import_actions_section(convert_periods_to_years=self.spec.period_length)
+            model.import_actions_section(convert_periods_to_years=self.spec.period_length)  # type: ignore[no-untyped-call]
 
         # Import transitions section with period-to-year conversion.
         if self.spec.transitions:
-            model.import_transitions_section(convert_periods_to_years=self.spec.period_length)
+            model.import_transitions_section(convert_periods_to_years=self.spec.period_length)  # type: ignore[no-untyped-call]
 
         # Import outputs section.
         if self.spec.outputs:
-            model.import_outputs_section()
+            model.import_outputs_section()  # type: ignore[no-untyped-call]
 
         loss = self._compute_loss()
 

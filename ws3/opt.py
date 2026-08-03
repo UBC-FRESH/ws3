@@ -503,7 +503,7 @@ class Problem:
         import highspy
         import numpy as np
 
-        highs = highspy.Highs()
+        highs = highspy.Highs()  # type: ignore[no-untyped-call]
         highs.resetGlobalScheduler(True)
         inf = highspy.kHighsInf
 
@@ -580,7 +580,7 @@ class Problem:
         # ----------------------------
         # Store solution
         # ----------------------------
-        if status == highspy.HighsStatus.kOk:
+        if status == highspy.HighsStatus.kOk:  # type: ignore[no-untyped-call]
             sol = highs.getSolution()
             col_values = sol.col_value
             for i, var in enumerate(self._vars.values()):
