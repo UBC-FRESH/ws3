@@ -331,7 +331,7 @@ class ForestRaster:
         self.cleanup()
         return True
 
-    def _read_snk(self, acode: str, dy: int, verbose: bool = False) -> np.ndarray:
+    def _read_snk(self, acode: str, dy: int, verbose: bool = False) -> Any:
         """Read a single band from a sink raster file."""
         if verbose:
             print('ForestRaster._read_snk()', self._p, acode)

@@ -150,7 +150,7 @@ class Finding:
 
 
 @lru_cache(maxsize=1)
-def contract() -> dict[str, Any]:
+def contract() -> Any:
     """
     Load the Woodstock format contract.
 
@@ -171,12 +171,12 @@ def contract() -> dict[str, Any]:
         return yaml.safe_load(f)
 
 
-def sections() -> dict[str, dict[str, Any]]:
+def sections() -> Any:
     """Section identifiers mapped to their contract entry, e.g. file extension."""
     return contract()['meta']['sections']
 
 
-def keywords() -> dict[str, dict[str, Any]]:
+def keywords() -> Any:
     """Every catalogued keyword, mapped to its contract entry."""
     return contract()['keywords']
 

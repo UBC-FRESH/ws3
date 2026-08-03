@@ -118,7 +118,7 @@ def extract_symbols(text: str) -> list[str]:
     return found
 
 
-class ExplainException(Capability[Explanation]):
+class ExplainException(Capability[Explanation]):  # type: ignore[misc]
     """Explain a failure, validated so it cannot cite APIs that do not exist."""
 
     name = 'explain_exception'
@@ -147,7 +147,7 @@ class ExplainException(Capability[Explanation]):
         'required': ['exc_type', 'message'],
     }
 
-    def from_payload(self, payload: dict) -> ExceptionReport:
+    def from_payload(self, payload: dict[str, Any]) -> ExceptionReport:
         """Build an :py:class:`ExceptionReport` from MCP tool arguments."""
         return ExceptionReport(
             exc_type=str(payload.get('exc_type', '')),

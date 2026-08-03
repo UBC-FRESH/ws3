@@ -402,7 +402,7 @@ class RESTAPIServer:
             num_constraints: int
             schedule_url: str | None = None
 
-        @app.get("/")
+        @app.get("/")  # type: ignore[untyped-decorator]
         async def root() -> dict[str, Any]:
             return {"message": "ws3 Optimization API", "version": "1.0.0"}
 
@@ -410,7 +410,7 @@ class RESTAPIServer:
         async def health():
             return {"status": "healthy"}
 
-        @app.post("/optimize", response_model=OptimizationResponse)
+        @app.post("/optimize", response_model=OptimizationResponse)  # type: ignore[untyped-decorator]
         async def run_optimization(request: OptimizationRequest) -> OptimizationResponse:
             """Run an optimization scenario."""
             try:
@@ -427,7 +427,7 @@ class RESTAPIServer:
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e)) from None
 
-        @app.get("/results/{scenario_id}")
+        @app.get("/results/{scenario_id}")  # type: ignore[untyped-decorator]
         async def get_results(scenario_id: str) -> dict[str, Any]:
             """Get results for a completed scenario."""
             # This would retrieve stored results
@@ -442,7 +442,7 @@ class RESTAPIServer:
             app = self._app
 
         if app is None:
-            app = self.create_app()
+            app = self.create_app()  # type: ignore[no-untyped-call]
 
         try:
             import uvicorn
@@ -459,15 +459,15 @@ def create_fhops_integrator(config: FHOPSIntegrationConfig | None = None) -> FHO
 
 def create_femic_integrator() -> FEMICIntegrator:
     """Create a FEMIC integrator instance."""
-    return FEMICIntegrator()
+    return FEMICIntegrator()  # type: ignore[no-untyped-call]
 
 def create_freshforge_integrator() -> FreshForgeIntegrator:
     """Create a FreshForge integrator instance."""
-    return FreshForgeIntegrator()
+    return FreshForgeIntegrator()  # type: ignore[no-untyped-call]
 
 def create_spades_integrator() -> SpaDESIntegrator:
     """Create a SpaDES integrator instance."""
-    return SpaDESIntegrator()
+    return SpaDESIntegrator()  # type: ignore[no-untyped-call]
 
 def create_rest_api(host: str = '0.0.0.0', port: int = 8000) -> RESTAPIServer:
     """Create a REST API server instance."""

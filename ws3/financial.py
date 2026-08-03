@@ -100,7 +100,7 @@ def _require_pacal() -> None:
         )
 
 
-def _math_funcs(rv: bool) -> tuple:
+def _math_funcs(rv: bool) -> tuple[Any, ...]:
     """
     Return the (exp, log) pair appropriate to the requested mode.
 

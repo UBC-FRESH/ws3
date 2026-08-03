@@ -201,7 +201,7 @@ def worker_gen_vars(tasks: list[tuple[str, int]], acodes: list[str]) -> list[tup
 # Globals for _cmp_cflw_m1 parallel execution
 # ----------------------------
 
-def worker_cmp_cflw_batch(args: list[Any]) -> list[tuple[int, str, tuple, tuple, float]]:
+def worker_cmp_cflw_batch(args: list[Any]) -> list[tuple[int, str, tuple[Any, ...], tuple[Any, ...], float]]:
     """Worker function to process batches of tasks for `_cmp_cflw_m1`
 
     :param args: (batch, cflw_keys, periods)
@@ -265,7 +265,7 @@ def worker_cmp_cflw_phase3_batch(batch: list[tuple[int, str, float, float, float
 # Globals for _cmp_cgen_m1 parallel execution
 # ----------------------------
 
-def worker_cmp_cgen_batch(args: list[Any]) -> list[tuple[int, str, tuple, tuple, float]]:
+def worker_cmp_cgen_batch(args: list[Any]) -> list[tuple[int, str, tuple[Any, ...], tuple[Any, ...], float]]:
     """Worker function to process batches of tasks for `_cmp_cgen_m1`
 
     :param args: (batch, cgen_keys, periods)

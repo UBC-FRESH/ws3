@@ -309,7 +309,7 @@ def rasterize_stands(
                 else:
                     raise ValueError(f'Bad age value in record {i}: {str(fp[age_col])}') from None
             if cap_age and age > cap_age:
-                age = cap_age
+                age = np.int32(cap_age)
             try:
                 assert age > 0
             except Exception:
@@ -322,7 +322,7 @@ def rasterize_stands(
             shapes[0].append((f['geometry'], h))   # themes
             shapes[1].append((f['geometry'], age)) # age
             shapes[2].append((f['geometry'], blk)) # block identifier
-    nodata_value = -2147483648 # this really should be a function arg
+    nodata_value: int = -2147483648  # this really should be a function arg
     kwargs = {'out_shape':(m, n), 'transform':transform, 'dtype':dtype, 'fill':nodata_value}
     r = np.stack([rasterize(s, **kwargs) for s in shapes])
     kwargs = {'driver':'GTiff',
@@ -356,14 +356,14 @@ def hash_dt(
     """
     import struct
     s = '.'.join(map(str, dt)).encode('utf-8')
-    d = hashlib.md5(s).digest() # first n bytes of md5 digest
+    d = hashlib.md5(s).digest()  # first n bytes of md5 digest
     # return np.dtype(dtype).type(int(binascii.hexlify(d[:4]), 16))
-    return np.dtype(dtype).type(struct.unpack('<i', d[:4])[0])
+    return np.dtype(dtype).type(struct.unpack('<i', d[:4])[0])  # type: ignore[no-any-return]
 
 def warp_raster(
     src: rasterio.DatasetReader,
     dst_path: str,
-    dst_crs: dict[str, str] = None,
+    dst_crs: dict[str, str] | None = None,
 ) -> None:
     """
     Warp a raster from its original CRS to a new CRS.
@@ -752,7 +752,7 @@ def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
         Can use either PaCAL numerical integration (sssslow!), or custom numerical integration using Monte Carlo sampling (default).
     """
     if treatment_type and cover_type:
-        formula = sylv_cred_formula(treatment_type, cover_type)
+        formula = sylv_cred_formula(treatment_type, cover_type)  # type: ignore[no-untyped-call]
     assert formula
     # PaCAL overrides the | operator to implement conditional distributions
     P = pacal.NormalDistr(P_mu, P_sigma) | pacal.Gt(P_min)
@@ -780,15 +780,15 @@ def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
         i = 1
         while dE > e:
             args = list(zip(P.rand(n), vr.rand(n), vp.rand(n), strict=False))
-            while len(args) > 0: # process random args in in n-length chunks
+            while len(args) > 0:  # process random args in in n-length chunks
                 _E = E
                 E = ((i - 1) * E + f[formula](*args.pop())) / i
                 dE = abs((E - _E) / _E) if _E else np.inf
                 i += 1
-    return E
+    return E  # type: ignore[return-value]
 
 
-def sylv_cred_formula(treatment_type, cover_type):
+def sylv_cred_formula(treatment_type, cover_type):  # type: ignore[no-untyped-call]
     """
     Returns sylviculture credit formula index.
 
@@ -825,12 +825,13 @@ def piece_size_ratio(treatment_type, cover_type, piece_size_ratios):
         return 0.
 
 
-def harv_cost(piece_size,
-              is_finalcut,
-              is_toleranthw,
-              partialcut_extracare=False,
-              A=1.97, B=0.405, C=0.169, D=0.164, E=0.202, F=13.6, G=8.83, K=0.,
-              rv=False):
+def harv_cost(piece_size: Any,
+              is_finalcut: Any,
+              is_toleranthw: Any,
+              partialcut_extracare: bool = False,
+              A: float = 1.97, B: float = 0.405, C: float = 0.169, D: float = 0.164,
+              E: float = 0.202, F: float = 13.6, G: float = 8.83, K: float = 0.,
+              rv: bool = False) -> Any:
     """
     Returns harvest cost.
 
@@ -850,7 +851,7 @@ def harv_cost(piece_size,
     _exp = A - (B * log(piece_size)) + (C * _pce) + (D * _ifc) - (E * (1 - _ith))
     hc = exp(_exp) + ((F * _ith) + (G * (1 - _ith))) + K
     if rv:
-        return hc.mean()
+        return hc.mean()  # type: ignore[union-attr]
     else:
         return hc
 
@@ -892,7 +893,7 @@ def harv_cost_rv(tv_mu, tv_sigma, N_mu, N_sigma, psr,
         i = 1
         while dE > e:
             args = list(vr.rand(n))
-            while len(args) > 0: # process random args in in n-length chunks
+            while len(args) > 0:  # process random args in in n-length chunks
                 _E = E
                 E = ((i - 1) * E + harv_cost(args.pop(), is_finalcut, is_toleranthw)) / i
                 dE = abs((E - _E) / _E) if _E else np.inf
