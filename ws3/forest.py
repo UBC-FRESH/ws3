@@ -2478,7 +2478,7 @@ class ForestModel:
                     try:
                         x = int(t[0]) * age_multiplier
                     except Exception:
-                        print(lnum, l)
+                        print(lnum, line_)
                     for i, yname in enumerate(ynames):
                         data[yname].append((x, float(t[i+1])))
                 else:
@@ -2720,7 +2720,7 @@ class ForestModel:
                 except Exception:
                     treplace = None
                 try: # _APPEND keyword (TO DO: implement other cases)
-                    args = re.split(r'\s?,\s?', _search(r'(?<=_APPEND\().*(?=\))', l, '_APPEND arguments').group(0))
+                    args = re.split(r'\s?,\s?', _search(r'(?<=_APPEND\().*(?=\))', line_, '_APPEND arguments').group(0))
                     theme_index = int(args[0][3]) - 1
                     tappend = theme_index, args[1]
                 except Exception:
@@ -2786,7 +2786,7 @@ class ForestModel:
                 period = int(t[n+3])
                 etype = t[n+4] if len(t) >= n+4 else ''
                 schedule.append((dtype_key, age, area, acode, period, etype))
-                if area <= 0: print('area <= 0', l)
+                if area <= 0: print('area <= 0', line_)
         return schedule
 
     def compile_schedule(self, problem=None):
