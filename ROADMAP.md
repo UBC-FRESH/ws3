@@ -348,8 +348,7 @@ Work identified during earlier phases and deliberately deferred to keep those ph
 
 ### Typing debt remediation
 - Issue: [#98](https://github.com/UBC-FRESH/ws3/issues/98)
-- Status: not_started
-- Scope: 258 remaining mypy findings (annotation coverage), 69% in `forest.py`, from the incomplete Phase 2 typed refactor. The defect-bearing classes were cleared in Phase 7.6; what remains threatens nothing. mypy stays `continue-on-error` in CI until this lands.
+- Status: **closed** — Stages 5–6 merged (PR #141). `ws3/` 323→0 errors; mypy now blocking in CI.
 
 ### PaCal adoption decision
 - Issue: [#102](https://github.com/UBC-FRESH/ws3/issues/102)
@@ -368,8 +367,7 @@ Work identified during earlier phases and deliberately deferred to keep those ph
 
 ### Lint tooling split and notebook cell-type defects
 - Issue: [#120](https://github.com/UBC-FRESH/ws3/issues/120)
-- Status: not_started
-- Scope: the repo configures two linters and enforces one. `flake8 ws3/ tests/` is the CI gate and passes; `ruff` is configured in `pyproject.toml` but wired to no job, while `AGENTS.md` and `CONTRIBUTING.md` tell contributors to run it. Two real defects hide in the resulting noise: notebooks `071` and `078` store Markdown in `code` cells (they raise `SyntaxError` if executed, and cause 12 Sphinx warnings), and `[tool.ruff] target-version = "py39"` contradicts `requires-python = ">=3.10"`. Residual after aligning scope and policy is 515 cosmetic findings with zero F-codes.
+- Status: **closed** — Phase 11 merged (PR #138). flake8 is the blocking CI gate; ruff scope and `target-version` aligned to `requires-python >=3.10`.
 
 ## Phase 9 — Woodstock Format Contract and Dataset Linting
 
