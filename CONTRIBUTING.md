@@ -47,7 +47,7 @@ Before concluding work, verify the change with the relevant checks. At minimum, 
 
 ```bash
 python -m pytest
-python -m ruff check .
+python -m ruff check ws3/ tests/
 python -m build
 sphinx-build -b html docs _build/html -W
 ```

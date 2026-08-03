@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import copy
 from bisect import bisect_left
-from typing import List, Optional, Tuple, Union
 
 from ws3 import common
 
@@ -20,21 +19,21 @@ class Interpolator:
     Used by the :py:class:`ws3.core.Curve` class to interpolate between real data points.
 
     """
-    x: List[float]
-    y: List[float]
+    x: list[float]
+    y: list[float]
     n: int
-    m: List[float]
-    _points: List[Tuple[int, float]]
+    m: list[float]
+    _points: list[tuple[int, float]]
 
-    def __init__(self, points: List[Tuple[int, float]]) -> None:
+    def __init__(self, points: list[tuple[int, float]]) -> None:
         """
         :param points: A list of (x,y) coordinate pairs.
         """
-        x, y = list(zip(*points))
+        x, y = list(zip(*points, strict=False))
         self.x = list(map(float, x))
         self.y = list(map(float, y))
         self.n = len(x)
-        intervals = list(zip(self.x, self.x[1:], self.y, self.y[1:]))
+        intervals = list(zip(self.x, self.x[1:], self.y, self.y[1:], strict=False))
         try:
             self.m = [(y2 - y1)/(x2 - x1) for x1, x2, y1, y2 in intervals]
         except Exception:
@@ -42,13 +41,13 @@ class Interpolator:
             raise
         self._points = points
 
-    def points(self) -> List[Tuple[int, float]]:
+    def points(self) -> list[tuple[int, float]]:
         """
         Returns the points as a list of tuples representing the points.
 
         :return: A list of (x, y) coordinate pairs.
         """
-        return list(zip(list(map(int, self.x)), self.y))
+        return list(zip(list(map(int, self.x)), self.y, strict=False))
 
     def __call__(self, x: float) -> float:
         """
@@ -93,26 +92,26 @@ class Curve:
     """
     _type_default: str = 'a'
 
-    label: Optional[str]
-    id: Optional[str]
+    label: str | None
+    id: str | None
     is_volume: bool
     type: str
     period_length: float
     xmin: int
     xmax: int
-    x: Union[range, List[int]]
+    x: range | list[int]
     is_special: bool
-    _y: Optional[List[float]]
+    _y: list[float] | None
     epsilon: float
     is_locked: bool
     interp: Interpolator
 
     def __init__(
         self,
-        label: Optional[str] = None,
-        id: Optional[str] = None,
+        label: str | None = None,
+        id: str | None = None,
         is_volume: bool = False,
-        points: Optional[List[Tuple[int, float]]] = None,
+        points: list[tuple[int, float]] | None = None,
         type: str = _type_default,
         is_special: bool = False,
         period_length: float = common.PERIOD_LENGTH_DEFAULT,
@@ -151,7 +150,7 @@ class Curve:
 
     def simplify(
         self,
-        points: Optional[List[Tuple[int, float]]] = None,
+        points: list[tuple[int, float]] | None = None,
         autotune: bool = True,
         compile_y: bool = False,
         verbose: bool = False,
@@ -217,7 +216,7 @@ class Curve:
 
     def add_points(
         self,
-        points: List[Tuple[int, float]],
+        points: list[tuple[int, float]],
         simplify: bool = True,
         compile_y: bool = False,
     ) -> None:
@@ -229,9 +228,9 @@ class Curve:
         :param compile_y: Flag indicating whether to compile the y-component after adding points. Defaults to ``False``.
         """
         assert not self.is_locked
-        _x, _y = list(zip(*points))
-        x: List[float] = list(map(float, _x))
-        y: List[float] = [float(_v) for _v in _y]
+        _x, _y = list(zip(*points, strict=False))
+        x: list[float] = list(map(float, _x))
+        y: list[float] = [float(_v) for _v in _y]
         x_min = x[0]
         if x_min > 0:
             if x_min > 1:
@@ -242,14 +241,14 @@ class Curve:
         if x[-1] < self.xmax:
             x.append(self.xmax)
             y.append(y[-1])
-        points = list(zip(map(int, x), y))
+        points = list(zip(map(int, x), y, strict=False))
         self.interp = Interpolator(points)
         if simplify:
             self.simplify(points, compile_y)
         elif compile_y:
             self._compile_y()
 
-    def points(self) -> List[Tuple[int, float]]:
+    def points(self) -> list[tuple[int, float]]:
         """
         :return: List of curve points.
         """
@@ -272,11 +271,11 @@ class Curve:
 
     def range(
         self,
-        lo: Optional[float] = None,
-        hi: Optional[float] = None,
+        lo: float | None = None,
+        hi: float | None = None,
         as_bounds: bool = False,
         left_range: bool = True,
-    ) -> Union[Curve, Tuple[int, int]]:
+    ) -> Curve | tuple[int, int]:
         """
         Returns a Curve representing the range within the specified bounds.
 
@@ -293,7 +292,7 @@ class Curve:
         """
         lb = int(round(self.interp.lookup(lo))) if lo is not None else 0
         ub = int(round(self.interp.lookup(hi, from_right=not left_range))) if hi is not None else self.xmax
-        points: List[Tuple[int, float]] = [(lb, 1.0), (ub, 1.0)] if ub > lb else [(lb, 1.0)]
+        points: list[tuple[int, float]] = [(lb, 1.0), (ub, 1.0)] if ub > lb else [(lb, 1.0)]
         if lb > 0:
             if lb > 1:
                 points.insert(0, (lb-1, 0))
@@ -316,7 +315,7 @@ class Curve:
         """
         X = list(range(1, self.xmax))
         Y = [self[x] - self[x-1] for x in X]
-        points = list(zip(X, Y))
+        points = list(zip(X, Y, strict=False))
         return Curve(points=points)
 
     def mai(self) -> Curve:
@@ -328,7 +327,7 @@ class Curve:
         """
         X = range(1, self.xmax)
         Y = [self[x] / x for x in X[1:]]
-        points = list(zip(X, Y))
+        points = list(zip(X, Y, strict=False))
         return Curve(points=points)
 
     def ytp(self) -> Curve:
@@ -350,7 +349,7 @@ class Curve:
         """
         self._y = [self.interp(x) for x in self.x]
 
-    def y(self, compile_y: bool = False) -> List[float]:
+    def y(self, compile_y: bool = False) -> list[float]:
         """
         Returns the y-values of the curve stored in ``self._y`` (will first compile them if ``compile_y`` is set
         to ``True`` and ``self._y`` is empty), else will interpolate a list of y values
@@ -370,8 +369,7 @@ class Curve:
         """
         Returns an iterator that iterates through the y values of this curve.
         """
-        for y in self.y():
-            yield y
+        yield from self.y()
 
     def __getitem__(self, x: int) -> float:
         """
@@ -387,7 +385,7 @@ class Curve:
         :rtype: Curve
         """
         y = [self[x] and other[x] for x in self.x]
-        points = list(zip(self.x, y))
+        points = list(zip(self.x, y, strict=False))
         return Curve(points=points)
 
     def __or__(self, other: Curve) -> Curve:
@@ -398,21 +396,21 @@ class Curve:
         :rtype: Curve
         """
         y = [self[x] or other[x] for x in self.x]
-        points = list(zip(self.x, y))
+        points = list(zip(self.x, y, strict=False))
         return Curve(points=points)
 
-    def __mul__(self, other: Union[Curve, float]) -> Curve:
+    def __mul__(self, other: Curve | float) -> Curve:
         """
         Returns a new curve that is the product of this curve with another curve ``other`` or a constant value.
         :param other: The curve to multiply with this curve or the constant value ``other``.
         :return: A new curve that is the product of this curve with another curve ``other`` or a constant value.
         :rtype: Curve
         """
-        y = [_y*other for _y in self.y()] if isinstance(other, float) else [a*b for a,b in zip(self.y(), other.y())]
-        points = list(zip(self.x, y))
+        y = [_y*other for _y in self.y()] if isinstance(other, float) else [a*b for a,b in zip(self.y(), other.y(), strict=False)]
+        points = list(zip(self.x, y, strict=False))
         return Curve(points=points)
 
-    def __truediv__(self, other: Union[Curve, float]) -> Curve:
+    def __truediv__(self, other: Curve | float) -> Curve:
         """
         Returns a new curve that is the quotient of this curve with another curve ``other`` or a constant value.
         :param other: The curve to divide with this curve or the constant value ``other``.
@@ -422,30 +420,30 @@ class Curve:
         if isinstance(other, float):
             y = [_y / other for _y in self.y()]
         else:
-            y = [a/b for a, b in zip(self.y(), other.y())]
-        points = list(zip(self.x, y))
+            y = [a/b for a, b in zip(self.y(), other.y(), strict=False)]
+        points = list(zip(self.x, y, strict=False))
         return Curve(points=points)
 
-    def __add__(self, other: Union[Curve, float]) -> Curve:
+    def __add__(self, other: Curve | float) -> Curve:
         """
         Returns a new curve that is the sum of this curve with another curve ``other`` or a constant value.
         :param other: The curve to add with this curve or the constant value ``other``
         :return: A new curve that is the sum of this curve with another curve ``other`` or a constant value.
         :rtype: Curve
         """
-        y = [_y+other for _y in self.y()] if isinstance(other, float) else [a+b for a,b in zip(self.y(), other.y())]
-        points = list(zip(self.x, y))
+        y = [_y+other for _y in self.y()] if isinstance(other, float) else [a+b for a,b in zip(self.y(), other.y(), strict=False)]
+        points = list(zip(self.x, y, strict=False))
         return Curve(points=points)
 
-    def __sub__(self, other: Union[Curve, float]) -> Curve:
+    def __sub__(self, other: Curve | float) -> Curve:
         """
         Returns a new curve that is the difference of this curve with another curve ``other`` or a constant value.
         :param other: The curve to subtract with this curve or the constant value ``other``
         :return: A new curve that is the difference of this curve with another curve ``other`` or a constant value.
         :rtype: Curve
         """
-        y = [_y-other for _y in self.y()] if isinstance(other, float) else [a-b for a,b in zip(self.y(), other.y())]
-        points = list(zip(self.x, y))
+        y = [_y-other for _y in self.y()] if isinstance(other, float) else [a-b for a,b in zip(self.y(), other.y(), strict=False)]
+        points = list(zip(self.x, y, strict=False))
         return Curve(points=points)
 
     __rmul__ = __mul__
@@ -631,7 +629,8 @@ class Tree:
         :return: a path
         :rtype: tuple of :py:class:`ws3.core.Node` objects
         """
-        if not leaf: return self._path[1:]
+        if not leaf:
+            return self._path[1:]
         path = []
         n = leaf
         while not (n.is_root()):

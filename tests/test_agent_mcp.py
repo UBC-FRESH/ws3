@@ -17,8 +17,8 @@ pytest.importorskip('fresh_agent_core', reason='ws3[agent] not installed')
 pytest.importorskip('mcp', reason='mcp not installed')
 
 from fresh_agent_core import AgentConfig, FakeProvider  # noqa: E402
-from fresh_agent_core.mcp import describe_tools, format_result  # noqa: E402
 from fresh_agent_core.capability import CapabilityResult  # noqa: E402
+from fresh_agent_core.mcp import describe_tools, format_result  # noqa: E402
 
 from ws3.agent.capabilities import build_registry  # noqa: E402
 from ws3.agent.capabilities.build_mask import BuildMask, MaskRequest  # noqa: E402

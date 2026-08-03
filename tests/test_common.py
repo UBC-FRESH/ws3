@@ -1,8 +1,12 @@
 import sys
+
 sys.path.append('../ws3/')
-import pytest, time
+import time
+
 import numpy as np
-from ws3.common import is_num, hash_dt, reproject, timed
+import pytest
+
+from ws3.common import hash_dt, is_num, reproject, timed
 
 
 def test_is_num():

@@ -24,11 +24,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 mypy pytest
+        pip install ruff mypy pytest
     
-    - name: Run flake8
+    - name: Run ruff (Phase 11 gate)
       run: |
-        flake8 ws3/ tests/
+        python -m ruff check ws3/ tests/
     
     # Advisory only. ws3 carries ~323 pre-existing mypy errors from the partial
     # typing migration in Phase 2. Failing the build on them would put this job

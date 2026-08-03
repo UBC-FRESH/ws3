@@ -36,10 +36,11 @@ accordingly; ws3 stores themes zero-indexed, so ``_THn`` is ws3 theme ``n-1``.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Iterable, Optional
+from typing import Any
 
 #: Location of the contract, shipped as package data.
 CONTRACT_PATH = Path(__file__).parent / 'data' / 'woodstock_format.yaml'
@@ -50,7 +51,7 @@ CONTRACT_PATH = Path(__file__).parent / 'data' / 'woodstock_format.yaml'
 #: differs in a way that matters. A stub method exists and can be called
 #: successfully, so a caller has every reason to believe the section was read.
 #: It was not.
-SECTION_SUPPORT: dict[str, tuple[Optional[str], str]] = {
+SECTION_SUPPORT: dict[str, tuple[str | None, str]] = {
     'Landscape': ('import_landscape_section', 'implemented'),
     'Areas': ('import_areas_section', 'implemented'),
     'Yields': ('import_yields_section', 'implemented'),
@@ -137,9 +138,9 @@ class Finding:
     severity: str
     section: str
     message: str
-    path: Optional[str] = None
-    line: Optional[int] = None
-    keyword: Optional[str] = None
+    path: str | None = None
+    line: int | None = None
+    keyword: str | None = None
 
     def __str__(self) -> str:
         where = self.path or self.section
@@ -185,7 +186,7 @@ def supported_keywords() -> frozenset[str]:
     return SUPPORTED_KEYWORDS
 
 
-def section_support(name: str) -> tuple[Optional[str], str]:
+def section_support(name: str) -> tuple[str | None, str]:
     """
     The importer for a section and whether it does anything.
 
@@ -230,7 +231,7 @@ def _scan_keywords(text: str) -> list[tuple[int, str]]:
 def lint_dataset(
     model_path: str,
     model_name: str,
-    sections_to_check: Optional[Iterable[str]] = None,
+    sections_to_check: Iterable[str] | None = None,
 ) -> list[Finding]:
     """
     Report what ws3 will not read from a Woodstock dataset.

@@ -471,8 +471,9 @@ Detailed plan: `planning/phase10_femic_model_contract.md`.
 ## Phase 11 — Ruff Lint Gate and Legacy Debt Cleanup
 
 - Parent issue: [#120](https://github.com/UBC-FRESH/ws3/issues/120)
-- Status: planned
-- Branch: `feature/phase11-ruff-cleanup` (to be created on activation)
+- Status: complete
+- Branch: `feature/phase11-ruff-cleanup` (PR: → main)
+- Key result: 676 → 0 gate errors; `ruff check ws3/ tests/` enforced in CI
 
 ### Goal
 
@@ -493,11 +494,11 @@ notebooks, generated paths, and nested checkouts do not create false signal.
 
 ### Child task checklist
 
-- [ ] 11.1 Establish lint contract and baseline
-- [ ] 11.2 Align configuration and choose the blocking linter
-- [ ] 11.3 Repair scope and notebook defects
-- [ ] 11.4 Apply low-risk package and test cleanup
-- [ ] 11.5 Review behavior-sensitive `forest.py` debt
-- [ ] 11.6 Enforce and close out the gate
+- [x] 11.1 Establish lint contract and baseline
+- [x] 11.2 Align configuration and choose the blocking linter
+- [x] 11.3 Repair scope and notebook defects
+- [x] 11.4 Apply low-risk package and test cleanup
+- [x] 11.5 Review behavior-sensitive `forest.py` debt
+- [x] 11.6 Enforce and close out the gate
 
 Detailed plan: `planning/phase11_ruff_cleanup.md`.

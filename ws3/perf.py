@@ -11,14 +11,15 @@ This module provides tools for:
 
 from __future__ import annotations
 
-import time
 import hashlib
 import json
-from typing import Any, Callable, Dict, List, Optional
+import time
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 class SolverTuner:
@@ -39,7 +40,7 @@ class SolverTuner:
         self.solver = solver
         self.baseline_params = self._get_default_params()
 
-    def _get_default_params(self) -> Dict[str, Any]:
+    def _get_default_params(self) -> dict[str, Any]:
         """Get default solver parameters."""
         defaults = {
             'gurobi': {
@@ -62,8 +63,8 @@ class SolverTuner:
         }
         return defaults.get(self.solver, {})
 
-    def tune_parameters(self, param_grid: Dict[str, List[Any]],
-                       n_iterations: int = 5) -> Dict[str, Any]:
+    def tune_parameters(self, param_grid: dict[str, list[Any]],
+                       n_iterations: int = 5) -> dict[str, Any]:
         """
         Tune solver parameters using grid search.
 
@@ -83,7 +84,7 @@ class SolverTuner:
 
         print(f"Tuning {self.solver} with {len(combinations)} parameter combinations...")
 
-        for i, combo in enumerate(combinations):
+        for _i, combo in enumerate(combinations):
             params = self.baseline_params.copy()
             for j, name in enumerate(param_names):
                 params[name] = combo[j]
@@ -101,7 +102,7 @@ class SolverTuner:
 
         return best_params
 
-    def _test_parameters(self, params: Dict[str, Any], n_iterations: int) -> float:
+    def _test_parameters(self, params: dict[str, Any], n_iterations: int) -> float:
         """Test a parameter set and return average solve time."""
         times = []
 
@@ -118,7 +119,7 @@ class SolverTuner:
 
         return np.mean(times)
 
-    def _apply_parameters(self, params: Dict[str, Any]):
+    def _apply_parameters(self, params: dict[str, Any]):
         """Apply parameters to the solver."""
         if self.solver == 'gurobi' and hasattr(self.problem, '_model'):
             try:
@@ -138,7 +139,7 @@ class SolverTuner:
             except Exception as e:
                 print(f"Error applying PuLP parameters: {e}")
 
-    def get_recommendations(self) -> Dict[str, Any]:
+    def get_recommendations(self) -> dict[str, Any]:
         """Get solver parameter recommendations based on problem size."""
         n_vars = len(self.problem._vars) if hasattr(self.problem, '_vars') else 0
         n_constraints = len(self.problem._constraints) if hasattr(self.problem, '_constraints') else 0
@@ -168,7 +169,7 @@ class MemoryProfiler:
     def __init__(self):
         self.snapshots = []
 
-    def take_snapshot(self, label: str = '') -> Dict[str, Any]:
+    def take_snapshot(self, label: str = '') -> dict[str, Any]:
         """
         Take a memory usage snapshot.
 
@@ -203,7 +204,7 @@ class MemoryProfiler:
         except ImportError:
             return 0.0
 
-    def profile_solve(self, solve_func: Callable, *args, **kwargs) -> Dict[str, Any]:
+    def profile_solve(self, solve_func: Callable, *args, **kwargs) -> dict[str, Any]:
         """
         Profile memory usage during a solve operation.
 
@@ -258,7 +259,7 @@ class PerformanceBenchmark:
         self.problem = problem
         self.results = []
 
-    def benchmark_solve(self, n_runs: int = 5, **solve_kwargs) -> Dict[str, Any]:
+    def benchmark_solve(self, n_runs: int = 5, **solve_kwargs) -> dict[str, Any]:
         """
         Benchmark solve performance.
 
@@ -269,7 +270,7 @@ class PerformanceBenchmark:
         times = []
         solutions = []
 
-        for i in range(n_runs):
+        for _i in range(n_runs):
             start = time.time()
             self.problem.solve(**solve_kwargs)
             elapsed = time.time() - start
@@ -289,7 +290,7 @@ class PerformanceBenchmark:
         self.results.append(results)
         return results
 
-    def benchmark_parallel(self, threads_list: List[int]) -> pd.DataFrame:
+    def benchmark_parallel(self, threads_list: list[int]) -> pd.DataFrame:
         """
         Benchmark parallel speedup.
 
@@ -305,7 +306,7 @@ class PerformanceBenchmark:
 
         return pd.DataFrame(results)
 
-    def get_speedup(self, baseline_threads: int = 1) -> Dict[int, float]:
+    def get_speedup(self, baseline_threads: int = 1) -> dict[int, float]:
         """Calculate speedup relative to baseline."""
         if not self.results:
             return {}
@@ -374,7 +375,7 @@ class ResultCache:
         key_str = json.dumps(key_data, sort_keys=True)
         return hashlib.md5(key_str.encode()).hexdigest()
 
-    def get(self, problem: Any, **kwargs) -> Optional[Dict[str, Any]]:
+    def get(self, problem: Any, **kwargs) -> dict[str, Any] | None:
         """
         Get cached result if available.
 
@@ -387,12 +388,12 @@ class ResultCache:
         cache_file = self.cache_dir / f"{key}.json"
 
         if cache_file.exists():
-            with open(cache_file, 'r') as f:
+            with open(cache_file) as f:
                 return json.load(f)
 
         return None
 
-    def put(self, problem: Any, result: Dict[str, Any], **kwargs):
+    def put(self, problem: Any, result: dict[str, Any], **kwargs):
         """
         Store result in cache.
 
@@ -417,7 +418,7 @@ class ResultCache:
         self.cache_dir.mkdir()
         self.cache = {}
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         cache_files = list(self.cache_dir.glob('*.json'))
         total_size = sum(f.stat().st_size for f in cache_files)
@@ -440,7 +441,7 @@ class IncrementalSolver:
         self.problem = problem
         self.previous_solution = None
 
-    def warm_start(self, solution: Dict[str, float]) -> bool:
+    def warm_start(self, solution: dict[str, float]) -> bool:
         """
         Set warm start solution.
 
@@ -493,12 +494,12 @@ class IncrementalSolver:
 
         return True
 
-    def _compute_objective(self, solution: Dict[str, float]) -> float:
+    def _compute_objective(self, solution: dict[str, float]) -> float:
         """Compute objective value for a solution."""
         # This is solver-specific and would need implementation
         return 0.0
 
-    def get_solution(self) -> Optional[Dict[str, float]]:
+    def get_solution(self) -> dict[str, float] | None:
         """Get current solution."""
         if hasattr(self.problem, '_solution'):
             return self.problem._solution

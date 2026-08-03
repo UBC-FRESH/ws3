@@ -1,8 +1,11 @@
 import sys
+
 sys.path.append('../ws3/')
-import ws3.core, ws3.common
 import pytest
-from ws3.core import Interpolator, Curve
+
+import ws3.common
+import ws3.core
+from ws3.core import Curve, Interpolator
 
 
 @pytest.fixture

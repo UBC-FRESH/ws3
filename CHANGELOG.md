@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- Phase 11 complete: 676 → 0 gate errors. Replaced flake8 CI gate with `ruff check ws3/ tests/`. Cleaned Ruff debt in `ws3/forest.py` (E741, E701, UP031, B904, E402 fixes), `ws3/spatial.py`, `ws3/common.py`, `ws3/core.py`, `ws3/forest_helper.py`, and `tests/`. Full suite passes: 406 tests, 9 skipped. Package v1.1.0a4. Branch `feature/phase11-ruff-cleanup`.
+
 ### Planned
 
 - Phase 10 closeout is tracked in

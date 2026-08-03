@@ -14,13 +14,26 @@ Attributes:
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List, Optional, Tuple
-
-PACAL_BROKEN = True
-
+import hashlib
+import math
+import re
 import time
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
+import rasterio
+
+try:
+    import pickle as pickle
+except ImportError:
+    import pickle
+
+import fiona
+from fiona.crs import from_epsg
+from fiona.transform import transform_geom
+
+PACAL_BROKEN = True
 
 #################################################################################################
 # PaCal breaks when trying to import numpy.fft.fftpack (names have changed or some such... yuck).
@@ -45,22 +58,8 @@ import numpy as np
 if not PACAL_BROKEN:
     import pacal
 #################################################################################################
-import hashlib
-import re
 
-import rasterio
-
-try:
-    import pickle as pickle
-except ImportError:
-    import pickle
-
-import math
-
-#from math import exp, log
-import fiona
-from fiona.crs import from_epsg
-from fiona.transform import transform_geom
+# from math import exp, log
 
 
 def hex_id(obj: Any, digest_size: int = 10) -> str:
@@ -89,10 +88,10 @@ def is_num(s: Any) -> bool:
         return False
 
 def reproject(
-    f: Dict[str, Any],
-    srs_crs: Dict[str, Any],
-    dst_crs: Dict[str, Any],
-) -> Dict[str, Any]:
+    f: dict[str, Any],
+    srs_crs: dict[str, Any],
+    dst_crs: dict[str, Any],
+) -> dict[str, Any]:
     """
     Reproject a geometry from a source coordinate reference system (CRS) to a destination CRS.
 
@@ -114,18 +113,18 @@ def clean_vector_data(
     src_path: str,
     dst_path: str,
     dst_name: str,
-    prop_names: List[str],
+    prop_names: list[str],
     clean: bool = True,
     tolerance: float = 0.0,
     preserve_topology: bool = True,
     logfn: str = 'clean_stand_shapefile.log',
-    max_records: Optional[int] = None,
-    theme0: Optional[str] = None,
-    prop_types: Optional[List[Tuple[str, str]]] = None,
+    max_records: int | None = None,
+    theme0: str | None = None,
+    prop_types: list[tuple[str, str]] | None = None,
     driver: str = 'ESRI Shapefile',
-    dst_epsg: Optional[int] = None,
+    dst_epsg: int | None = None,
     update_area_prop: str = '',
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     """
     Clean vector data obtained from a shapefile and reproject to a destination shapefile.
 
@@ -150,9 +149,9 @@ def clean_vector_data(
 
     from shapely.geometry import MultiPolygon, mapping, shape
     logging.basicConfig(filename=logfn, level=logging.INFO)
-    snk1_path = '%s/%s.shp' % (dst_path, dst_name)
+    snk1_path = f'{dst_path}/{dst_name}.shp'
     #snk2_path = dst_path[:-4]+'_error.shp'
-    snk2_path = '%s/%s_error.shp' % (dst_path, dst_name)
+    snk2_path = f'{dst_path}/{dst_name}_error.shp'
     with fiona.open(src_path, 'r') as src:
         kwds1 = src.meta.copy()
         kwds2 = src.meta.copy()
@@ -209,7 +208,8 @@ def clean_vector_data(
                     ##################################################################
                     f['geometry'] = mapping(g)
                     #print('geometry type 2', f['geometry']['type'])
-                    if dst_epsg: f = reproject(f, src.crs, dst_crs)
+                    if dst_epsg:
+                        f = reproject(f, src.crs, dst_crs)
                     if update_area_prop:
                         f['properties'][update_area_prop] = shape(f['geometry']).area
                     snk1.write(f)
@@ -241,13 +241,14 @@ def reproject_vector_data(
         kwds.update(driver=driver)
         with fiona.open(snk_path, 'w', **kwds) as snk:
             #print snk.meta
-            for f in src: snk.write(reproject(f, src.crs, snk_crs))
+            for f in src:
+                snk.write(reproject(f, src.crs, snk_crs))
 
 
 def rasterize_stands(
     shp_path: str,
     tif_path: str,
-    theme_cols: List[str],
+    theme_cols: list[str],
     age_col: str,
     blk_col: str = '',
     age_divisor: float = 1.0,
@@ -256,9 +257,9 @@ def rasterize_stands(
     compress: str = 'lzw',
     round_coords: bool = True,
     value_func: Callable[[Any], str] = lambda x: re.sub(r'(-| )+', '_', str(x).lower()),
-    cap_age: Optional[int] = None,
+    cap_age: int | None = None,
     verbose: bool = False,
-) -> Dict[int, Tuple[str, ...]]:
+) -> dict[int, tuple[str, ...]]:
     """
     Rasterize stand data and store the data as a TIFF file.
 
@@ -278,14 +279,15 @@ def rasterize_stands(
     :return: Dictionary mapping hash values to development type tuples.
     """
     from rasterio.features import rasterize
-    if verbose: print('rasterizing', shp_path)
+    if verbose:
+        print('rasterizing', shp_path)
     if dtype == rasterio.int32:
         nbytes = 4
     else:
-        raise TypeError('Data type not implemented: %s' % dtype)
-    hdt: Dict[int, Tuple[str, ...]] = {}
-    shapes: List[List[Tuple[Any, Any]]] = [[], [], []]
-    crs: Optional[Dict[str, Any]] = None
+        raise TypeError(f'Data type not implemented: {dtype}')
+    hdt: dict[int, tuple[str, ...]] = {}
+    shapes: list[list[tuple[Any, Any]]] = [[], [], []]
+    crs: dict[str, Any] | None = None
     with fiona.open(shp_path, 'r') as src:
         crs = src.crs
         b = src.bounds #(x_min, y_min, x_max, y_max)
@@ -305,8 +307,9 @@ def rasterize_stands(
                 if fp[age_col] is None:
                     age = np.int32(1)
                 else:
-                    raise ValueError('Bad age value in record %i: %s' % (i, str(fp[age_col])))
-            if cap_age and age > cap_age: age = cap_age
+                    raise ValueError(f'Bad age value in record {i}: {str(fp[age_col])}') from None
+            if cap_age and age > cap_age:
+                age = cap_age
             try:
                 assert age > 0
             except Exception:
@@ -339,7 +342,7 @@ def rasterize_stands(
 
 
 def hash_dt(
-    dt: Tuple[Any, ...],
+    dt: tuple[Any, ...],
     dtype: rasterio.dtype = rasterio.int32,
     nbytes: int = 4,
 ) -> int:
@@ -360,7 +363,7 @@ def hash_dt(
 def warp_raster(
     src: rasterio.DatasetReader,
     dst_path: str,
-    dst_crs: Dict[str, str] = {'init': 'EPSG:4326'},
+    dst_crs: dict[str, str] = None,
 ) -> None:
     """
     Warp a raster from its original CRS to a new CRS.
@@ -371,6 +374,8 @@ def warp_raster(
     """
     from rasterio.enums import Resampling
     from rasterio.warp import calculate_default_transform, reproject
+    if dst_crs is None:
+        dst_crs = {'init': 'EPSG:4326'}
     dst_t, dst_w, dst_h = calculate_default_transform(src.crs, dst_crs, src.width, src.height, *src.bounds)
     profile = src.profile.copy()
     profile.update({'crs':dst_crs, 'transform':dst_t, 'width':dst_w, 'height':dst_h})
@@ -396,10 +401,12 @@ def timed(func: Callable[..., Any]) -> Callable[..., Any]:
         t = time.time()
         result = func(*args)
         t = time.time() - t
-        print('%s took %.3f seconds.' % (func.__name__, t))
+        print(f'{func.__name__} took {t:.3f} seconds.')
         return result
     return wrapper
-from scipy.stats import norm
+
+
+from scipy.stats import norm  # noqa: E402
 
 HORIZON_DEFAULT = 30
 PERIOD_LENGTH_DEFAULT = 10
@@ -772,7 +779,7 @@ def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
         dE = np.inf
         i = 1
         while dE > e:
-            args = list(zip(P.rand(n), vr.rand(n), vp.rand(n)))
+            args = list(zip(P.rand(n), vr.rand(n), vp.rand(n), strict=False))
             while len(args) > 0: # process random args in in n-length chunks
                 _E = E
                 E = ((i - 1) * E + f[formula](*args.pop())) / i

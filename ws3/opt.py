@@ -34,7 +34,8 @@ Note that we implemented a modular design that decouples the implementation from
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List, Optional
+from collections.abc import Callable
+from typing import Any
 
 SENSE_MINIMIZE = +1 # same as GRB.MINIMIZE
 SENSE_MAXIMIZE = -1 # same as GRB.MAXIMIZE
@@ -61,10 +62,10 @@ class Variable:
     vtype: str
     lb: float
     ub: float
-    val: Optional[float]
+    val: float | None
     _solver_var: Any
 
-    def __init__(self, name: str, vtype: str, lb: float = 0., ub: float = VBNDS_INF, val: Optional[float] = None) -> None:
+    def __init__(self, name: str, vtype: str, lb: float = 0., ub: float = VBNDS_INF, val: float | None = None) -> None:
         if lb > ub:
             raise ValueError("Lower bound cannot be greater than upper bound")
         self.name = name
@@ -74,18 +75,18 @@ class Variable:
         self.val = val
         # Assigned by the HiGHS backend when the column is added. Declared here
         # so it is discoverable rather than materializing as a dynamic attribute.
-        self.index: Optional[int] = None
+        self.index: int | None = None
 
 class Constraint:
     """
     Encapsulates data describing a constraint in an optimization problem. This includes a constraint name (should be unique within a problem, although the user is responsible for enforcing this condition), a vector of coefficient values (length of vector should match the number of variables in the problem, although the user is responsible for enforcing this condition), a sense (should be one of ``SENSE_EQ``, ``SENSE_GEQ``, or ``SENSE_LEQ``), and a right-hand-side value.
     """
     name: str
-    coeffs: Dict[str, float]
+    coeffs: dict[str, float]
     sense: str
     rhs: float
 
-    def __init__(self, name: str, coeffs: Dict[str, float], sense: str, rhs: float) -> None:
+    def __init__(self, name: str, coeffs: dict[str, float], sense: str, rhs: float) -> None:
         if not isinstance(coeffs, dict) or len(coeffs) == 0:
             raise ValueError("Coefficients must be a non-empty list")
         if not all(isinstance(coeff, (int, float)) for coeff in coeffs.values()):
@@ -102,22 +103,22 @@ class Problem:
     This is the main class of the ``opt`` module---it encapsulates optimization problem data (i.e., variables, constraints, objective function, optimal solution, and choice of solver), as well as methods to operate on this data (i.e., methods to build and solve the problem, and report on the optimal solution).
     """
     _name: str
-    _vars: Dict[str, Variable]
-    _z: Dict[str, float]
-    _constraints: Dict[str, Constraint]
+    _vars: dict[str, Variable]
+    _z: dict[str, float]
+    _constraints: dict[str, Constraint]
     _sense: int
     _solver: str
-    _solver_backend: Optional[str]
-    _solution: Optional[Dict[str, float]]
-    _warm_start: Optional[List[float]]
+    _solver_backend: str | None
+    _solution: dict[str, float] | None
+    _warm_start: list[float] | None
     _model: Any
-    _dispatch_map: Dict[str, Callable[..., None]]
+    _dispatch_map: dict[str, Callable[..., None]]
 
     def __init__(self, name: str, sense: int = SENSE_MAXIMIZE, solver: str = SOLVER_DEFAULT) -> None:
         self._name = name
-        self._vars: Dict[str, Variable] = {}
-        self._z: Dict[str, float] = {}
-        self._constraints: Dict[str, Constraint] = {}
+        self._vars: dict[str, Variable] = {}
+        self._z: dict[str, float] = {}
+        self._constraints: dict[str, Constraint] = {}
         self._sense = sense
         self._solver = solver
         self._solver_backend = None
@@ -132,10 +133,10 @@ class Problem:
         # Populated by ws3.forest._bld_p_m1 rather than here. Declared so the
         # attributes are discoverable and type-checkable instead of appearing
         # only as dynamic assignments from another module.
-        self.trees: Optional[Any] = None
-        self._leaf_ids: Optional[Any] = None
-        self.coeff_funcs: Optional[Any] = None
-        self.formulation: Optional[int] = None
+        self.trees: Any | None = None
+        self._leaf_ids: Any | None = None
+        self.coeff_funcs: Any | None = None
+        self.formulation: int | None = None
 
     def merge(self, problem: Problem) -> None:
         """
@@ -159,13 +160,13 @@ class Problem:
         self._vars[name] = Variable(name, vtype, lb, ub)
         self._solution = None # modifying problem kills solution
 
-    def var_names(self) -> List[str]:
+    def var_names(self) -> list[str]:
         """
         Return a list of variable names.
         """
         return list(self._vars.keys())
 
-    def constraint_names(self) -> List[str]:
+    def constraint_names(self) -> list[str]:
         """
         Returns a list of constraint names.
         """
@@ -188,7 +189,7 @@ class Problem:
         """
         return self._vars[name]
 
-    def sense(self, val: Optional[int] = None) -> Optional[int]:
+    def sense(self, val: int | None = None) -> int | None:
         """
         Returns (or sets) objective function sense.
         :param val: Value should be one of ``SENSE_MINIMIZE`` or ``SENSE_MAXIMIZE``.
@@ -205,7 +206,7 @@ class Problem:
         """
         return self._solution is not None
 
-    def z(self, coeffs: Optional[Dict[str, float]] = None, validate: bool = False) -> Optional[float]:
+    def z(self, coeffs: dict[str, float] | None = None, validate: bool = False) -> float | None:
         """
         Returns the objective function value if ``coeffs`` is not provided (triggers an exception if problem has not been solved yet), or updates the objective function coefficient vector (resets the value of the optimal solution to ``None``).
         """
@@ -220,7 +221,7 @@ class Problem:
         assert self._solution is not None
         return sum([self._z[v] * self._solution[v] for v in list(self._vars.keys())])
 
-    def add_constraint(self, name: str, coeffs: Dict[str, float], sense: str, rhs: float, validate: bool = False) -> None:
+    def add_constraint(self, name: str, coeffs: dict[str, float], sense: str, rhs: float, validate: bool = False) -> None:
         """
         This function adds a constraint to the problem.
 
@@ -238,7 +239,7 @@ class Problem:
         self._constraints[name] = Constraint(name, coeffs, sense, rhs)
         self._solution = None # modifying problem kills solution
 
-    def solver(self, val: Optional[str] = None) -> Optional[str]:
+    def solver(self, val: str | None = None) -> str | None:
         """
         Sets the solver backend (defaults to ``SOLVER_PULP`` in the class constructor).
 
@@ -249,13 +250,13 @@ class Problem:
             return None
         return self._solver
 
-    def solution(self) -> Optional[Dict[str, float]]:
+    def solution(self) -> dict[str, float] | None:
         """
         Returns a ``dict`` of variable values, keyed on variable names.
         """
         return self._solution
 
-    def solve(self, validate: bool = False, threads: int = 0, warm_start: Optional[List[float]] = None, verbose: bool = False) -> None:
+    def solve(self, validate: bool = False, threads: int = 0, warm_start: list[float] | None = None, verbose: bool = False) -> None:
         """
         Solve the optimization problem.
 
@@ -266,7 +267,7 @@ class Problem:
         :return None: Solution is stored in self._solution if optimal.
         """
         if validate:
-            assert False, "Validation not implemented yet"
+            raise AssertionError("Validation not implemented yet")
 
         # Store warm start for use by solver
         self._warm_start = warm_start
@@ -474,7 +475,7 @@ class Problem:
         if pulp.LpStatus[self._model.status] in [pulp.constants.LpStatusInfeasible, pulp.constants.LpStatusUnbounded]:
             print(f"ws3.opt._solve_pulp: Model {pulp.LpStatus[self._model.status]}")
         else:
-            for k, v in list(self._vars.items()):
+            for k, _v in list(self._vars.items()):
                 self._vars[k].val = vars[k].varValue
 
     def _solve_highs(self, threads=0, simplex_strategy=2, verbose=False):
@@ -534,7 +535,7 @@ class Problem:
         # ----------------------------
         # Constraints
         # ----------------------------
-        for cname, con in self._constraints.items():
+        for _cname, con in self._constraints.items():
             # Compute row bounds
             if con.sense == SENSE_EQ:
                 lb, ub = con.rhs, con.rhs
@@ -551,7 +552,7 @@ class Problem:
                 coeff_accum[var_index[vname]] += coef
             coeff_accum = {j: c for j, c in coeff_accum.items() if c != 0.0}
 
-            indices, coefs = zip(*coeff_accum.items()) if coeff_accum else ([], [])
+            indices, coefs = zip(*coeff_accum.items(), strict=False) if coeff_accum else ([], [])
             highs.addRow(lb, ub, len(indices), indices, coefs)
 
         # ----------------------------

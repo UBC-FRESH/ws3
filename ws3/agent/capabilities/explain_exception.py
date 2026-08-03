@@ -20,8 +20,9 @@ import importlib
 import json
 import re
 import traceback
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Any, Iterable
+from typing import Any
 
 from fresh_agent_core.capability import Capability, ParseError, Verdict
 
@@ -183,7 +184,7 @@ class ExplainException(Capability[Explanation]):
             f'got {type(inputs).__name__}'
         )
 
-    def render(self, value: 'Explanation') -> str:
+    def render(self, value: Explanation) -> str:
         """Render cause and next actions as readable text."""
         actions = '\n'.join(f'  - {a}' for a in value.next_actions)
         return f'{value.cause}\n\nSuggested next steps:\n{actions}'

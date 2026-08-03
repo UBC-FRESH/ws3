@@ -5,13 +5,15 @@ Tests StochasticOptimizer, MultiObjectiveOptimizer, DynamicPlanner,
 and ClimateScenarioManager classes.
 """
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
+
 from ws3.advanced_modeling import (
-    StochasticOptimizer,
-    MultiObjectiveOptimizer,
-    DynamicPlanner,
     ClimateScenarioManager,
+    DynamicPlanner,
+    MultiObjectiveOptimizer,
+    StochasticOptimizer,
     StochasticScenario,
     UncertaintyType,
 )

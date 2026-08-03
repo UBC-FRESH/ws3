@@ -5,16 +5,18 @@ Tests FHOPSIntegrator, FEMICIntegrator, FreshForgeIntegrator,
 SpaDESIntegrator, and RESTAPIServer classes.
 """
 
-import pytest
-import pandas as pd
 from unittest.mock import MagicMock, patch
+
+import pandas as pd
+import pytest
+
 from ws3.integration import (
-    FHOPSIntegrator,
-    FHOPSIntegrationConfig,
     FEMICIntegrator,
+    FHOPSIntegrationConfig,
+    FHOPSIntegrator,
     FreshForgeIntegrator,
-    SpaDESIntegrator,
     RESTAPIServer,
+    SpaDESIntegrator,
 )
 
 

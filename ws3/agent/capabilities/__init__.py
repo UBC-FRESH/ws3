@@ -8,7 +8,7 @@ model to exist.
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from fresh_agent_core.registry import Registry
 
@@ -33,7 +33,7 @@ __all__ = [
 ]
 
 
-def build_registry(fm: Optional[Any] = None) -> Registry:
+def build_registry(fm: Any | None = None) -> Registry:
     """
     Build the ws3 capability registry.
 
