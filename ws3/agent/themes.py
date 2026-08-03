@@ -27,7 +27,7 @@ stands they mean.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 #: Cap on codes listed per theme in a prompt. Real models can carry hundreds;
 #: listing all of them buries the task and wastes context.
@@ -83,7 +83,7 @@ class ThemeSchema:
         self.themes = themes
 
     @classmethod
-    def from_model(cls, fm: Any) -> 'ThemeSchema':
+    def from_model(cls, fm: Any) -> ThemeSchema:
         """
         Read the theme structure out of a model.
 
@@ -246,6 +246,661 @@ class ThemeSchema:
         return '\n'.join(lines)
 
 
-def schema_for(fm: Optional[Any]) -> Optional[ThemeSchema]:
+def schema_for(fm: Any | None) -> ThemeSchema | None:
     """Return the schema for *fm*, or ``None`` if no model was supplied."""
     return None if fm is None else ThemeSchema.from_model(fm)
+
+
+# ---------------------------------------------------------------------------
+# Model contract: typed, JSON-serialisable specification and structural
+# verification of a ForestModel instance.
+# ---------------------------------------------------------------------------
+
+from dataclasses import asdict, dataclass, field  # noqa: E402
+
+
+@dataclass(frozen=True)
+class DevelopmentTypeEntry:
+    """
+    One development type's deterministic domain inventory snapshot.
+
+    Captures what is observable from existing ForestModel / DevelopmentType
+    APIs without holding a reference to the model:
+
+    - ``key``: the theme-code tuple identifying this development type.
+    - ``n_age_classes``: number of distinct age classes in period-0 area inventory.
+    - ``total_area``: sum of period-0 area across all age classes.
+    - ``age_classes``: sorted tuple of age-class keys present in period 0.
+    - ``yield_components``: sorted tuple of yield component names declared for
+      this development type (from :py:meth:`ws3.forest.DevelopmentType.ycomps`).
+    - ``yield_compiled``: dict mapping each yield component name to a boolean
+      indicating whether its curve has been compiled (i.e. is not ``None``).
+    - ``action_codes``: sorted tuple of action codes declared in this
+      development type's ``oper_expr`` (recoverable from existing APIs).
+    - ``transition_targets``: sorted tuple of action codes referenced as
+      transition targets in this development type's ``transitions`` dict
+      (recoverable from existing APIs).
+
+    Frozen so the contract remains immutable once built from a model.
+    """
+
+    key: tuple[str, ...]
+    n_age_classes: int
+    total_area: float
+    age_classes: tuple[int, ...]
+    yield_components: tuple[str, ...]
+    yield_compiled: dict[str, bool]
+    action_codes: tuple[str, ...] = ()
+    transition_targets: tuple[str, ...] = ()
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            'key': list(self.key),
+            'n_age_classes': self.n_age_classes,
+            'total_area': self.total_area,
+            'age_classes': list(self.age_classes),
+            'yield_components': list(self.yield_components),
+            'yield_compiled': dict(self.yield_compiled),
+            'action_codes': list(self.action_codes),
+            'transition_targets': list(self.transition_targets),
+        }
+
+#: Severity levels for verification findings.
+SEVERITY_ERROR = 'error'
+SEVERITY_WARNING = 'warning'
+
+
+@dataclass(frozen=True)
+class VerificationFinding:
+    """
+    One structural finding from verifying a model contract.
+
+    :param level: Check level. ``'L0'`` is mandatory structural integrity;
+        ``'L1'`` is a cheaper secondary check.
+    :param category: Human-readable category, e.g. ``'theme_arity'``.
+    :param message: Description of what was found.
+    :param severity: ``'error'`` blocks use; ``'warning'`` is informational.
+    """
+
+    level: str
+    category: str
+    message: str
+    severity: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
+class VerificationResult:
+    """
+    The outcome of verifying a :py:class:`ModelContract`.
+
+    Findings are returned rather than exceptions raised: a model that fails L0
+    is still a model, and callers need to know *what* is wrong, not just that
+    something is wrong.
+    """
+
+    findings: list[VerificationFinding] = field(default_factory=list)
+
+    @property
+    def is_valid(self) -> bool:
+        """True when no finding has error severity."""
+        return not any(f.severity == SEVERITY_ERROR for f in self.findings)
+
+    @property
+    def errors(self) -> list[VerificationFinding]:
+        return [f for f in self.findings if f.severity == SEVERITY_ERROR]
+
+    @property
+    def warnings(self) -> list[VerificationFinding]:
+        return [f for f in self.findings if f.severity == SEVERITY_WARNING]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            'is_valid': self.is_valid,
+            'findings': [f.to_dict() for f in self.findings],
+            'summary': {
+                'total': len(self.findings),
+                'errors': len(self.errors),
+                'warnings': len(self.warnings),
+            },
+        }
+
+
+class ModelContract:
+    """
+    A typed, JSON-serialisable specification of a :py:class:`~ws3.forest.ForestModel`.
+
+    Built from an existing model via :py:meth:`from_model`; carries no reference
+    to it, so it is safe to hold, describe, serialise and diff.
+
+    The contract captures three layers:
+
+    1. **Metadata** -- model name, base year, horizon, period length, max age.
+    2. **Theme schema** -- the :py:class:`ThemeSchema` of the model.
+    3. **Development types** -- the set of keys actually present, each reduced to
+       its theme-code tuple, period-0 area inventory, and yield coverage.
+
+    Structural verification runs deterministic L0 and L1 checks and returns
+    findings rather than raising, so ordinary model invalidity is observable
+    without interrupting the caller.
+
+    :param metadata: Flat dict of scalar model metadata.
+    :param schema: The theme schema.
+    :param development_types: List of :py:class:`DevelopmentTypeEntry` instances.
+    :param source_path: Directory the contract was extracted from, if any.
+        Recorded for provenance; not used by verification.
+    :param source_name: Base file name of the source dataset, if any.
+    """
+
+    def __init__(
+        self,
+        metadata: dict[str, Any],
+        schema: ThemeSchema,
+        development_types: list[DevelopmentTypeEntry],
+        source_path: str | None = None,
+        source_name: str | None = None,
+    ) -> None:
+        self.metadata = metadata
+        self.schema = schema
+        self.development_types = development_types
+        self.source_path = source_path
+        self.source_name = source_name
+
+    @classmethod
+    def from_model(cls, fm: Any) -> ModelContract:
+        """
+        Extract the contract from a :py:class:`~ws3.forest.ForestModel`.
+
+        :param fm: The model to extract from.
+        :return: A :py:class:`ModelContract` describing *fm*.
+        """
+        metadata = {
+            'model_name': fm.model_name,
+            'base_year': fm.base_year,
+            'horizon': fm.horizon,
+            'period_length': fm.period_length,
+            'max_age': fm.max_age,
+            'area_epsilon': fm.area_epsilon,
+            'curve_epsilon': fm.curve_epsilon,
+            'n_development_types': len(fm.dtypes),
+            'n_actions': len(fm.actions),
+            'declared_actions': tuple(sorted(fm.actions.keys())),
+        }
+
+        development_types = []
+        for key in sorted(fm.dtypes.keys()):
+            dt = fm.dtypes[key]
+            period0 = dt._areas[0]
+            age_classes = tuple(sorted(period0.keys()))
+            total_area = float(sum(period0[a] for a in age_classes))
+            ycomps = dt.ycomps()
+            yield_compiled = {
+                yname: dt.ycomp(yname, silent_fail=False) is not None
+                for yname in ycomps
+            }
+            # Extract action codes from oper_expr (recoverable from existing API).
+            action_codes = tuple(sorted(dt.oper_expr.keys()))
+            # Extract transition target action codes from transitions dict.
+            # Keys are (acode, age) tuples; we collect unique acodes.
+            transition_targets = tuple(sorted({
+                acode for (acode, _age) in dt.transitions.keys()
+            }))
+            development_types.append(
+                DevelopmentTypeEntry(
+                    key=key,
+                    n_age_classes=len(age_classes),
+                    total_area=total_area,
+                    age_classes=age_classes,
+                    yield_components=tuple(sorted(ycomps)),
+                    yield_compiled=yield_compiled,
+                    action_codes=action_codes,
+                    transition_targets=transition_targets,
+                )
+            )
+
+        return cls(
+            metadata=metadata,
+            schema=ThemeSchema.from_model(fm),
+            development_types=development_types,
+        )
+
+    @classmethod
+    def verify_source(
+        cls,
+        model_path: str,
+        model_name: str,
+        sections_to_check: list[str] | None = None,
+    ) -> VerificationResult:
+        """
+        Deterministic import/lint round-trip oracle.
+
+        Runs :py:func:`ws3.woodstock.lint_dataset` against the declared source
+        files, and where the lint is clean (no ``error``-severity findings)
+        builds a scratch :py:class:`~ws3.forest.ForestModel`, extracts a
+        :py:class:`ModelContract`, and runs :py:meth:`verify` on it.
+
+        Findings from every stage are merged into a single
+        :py:class:`VerificationResult`. Ordinary import failures (missing
+        files, malformed sections) are returned as findings rather than raised,
+        so the oracle is safe to call on untrusted input.
+
+        :param model_path: Directory holding the Woodstock section files.
+        :param model_name: Base name shared by the section files.
+        :param sections_to_check: Optional subset of sections to lint.
+        :return: A :py:class:`VerificationResult` with all findings from lint
+            and structural verification.
+        """
+        from ws3.woodstock import lint_dataset  # local to avoid circular import
+
+        result = VerificationResult()
+
+        # Stage 1: lint the source files.
+        try:
+            lint_findings = lint_dataset(
+                model_path, model_name,
+                sections_to_check=sections_to_check,
+            )
+        except Exception as exc:  # pragma: no cover - filesystem error
+            result.findings.append(
+                VerificationFinding(
+                    level='L0',
+                    category='source_lint_failed',
+                    message=f'lint_dataset raised: {exc}',
+                    severity=SEVERITY_ERROR,
+                )
+            )
+            return result
+
+        for lf in lint_findings:
+            if lf.severity == 'error':
+                result.findings.append(
+                    VerificationFinding(
+                        level='L0',
+                        category='source_lint_error',
+                        message=(
+                            f'{lf.section}: {lf.message}'
+                            + (f' (line {lf.line})' if lf.line else '')
+                        ),
+                        severity=SEVERITY_ERROR,
+                    )
+                )
+            elif lf.severity == 'warning':
+                result.findings.append(
+                    VerificationFinding(
+                        level='L1',
+                        category='source_lint_warning',
+                        message=(
+                            f'{lf.section}: {lf.message}'
+                            + (f' (line {lf.line})' if lf.line else '')
+                        ),
+                        severity=SEVERITY_WARNING,
+                    )
+                )
+
+        # Stage 2: if lint is clean, attempt a full import + contract extract.
+        if result.errors:
+            return result
+
+        try:
+            from ws3.forest import ForestModel  # local import
+
+            fm = ForestModel(  # type: ignore[no-untyped-call, call-arg]
+                model_name=model_name,
+                model_path=model_path,
+                base_year=2020,
+                horizon=10,
+                period_length=10,
+                max_age=100,
+            )
+            fm.import_landscape_section()  # type: ignore[no-untyped-call]
+            fm.import_areas_section(convert_periods_to_years=10)  # type: ignore[no-untyped-call]
+            contract = cls.from_model(fm)
+            contract.source_path = model_path
+            contract.source_name = model_name
+            verify_result = contract.verify()
+            result.findings.extend(verify_result.findings)
+        except Exception as exc:
+            result.findings.append(
+                VerificationFinding(
+                    level='L0',
+                    category='source_import_failed',
+                    message=f'import raised: {exc}',
+                    severity=SEVERITY_ERROR,
+                )
+            )
+
+        return result
+
+    def verify(self) -> VerificationResult:
+        """
+        Run deterministic structural checks and return the findings.
+
+        L0 checks (errors):
+
+        - ``theme_arity``: theme indices are the contiguous range ``0..nthemes-1``.
+        - ``theme_has_basecodes``: every theme declares at least one basecode.
+        - ``dtype_key_length``: every development-type key has length equal to
+          ``nthemes``.
+        - ``dtype_code_known``: every code in every development-type key is a
+          known code (basecode or aggregate) for its theme position.
+
+        L1 checks (warnings):
+
+        - ``dtype_duplicate_key``: development-type keys are unique (invariant of
+          the ``dtypes`` dict, but worth asserting explicitly).
+        - ``action_orphan``: an action code referenced in any development type's
+          ``oper_expr`` is not declared in ``fm.actions``.
+
+        :return: A :py:class:`VerificationResult` with all findings.
+        """
+        findings: list[VerificationFinding] = []
+        nthemes = self.schema.nthemes
+
+        # L0: theme_arity
+        expected_indices = set(range(nthemes))
+        actual_indices = {t.index for t in self.schema.themes}
+        if actual_indices != expected_indices:
+            missing = expected_indices - actual_indices
+            extra = actual_indices - expected_indices
+            if missing:
+                findings.append(
+                    VerificationFinding(
+                        level='L0',
+                        category='theme_arity',
+                        message=(
+                            f'theme indices skip {sorted(missing)}; '
+                            f'expected contiguous 0..{nthemes - 1}'
+                        ),
+                        severity=SEVERITY_ERROR,
+                    )
+                )
+            if extra:
+                findings.append(
+                    VerificationFinding(
+                        level='L0',
+                        category='theme_arity',
+                        message=(
+                            f'unexpected theme indices {sorted(extra)}; '
+                            f'expected contiguous 0..{nthemes - 1}'
+                        ),
+                        severity=SEVERITY_ERROR,
+                    )
+                )
+
+        # L0: theme_has_basecodes
+        for theme in self.schema.themes:
+            if not theme.basecodes:
+                findings.append(
+                    VerificationFinding(
+                        level='L0',
+                        category='theme_has_basecodes',
+                        message=(
+                            f'theme position {theme.index} ({theme.name}) has no '
+                            f'basecodes; a theme without basecodes cannot select '
+                            f'any development type'
+                        ),
+                        severity=SEVERITY_ERROR,
+                    )
+                )
+
+        # L0: dtype_key_length
+        for entry in self.development_types:
+            if len(entry.key) != nthemes:
+                findings.append(
+                    VerificationFinding(
+                        level='L0',
+                        category='dtype_key_length',
+                        message=(
+                            f'development type key {entry.key!r} has length '
+                            f'{len(entry.key)}, expected {nthemes}'
+                        ),
+                        severity=SEVERITY_ERROR,
+                    )
+                )
+
+        # L0: dtype_code_known
+        theme_by_index = {t.index: t for t in self.schema.themes}
+        for entry in self.development_types:
+            for pos, code in enumerate(entry.key):
+                if pos >= nthemes:
+                    continue
+                theme = theme_by_index[pos]
+                if code == WILDCARD:
+                    continue
+                if not theme.known(code):
+                    valid = list(theme.codes())
+                    shown = ', '.join(valid[:MAX_CODES_PER_THEME]) or '(none)'
+                    findings.append(
+                        VerificationFinding(
+                            level='L0',
+                            category='dtype_code_known',
+                            message=(
+                                f'development type {entry.key!r} position {pos} '
+                                f'({theme.name}): {code!r} is not a known code '
+                                f'(valid: {shown})'
+                            ),
+                            severity=SEVERITY_ERROR,
+                        )
+                    )
+
+        # L1: dtype_duplicate_key (cheap assertion of an invariant)
+        seen_keys: set[tuple[str, ...]] = set()
+        for entry in self.development_types:
+            if entry.key in seen_keys:
+                findings.append(
+                    VerificationFinding(
+                        level='L1',
+                        category='dtype_duplicate_key',
+                        message=f'development type key {entry.key!r} appears more than once',
+                        severity=SEVERITY_WARNING,
+                    )
+                )
+            seen_keys.add(entry.key)
+        # L1: area_inventory_empty
+        for entry in self.development_types:
+            if entry.total_area <= 0.0:
+                findings.append(
+                    VerificationFinding(
+                        level='L1',
+                        category='area_inventory_empty',
+                        message=(
+                            f'development type {entry.key!r} has no period-0 area '
+                            f'inventory (total_area={entry.total_area})'
+                        ),
+                        severity=SEVERITY_WARNING,
+                    )
+                )
+
+        # L1: yield_coverage_missing
+        for entry in self.development_types:
+            if not entry.yield_components:
+                findings.append(
+                    VerificationFinding(
+                        level='L1',
+                        category='yield_coverage_missing',
+                        message=(
+                            f'development type {entry.key!r} has no yield '
+                            f'components declared'
+                        ),
+                        severity=SEVERITY_WARNING,
+                    )
+                )
+
+        # L1: action_orphan -- action codes in oper_expr not declared in model
+        declared = set(self.metadata.get('declared_actions', ()))
+        for entry in self.development_types:
+            for acode in entry.action_codes:
+                if acode and acode not in declared:
+                    findings.append(
+                        VerificationFinding(
+                            level='L1',
+                            category='action_orphan',
+                            message=(
+                                f'development type {entry.key!r} references '
+                                f'action code {acode!r} in oper_expr, but it is '
+                                f'not declared in the model'
+                            ),
+                            severity=SEVERITY_WARNING,
+                        )
+                    )
+
+        # L1: transition_target_invalid -- transition targets not declared in model
+        for entry in self.development_types:
+            for target in entry.transition_targets:
+                if target and target not in declared:
+                    findings.append(
+                        VerificationFinding(
+                            level='L1',
+                            category='transition_target_invalid',
+                            message=(
+                                f'development type {entry.key!r} references '
+                                f'transition target {target!r}, which is not '
+                                f'declared in the model'
+                            ),
+                            severity=SEVERITY_WARNING,
+                        )
+                    )
+
+        return VerificationResult(findings=findings)
+
+    def verify_compile_solve(self, fm: Any | None = None) -> tuple[VerificationResult, CompileSolveCapability]:
+        """
+        Bounded compile/solve smoke oracle.
+
+        Attempts to compile yield curves for all development types and checks
+        whether any optimization problem is defined. Returns a structured
+        capability record rather than raising, so ordinary model limitations
+        are observable without interrupting the caller.
+
+        Compile is always attempted (it is safe and deterministic). Solve is
+        only reported as available if a problem exists; the oracle does not
+        invoke ``Problem.solve()`` because coefficient functions may not be
+        safe to call without user context.
+
+        :param fm: Optional ForestModel to compile. If None, returns a
+            capability record with both compile and solve marked unavailable.
+        :return: A tuple of (VerificationResult, CompileSolveCapability).
+            The VerificationResult contains any errors from compile.
+            The CompileSolveCapability records what the pipeline can do.
+        """
+        result = VerificationResult()
+        capability = CompileSolveCapability(
+            compile_available=False,
+            solve_available=False,
+        )
+
+        if fm is None:
+            return result, capability
+
+        # Stage 1: compile actions (yields).
+        compile_ok = False
+        yield_status: dict[str, dict[str, bool]] = {}
+        try:
+            fm.compile_actions()
+            compile_ok = True
+
+            # Record yield compilation status per development type.
+            for key in fm.dtypes.keys():
+                dt = fm.dtypes[key]
+                ycomps = dt.ycomps()
+                compilation_status = {
+                    yname: dt.ycomp(yname, silent_fail=False) is not None
+                    for yname in ycomps
+                }
+                yield_status[key] = compilation_status
+
+        except Exception as exc:
+            result.findings.append(
+                VerificationFinding(
+                    level='L0',
+                    category='compile_failed',
+                    message=f'compile_actions raised: {exc}',
+                    severity=SEVERITY_ERROR,
+                )
+            )
+            return result, capability
+
+        # Stage 2: check for optimization problems.
+        if not fm.problems:
+            deferred_reason = (
+                'no optimization problems defined in model; '
+                'solve requires user-defined problems via ForestModel.add_problem()'
+            )
+        else:
+            deferred_reason = None
+
+        capability = CompileSolveCapability(
+            compile_available=compile_ok,
+            solve_available=compile_ok and bool(fm.problems),
+            deferred_reason=deferred_reason,
+            yield_compilation_status=yield_status,
+        )
+
+        return result, capability
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-serialisable dict representation."""
+        return {
+            'metadata': self.metadata,
+            'schema': {
+                'nthemes': self.schema.nthemes,
+                'themes': [
+                    {
+                        'index': t.index,
+                        'name': t.name,
+                        'description': t.description,
+                        'basecodes': list(t.basecodes),
+                        'aggregates': {k: list(v) for k, v in t.aggregates.items()},
+                    }
+                    for t in self.schema.themes
+                ],
+            },
+            'development_types': [
+                entry.to_dict()
+                for entry in self.development_types
+            ],
+            'source': {
+                'path': self.source_path,
+                'name': self.source_name,
+            },
+        }
+
+
+def contract_for(fm: Any) -> ModelContract:
+    """Convenience: return the :py:class:`ModelContract` for *fm*."""
+    return ModelContract.from_model(fm)
+
+
+# ---------------------------------------------------------------------------
+# Compile/solve smoke oracle: bounded verification of the compile pipeline.
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class CompileSolveCapability:
+    """
+    Structured record of what the compile/solve pipeline can do for a model.
+
+    :param compile_available: Whether ``compile_actions()`` ran successfully.
+    :param solve_available: Whether any optimization problem is defined.
+    :param deferred_reason: Explanation if solve is not available.
+    :param yield_compilation_status: Per-development-type yield compilation state.
+    """
+
+    compile_available: bool
+    solve_available: bool
+    deferred_reason: str | None = None
+    yield_compilation_status: dict[str, dict[str, bool]] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        # Convert tuple keys to string keys for JSON serialization.
+        yield_status_serialisable = {
+            '.'.join(k): v for k, v in self.yield_compilation_status.items()
+        }
+        return {
+            'compile_available': self.compile_available,
+            'solve_available': self.solve_available,
+            'deferred_reason': self.deferred_reason,
+            'yield_compilation_status': yield_status_serialisable,
+        }

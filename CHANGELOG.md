@@ -6,7 +6,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Planned
+
+- Phase 10 closeout is tracked in
+  `planning/phase10_femic_model_contract.md`. The implementation, adapter
+  ownership audit, cross-repository evidence, and final verification are
+  complete. Commit `8369a68` is published in PR #127; merge remains pending
+  review.
+- Planned Phase 11, Ruff lint gate and legacy debt cleanup, under parent issue
+  #120. The phase will first establish the authoritative lint scope and resolve
+  the `py39` Ruff target versus `requires-python >=3.10` mismatch, then address
+  the existing `forest.py` backlog in tested batches without mixing it into the
+  active Phase 10 FEMIC contract work. Detailed plan:
+  `planning/phase11_ruff_cleanup.md`.
+
 ### Added
+
+- Started Phase 10 companion work for FEMIC #305 in issue #121 and branch
+  `feature/p10-femic-model-contract`.
+- Defined the ws3 responsibility as a typed model contract and deterministic
+  verification-oracle surface behind FEMIC, while FreshForge owns workflow
+  orchestration.
+- Added `ws3.agent.themes.ModelContract`, a reference-free JSON-serializable
+  extraction surface for model metadata, theme schema, and development-type
+  inventory.
+- Added structured L0 verification findings for theme arity, theme basecodes,
+  development-type key length, and known theme codes, plus an L1 duplicate-key
+  warning. Focused and regression validation passes with 33 tests passed and 1
+  pre-existing skip.
+- Extended `ModelContract` with typed development-type entries containing
+  period-0 area inventory and yield-component coverage, plus L1 warnings for
+  empty area inventory and missing yield coverage. The full ws3 suite passes:
+  306 tests passed and 9 skipped.
+- Added deterministic action and transition inventory to each development-type
+  entry, with L1 warnings for references not present in the model's declared
+  action set. The full ws3 suite passes again: 315 tests passed and 9 skipped.
+- Added the source-backed `ModelContract.verify_source()` oracle. It runs
+  `ws3.woodstock.lint_dataset`, attempts a real scratch-model landscape/areas
+  import when lint permits, records source provenance, and returns structured
+  findings instead of raising for missing, malformed, or unsupported input.
+  The full ws3 suite passes: 323 tests passed and 9 skipped.
 
 - `ws3.woodstock`: machine-readable contract for the Woodstock input data format (198 keywords)
   and `lint_dataset`, which reports sections and keywords ws3 does not read. Previously these
