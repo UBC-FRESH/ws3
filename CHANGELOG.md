@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Phase 11c (mypy Stage 4) complete: non-forest.py mypy errors reduced from 284 to 24.
+  Fixed `opt.py` (status() return type, missing return, arg-type fixes, type: ignore on
+  optional imports), `common.py` (harv_cost annotation, union-attr fix), `perf.py`
+  (return type -> Any), `integration.py` (FastAPI decorators, integrator calls),
+  `agent/capabilities/build_mask.py` and `diagnose_import.py` (Capability[Any] subclass
+  type: ignore). 3 PaCal operator errors and 21 ForestModel/import_* no-untyped-call
+  errors remain — blocked on Stage 5 (forest.py) and PaCal stubs. PR #140 merged.
+
 - Phase 11 complete: 676 → 0 gate errors. Replaced flake8 CI gate with `ruff check ws3/ tests/`. Cleaned Ruff debt in `ws3/forest.py` (E741, E701, UP031, B904, E402 fixes), `ws3/spatial.py`, `ws3/common.py`, `ws3/core.py`, `ws3/forest_helper.py`, and `tests/`. Full suite passes: 406 tests, 9 skipped. Package v1.1.0a4. Branch `feature/phase11-ruff-cleanup`.
 
 ### Planned
