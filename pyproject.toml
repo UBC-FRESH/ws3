@@ -106,6 +106,8 @@ warn_unused_configs = true
 disallow_untyped_defs = false
 ignore_missing_imports = true
 strict = true
+# Local type stubs for vendored optional dependencies without published stubs.
+mypy_path = "_stubs"
 # Disabled deliberately. With ignore_missing_imports = true, an absent optional
 # dependency is typed as Any, which makes every `# type: ignore` on lines touching
 # it look unused. ws3/financial.py alone flips 19 findings depending on whether

@@ -732,7 +732,7 @@ def sylv_cred(P, vr, vp, formula):
          5:_sylv_cred_f5,
          6:_sylv_cred_f6,
          7:_sylv_cred_f7}
-    return f[formula](P, vr, vp)
+    return f[formula](P, vr, vp)  # type: ignore[operator]
 
 
 def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
@@ -772,7 +772,7 @@ def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
     #print ' formula', formula
     if E_fromintegral:
         # estimate expected value E(f(P, vr, vp)) using PaCAL numerical integration functions (sssssslow!)
-        E = f[formula](P, vr, vp, rv=True)
+        E = f[formula](P, vr, vp, rv=True)  # type: ignore[operator]
     else:
         # estimate expected value E(f(P, vr, vp)) using Monte Carlo simulation (until convergence to E_tol)
         E = 0.
@@ -782,7 +782,7 @@ def sylv_cred_rv(P_mu, P_sigma, tv_mu, tv_sigma, N_mu, N_sigma, psr,
             args = list(zip(P.rand(n), vr.rand(n), vp.rand(n), strict=False))
             while len(args) > 0:  # process random args in in n-length chunks
                 _E = E
-                E = ((i - 1) * E + f[formula](*args.pop())) / i
+                E = ((i - 1) * E + f[formula](*args.pop())) / i  # type: ignore[operator]
                 dE = abs((E - _E) / _E) if _E else np.inf
                 i += 1
     return E  # type: ignore[return-value]
