@@ -2121,39 +2121,39 @@ class ForestModel:
         for_buffer = []
         expression, description, theme_index = '', '', None
         s = re.sub(r'\{.*?\}', '', s, flags=re.M|re.S) # remove curly-bracket comments
-        for l in re.split(r'[\r\n]+', s, flags=re.M|re.S):
-            if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
-            matches = re.findall(r'#[A-Za-z0-9_]*', l)
+        for line_ in re.split(r'[\r\n]+', s, flags=re.M|re.S):
+            if re.match(r'^\s*(;|$)', line_): continue # skip comments and blank lines
+            matches = re.findall(r'#[A-Za-z0-9_]*', line_)
             for m in matches: # replace CONSTANTS variables with value
                 try:
-                    l = l.replace(m, str(self.constants[m[1:].lower()]))
+                    line_ = line_.replace(m, str(self.constants[m[1:].lower()]))
                 except Exception:
                     import sys
                     print(sys.exc_info()[0])
-                    print(l)
+                    print(line_)
                     print(matches, m)
                     raise AssertionError()
             if buffering_for:
-                if l.strip().startswith('ENDFOR'):
+                if line_.strip().startswith('ENDFOR'):
                     for i in range(for_lo, for_hi+1):
                         ss = '\n'.join(for_buffer).replace(for_var, str(i))
                         self._resolve_outputs_buffer(ss, for_flag=i)
                     buffering_for = False
                     continue
                 else:
-                    for_buffer.append(l)
+                    for_buffer.append(line_)
                     continue
-            l = re.sub(r'\s+', ' ', l) # separate tokens by single space
-            l = l.strip().partition(';')[0].strip()
-            l = l.replace(' (', '(')  # remove space to left of left parentheses
+            line_ = re.sub(r'\s+', ' ', line_) # separate tokens by single space
+            line_ = line_.strip().partition(';')[0].strip()
+            line_ = line_.replace(' (', '(')  # remove space to left of left parentheses
             ##################################################
             # HACK ###########################################
             # substitute ugly symbols have in ocodes...
-            l = l.replace(r'%', 'p')
-            l = l.replace(r'$', 's')
+            line_ = line_.replace(r'%', 'p')
+            line_ = line_.replace(r'$', 's')
             ##################################################
-            tokens = l.lower().split(' ')
-            if l.startswith('*GROUP'):
+            tokens = line_.lower().split(' ')
+            if line_.startswith('*GROUP'):
                 keyword = 'group'
                 group = tokens[1].lower()
                 self.output_groups[group] = set()
@@ -2164,18 +2164,18 @@ class ForestModel:
                         code = code.strip().lower()
                         if code:
                             self.output_groups[group].add(code)
-            elif l.startswith('FOR'):
+            elif line_.startswith('FOR'):
                 # pattern matching may not be very robust, but works for now with:
                 # 'FOR XX := 1 to 99'
                 # TO DO: implement DOWNTO, etc.
-                for_var = _search(r'(?<=FOR\s).+(?=:=)', l, 'FOR loop variable').group(0).strip()
-                for_lo = int(_search(r'(?<=:=).+(?=to)', l, 'FOR loop lower bound').group(0))
-                for_hi = int(_search(r'(?<=to).+', l, 'FOR loop upper bound').group(0))
+                for_var = _search(r'(?<=FOR\s).+(?=:=)', line_, 'FOR loop variable').group(0).strip()
+                for_lo = int(_search(r'(?<=:=).+(?=to)', line_, 'FOR loop lower bound').group(0))
+                for_hi = int(_search(r'(?<=to).+', line_, 'FOR loop upper bound').group(0))
                 for_buffer = []
                 buffering_for = True
                 continue
-            if l.startswith('*OUTPUT') or l.startswith('*LEVEL'):
-                keyword = 'output' if l.startswith('*OUTPUT') else 'level'
+            if line_.startswith('*OUTPUT') or line_.startswith('*LEVEL'):
+                keyword = 'output' if line_.startswith('*OUTPUT') else 'level'
                 if ocode: # flush data collected from previous lines
                     self.outputs[ocode] = Output(parent=self,
                                                  code=ocode,
@@ -2196,12 +2196,12 @@ class ForestModel:
                                                  theme_index=theme_index,
                                                  is_level=True)
                     ocode = ''
-            elif l.startswith('*SOURCE'):
+            elif line_.startswith('*SOURCE'):
                 keyword = 'source'
-                expression += l[8:]
+                expression += line_[8:]
             elif keyword == 'source': # continuation line of SOURCE expression
                 expression += ' '
-                expression += l
+                expression += line_
         # Flush any remaining output after the loop ends.
         if ocode:
             self.outputs[ocode] = Output(parent=self,
@@ -2268,18 +2268,18 @@ class ForestModel:
             self._themes[-1]['__description__'] = t_description.strip().lstrip(';').strip()
             self._theme_basecodes.append([])
             defining_aggregates = False
-            for l in [l for l in t.split('\n') if not re.match(r'^\s*(;|{|$)', l)]:
-                if re.match(r'^\s*\*AGGREGATE', l): # aggregate theme attribute code
-                    tac = re.split(r'\s+', l.strip())[1].lower()
+            for line_ in [line_ for line_ in t.split('\n') if not re.match(r'^\s*(;|{|$)', line_)]:
+                if re.match(r'^\s*\*AGGREGATE', line_): # aggregate theme attribute code
+                    tac = re.split(r'\s+', line_.strip())[1].lower()
                     self._themes[ti][tac] = []
                     defining_aggregates = True
                     continue
                 if not defining_aggregates: # line defines basic theme attribute code
-                    tac = _search(r'\S+', l.strip(), 'theme attribute code').group(0).lower()
+                    tac = _search(r'\S+', line_.strip(), 'theme attribute code').group(0).lower()
                     self._themes[ti][tac] = tac
                     self._theme_basecodes[ti].append(tac)
                 else: # line defines aggregate values (parse out multiple values before comment)
-                    _tacs = [_tac.lower() for _tac in re.split(r'\s+', l.strip().partition(';')[0].strip())]
+                    _tacs = [_tac.lower() for _tac in re.split(r'\s+', line_.strip().partition(';')[0].strip())]
                     self._themes[ti][tac].extend(_tacs)
 
     def theme_basecodes(self, theme_index):
@@ -2312,11 +2312,11 @@ class ForestModel:
         model_name = self.model_name if not model_name else model_name
         multiplier = self._resolve_period_multiplier(convert_periods_to_years)
         with open(f'{model_path}/{model_name}.{filename_suffix}') as f:
-            for l in f:
+            for line_ in f:
                 try:
-                    if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
-                    l = l.lower().strip().partition(';')[0] # strip leading whitespace and trailing comments
-                    t = re.split(r'\s+', l)
+                    if re.match(r'^\s*(;|$)', line_): continue # skip comments and blank lines
+                    line_ = line_.lower().strip().partition(';')[0] # strip leading whitespace and trailing comments
+                    t = re.split(r'\s+', line_)
                     key = tuple(_t for _t in t[1:n+1])
                     age = int(t[n+1]) * multiplier
                     area = float(t[n+2].replace(',', ''))
@@ -2324,7 +2324,7 @@ class ForestModel:
                     if key not in self.dtypes: self.dtypes[key] = DevelopmentType(key, self)
                     self.dtypes[key].area(0, age, area)
                 except Exception:
-                    print(f'Failed AREAS import on line: \n{l}')
+                    print(f'Failed AREAS import on line: \n{line_}')
                     return 1
         return 0
 
@@ -2391,10 +2391,10 @@ class ForestModel:
 
         """
         with open(f'{self.model_path}/{self.model_name}.{filename_suffix}') as f:
-            for _lnum, l in enumerate(f):
-                if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
-                l = l.strip().partition(';')[0].strip() # strip leading whitespace, trailing comments
-                t = re.split(r'\s+', l)
+            for _lnum, line_ in enumerate(f):
+                if re.match(r'^\s*(;|$)', line_): continue # skip comments and blank lines
+                line_ = line_.strip().partition(';')[0].strip() # strip leading whitespace, trailing comments
+                t = re.split(r'\s+', line_)
                 self.constants[t[0].lower()] = float(t[1])
 
     def import_yields_section(self,
@@ -2442,10 +2442,10 @@ class ForestModel:
         ynames = []
         data = None
         with open(f'{self.model_path}/{self.model_name}.{filename_suffix}') as f:
-            for lnum, l in enumerate(f):
-                if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
-                l = l.strip().partition(';')[0].strip() # strip leading whitespace and trailing comments
-                t = re.split(r'\s+', l)
+            for lnum, line_ in enumerate(f):
+                if re.match(r'^\s*(;|$)', line_): continue # skip comments and blank lines
+                line_ = line_.strip().partition(';')[0].strip() # strip leading whitespace and trailing comments
+                t = re.split(r'\s+', line_)
                 if t[0].startswith('*Y'): # new yield definition
                     newyield = True
                     flush_ycomps(ytype, mask, ynames, data) # apply yield from previous block
@@ -2530,12 +2530,12 @@ class ForestModel:
         keyword = ''
         with open(f'{self.model_path}/{self.model_name}.{filename_suffix}') as f: s = f.read().lower()
         s = re.sub(r'\{.*?\}', '', s, flags=re.M|re.S) # remove curly-bracket comments
-        for l in re.split(r'[\r\n]+', s, flags=re.M|re.S):
-            if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
-            l = l.strip().partition(';')[0].strip() # strip leading whitespace and trailing comments
-            l = re.sub(r'r\s+', ' ', l) # separate tokens by single space
-            tokens = l.split(' ')
-            if l.startswith('*action'):
+        for line_ in re.split(r'[\r\n]+', s, flags=re.M|re.S):
+            if re.match(r'^\s*(;|$)', line_): continue # skip comments and blank lines
+            line_ = line_.strip().partition(';')[0].strip() # strip leading whitespace and trailing comments
+            line_ = re.sub(r'r\s+', ' ', line_) # separate tokens by single space
+            tokens = line_.split(' ')
+            if line_.startswith('*action'):
                 keyword = 'action'
                 acode = tokens[1]
                 targetage = 0 if tokens[2] == 'y' else None
@@ -2543,14 +2543,14 @@ class ForestModel:
                 lockexempt = '_lockexempt' in tokens
                 self.actions[acode] = Action(acode, targetage, descr, lockexempt)
                 self.oper_expr[acode] = {}
-            elif l.startswith('*operable'):
+            elif line_.startswith('*operable'):
                 keyword = 'operable'
                 acode = tokens[1]
-            elif l.startswith('*aggregate'):
+            elif line_.startswith('*aggregate'):
                 keyword = 'aggregate'
                 acode = tokens[1]
                 self.actions[acode] = Action(acode)
-            elif l.startswith('*partial'):
+            elif line_.startswith('*partial'):
                 keyword = 'partial'
                 acode = tokens[1]
                 partials[acode] = []
@@ -2684,21 +2684,21 @@ class ForestModel:
         with open(f'{self.model_path}/{self.model_name}.{filename_suffix}') as f:
             s = f.read()
         s = re.sub(r'\{.*?\}', '', s, flags=re.M|re.S) # remove curly-bracket comments
-        for l in re.split(r'[\r\n]+', s, flags=re.M|re.S):
-            if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
-            l = l.strip().partition(';')[0].strip() # strip leading whitespace, trailing comments
-            tokens = re.split(r'\s+', l)
-            if l.startswith('*CASE'):
+        for line_ in re.split(r'[\r\n]+', s, flags=re.M|re.S):
+            if re.match(r'^\s*(;|$)', line_): continue # skip comments and blank lines
+            line_ = line_.strip().partition(';')[0].strip() # strip leading whitespace, trailing comments
+            tokens = re.split(r'\s+', line_)
+            if line_.startswith('*CASE'):
                 if acode: flush_transitions(acode, sources)
                 acode = tokens[1].lower()
                 sources = {}
-            elif l.startswith('*SOURCE'):
+            elif line_.startswith('*SOURCE'):
                 smask = tuple(t.lower() for t in tokens[1:nthemes+1])
                 smask = mask_func(smask) if mask_func else smask
-                match = re.search(r'@.+\)', l)
+                match = re.search(r'@.+\)', line_)
                 scond = match.group(0) if match else ''
                 sources[(smask, scond)] = []
-            elif l.startswith('*TARGET'):
+            elif line_.startswith('*TARGET'):
                 tmask = tuple(t.lower() for t in tokens[1:nthemes+1])
                 tmask = mask_func(tmask) if mask_func else tmask
                 tprop = float(tokens[nthemes+1]) * 0.01
@@ -2714,7 +2714,7 @@ class ForestModel:
                 except Exception:
                     tlock = None
                 try: # _REPLACE keyword (TO DO: implement other cases)
-                    args = re.split(r'\s?,\s?', _search(r'(?<=_REPLACE\().*(?=\))', l, '_REPLACE arguments').group(0))
+                    args = re.split(r'\s?,\s?', _search(r'(?<=_REPLACE\().*(?=\))', line_, '_REPLACE arguments').group(0))
                     theme_index = int(args[0][3]) - 1
                     treplace = theme_index, args[1]
                 except Exception:
@@ -2774,10 +2774,10 @@ class ForestModel:
         schedule = []
         n = self.nthemes()
         with open(f'{self.model_path}/{filename_prefix}.{filename_suffix}') as f:
-            for _lnum, l in enumerate(f):
-                if re.match(r'^\s*(;|$)', l): continue # skip comments and blank lines
-                l = l.lower().strip().partition(';')[0].strip() # strip leading whitespace and trailing comments
-                t = re.split(r'\s+', l)
+            for _lnum, line_ in enumerate(f):
+                if re.match(r'^\s*(;|$)', line_): continue # skip comments and blank lines
+                line_ = line_.lower().strip().partition(';')[0].strip() # strip leading whitespace and trailing comments
+                t = re.split(r'\s+', line_)
                 if len(t) != n + 5: break
                 dtype_key = tuple(t[:n])
                 age = int(t[n]) * age_multiplier
