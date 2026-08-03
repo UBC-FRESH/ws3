@@ -119,7 +119,7 @@ class SolverTuner:
 
         return np.mean(times)
 
-    def _apply_parameters(self, params: dict[str, Any]):
+    def _apply_parameters(self, params: dict[str, Any]) -> None:
         """Apply parameters to the solver."""
         if self.solver == 'gurobi' and hasattr(self.problem, '_model'):
             try:
@@ -204,7 +204,7 @@ class MemoryProfiler:
         except ImportError:
             return 0.0
 
-    def profile_solve(self, solve_func: Callable, *args, **kwargs) -> dict[str, Any]:
+    def profile_solve(self, solve_func: Callable[..., Any], *args: Any, **kwargs: Any) -> dict[str, Any]:
         """
         Profile memory usage during a solve operation.
 
@@ -259,7 +259,7 @@ class PerformanceBenchmark:
         self.problem = problem
         self.results = []
 
-    def benchmark_solve(self, n_runs: int = 5, **solve_kwargs) -> dict[str, Any]:
+    def benchmark_solve(self, n_runs: int = 5, **solve_kwargs: Any) -> dict[str, Any]:
         """
         Benchmark solve performance.
 
@@ -363,7 +363,7 @@ class ResultCache:
         self.cache_dir.mkdir(exist_ok=True)
         self.cache = {}
 
-    def _compute_cache_key(self, problem: Any, **kwargs) -> str:
+    def _compute_cache_key(self, problem: Any, **kwargs: Any) -> str:
         """Compute a unique cache key for a problem configuration."""
         # Use problem attributes and kwargs to generate key
         key_data = {
@@ -375,7 +375,7 @@ class ResultCache:
         key_str = json.dumps(key_data, sort_keys=True)
         return hashlib.md5(key_str.encode()).hexdigest()
 
-    def get(self, problem: Any, **kwargs) -> dict[str, Any] | None:
+    def get(self, problem: Any, **kwargs: Any) -> dict[str, Any] | None:
         """
         Get cached result if available.
 
@@ -393,7 +393,7 @@ class ResultCache:
 
         return None
 
-    def put(self, problem: Any, result: dict[str, Any], **kwargs):
+    def put(self, problem: Any, result: dict[str, Any], **kwargs: Any) -> None:
         """
         Store result in cache.
 
@@ -457,7 +457,7 @@ class IncrementalSolver:
 
         return False
 
-    def solve_with_warmstart(self, **kwargs) -> bool:
+    def solve_with_warmstart(self, **kwargs: Any) -> bool:
         """
         Solve with warm start from previous solution.
 
@@ -508,7 +508,7 @@ class IncrementalSolver:
 
 # Convenience functions
 
-def tune_solver(problem: Any, solver: str = 'gurobi', **kwargs) -> SolverTuner:
+def tune_solver(problem: Any, solver: str = 'gurobi', **kwargs: Any) -> SolverTuner:
     """Create and return a SolverTuner instance."""
     return SolverTuner(problem, solver)
 

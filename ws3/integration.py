@@ -403,7 +403,7 @@ class RESTAPIServer:
             schedule_url: str | None = None
 
         @app.get("/")
-        async def root():
+        async def root() -> dict[str, Any]:
             return {"message": "ws3 Optimization API", "version": "1.0.0"}
 
         @app.get("/health")
@@ -411,7 +411,7 @@ class RESTAPIServer:
             return {"status": "healthy"}
 
         @app.post("/optimize", response_model=OptimizationResponse)
-        async def run_optimization(request: OptimizationRequest):
+        async def run_optimization(request: OptimizationRequest) -> OptimizationResponse:
             """Run an optimization scenario."""
             try:
                 # This would import and run ws3 optimization
@@ -428,7 +428,7 @@ class RESTAPIServer:
                 raise HTTPException(status_code=500, detail=str(e)) from None
 
         @app.get("/results/{scenario_id}")
-        async def get_results(scenario_id: str):
+        async def get_results(scenario_id: str) -> dict[str, Any]:
             """Get results for a completed scenario."""
             # This would retrieve stored results
             return {"scenario_id": scenario_id, "status": "completed"}
@@ -436,7 +436,7 @@ class RESTAPIServer:
         self._app = app
         return app
 
-    def run_server(self, app: Any = None):
+    def run_server(self, app: Any = None) -> None:
         """Run the API server."""
         if app is None:
             app = self._app

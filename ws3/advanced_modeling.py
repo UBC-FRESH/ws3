@@ -91,11 +91,11 @@ class StochasticOptimizer:
     using scenario-based optimization.
     """
 
-    def __init__(self, problem: Any):
+    def __init__(self, problem: Any) -> None:
         self.problem = problem
         self.scenarios: list[StochasticScenario] = []
 
-    def add_scenario(self, scenario: StochasticScenario):
+    def add_scenario(self, scenario: StochasticScenario) -> None:
         """Add a scenario to the optimization."""
         self.scenarios.append(scenario)
 
@@ -219,7 +219,7 @@ class StochasticOptimizer:
 
         return results
 
-    def _apply_scenario(self, scenario: StochasticScenario):
+    def _apply_scenario(self, scenario: StochasticScenario) -> None:
         """Apply scenario parameters to the problem. Unimplemented -- see #103."""
         _not_production_ready(
             'StochasticOptimizer._apply_scenario()',
@@ -243,12 +243,12 @@ class MultiObjectiveOptimizer:
     Supports weighted sum, epsilon-constraint, and Pareto frontier methods.
     """
 
-    def __init__(self, problem: Any):
+    def __init__(self, problem: Any) -> None:
         self.problem = problem
         self.objectives: list[dict[str, Any]] = []
 
     def add_objective(self, name: str, weight: float = 1.0,
-                     direction: str = "maximize"):
+                     direction: str = "maximize") -> None:
         """Add an objective function."""
         self.objectives.append({
             'name': name,
@@ -487,11 +487,11 @@ class ClimateScenarioManager:
     Integrates climate projections with harvest planning.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.scenarios: list[dict[str, Any]] = []
 
     def add_scenario(self, name: str, temperature_change: float,
-                    precipitation_change: float, co2_change: float = 0.0):
+                    precipitation_change: float, co2_change: float = 0.0) -> None:
         """Add a climate scenario."""
         scenario = {
             'name': name,
