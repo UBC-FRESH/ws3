@@ -98,7 +98,7 @@ Ruff, and no P10-touched `forest.py` line is currently flagged.
 
 ### 11.4 Apply low-risk package and test cleanup
 
-**Status: COMPLETE** (verified 2026-08-03)
+**Status: COMPLETE** (verified 2026-08-03, commit `92b10e1`)
 
 **Pass 1 (auto-fix):** `ruff check ws3/ tests/ --fix --unsafe-fixes`
 - 544 errors fixed across 31 files (ws3/ 17 files, tests/ 14 files)
@@ -148,10 +148,17 @@ planning/phase11_ruff_cleanup.md.
 
 ### 11.6 Enforce and close out the gate
 
-- Make the selected lint command blocking in CI or pre-commit.
-- Update the roadmap, changelog, contributor instructions, and parent issue
-  checklist with measured final results.
-- Verify the full test, build, and documentation gates.
+**Status: COMPLETE** (verified 2026-08-03)
+
+- ✅ CI gate: `.github/workflows/ci.yml` uses `ruff check ws3/ tests/` as blocking lint step.
+- ✅ Ruff version pinned in `pyproject.toml` `[project.optional-dependencies]` dev.
+- ✅ `CONTRIBUTING.md` updated to document `ruff check ws3/ tests/` as the blocking gate.
+- ✅ ROADMAP.md Phase 11 child tasks all marked done.
+- ✅ CHANGE_LOG.md entry added.
+- ✅ Full test suite passes (406 tests, 9 skipped).
+- ✅ Package builds and imports cleanly (v1.1.0a4).
+- ✅ Docs build succeeds (458 warnings, no errors).
+- ✅ Parent issue #120 to be closed on PR merge.
 
 ## Acceptance criteria
 
