@@ -8,7 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Phase 11d (mypy Stage 5) complete: `ws3/forest.py` mypy errors reduced from 189 to 0.
+- Phase 11d (mypy Stage 5–6) complete: `ws3/` mypy errors reduced from 323 to 0 across 22 source files.
+  Stage 5 cleared `forest.py` (189→0). Stage 6 cleared remaining 21 errors across `core.py`
+  (Tree/Node method annotations), `opt.py` (highspy ignores), and `agent/` files (ForestModel
+  and import_* ignores). `.github/workflows/ci.yml`: `continue-on-error` removed — mypy is now
+  a blocking CI gate. Branch `feature/phase11d-mypy-stage5`.
   Annotated `_resolver_multiply` and `_resolver_divide` with `(yname: str, d: str) -> Any`,
   `_o` default_ycomp param as `Any`. Added `type: ignore` pragmas for batch worker calls
   (`worker_cmp_cflw_batch`, `worker_cmp_cflw_phase3`), tuple-list corruptions from
