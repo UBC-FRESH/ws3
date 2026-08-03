@@ -130,11 +130,11 @@ def _normalize_points(points: dict[str, Any]) -> tuple[dict[int, dict[str, float
     # Build the result.
     result = {}
     for age in ref_ages:
-        row: dict[str, float] = {}
+        row_data: dict[str, float] = {}
         for yname, ages in component_ages.items():
             idx = ages.index(age)
-            row[yname] = float(points[yname][idx][1])
-        result[age] = row
+            row_data[yname] = float(points[yname][idx][1])
+        result[age] = row_data
     return result, len(result)
 
 

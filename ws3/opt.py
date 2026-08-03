@@ -276,11 +276,12 @@ class Problem:
         self._dispatch_map[self._solver].__get__(self, type(self))(threads=threads, verbose=verbose)
 
         # Capture solution if optimal
-        if self.status() == STATUS_OPTIMAL:
+        s = self.status()
+        if s == STATUS_OPTIMAL:
             # Solution is stored in self._vars[k].val by the solver methods
             self._solution = {x: (self._vars[x].val or 0.0) for x in self._vars}
 
-    def status(self):
+    def status(self) -> str | None:
         """
         Checks the solution status of the current model for PuLP, Gurobi, or HiGHS (highspy).
 
@@ -292,17 +293,17 @@ class Problem:
         try:
             import pulp
         except ImportError:
-            pulp = None
+            pulp = None  # type: ignore[assignment]
 
         try:
             import gurobipy
         except ImportError:
-            gurobipy = None
+            gurobipy = None  # type: ignore[assignment]
 
         try:
             import highspy
         except ImportError:
-            highspy = None
+            highspy = None  # type: ignore[assignment]
 
         match self._solver:
             # --- PuLP Solver ---
@@ -344,6 +345,7 @@ class Problem:
             # --- Fallback ---
             case _:
                 return None
+        return None
 
     def get_all_constraints_lhs_values(self):
         """
@@ -356,11 +358,11 @@ class Problem:
         lhs_values = {}
         if self._solver == SOLVER_PULP:
             for constraint_name, constraint in self._constraints.items():
-                lhs_value = sum(constraint.coeffs[v] * self._vars[v].val for v in constraint.coeffs)
+                lhs_value = sum(constraint.coeffs[v] * (self._vars[v].val or 0.0) for v in constraint.coeffs)
                 lhs_values[constraint_name] = lhs_value
         elif self._solver == SOLVER_GUROBI:
             for constraint_name, constraint in self._constraints.items():
-                lhs_value = sum(constraint.coeffs[v] * self._vars[v].val for v in constraint.coeffs)
+                lhs_value = sum(constraint.coeffs[v] * (self._vars[v].val or 0.0) for v in constraint.coeffs)
                 lhs_values[constraint_name] = lhs_value
         else:
             raise ValueError("Unsupported solver backend.")
@@ -498,8 +500,6 @@ class Problem:
         status : highspy.HighsStatus
             HiGHS solver status.
         """
-        from collections import defaultdict
-
         import highspy
         import numpy as np
 
@@ -547,12 +547,17 @@ class Problem:
                 raise ValueError(f"Unknown sense {con.sense}")
 
             # Deduplicate coefficients
-            coeff_accum = defaultdict(float)
+            coeff_accum: dict[int, float] = {}
             for vname, coef in con.coeffs.items():
-                coeff_accum[var_index[vname]] += coef
+                j = var_index[vname]
+                coeff_accum[j] = coeff_accum.get(j, 0.0) + coef
             coeff_accum = {j: c for j, c in coeff_accum.items() if c != 0.0}
 
-            indices, coefs = zip(*coeff_accum.items(), strict=False) if coeff_accum else ([], [])
+            if coeff_accum:
+                indices = list(coeff_accum.keys())
+                coefs = list(coeff_accum.values())
+            else:
+                indices, coefs = [], []
             highs.addRow(lb, ub, len(indices), indices, coefs)
 
         # ----------------------------
@@ -561,7 +566,7 @@ class Problem:
         if getattr(self, "_warm_start", None) is not None:
             print('ws3.opt.Proble._solve_highs: detected _warm_start solution')
             highs.setOptionValue("run_crossover", "choose")  # let HiGHS auto-decide
-            warm_start = self._warm_start
+            warm_start: list[float] = self._warm_start  # type: ignore[assignment]
             ncols = len(warm_start)
             idx = np.arange(ncols, dtype=np.int32)
             highs.setSolution(ncols, idx, warm_start)

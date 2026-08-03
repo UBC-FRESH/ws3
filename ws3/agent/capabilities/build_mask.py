@@ -54,7 +54,7 @@ class MaskRequest:
     description: str
 
 
-class BuildMask(Capability[tuple]):
+class BuildMask(Capability[Any]):  # type: ignore[misc]
     """Propose a development-type mask, validated by resolving it against the model."""
 
     name = 'build_mask'
@@ -78,7 +78,7 @@ class BuildMask(Capability[tuple]):
         'required': ['description'],
     }
 
-    def from_payload(self, payload: dict) -> MaskRequest:
+    def from_payload(self, payload: dict[str, str]) -> MaskRequest:
         """Build a :py:class:`MaskRequest` from MCP tool arguments."""
         return MaskRequest(description=str(payload.get('description', '')))
 
@@ -101,7 +101,7 @@ class BuildMask(Capability[tuple]):
             f'got {type(inputs).__name__}'
         )
 
-    def render(self, value: tuple) -> str:
+    def render(self, value: tuple[Any, ...]) -> str:
         """Render as a Woodstock-style space-separated mask, ready to paste."""
         return ' '.join(value)
 
@@ -158,7 +158,7 @@ class BuildMask(Capability[tuple]):
             )
         return [{'role': 'user', 'content': content}]
 
-    def parse(self, raw: str) -> tuple:
+    def parse(self, raw: str) -> tuple[Any, ...]:
         """
         Build the mask from the model's theme constraints.
 
@@ -217,7 +217,7 @@ class BuildMask(Capability[tuple]):
 
         raise ParseError('expected a JSON object containing a "constraints" key')
 
-    def validate(self, candidate: tuple, context: Any) -> Verdict:
+    def validate(self, candidate: tuple[Any, ...], context: Any) -> Verdict:
         """
         Resolve the mask against the real model.
 

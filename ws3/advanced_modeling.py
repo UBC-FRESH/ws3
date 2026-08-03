@@ -189,7 +189,7 @@ class StochasticOptimizer:
                 obj_value = self.problem.get_objective_value()
                 scenario_values.append(obj_value)
 
-                results['solutions'][scenario.name] = {
+                results['solutions'][scenario.name] = {  # type: ignore[index]
                     'objective': obj_value,
                     'solution': self.problem.get_solution()
                 }
@@ -354,7 +354,7 @@ class MultiObjectiveOptimizer:
 
         return pareto_df
 
-    def _filter_pareto_optimal(self, solutions: list[dict]) -> pd.DataFrame:
+    def _filter_pareto_optimal(self, solutions: list[dict[str, Any]]) -> pd.DataFrame:
         """Filter to Pareto-optimal solutions."""
         if not solutions:
             return pd.DataFrame()
@@ -388,6 +388,7 @@ class MultiObjectiveOptimizer:
             'extraction of per-objective values from a solved Problem. It returned a '
             'hardcoded empty dict, which callers presented as real results.'
         )
+        return {}
 
 
 class DynamicPlanner:
@@ -465,7 +466,7 @@ class DynamicPlanner:
         self.plans.append(dynamic_plan)
         return dynamic_plan
 
-    def compare_plans(self, plan1: dict, plan2: dict) -> dict[str, Any]:
+    def compare_plans(self, plan1: dict[str, Any], plan2: dict[str, Any]) -> dict[str, Any]:
         """Compare two planning approaches."""
         return {
             'plan1_type': plan1['type'],
@@ -563,7 +564,7 @@ class ClimateScenarioManager:
             # Create modified model
             modified_fm = self.apply_climate_effects(fm.copy(), scenario)
 
-            problem = compile_scenario(modified_fm, scenario_name=scenario['name'])  # noqa: F821
+            problem = compile_scenario(modified_fm, scenario_name=scenario['name'])  # type: ignore[name-defined]  # noqa: F821
             solution = problem.solve(solver=solver)
 
             results.append({

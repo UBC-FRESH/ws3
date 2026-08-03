@@ -60,7 +60,7 @@ class Diagnosis:
     corrected_line: str
 
 
-class DiagnoseImport(Capability[Diagnosis]):
+class DiagnoseImport(Capability[Any]):  # type: ignore[misc]
     """Diagnose an import failure, validated by re-parsing with the fix applied."""
 
     name = 'diagnose_import'
@@ -91,7 +91,7 @@ class DiagnoseImport(Capability[Diagnosis]):
         'required': ['model_path', 'model_name', 'section', 'error'],
     }
 
-    def from_payload(self, payload: dict) -> ImportFailure:
+    def from_payload(self, payload: dict[str, str]) -> ImportFailure:
         """Build an :py:class:`ImportFailure` from MCP tool arguments."""
         return ImportFailure(
             model_path=str(payload.get('model_path', '')),

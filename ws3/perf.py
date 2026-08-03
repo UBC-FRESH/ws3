@@ -40,9 +40,9 @@ class SolverTuner:
         self.solver = solver
         self.baseline_params = self._get_default_params()
 
-    def _get_default_params(self) -> dict[str, Any]:
+    def _get_default_params(self) -> Any:
         """Get default solver parameters."""
-        defaults = {
+        defaults: dict[str, Any] = {
             'gurobi': {
                 'Threads': 0,  # Auto
                 'TimeLimit': 3600,  # 1 hour
@@ -64,7 +64,7 @@ class SolverTuner:
         return defaults.get(self.solver, {})
 
     def tune_parameters(self, param_grid: dict[str, list[Any]],
-                       n_iterations: int = 5) -> dict[str, Any]:
+                       n_iterations: int = 5) -> Any:
         """
         Tune solver parameters using grid search.
 
@@ -139,7 +139,7 @@ class SolverTuner:
             except Exception as e:
                 print(f"Error applying PuLP parameters: {e}")
 
-    def get_recommendations(self) -> dict[str, Any]:
+    def get_recommendations(self) -> Any:
         """Get solver parameter recommendations based on problem size."""
         n_vars = len(self.problem._vars) if hasattr(self.problem, '_vars') else 0
         n_constraints = len(self.problem._constraints) if hasattr(self.problem, '_constraints') else 0
@@ -257,7 +257,7 @@ class PerformanceBenchmark:
 
     def __init__(self, problem: Any):
         self.problem = problem
-        self.results = []
+        self.results: list[Any] = []
 
     def benchmark_solve(self, n_runs: int = 5, **solve_kwargs: Any) -> dict[str, Any]:
         """
@@ -361,7 +361,7 @@ class ResultCache:
     def __init__(self, cache_dir: str = '.ws3_cache'):
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(exist_ok=True)
-        self.cache = {}
+        self.cache: dict[str, Any] = {}
 
     def _compute_cache_key(self, problem: Any, **kwargs: Any) -> str:
         """Compute a unique cache key for a problem configuration."""
@@ -375,7 +375,7 @@ class ResultCache:
         key_str = json.dumps(key_data, sort_keys=True)
         return hashlib.md5(key_str.encode()).hexdigest()
 
-    def get(self, problem: Any, **kwargs: Any) -> dict[str, Any] | None:
+    def get(self, problem: Any, **kwargs: Any) -> Any:
         """
         Get cached result if available.
 
@@ -393,7 +393,7 @@ class ResultCache:
 
         return None
 
-    def put(self, problem: Any, result: dict[str, Any], **kwargs: Any) -> None:
+    def put(self, problem: Any, result: Any, **kwargs: Any) -> None:
         """
         Store result in cache.
 
@@ -439,7 +439,7 @@ class IncrementalSolver:
 
     def __init__(self, problem: Any):
         self.problem = problem
-        self.previous_solution = None
+        self.previous_solution: dict[str, float] | None = None
 
     def warm_start(self, solution: dict[str, float]) -> bool:
         """
@@ -499,7 +499,7 @@ class IncrementalSolver:
         # This is solver-specific and would need implementation
         return 0.0
 
-    def get_solution(self) -> dict[str, float] | None:
+    def get_solution(self) -> Any:
         """Get current solution."""
         if hasattr(self.problem, '_solution'):
             return self.problem._solution
@@ -514,7 +514,7 @@ def tune_solver(problem: Any, solver: str = 'gurobi', **kwargs: Any) -> SolverTu
 
 def profile_memory() -> MemoryProfiler:
     """Create and return a MemoryProfiler instance."""
-    return MemoryProfiler()
+    return MemoryProfiler()  # type: ignore[no-untyped-call]
 
 def benchmark(problem: Any) -> PerformanceBenchmark:
     """Create and return a PerformanceBenchmark instance."""
