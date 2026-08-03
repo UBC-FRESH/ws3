@@ -661,7 +661,7 @@ class Output:
         self._factor = factor
         self.description = description
         self.theme_index = theme_index
-        self.is_themed = True if theme_index > -1 else False
+        self.is_themed = True if (theme_index is not None and theme_index > -1) else False
         self.is_basic = is_basic
         if is_basic:
             self._compile_basic(expression) # shortcut
@@ -713,7 +713,7 @@ class Output:
                 if len(ocomps) == 1: # simple basic output (special case)
                     self.is_basic = True
                     self._factor = factors[0]
-                    self._compile_basic(lval)
+                    self._compile_basic(s)
                     return
                 else: # compound basic output
                     ocomps[i] = Output(parent=self.parent,
@@ -2159,6 +2159,13 @@ class ForestModel:
                 keyword = 'group'
                 group = tokens[1].lower()
                 self.output_groups[group] = set()
+                # Parse output codes from the rest of the line (comma-separated)
+                if len(tokens) > 2:
+                    codes_str = ' '.join(tokens[2:])  # rejoin in case of spaces
+                    for code in codes_str.split(','):
+                        code = code.strip().lower()
+                        if code:
+                            self.output_groups[group].add(code)
             elif l.startswith('FOR'):
                 # pattern matching may not be very robust, but works for now with:
                 # 'FOR XX := 1 to 99'
@@ -2179,7 +2186,7 @@ class ForestModel:
                                                  theme_index=theme_index)
                 tt = tokens[1].split('(')
                 ocode = tt[0]
-                theme_index = tt[1][3:-1] if len(tt) > 1 else None
+                theme_index = int(tt[1][:-1]) - 1 if len(tt) > 1 else None
                 description = ' '.join(tokens[2:])
                 expression = ''
                 self.output_groups[group].add(ocode)
@@ -2197,6 +2204,13 @@ class ForestModel:
             elif keyword == 'source': # continuation line of SOURCE expression
                 expression += ' '
                 expression += l
+        # Flush any remaining output after the loop ends.
+        if ocode:
+            self.outputs[ocode] = Output(parent=self,
+                                          code=ocode,
+                                          expression=expression,
+                                          description=description,
+                                          theme_index=theme_index)
 
     def import_outputs_section(self, filename_suffix='out'):
         """

@@ -451,7 +451,53 @@ availability, per-development-type yield compilation status, and an explicit
 deferral reason when a model defines no optimization problem. It does not invoke
 `Problem.solve()`, because coefficient functions are not guaranteed safe to call
 without user context, so an unavailable tier is never reported as a pass. The
-next bounded slice is deterministic emission and adapter hooks, so FEMIC can
+The deterministic emission and adapter slice is implemented: FEMIC can
 construct a model without a language model generating raw Woodstock syntax.
+The typed deterministic construction boundary covers themes, areas, yields,
+actions, transitions, and outputs. Outputs are emitted and imported with
+normalized theme indices and output-group membership. Focused and full
+regression tests cover deterministic bytes, FEMIC-shaped five-section input,
+period conversion, transition proportions, and the output emit/import round-
+trip. The FEMIC-side bridge regression compares all five bridge files byte-for-
+byte with ws3 typed emission and checks imported action and transition state
+without making FEMIC a ws3 runtime dependency. Current evidence is 76 focused
+ws3 tests passed, 406 full-suite tests passed with 9 skips, and 10 FEMIC bridge
+tests passed. The remaining Phase 10 work is closeout: audit adapter ownership
+and intentionally lossy fields, link cross-repository evidence, and synchronize
+the phase records before a PR decision.
 
 Detailed plan: `planning/phase10_femic_model_contract.md`.
+
+## Phase 11 — Ruff Lint Gate and Legacy Debt Cleanup
+
+- Parent issue: [#120](https://github.com/UBC-FRESH/ws3/issues/120)
+- Status: planned
+- Branch: `feature/phase11-ruff-cleanup` (to be created on activation)
+
+### Goal
+
+Make the documented lint command truthful, choose one blocking lint policy, and
+clean the existing Ruff debt in reviewable batches without mixing it into the
+active Phase 10 FEMIC contract work. The focused baseline is 234 Ruff findings
+in `ws3/forest.py`; the broader repository count must first be scoped so
+notebooks, generated paths, and nested checkouts do not create false signal.
+
+### Scope
+
+- Establish an authoritative lint scope and baseline.
+- Align Ruff's Python target with `requires-python >=3.10` and reconcile its
+	policy with flake8.
+- Repair genuine notebook/configuration defects and remove scope noise.
+- Clean selected `ws3/` and `tests/` findings in bounded, tested batches.
+- Enforce the chosen gate in CI or pre-commit and synchronize contributor docs.
+
+### Child task checklist
+
+- [ ] 11.1 Establish lint contract and baseline
+- [ ] 11.2 Align configuration and choose the blocking linter
+- [ ] 11.3 Repair scope and notebook defects
+- [ ] 11.4 Apply low-risk package and test cleanup
+- [ ] 11.5 Review behavior-sensitive `forest.py` debt
+- [ ] 11.6 Enforce and close out the gate
+
+Detailed plan: `planning/phase11_ruff_cleanup.md`.

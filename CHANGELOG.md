@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Planned
+
+- Phase 10 closeout is now tracked as an explicit five-task execution plan in
+  `planning/phase10_femic_model_contract.md`. The implementation slice is
+  functionally verified; remaining work is adapter-boundary review,
+  cross-repository evidence linkage, bounded gap repair if demonstrated, and
+  final phase-record synchronization.
+- Planned Phase 11, Ruff lint gate and legacy debt cleanup, under parent issue
+  #120. The phase will first establish the authoritative lint scope and resolve
+  the `py39` Ruff target versus `requires-python >=3.10` mismatch, then address
+  the existing `forest.py` backlog in tested batches without mixing it into the
+  active Phase 10 FEMIC contract work. Detailed plan:
+  `planning/phase11_ruff_cleanup.md`.
+
 ### Added
 
 - Started Phase 10 companion work for FEMIC #305 in issue #121 and branch

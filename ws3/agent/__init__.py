@@ -33,20 +33,84 @@ Usage::
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 __all__ = [
     'available',
+    'build_model',
     'core_installed',
+    'emit_actions',
+    'emit_all',
+    'emit_areas',
+    'emit_landscape',
+    'emit_outputs',
+    'emit_transitions',
+    'emit_yields',
     'get',
     'list_capabilities',
+    'model_from_spec',
     'registry',
     'run',
 ]
 
+
+def emit_landscape(spec: Any, output_dir: Any) -> Any:
+    """Re-export from ws3.agent.emitter."""
+    from ws3.agent.emitter import emit_landscape as _emit
+    return _emit(spec, output_dir)
+
+
+def emit_areas(spec: Any, output_dir: Any) -> Any:
+    """Re-export from ws3.agent.emitter."""
+    from ws3.agent.emitter import emit_areas as _emit
+    return _emit(spec, output_dir)
+
+
+def emit_yields(spec: Any, output_dir: Any) -> Any:
+    """Re-export from ws3.agent.emitter."""
+    from ws3.agent.emitter import emit_yields as _emit
+    return _emit(spec, output_dir)
+
+
+def emit_actions(spec: Any, output_dir: Any) -> Any:
+    """Re-export from ws3.agent.emitter."""
+    from ws3.agent.emitter import emit_actions as _emit
+    return _emit(spec, output_dir)
+
+
+def emit_outputs(spec: Any, output_dir: Any) -> Any:
+    """Re-export from ws3.agent.emitter."""
+    from ws3.agent.emitter import emit_outputs as _emit
+    return _emit(spec, output_dir)
+
+
+def emit_transitions(spec: Any, output_dir: Any) -> Any:
+    """Re-export from ws3.agent.emitter."""
+    from ws3.agent.emitter import emit_transitions as _emit
+    return _emit(spec, output_dir)
+
+
+def emit_all(spec: Any, output_dir: Any) -> Any:
+    """Re-export from ws3.agent.emitter."""
+    from ws3.agent.emitter import emit_all as _emit
+    return _emit(spec, output_dir)
+
+
+def model_from_spec(spec: Any, output_dir: Any) -> Any:
+    """Build a ForestModel from a ModelSpec."""
+    from ws3.agent.builder import ModelBuilder
+    result = ModelBuilder(spec).build(output_dir)
+    return result.model
+
+
+def build_model(spec: Any, output_dir: Any) -> Any:
+    """Build a ForestModel from a ModelSpec and return the full result."""
+    from ws3.agent.builder import ModelBuilder
+    return ModelBuilder(spec).build(output_dir)
+
 try:
     import fresh_agent_core as _core
-    _CORE_IMPORT_ERROR: Optional[ImportError] = None
+    _CORE_IMPORT_ERROR: ImportError | None = None
 except ImportError as exc:  # pragma: no cover - exercised via a test that fakes it
     _core = None  # type: ignore[assignment]
     _CORE_IMPORT_ERROR = exc
