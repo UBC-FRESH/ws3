@@ -198,11 +198,10 @@ Maintainer decision gate: approval was received for the commit and PR. No
 merge or parent issue closure has been performed.
 
 Closeout state: implementation and technical verification are complete; PR #127
-is open for review. The Sphinx warning backlog should be handled separately from
-Phase 10.
+merged into `main` as `ce95c16953fc8a283e4c8f376af19a19b761edd4`. The Sphinx
+warning backlog should be handled separately from Phase 10.
 
-The next bounded action is review and merge decision for PR #127. The parent
-issue remains open until that merge is complete.
+Phase 10 is complete. The next planned work is Phase 11 under issue #120.
 
 ## Acceptance criteria
 

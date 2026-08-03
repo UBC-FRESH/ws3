@@ -11,8 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Phase 10 closeout is tracked in
   `planning/phase10_femic_model_contract.md`. The implementation, adapter
   ownership audit, cross-repository evidence, and final verification are
-  complete. Commit `8369a68` is published in PR #127; merge remains pending
-  review.
+  complete. PR #127 merged into `main` as
+  `ce95c16953fc8a283e4c8f376af19a19b761edd4`.
 - Planned Phase 11, Ruff lint gate and legacy debt cleanup, under parent issue
   #120. The phase will first establish the authoritative lint scope and resolve
   the `py39` Ruff target versus `requires-python >=3.10` mismatch, then address
