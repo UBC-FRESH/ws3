@@ -352,8 +352,7 @@ Work identified during earlier phases and deliberately deferred to keep those ph
 
 ### PaCal adoption decision
 - Issue: [#102](https://github.com/UBC-FRESH/ws3/issues/102)
-- Status: parked
-- Scope: whether to adopt PaCal as `fresh-pacal`. Gated on licence (PaCal is GPL-3.0-or-later, ws3 is MIT) and on contacting the upstream authors. Not blocking: PaCal works today via the compatibility shim and the `ws3[rv]` extra.
+- Status: **closed** — PaCal unblocked via #101 compatibility shim (no fork needed). Licensing concern (GPL-3.0 vs MIT) addressed: PaCal stays optional, never bundled. `ws3[rv]` extra works on NumPy 2.5. Fork question deferred until/if upstream becomes unavailable. See `_stubs/pacal.pyi` for type coverage.
 
 ### Flaky performance test
 - Issue: [#112](https://github.com/UBC-FRESH/ws3/issues/112)
