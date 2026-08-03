@@ -502,3 +502,42 @@ notebooks, generated paths, and nested checkouts do not create false signal.
 - [x] 11.6 Enforce and close out the gate
 
 Detailed plan: `planning/phase11_ruff_cleanup.md`.
+
+## Phase 11c — mypy Typing Debt Stages 3–4 (Non-forest.py files)
+
+- Parent issue: [#98](https://github.com/UBC-FRESH/ws3/issues/98)
+- Status: complete
+- Branch: `feature/phase11c-mypy-stage4` (PR #140 → main)
+- Key result: non-forest.py mypy errors 284 → 24 (minimum achievable without forest.py stubs or PaCal stubs)
+
+### Goal
+
+Pay down mypy annotation debt in non-forest.py files (Stages 3–4 of #98), reducing
+errors enough to make the remaining forest.py work manageable in Stage 5.
+
+### Scope
+
+- Stage 3: Annotate 16 `no-untyped-def` sites (missing parameter/return annotations)
+- Stage 4: Fix `var-annotated`, `assignment`, `arg-type`, `operator`, `index`,
+  `type-arg`, `call-arg`, `return-value`, `no-any-return`, `untyped-decorator`,
+  `misc` errors in non-forest.py files
+- Leave `forest.py` errors for Stage 5 (deliberately last — 89% of remaining errors)
+- Leave PaCal `operator` errors (require stub files)
+
+### Child task checklist
+
+- [x] 11c.1 Stage 3 — annotate 16 no-untyped-def sites (PR #139)
+- [x] 11c.2 Stage 4 — non-forest.py annotation fixes (PR #140)
+
+### Remaining work (issue #98)
+
+- Stage 5: `ws3/forest.py` (189 remaining errors, 89% of total)
+- Stage 6: Remove `continue-on-error` from mypy CI step to make it blocking
+
+## Proposed Phase 12 — forest.py mypy Stage 5
+
+- Parent issue: [#98](https://github.com/UBC-FRESH/ws3/issues/98)
+- Status: planned
+- Scope: Annotate `ws3/forest.py` (~189 mypy errors). 89% of remaining typing debt.
+  Deliberately last — stages 1–4 establish patterns first.
+
