@@ -378,7 +378,7 @@ class RESTAPIServer:
             from fastapi import FastAPI, HTTPException
             from pydantic import BaseModel
         except ImportError:
-            raise ImportError("FastAPI is required. Install with: pip install fastapi uvicorn")
+            raise ImportError("FastAPI is required. Install with: pip install fastapi uvicorn") from None
 
         app = FastAPI(
             title="ws3 Optimization API",
@@ -425,7 +425,7 @@ class RESTAPIServer:
                     schedule_url="/results/schedule.csv"
                 )
             except Exception as e:
-                raise HTTPException(status_code=500, detail=str(e))
+                raise HTTPException(status_code=500, detail=str(e)) from None
 
         @app.get("/results/{scenario_id}")
         async def get_results(scenario_id: str):

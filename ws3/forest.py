@@ -44,23 +44,20 @@ from typing import (
     Any,
 )
 
-_cfi = chain.from_iterable
-from collections import defaultdict as dd
+from collections import defaultdict as dd  # noqa: E402
+from concurrent.futures import ProcessPoolExecutor, as_completed  # noqa: E402
+from multiprocessing import get_context  # noqa: E402
 
-#from numba import njit
-from concurrent.futures import ProcessPoolExecutor, as_completed
-from multiprocessing import get_context
+import dill  # noqa: E402
+import pandas as pd  # noqa: E402
 
-import dill
-import pandas as pd
-
-try:
+try:  # noqa: E402
     from ws3 import common, core, opt
-except ImportError: # "__main__" case
+except ImportError:  # "__main__" case  # noqa: E402
     from ws3 import common, core, opt
 
 
-from ws3.forest_helper import (
+from ws3.forest_helper import (  # noqa: E402
     MP_CONTEXT,
     PersistentWorkerPool,
     auto_batch,
@@ -472,7 +469,7 @@ class DevelopmentType:
             ycomp.type = ytype
             self._ycomps[yname] = ycomp
         except KeyError:
-                raise ValueError(f'Problem compiling complex yield: {yname}, {expression}')
+                raise ValueError(f'Problem compiling complex yield: {yname}, {expression}') from None
 
     def compile_actions(self, verbose=False):
         """
@@ -1893,7 +1890,7 @@ class ForestModel:
                 targetage = self.dt(dtk).ycomp(tyield[0]).lookup(tyield[1], roundx=True)
             except Exception:
                 print(' '.join(dtk), tyield[0], self.dt(dtk).ycomps())
-                raise AssertionError()
+                raise AssertionError() from None
         elif tage is not None: # target age override specifed in transition
             if verbose: print('_AGE override', tage)
             targetage = tage
@@ -2132,7 +2129,7 @@ class ForestModel:
                     print(sys.exc_info()[0])
                     print(line_)
                     print(matches, m)
-                    raise AssertionError()
+                    raise AssertionError() from None
             if buffering_for:
                 if line_.strip().startswith('ENDFOR'):
                     for i in range(for_lo, for_hi+1):
@@ -2373,7 +2370,7 @@ class ForestModel:
                 assert isinstance(mask, tuple) and len(mask) == self.nthemes()
             except Exception:
                 print(len(mask), type(mask), mask)
-                raise AssertionError()
+                raise AssertionError() from None
         dtype_keys = copy.copy(list(self.dtypes.keys())) # filter this
         for ti, tac in enumerate(mask):
             if tac == '?': continue # wildcard matches all

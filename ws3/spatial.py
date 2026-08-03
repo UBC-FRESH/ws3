@@ -139,7 +139,7 @@ class ForestRaster:
         self._tif_dtype = tif_dtype
         self._tif_compress = tif_compress
         _horizon = horizon if horizon is not None else forestmodel.horizon
-        self._snk = {(p, dy):{acode:rasterio.open(snk_path+'/%s_%i.tif' % (acode_map[acode], base_year+(p-1)*period_length + dy), 'w+', **profile)
+        self._snk = {(p, dy):{acode:rasterio.open(f'{snk_path}/{acode_map[acode]}_{base_year+(p-1)*period_length + dy}.tif', 'w+', **profile)
             for acode in self._acodes}
             for dy in range(0, period_length, self._time_step) for p in range(1, (_horizon+1))}
         self._init_snkd()
@@ -244,11 +244,14 @@ class ForestRaster:
         :param int da: *[FOR DEBUG USE ONLY. DO NOT MODIFY.]*
         :param float fudge: *[FOR DEBUG USE ONLY. DO NOT MODIFY.]*
         """
-        if not self._is_valid: raise RuntimeError('commit() already called (i.e., instance is toast).')
-        if mask: dtype_keys = self._forestmodel.unmask(mask)
+        if not self._is_valid:
+            raise RuntimeError('commit() already called (i.e., instance is toast).')
+        if mask:
+            dtype_keys = self._forestmodel.unmask(mask)
         _horizon = self._horizon if self._horizon is not None else 0
         for p in range(1, _horizon+1):
-            if verbose > 0: print('processing schedule for period %i' % p)
+            if verbose > 0:
+                print(f'processing schedule for period {p}')
             for acode in self._forestmodel.applied_actions[p]:
                 for dtk in self._forestmodel.applied_actions[p][acode]:
                     if mask:
@@ -293,7 +296,7 @@ class ForestRaster:
                             if target_area and verbose > 0:
                                 print('failed', (from_dtk, from_age, to_dtk, to_age, acode), end=' ')
                                 print(f'(missing {target_area:4.1f} of {area / _tr:4.1f})',
-                                      'in p%i dy%i' % (p, dy))
+                                      f'in p{p} dy{dy}')
                 if self._piggyback_acodes is not None and acode in self._piggyback_acodes:
                     for _acode, _p in self._piggyback_acodes[acode]:
                         for dy in range(0, self._period_length, self._time_step):
@@ -305,11 +308,11 @@ class ForestRaster:
                             self._snkd[(_acode, dy)][ix] = 1
             self._write_snk()
             year = self._base_year + ((p - 1) * self._period_length)
-            snk_filename = self._snk_path+'/inventory_%i.tif' % year
+            snk_filename = f'{self._snk_path}/inventory_{year}.tif'
             with rasterio.open(snk_filename, 'w', **self._src.profile) as snk:
                 __x = np.copy(self._x)
                 if verbose > 0:
-                    print('saving %i post-harvest pixels to %s' % (year, snk_filename))
+                    print(f'saving {year} post-harvest pixels to {snk_filename}')
                 snk.write(__x)
             if self._horizon is not None and p < self._horizon: self.grow()
 

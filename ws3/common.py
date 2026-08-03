@@ -210,7 +210,8 @@ def clean_vector_data(
                     ##################################################################
                     f['geometry'] = mapping(g)
                     #print('geometry type 2', f['geometry']['type'])
-                    if dst_epsg: f = reproject(f, src.crs, dst_crs)
+                    if dst_epsg:
+                        f = reproject(f, src.crs, dst_crs)
                     if update_area_prop:
                         f['properties'][update_area_prop] = shape(f['geometry']).area
                     snk1.write(f)
@@ -242,7 +243,8 @@ def reproject_vector_data(
         kwds.update(driver=driver)
         with fiona.open(snk_path, 'w', **kwds) as snk:
             #print snk.meta
-            for f in src: snk.write(reproject(f, src.crs, snk_crs))
+            for f in src:
+                snk.write(reproject(f, src.crs, snk_crs))
 
 
 def rasterize_stands(
@@ -279,7 +281,8 @@ def rasterize_stands(
     :return: Dictionary mapping hash values to development type tuples.
     """
     from rasterio.features import rasterize
-    if verbose: print('rasterizing', shp_path)
+    if verbose:
+        print('rasterizing', shp_path)
     if dtype == rasterio.int32:
         nbytes = 4
     else:
@@ -306,8 +309,9 @@ def rasterize_stands(
                 if fp[age_col] is None:
                     age = np.int32(1)
                 else:
-                    raise ValueError('Bad age value in record %i: %s' % (i, str(fp[age_col])))
-            if cap_age and age > cap_age: age = cap_age
+                    raise ValueError(f'Bad age value in record {i}: {str(fp[age_col])}') from None
+            if cap_age and age > cap_age:
+                age = cap_age
             try:
                 assert age > 0
             except Exception:
