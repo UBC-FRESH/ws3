@@ -556,3 +556,36 @@ of the typing debt cleanup (issue #98). Then flip the CI flag to make mypy block
 - [x] 11d.1 Stage 5 — annotate forest.py (189 → 0 errors)
 - [x] 11d.2 Stage 6 — flip continue-on-error, clear remaining 21 errors (mypy now blocking)
 
+## Phase 12 — Coverage Target: 52% → 65%
+
+- Parent issue: [#144](https://github.com/UBC-FRESH/ws3/issues/144)
+- Status: active
+- Branch: `feature/phase12-coverage-target`
+- Key result: Raise codecov coverage from 52% to 65%. Set codecov threshold so coverage cannot decrease.
+
+### Goal
+
+Add targeted tests for under-covered modules (`core.py`, `opt.py`, `integration.py`, `forest.py`) to reach 65% overall coverage. Set a 65% threshold in codecov.
+
+### Scope
+
+- `core.py` (61% → 75%+): error branches, debug paths, boundary conditions
+- `opt.py` (57% → 65%+): solver fallback paths, status code handling
+- `integration.py` (79% → 85%+): fill 35 uncovered statement gaps
+- `forest.py` (34% → 45%+): model-level regression tests for most-used paths
+- Set 65% codecov CI threshold (codecov UI, no CI YAML change needed)
+- NOT in scope: `spatial.py`, `forest_helper.py`, `common.py` (require integration infra); going above 65%
+
+### Acceptance criteria
+
+- Overall coverage ≥65%
+- `core.py` ≥75%, `opt.py` ≥65%, `integration.py` ≥85%, `forest.py` ≥45%
+- All existing tests pass
+
+### Verification
+
+```bash
+python -m pytest tests/ -q
+python -m pytest tests/ --cov=ws3 --cov-report=term-missing
+```
+

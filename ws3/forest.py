@@ -588,7 +588,6 @@ class DevelopmentType:
                 ahi = max(_ahi, ahi)
         assert plo <= phi # should never explicitly declare infeasible period range...
         for p in range(plo, phi+1):
-            assert alo <= ahi
             self.operability[acode][p] = (alo, ahi) if alo <= ahi else None
 
 

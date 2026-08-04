@@ -6,7 +6,16 @@ import time
 import numpy as np
 import pytest
 
-from ws3.common import hash_dt, is_num, reproject, timed
+from ws3.common import (
+    hash_dt,
+    hex_id,
+    harv_cost,
+    is_num,
+    piece_size_ratio,
+    reproject,
+    sylv_cred,
+    timed,
+)
 
 
 def test_is_num():
@@ -97,3 +106,61 @@ def test_timed(capsys):
 
     # Ensure that the elapsed time is non-zero
     assert float(captured.out.split()[2]) > 0
+
+
+def test_hex_id():
+    # hex_id returns a SHA-1 hex digest of the pickled object
+    result = hex_id(('a', 'b'))
+    assert isinstance(result, str)
+    assert len(result) == 40  # SHA-1 produces 40 hex chars
+    # Same input should produce same output
+    assert hex_id(('a', 'b')) == result
+    # Different input should produce different output
+    assert hex_id(('a', 'c')) != result
+
+
+def test_sylv_cred_formulas():
+    # Test all 7 sylviculture credit formulas with deterministic (rv=False) inputs
+    P, vr, vp = 100.0, 0.5, 1.0
+    for formula in range(1, 8):
+        result = sylv_cred(P, vr, vp, formula)
+        assert isinstance(result, (int, float))
+        assert result >= 0  # all formulas should return non-negative values
+
+
+def test_piece_size_ratio_with_dict():
+    # When piece_size_ratios dict is provided for valid treatment/cover combos
+    ratios = {1: {'r': 0.8, 'm': 0.9, 'f': 1.0}}
+    assert piece_size_ratio(1, 'r', ratios) == 0.8
+    assert piece_size_ratio(1, 'm', ratios) == 0.9
+    assert piece_size_ratio(1, 'f', ratios) == 1.0
+    # Without dict, should return 1.0 for valid combos
+    assert piece_size_ratio(1, 'r', None) == 1.0
+    assert piece_size_ratio(1, 'm', None) == 1.0
+    assert piece_size_ratio(1, 'f', None) == 1.0
+    # Invalid combos should return 0
+    assert piece_size_ratio(99, 'r', None) == 0
+    assert piece_size_ratio(1, 'x', None) == 0
+
+
+def test_piece_size_ratio_invalid_returns_zero():
+    # Invalid treatment_type or cover_type should return 0
+    assert piece_size_ratio(99, 'r', None) == 0
+    assert piece_size_ratio(1, 'x', None) == 0
+
+
+def test_harv_cost_deterministic():
+    # Test harv_cost with deterministic (rv=False) inputs
+    hc = harv_cost(piece_size=0.5, is_finalcut=True, is_toleranthw=False)
+    assert isinstance(hc, (int, float))
+    assert hc > 0
+    # Test with tolerant hardwood
+    hc_hw = harv_cost(piece_size=0.5, is_finalcut=True, is_toleranthw=True)
+    assert isinstance(hc_hw, (int, float))
+    assert hc_hw > 0
+    # Test partial cut extra care flag
+    hc_partial = harv_cost(
+        piece_size=0.5, is_finalcut=False, is_toleranthw=False, partialcut_extracare=True
+    )
+    assert isinstance(hc_partial, (int, float))
+    assert hc_partial > 0
