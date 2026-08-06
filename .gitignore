@@ -1,6 +1,9 @@
 __pycache__
 .ipynb_checkpoints/
 *.pyc
+# coverage.py database and trace files
+.coverage
+*,cover
 ws3.egg-info/
 build/
 dist/
