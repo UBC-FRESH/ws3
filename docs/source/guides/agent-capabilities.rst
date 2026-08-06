@@ -60,6 +60,17 @@ Available capabilities
    * - ``diagnose_import``
      - Diagnoses a failing Woodstock import and proposes a corrected line
      - The fix is applied to a scratch copy and the section genuinely re-imports
+   * - ``rtfm``
+     - Routes a user goal or error message to the correct capability
+     - The returned capability name is real; cited doc URLs return HTTP 200
+   * - ``ws3_hint``
+     - Gives general modelling guidance with verifiable symbol and URL references
+     - Every cited ``ws3`` symbol exists in the installed package; every cited
+       doc URL returns HTTP 200
+   * - ``inspect_model``
+     - Shows a read-only metadata snapshot of the live ForestModel
+     - Every reported field is read directly from the live model; numeric
+       values are computed by the deterministic executor, never by the provider
 
 Each rejection is specific. ``build_mask`` names the theme codes that were not
 found; ``explain_exception`` names the symbols that do not exist;
@@ -135,6 +146,88 @@ making a call, and the probe has to be cheap enough to sit inside an ``if``.
 Use ``core_installed()`` to distinguish *not installed* from *installed but
 unconfigured*; they have different fixes.
 
+IPython and Jupyter line magics
+===============================
+
+Load the extension after creating a :py:class:`~ws3.forest.ForestModel` named
+``fm`` in the notebook namespace:
+
+.. code-block:: ipython
+
+  %load_ext ws3.agent.ipython_magics
+  %ws3_hint How do I add a fire disturbance?
+
+Questions may be written naturally. They do not need quotes, and a trailing
+question mark is supported.
+
+Capability results are displayed as rendered Markdown with separate answer,
+steps, validated values, fixes, and references sections. The magic displays the
+result and returns ``None`` so Jupyter does not wrap the response in a quoted
+``Out[...]`` string with escaped newlines. Scripts that need structured data
+should use the Python capability API instead of parsing notebook display output.
+
+IPython normally treats a terminal ``?`` as object-help syntax. Without the
+``ws3`` extension's input cleanup transform, the example above is rewritten
+*before the magic runs* as a request for help on the final word, equivalent to
+``%pinfo disturbance``. The resulting ``Object `disturbance` not found.``
+message is therefore an IPython parsing failure, not an agent or provider
+response.
+
+If that message appears after upgrading or editing ``ws3``, reload the extension
+in the active kernel and rerun the original unquoted command:
+
+.. code-block:: ipython
+
+  %reload_ext ws3.agent.ipython_magics
+  %ws3_hint How do I add a fire disturbance?
+
+Restarting the kernel is an alternative when module state may be stale.
+
+``%ws3_inspect_model`` — read-only metadata snapshot
+---------------------------------------------------
+
+.. code-block:: ipython
+
+  %ws3_inspect_model
+  %ws3_inspect_model full snapshot
+
+Displays a Markdown table of the live :py:class:`~ws3.forest.ForestModel`'s
+metadata without modifying the model in any way. Supported fields are:
+
+- **identity** — ``model_name`` and ``name``
+- **periods** — ``base_year``, ``horizon`` (count of periods), ``period_length``,
+  and the list of period integers
+- **counts** — number of themes, actions, and development types
+- **total area** — unambiguous sum of ``dt.area(1)`` across all development types
+  at period 1 (the base period only); ``None`` is reported rather than fabricated
+  when the sum cannot be computed
+
+Arbitrary operable-area filters, time-series plots beyond the base period, or any
+mutation are **not** executed. The capability returns an explicit unsupported
+result instead of producing plausible-looking numbers.
+
+Deterministic selection rules
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The magic enumerates every ``ForestModel`` in the IPython namespace and applies
+these rules:
+
+1. **Exactly one model** — inspect it directly; no user disambiguation needed.
+2. **Multiple models, no identifier in the query** — list every candidate with
+   its variable name and metadata, refuse to pick, and suggest specifying the
+   full variable name, ``model_name``, or public ``name``.
+3. **Multiple models, explicit identifier** — the query token is matched as a
+   complete identifier (not a substring) against each candidate's variable name,
+   ``model_name``, and ``name``. If more than one candidate matches the query is
+   flagged as ambiguous; if none match the candidates are listed and the user is
+   prompted to be more specific.
+4. **No model** — display a short actionable message pointing at how to create
+   one.
+
+The capability never fabricates numeric values and never invokes model-generated
+Python. It displays Markdown and returns ``None`` so Jupyter does not wrap the
+output in a quoted ``Out[...]`` string.
+
 What the guarantee is, and what it is not
 =========================================
 
@@ -187,6 +280,21 @@ Register with an MCP client:
 
 Exposing capabilities as tools rather than documenting them as conventions is
 deliberate. Instructions get ignored; tools in the tool list get called.
+
+Worked example
+==============
+
+A complete, runnable example is at ``examples/agent_capability_example.py``.
+It loads a real ForestModel, calls three capabilities with FakeProvider (so it
+runs offline with no credentials), and shows both validated and rejected outputs:
+
+.. code-block:: bash
+
+   python examples/agent_capability_example.py
+
+The same pattern works with a live endpoint by omitting the ``provider=``
+argument so ``ws3.agent`` resolves configuration from the environment or
+``~/.config/fresh-agent/config.toml``.
 
 Provenance
 ==========

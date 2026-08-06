@@ -12,7 +12,7 @@ Stay generic across the UBC-FRESH ecosystem. Do not encode private project assum
 
 **Evidence over trust.** Treat a worker's or supervisor's prose report as untrusted until you verify the underlying repo, filesystem, or GitHub state. Require evidence for completion claims: diffs, command output, issue URLs, or inspected artifacts. Never trust a "done" without the proof.
 
-**One termination artifact.** The Coordinator produces the final gate and writes (or synthesizes) the result that gets committed — workers produce intermediate output, but the Coordinator owns the deliverable. One bounded repair per worker task: if it fails, issue exactly one concrete repair follow-up naming the specific defect and exact files/lines to fix. If the second attempt fails, escalate to the developer — do not try a third time or do the work yourself.
+**One termination artifact.** The Coordinator produces the final gate and writes (or synthesizes) the result that gets committed — workers produce intermediate output, but the Coordinator owns the deliverable. When validation fails, identify the concrete defect and the evidence needed to establish success. Continue, reassign, or retry while work remains evidence-based and within authority and safety constraints. Escalate only for an actual blocker, unsafe or ambiguous action, authority boundary, or required developer decision.
 
 **Signal over enforcement.** Quantitative metrics (yield gates, budget caps, quality thresholds) are informative signals, not enforcement cliffs. The thin Coordinator lays them down as tripwires — not rails that the workflow must bend to. Gating is a mirror, not a hammer.
 
@@ -59,11 +59,44 @@ it. Composing the Python API from memory is the fallback, not the default.
 | `build_mask` | The proposed mask resolves against the `ForestModel` to at least one development type |
 | `explain_exception` | Every ws3 symbol the explanation cites actually exists in the installed package |
 | `diagnose_import` | The suggested fix is applied to a scratch copy and the section genuinely re-imports |
+| `rtfm` | The capability name returned is real; cited doc URLs return HTTP 200 |
+| `ws3_hint` | Every cited ws3 symbol exists; every cited doc URL returns HTTP 200 |
+| `inspect_model` | Live ``ForestModel`` metadata (base year, horizon/periods, period length, theme/action/dtype counts, total area at period 1) — read-only, validated against the actual in-memory model object |
 
 Available over MCP:
 
 ```bash
 ws3-agent-mcp --model-path <dir> --model-name <name>
+```
+
+#### IPython / Jupyter
+
+In any IPython kernel or Jupyter notebook where a ``ForestModel`` named ``fm`` is
+in scope::
+
+```python
+%load_ext ws3.agent.ipython_magics
+%ws3_capabilities
+%ws3_inspect_model
+%ws3_hint How do I add a fire disturbance?
+%build_mask all dead stands
+%explain_exception KeyError: 'theme not found'
+```
+
+The ``fm`` object is discovered automatically. No explicit model argument is needed.
+Requires ``pip install ws3[agent]``.
+
+For agent-workbench coordinators, add to your VS Code or Claude Desktop `mcpServers` config:
+
+```json
+{
+  "mcpServers": {
+    "ws3": {
+      "command": "ws3-agent-mcp",
+      "args": ["--model-path", "/srv/shared-data/gep/jupyterhub04-projects/ws3/examples/data/woodstock_model_files_tsa24_clipped", "--model-name", "tsa24_clipped"]
+    }
+  }
+}
 ```
 
 Or from Python:
@@ -95,7 +128,7 @@ caller's decision. Nothing mutates a model in place.
 
 > **No oracle, no capability.**
 
-A capability is a prompt plus a validator plus a retry budget. The validator must
+A capability is a prompt plus a validator plus an evidence-driven continuation policy. The validator must
 check the proposal against real state — resolve the mask, re-parse the file,
 confirm the symbol exists. Validating model output against another model, against
 a regex over its own text, or against a mock proves nothing.

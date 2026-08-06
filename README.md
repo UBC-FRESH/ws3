@@ -60,11 +60,14 @@ Multiple examples are available to demonstrate the utilization of ws3. Below is 
 `ws3` ships a small set of operations designed to be driven by an AI coding agent,
 where **the output is validated against real model state before it is returned**.
 
-| Capability | What it validates |
+| Capability | Oracle |
 |---|---|
-| `build_mask` | The proposed mask resolves to at least one development type |
+| `build_mask` | The proposed mask resolves against the `ForestModel` to ≥1 development type |
 | `explain_exception` | Every ws3 symbol the explanation cites actually exists |
-| `diagnose_import` | The suggested fix makes the failing section genuinely re-import |
+| `diagnose_import` | The suggested fix is applied to a scratch copy and the section genuinely re-imports |
+| `rtfm` | The capability name returned is real; cited doc URLs return HTTP 200 |
+| `ws3_hint` | Every cited ws3 symbol exists in the package; every cited doc URL returns HTTP 200 |
+| `inspect_model` | Live `ForestModel` metadata (base year, horizon/periods, period length, theme/action/dtype counts, total area at period 1) — read-only, validated against the actual in-memory model object |
 
 A capability returns validated output or nothing at all — never a plausible guess.
 The design rule is *no oracle, no capability*: if a proposal cannot be checked
@@ -81,6 +84,14 @@ import ws3.agent
 if ws3.agent.available():
     result = ws3.agent.run('build_mask', 'mature spruce stands', context=fm)
     print(result.value if result.ok else result.errors)
+```
+
+In IPython / Jupyter, magics operate on a `ForestModel` named `fm` in scope:
+
+```ipython
+%ws3_capabilities              # list all registered capabilities
+%ws3_inspect_model             # metadata snapshot of `fm`
+%ws3_hint "how do I add a theme"
 ```
 
 Entirely optional. Core modelling never requires it, and `import ws3` never loads

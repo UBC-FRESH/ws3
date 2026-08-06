@@ -311,6 +311,9 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 | `build_mask` | mask resolves against the `ForestModel` to ≥1 development type |
 | `explain_exception` | every ws3 symbol cited actually exists |
 | `diagnose_import` | the fix is applied to a scratch copy and the section re-imports |
+| `rtfm` | capability name returned is real; cited doc URLs return HTTP 200 |
+| `ws3_hint` | every cited ws3 symbol exists in the package; every cited doc URL returns HTTP 200 |
+| `inspect_model` | live `ForestModel` metadata snapshot — read-only, validated against the in-memory model |
 
 ### Task 8.1 — fresh-agent-core: runtime foundation
 - GitHub issue: [#106](https://github.com/UBC-FRESH/ws3/issues/106)
@@ -325,7 +328,8 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 ### Task 8.3 — ws3: implement three capabilities
 - GitHub issue: [#108](https://github.com/UBC-FRESH/ws3/issues/108)
 - Status: complete
-- Scope: `build_mask`, `explain_exception`, `diagnose_import`, each with a validator consulting real ws3 state. 50 tests, all offline.
+- Scope: `build_mask`, `explain_exception`, `diagnose_import`, each with a validator consulting real ws3 state. 50 initial offline agent tests, baseline covering these three capabilities.
+- Note: `ws3_hint`, `rtfm`, and `inspect_model` were subsequently added to the Phase 8 capability surface, bringing the total to six capabilities; full test coverage is now 330 tests (all offline) — see `planning/phase8_closeout.md` Verification.
 
 ### Task 8.4 — ws3: MCP wiring
 - GitHub issue: [#109](https://github.com/UBC-FRESH/ws3/issues/109)
@@ -341,6 +345,43 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - GitHub issue: [#111](https://github.com/UBC-FRESH/ws3/issues/111)
 - Status: complete
 - Scope: `ws3[agent]` and `ws3[agent-mcp]` extras, Sphinx guide covering configuration, capabilities, provenance and how to add a capability validator-first, worked example, CHANGELOG entry.
+- Verification: Sphinx guide `docs/source/guides/agent-capabilities.rst` exists; CHANGELOG entries present; `ws3[agent]` and `ws3[agent-mcp]` extras declared in `pyproject.toml`; example `examples/agent_capability_example.py` executes; IPython magics documented.
+
+### Capability inventory
+
+| Capability | Oracle |
+|---|---|
+| `build_mask` | mask resolves against the `ForestModel` to ≥1 development type |
+| `explain_exception` | every ws3 symbol cited actually exists |
+| `diagnose_import` | the fix is applied to a scratch copy and the section re-imports |
+| `rtfm` | capability name is real; cited doc URLs return HTTP 200 |
+| `ws3_hint` | every cited ws3 symbol exists; every cited doc URL returns HTTP 200 |
+| `inspect_model` | live `ForestModel` metadata snapshot — read-only, validated against the in-memory model |
+
+**Test coverage**: `tests/test_agent*.py` — 177 tests, all passing. Includes `test_agent_inspect_model.py` (read-only boundary, metadata fidelity) and `test_agent_ipython_magics.py` (magic registration, formatting, unsupported-field markers).
+
+### Phase 8 follow-on — AAM discovery and tools/skills boundary
+
+- Parent issue: [#105](https://github.com/UBC-FRESH/ws3/issues/105)
+- Status: active parent; Task 8.7 planned
+- Approval: Developer, 2026-08-06; approved for the bounded Task 8.7 discovery tranche only
+- Planning note: [planning/phase8_aam_tools_and_skills.md](planning/phase8_aam_tools_and_skills.md)
+- Child issue: to be created for Task 8.7
+
+#### Task 8.7 — AAM discovery and WS3 read-only vertical slice
+
+- Status: planned
+- Goal: select one concrete WS3 user journey; inventory and verify the relevant WS3/package contracts; define the boundary between MCP tools and skills; specify a read-only, inspect/validate-oriented vertical slice with provenance, structured errors, reproducibility, and explicit safety limits; and evaluate it before any implementation expansion.
+- Candidate conceptual actions: inspect, validate, summarize, and generate an inspectable hint/snippet draft where supported. These are concepts for discovery, not API claims.
+- Acceptance evidence:
+	- one concrete WS3 user journey selected with its user, artifact, and review boundary;
+	- relevant package contracts and authoritative documentation inventoried and verified;
+	- MCP-tool versus skill responsibilities recorded without inventing unsupported APIs;
+	- a read-only vertical-slice specification covers inputs, outputs, provenance, structured errors, reproducibility, and stop conditions;
+	- an evaluation record reports successful and failed discovery attempts, setup burden, safety observations, and a continue/revise/stop recommendation.
+- Safety limits: read-only and inspect/validate-oriented; explicit artifact paths and parameters; no hidden mutation; no secret or credential handling; provenance and uncertainty remain visible; expensive or long-running work requires a later approval.
+- Explicit exclusions: deploying an MCP server; broad cross-package integrations; changing package APIs or model formats; mutating or destructive operations; expensive or long-running execution; credential or provider selection; publishing a skills library; and a universal ontology or schema.
+- Next approval gate: Developer approval is required before building or exposing the vertical slice beyond discovery, and separately before adding package integrations or enabling mutating or expensive operations.
 
 ## Backlog — not yet scheduled
 
