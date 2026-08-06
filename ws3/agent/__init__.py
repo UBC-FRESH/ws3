@@ -19,6 +19,12 @@ Nothing here is imported by ``import ws3``. This module is optional, and importi
 it without ``fresh-agent-core`` installed raises a clear error rather than an
 opaque ``ModuleNotFoundError`` from three frames down.
 
+IPython / Jupyter integration::
+
+    In [1]: %load_ext ws3.agent.ipython_magics
+    In [2]: %ws3_hint How do I add a fire disturbance?
+
+
 Usage::
 
     import ws3.agent

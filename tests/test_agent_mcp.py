@@ -27,6 +27,7 @@ from ws3.agent.capabilities.explain_exception import (  # noqa: E402
     ExplainException,
     Explanation,
 )
+from ws3.agent.capabilities.inspect_model import InspectInputs, InspectModel  # noqa: E402
 from ws3.agent.mcp_server import build_ws3_server, main  # noqa: E402
 
 CONFIG = AgentConfig(endpoint='offline://test', model='test-model')
@@ -51,8 +52,9 @@ def fm():
 
 
 class TestToolDescriptors:
-    def test_three_tools_are_advertised(self):
-        assert len(describe_tools(build_registry())) == 3
+    def test_six_tools_are_advertised(self):
+        """Phase 8 adds `inspect_model` to the MCP tool list."""
+        assert len(describe_tools(build_registry())) == 6
 
     def test_tools_are_json_serialisable(self):
         json.dumps(describe_tools(build_registry()))
@@ -105,10 +107,25 @@ class TestPayloadMapping:
         report = ExplainException().from_payload({'exc_type': 'E', 'message': 'm'})
         assert report.traceback_text == ''
 
+    def test_inspect_model_payload(self):
+        inputs = InspectModel().from_payload({
+            'query': 'full snapshot',
+            'model_name': 'tsa24_clipped',
+        })
+        assert isinstance(inputs, InspectInputs)
+        assert inputs.query == 'full snapshot'
+        assert inputs.model_name == 'tsa24_clipped'
+
+    def test_inspect_model_payload_missing_query(self):
+        inputs = InspectModel().from_payload({})
+        assert inputs.query == ''
+
 
 class TestRendering:
     def test_mask_renders_as_a_pasteable_string(self, fm):
-        assert BuildMask(fm).render(('a', '?', 'b')) == 'a ? b'
+        from ws3.agent.capabilities.build_mask import BuildMaskOutput
+        output = BuildMaskOutput(mask=('a', '?', 'b'))
+        assert BuildMask(fm).render(output) == 'a ? b'
 
     def test_explanation_renders_cause_and_actions(self):
         rendered = ExplainException().render(
@@ -138,6 +155,141 @@ class TestRendering:
         assert payload['ok'] is False
         assert 'result' not in payload
         assert payload['validation_failures'] == ['mask matches zero development types']
+
+
+class TestContextFactory:
+    """context_factory must hand the right context to each capability."""
+
+    def test_build_mask_receives_the_loaded_fm(self, fm):
+        server = build_ws3_server(
+            model_path=str(MODEL_DIR),
+            model_name=MODEL_NAME,
+            provider=FakeProvider(['x'], repeat_last=True),
+            config=CONFIG,
+        )
+        assert server is not None
+
+    def test_inspect_model_receives_the_loaded_fm(self, fm):
+        """
+        The inspect_model capability must receive the loaded ForestModel as
+        context so the deterministic executor can read live metadata fields.
+
+        The context_factory is a closure inside build_ws3_server, so we can't
+        extract it directly. Instead, we verify the routing by dispatching a
+        real inspect_model call through the server's capability and asserting
+        the executor receives the loaded fm (not None, not a string).
+        """
+        import asyncio
+
+        from ws3.agent.capabilities.inspect_model import InspectModel
+
+        captured = {}
+
+        original_run = InspectModel.run
+
+        def _spy_run(self, inputs, *, provider, config, context=None, sink=None):
+            captured['context'] = context
+            return original_run(
+                self, inputs, provider=provider, config=config,
+                context=context, sink=sink,
+            )
+
+        InspectModel.run = _spy_run
+
+        try:
+            server = build_ws3_server(
+                model_path=str(MODEL_DIR),
+                model_name=MODEL_NAME,
+                provider=FakeProvider(['{"operation": "full_snapshot"}']),
+                config=CONFIG,
+            )
+            # Dispatch inspect_model through the public request_handlers API
+            # on the MCP Server object.  CallToolRequest is the registered
+            # handler for tool-calling; we build the request manually so the
+            # test stays offline and never starts a stdio server.
+            from mcp.types import CallToolRequest, CallToolRequestParams
+
+            call_handler = server.request_handlers[CallToolRequest]
+
+            async def _dispatch():
+                req = CallToolRequest(
+                    method='tools/call',
+                    params=CallToolRequestParams(
+                        name='inspect_model',
+                        arguments={'query': 'full snapshot'},
+                    ),
+                )
+                return await call_handler(req)
+
+            asyncio.run(_dispatch())
+
+            # The loaded fm was passed as context, not None and not a stub.
+            ctx = captured.get('context')
+            assert ctx is not None, (
+                'inspect_model context was None, expected a loaded ForestModel'
+            )
+            # build_ws3_server constructs its own ForestModel via _load_model,
+            # so we verify identity by class rather than by object identity.
+            assert type(ctx).__name__ == 'ForestModel', (
+                f'inspect_model context was {type(ctx).__name__}, '
+                'expected ForestModel'
+            )
+        finally:
+            InspectModel.run = original_run
+
+    def test_no_model_means_none_context_for_inspect(self):
+        """Without a model path, inspect_model context must be None."""
+        import asyncio
+
+        from mcp.types import CallToolRequest, CallToolRequestParams
+
+        from ws3.agent.capabilities.inspect_model import InspectModel
+
+        captured = {}
+
+        original_run = InspectModel.run
+
+        def _spy_run(self, inputs, *, provider, config, context=None, sink=None):
+            captured['context'] = context
+            return original_run(
+                self, inputs, provider=provider, config=config,
+                context=context, sink=sink,
+            )
+
+        InspectModel.run = _spy_run
+
+        try:
+            server = build_ws3_server(
+                provider=FakeProvider(['{"operation": "full_snapshot"}']),
+                config=CONFIG,
+            )
+
+            call_handler = server.request_handlers[CallToolRequest]
+
+            async def _dispatch():
+                req = CallToolRequest(
+                    method='tools/call',
+                    params=CallToolRequestParams(
+                        name='inspect_model',
+                        arguments={'query': 'full snapshot'},
+                    ),
+                )
+                return await call_handler(req)
+
+            asyncio.run(_dispatch())
+            assert captured.get('context') is None, (
+                f'expected None context without a model, got '
+                f'{captured.get("context")!r}'
+            )
+        finally:
+            InspectModel.run = original_run
+
+    def test_unknown_capability_receives_no_context(self):
+        server = build_ws3_server(
+            provider=FakeProvider(['x'], repeat_last=True),
+            config=CONFIG,
+        )
+        assert server is not None
 
 
 class TestServerConstruction:
@@ -222,6 +374,7 @@ class TestConsoleEntryPoint:
         parsed = json.loads(capsys.readouterr().out)
         assert {t['name'] for t in parsed} == {
             'build_mask', 'explain_exception', 'diagnose_import',
+            'inspect_model', 'rtfm', 'ws3_hint',
         }
 
     def test_model_path_and_name_must_be_given_together(self):

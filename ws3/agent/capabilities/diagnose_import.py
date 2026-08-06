@@ -20,6 +20,12 @@ from typing import Any
 
 from fresh_agent_core.capability import Capability, ParseError, Verdict
 
+from ws3.agent.capabilities.rtfm import (
+    RTFM_FOOTER_INSTRUCTION,
+    extract_json,
+    validate_rtfm_footer,
+)
+
 #: Woodstock section suffixes and the ForestModel method that imports each.
 SECTION_IMPORTERS = {
     'lan': 'import_landscape_section',
@@ -58,6 +64,8 @@ class Diagnosis:
     cause: str
     original_line: str
     corrected_line: str
+    rtfm_footer: str = ''
+    raw: str = ''
 
 
 class DiagnoseImport(Capability[Any]):  # type: ignore[misc]
@@ -155,14 +163,11 @@ class DiagnoseImport(Capability[Any]):  # type: ignore[misc]
                 + '\n'.join(f'  - {f}' for f in failures)
                 + '\nPropose a different correction.\n'
             )
+        content += RTFM_FOOTER_INSTRUCTION
         return [{'role': 'user', 'content': content}]
 
     def parse(self, raw: str) -> Diagnosis:
-        text = raw.strip()
-        if text.startswith('```'):
-            text = text.strip('`')
-            if text.lstrip().lower().startswith('json'):
-                text = text.lstrip()[4:]
+        text, footer = extract_json(raw)
         try:
             payload = json.loads(text)
         except json.JSONDecodeError as exc:
@@ -181,6 +186,8 @@ class DiagnoseImport(Capability[Any]):  # type: ignore[misc]
             cause=str(payload['cause']),
             original_line=str(payload['original_line']),
             corrected_line=str(payload['corrected_line']),
+            rtfm_footer=footer,
+            raw=raw,
         )
 
     def validate(self, candidate: Diagnosis, context: Any) -> Verdict:
@@ -235,7 +242,12 @@ class DiagnoseImport(Capability[Any]):  # type: ignore[misc]
             outcome = _try_import(scratch, context.model_name, importer)
 
         if outcome is None:
-            return Verdict.valid()
+            return validate_rtfm_footer(
+                candidate.raw,
+                footer_text=candidate.rtfm_footer,
+                include_rtfm=context.get('include_rtfm', True)
+                if isinstance(context, dict) else True,
+            )
         return Verdict.invalid(f'the section still fails after the fix: {outcome}')
 
 

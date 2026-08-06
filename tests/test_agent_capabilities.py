@@ -22,7 +22,7 @@ from fresh_agent_core import AgentConfig, FakeProvider  # noqa: E402
 from fresh_agent_core.provenance import MemorySink  # noqa: E402
 
 import ws3.agent  # noqa: E402
-from ws3.agent.capabilities.build_mask import BuildMask, MaskRequest  # noqa: E402
+from ws3.agent.capabilities.build_mask import BuildMask, BuildMaskOutput, MaskRequest  # noqa: E402
 from ws3.agent.capabilities.diagnose_import import (  # noqa: E402
     DiagnoseImport,
     Diagnosis,
@@ -90,13 +90,17 @@ class TestAgentPackage:
     def test_available_is_false_without_configuration(self, monkeypatch):
         monkeypatch.delenv('FRESH_AGENT_ENDPOINT', raising=False)
         monkeypatch.delenv('FRESH_AGENT_MODEL', raising=False)
+        # Also bypass the user config file at ~/.config/fresh-agent/config.toml
+        import fresh_agent_core as core
+        monkeypatch.setattr(core.config, 'resolve', lambda *a, **k: None)
         assert ws3.agent.available() is False
 
     def test_available_never_raises(self):
         assert isinstance(ws3.agent.available(), bool)
 
-    def test_three_capabilities_are_registered(self):
-        assert len(ws3.agent.list_capabilities()) == 3
+    def test_six_capabilities_are_registered(self):
+        """Phase 8 adds `inspect_model` to the registry."""
+        assert len(ws3.agent.list_capabilities()) == 6
 
     def test_descriptions_say_what_is_validated(self):
         """
@@ -155,13 +159,16 @@ class TestBuildMaskValidator:
 
 class TestBuildMaskParsing:
     def test_parses_a_space_separated_string(self, fm):
-        assert BuildMask(fm).parse(_mask_response('a b c')) == ('a', 'b', 'c')
+        result = BuildMask(fm).parse(_mask_response('a b c'))
+        assert result.mask == ('a', 'b', 'c')
 
     def test_parses_a_list(self, fm):
-        assert BuildMask(fm).parse(json.dumps({'mask': ['a', 'b']})) == ('a', 'b')
+        result = BuildMask(fm).parse(json.dumps({'mask': ['a', 'b']}))
+        assert result.mask == ('a', 'b')
 
     def test_lowercases(self, fm):
-        assert BuildMask(fm).parse(_mask_response('THEME1 Theme2')) == ('theme1', 'theme2')
+        result = BuildMask(fm).parse(_mask_response('THEME1 Theme2'))
+        assert result.mask == ('theme1', 'theme2')
 
     def test_tolerates_fenced_json(self, fm):
         """
@@ -170,7 +177,8 @@ class TestBuildMaskParsing:
         Tolerating it is cheaper than spending a retry on formatting.
         """
         raw = '```json\n' + _mask_response('a b') + '\n```'
-        assert BuildMask(fm).parse(raw) == ('a', 'b')
+        result = BuildMask(fm).parse(raw)
+        assert result.mask == ('a', 'b')
 
     def test_rejects_non_json(self, fm):
         from fresh_agent_core.capability import ParseError
@@ -551,6 +559,72 @@ class TestExplainExceptionEndToEnd:
         assert 'compile_scenario' in provider.calls[1][0]['content']
 
 
+class TestRTFMFooter:
+    """Tests for the RTFM footer validator."""
+
+    def test_valid_footer_with_cited_symbol(self):
+        from ws3.agent.capabilities.rtfm import validate_rtfm_footer
+
+        response = (
+            '{\n"cause": "The mask matched nothing", '
+            '\n"next_actions": ["Check unmask output."]\n'
+            '}\n'
+            'RTFM links:\n'
+            '  - ws3.forest.ForestModel.unmask: '
+            'https://ubc-fresh.github.io/ws3/forest.html#unmask'
+        )
+        verdict = validate_rtfm_footer(response, include_rtfm=True)
+        assert verdict.ok is True
+
+    def test_valid_footer_none_when_no_symbols(self):
+        from ws3.agent.capabilities.rtfm import validate_rtfm_footer
+
+        response = '{"cause": "ok", "next_actions": []}\nRTFM links: none'
+        verdict = validate_rtfm_footer(response, include_rtfm=True)
+        assert verdict.ok is True
+
+    def test_missing_footer_when_required(self):
+        from ws3.agent.capabilities.rtfm import validate_rtfm_footer
+
+        response = '{"cause": "ok", "next_actions": []}'
+        verdict = validate_rtfm_footer(response, include_rtfm=True)
+        assert verdict.ok is False
+        assert any('missing' in e for e in verdict.errors)
+
+    def test_footer_present_when_suppressed(self):
+        from ws3.agent.capabilities.rtfm import validate_rtfm_footer
+
+        response = '{"cause": "ok"}\nRTFM links:\n  - ws3.forest.ForestModel'
+        verdict = validate_rtfm_footer(response, include_rtfm=False)
+        assert verdict.ok is False
+        assert any('include_rtfm=False' in e for e in verdict.errors)
+
+    def test_footer_absent_when_suppressed_is_valid(self):
+        from ws3.agent.capabilities.rtfm import validate_rtfm_footer
+
+        response = '{"cause": "ok", "next_actions": []}'
+        verdict = validate_rtfm_footer(response, include_rtfm=False)
+        assert verdict.ok is True
+
+    def test_fabricated_symbol_is_rejected(self):
+        from ws3.agent.capabilities.rtfm import validate_rtfm_footer
+
+        response = (
+            '{"cause": "error", "next_actions": []}\n'
+            'RTFM links:\n'
+            '  - ws3.core.fabricated_method: https://ubc-fresh.github.io/ws3/core.html'
+        )
+        verdict = validate_rtfm_footer(response, include_rtfm=True)
+        assert verdict.ok is False
+        assert any('fabricated_method' in e for e in verdict.errors)
+
+    def test_rtfm_instruction_constant_is_non_empty(self):
+        from ws3.agent.capabilities.rtfm import RTFM_FOOTER_INSTRUCTION
+
+        assert 'RTFM links:' in RTFM_FOOTER_INSTRUCTION
+        assert 'ubc-fresh.github.io/ws3' in RTFM_FOOTER_INSTRUCTION
+
+
 class TestDiagnoseImportValidator:
     """The strongest oracle: apply the fix and re-parse."""
 
@@ -683,3 +757,107 @@ class TestDiagnoseImportValidator:
         )
 
         assert lan.read_text() == before
+
+
+class TestExtractJson:
+    """Focused tests for the extract_json utility."""
+
+    def test_plain_json(self):
+        from ws3.agent.capabilities.rtfm import extract_json
+
+        json_text, footer = extract_json('{"mask": "a b c"}')
+        assert json_text == '{"mask": "a b c"}'
+        assert footer == ''
+
+    def test_thinking_block_before_json(self):
+        from ws3.agent.capabilities.rtfm import extract_json
+
+        raw = '<thinking>Let me think about this.\n\nI should propose a mask.</thinking>\n\n{"mask": "a b"}'
+        json_text, footer = extract_json(raw)
+        assert json_text == '{"mask": "a b"}'
+
+    def test_fenced_json(self):
+        from ws3.agent.capabilities.rtfm import extract_json
+
+        raw = '```json\n{"mask": "a b"}\n```'
+        json_text, footer = extract_json(raw)
+        assert json_text == '{"mask": "a b"}'
+
+    def test_reasoning_before_json(self):
+        from ws3.agent.capabilities.rtfm import extract_json
+
+        raw = 'I think the mask should be a b c because reasons.\n\n{"mask": "a b c"}'
+        json_text, footer = extract_json(raw)
+        assert json_text == '{"mask": "a b c"}'
+
+    def test_reasoning_after_json(self):
+        from ws3.agent.capabilities.rtfm import extract_json
+
+        raw = '{"mask": "a b"}\n\nI hope that works.'
+        json_text, footer = extract_json(raw)
+        assert json_text == '{"mask": "a b"}'
+        assert 'hope' in footer
+
+    def test_rtfm_footer_after_json(self):
+        from ws3.agent.capabilities.rtfm import extract_json
+
+        raw = '{"mask": "a b"}\nRTFM links:\n  - ws3.forest.ForestModel.unmask'
+        json_text, footer = extract_json(raw)
+        assert json_text == '{"mask": "a b"}'
+        assert 'RTFM links:' in footer
+
+    def test_json_with_nested_braces_in_string(self):
+        from ws3.agent.capabilities.rtfm import extract_json
+
+        raw = '{"mask": "{a b}", "reasoning": "use {wildcards}"}'
+        json_text, footer = extract_json(raw)
+        assert json_text == '{"mask": "{a b}", "reasoning": "use {wildcards}"}'
+
+    def test_no_json_raises_parse_error(self):
+        from fresh_agent_core.capability import ParseError
+        from ws3.agent.capabilities.rtfm import extract_json
+
+        with pytest.raises(ParseError, match='expected a JSON object'):
+            extract_json('Just plain text, no JSON here.')
+
+    def test_unclosed_brace_raises_parse_error(self):
+        from fresh_agent_core.capability import ParseError
+        from ws3.agent.capabilities.rtfm import extract_json
+
+        with pytest.raises(ParseError, match='expected a JSON object'):
+            extract_json('{"mask": "a b"')
+
+    def test_both_thinking_and_fence(self):
+        from ws3.agent.capabilities.rtfm import extract_json
+
+        raw = '<thinking>analysis</thinking>\n```json\n{"mask": "x"}\n```'
+        json_text, footer = extract_json(raw)
+        assert json_text == '{"mask": "x"}'
+
+    def test_footer_strips_trailing_fence(self):
+        from ws3.agent.capabilities.rtfm import extract_json
+
+        raw = '{"mask": "a"}\n```'
+        json_text, footer = extract_json(raw)
+        assert json_text == '{"mask": "a"}'
+        assert footer == ''
+
+    def test_complex_response_with_all_features(self):
+        from ws3.agent.capabilities.rtfm import extract_json
+
+        raw = (
+            '<thinking>I need to find a mask for pine stands.</thinking>\n'
+            '\n'
+            'Here is the mask:\n'
+            '\n'
+            '```json\n'
+            '{"mask": "pine1 pine2", "reasoning": "selects all pine"}\n'
+            '```\n'
+            '\n'
+            'RTFM links:\n'
+            '  - ws3.forest.ForestModel.unmask: https://ubc-fresh.github.io/ws3/forest.html#unmask'
+        )
+        json_text, footer = extract_json(raw)
+        assert '"mask"' in json_text
+        assert 'pine1' in json_text
+        assert 'RTFM links:' in footer

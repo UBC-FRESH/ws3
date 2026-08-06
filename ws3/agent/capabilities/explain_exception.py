@@ -26,6 +26,12 @@ from typing import Any
 
 from fresh_agent_core.capability import Capability, ParseError, Verdict
 
+from ws3.agent.capabilities.rtfm import (
+    RTFM_FOOTER_INSTRUCTION,
+    extract_json,
+    validate_rtfm_footer,
+)
+
 #: Modules whose public surface counts as "real ws3".
 WS3_MODULES = (
     'ws3.common',
@@ -72,6 +78,8 @@ class Explanation:
     cause: str
     next_actions: tuple[str, ...]
     symbols_referenced: tuple[str, ...]
+    rtfm_footer: str = ''
+    raw: str = ''
 
 
 def _public_names(module_name: str) -> set[str]:
@@ -220,14 +228,11 @@ class ExplainException(Capability[Explanation]):  # type: ignore[misc]
                 + '\n'.join(f'  - {f}' for f in failures)
                 + '\nRewrite the explanation without the offending references.\n'
             )
+        content += RTFM_FOOTER_INSTRUCTION
         return [{'role': 'user', 'content': content}]
 
     def parse(self, raw: str) -> Explanation:
-        text = raw.strip()
-        if text.startswith('```'):
-            text = text.strip('`')
-            if text.lstrip().lower().startswith('json'):
-                text = text.lstrip()[4:]
+        text, footer = extract_json(raw)
         try:
             payload = json.loads(text)
         except json.JSONDecodeError as exc:
@@ -253,6 +258,8 @@ class ExplainException(Capability[Explanation]):  # type: ignore[misc]
             cause=cause,
             next_actions=action_texts,
             symbols_referenced=referenced,
+            rtfm_footer=footer,
+            raw=raw,
         )
 
     def validate(self, candidate: Explanation, context: Any) -> Verdict:
@@ -293,5 +300,14 @@ class ExplainException(Capability[Explanation]):  # type: ignore[misc]
 
         if not candidate.next_actions:
             return Verdict.invalid('the explanation suggests no next actions')
+
+        rtfm_verdict = validate_rtfm_footer(
+            candidate.raw,
+            footer_text=candidate.rtfm_footer,
+            include_rtfm=context.get('include_rtfm', True)
+            if isinstance(context, dict) else True,
+        )
+        if not rtfm_verdict.ok:
+            return rtfm_verdict
 
         return Verdict.valid()
