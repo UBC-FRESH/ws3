@@ -22,7 +22,7 @@ from fresh_agent_core import AgentConfig, FakeProvider  # noqa: E402
 from fresh_agent_core.provenance import MemorySink  # noqa: E402
 
 import ws3.agent  # noqa: E402
-from ws3.agent.capabilities.build_mask import BuildMask, BuildMaskOutput, MaskRequest  # noqa: E402
+from ws3.agent.capabilities.build_mask import BuildMask, MaskRequest  # noqa: E402
 from ws3.agent.capabilities.diagnose_import import (  # noqa: E402
     DiagnoseImport,
     Diagnosis,
@@ -662,7 +662,7 @@ class TestDiagnoseImportValidator:
         fm = ForestModel(
             model_name=MODEL_NAME, model_path=str(broken_model), base_year=2020
         )
-        with pytest.raises(Exception):  # noqa: B017
+        with pytest.raises(ValueError):
             fm.import_landscape_section()
 
     def test_a_fix_that_works_is_accepted(self, broken_model):
@@ -815,6 +815,7 @@ class TestExtractJson:
 
     def test_no_json_raises_parse_error(self):
         from fresh_agent_core.capability import ParseError
+
         from ws3.agent.capabilities.rtfm import extract_json
 
         with pytest.raises(ParseError, match='expected a JSON object'):
@@ -822,6 +823,7 @@ class TestExtractJson:
 
     def test_unclosed_brace_raises_parse_error(self):
         from fresh_agent_core.capability import ParseError
+
         from ws3.agent.capabilities.rtfm import extract_json
 
         with pytest.raises(ParseError, match='expected a JSON object'):

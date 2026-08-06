@@ -13,7 +13,7 @@ from fresh_agent_core import AgentConfig, FakeProvider
 
 from ws3.agent.capabilities import build_registry
 from ws3.agent.capabilities.build_mask import BuildMask, MaskRequest
-from ws3.agent.capabilities.explain_exception import ExplainException, ExceptionReport
+from ws3.agent.capabilities.explain_exception import ExceptionReport, ExplainException
 from ws3.agent.capabilities.rtfm_capability import RTFMCapability, RTFMInputs
 from ws3.forest import ForestModel
 
