@@ -241,5 +241,5 @@ Further Reading
 ---------------
 
 - :doc:`ch02_forest_inventory` — Preparing inventory data
-- :doc:`/howto/curve-definition` — Detailed curve definition guide
-- :doc:`reference/contracts/index` — Data contracts and module boundaries
+- :doc:`/howto/defining-growth-curves` — Detailed curve definition guide
+- :doc:`/reference/contracts/data_contracts` — Data contracts and module boundaries

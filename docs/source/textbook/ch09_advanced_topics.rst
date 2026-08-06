@@ -240,5 +240,5 @@ Further Reading
 
 - :doc:`ch07_financial_analysis` — Financial analysis
 - :doc:`ch08_uncertainty_and_risk` — Uncertainty and risk
-- :doc:`/guides/extending-ws3` — Detailed extension guide
-- :doc:`reference/contracts/index` — Data contracts and module boundaries
+- :doc:`/guides/coding-agent-onboarding` — Coding agent onboarding and extending ws3
+- :doc:`/reference/contracts/index` — Data contracts and module boundaries

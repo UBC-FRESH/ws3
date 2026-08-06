@@ -231,5 +231,5 @@ Further Reading
 ---------------
 
 - :doc:`ch05_optimization` — Optimization fundamentals
-- :doc:`/howto/financial-scenarios` — Detailed financial analysis guide
-- :doc:`reference/contracts/index` — Data contracts and module boundaries
+- :doc:`/howto/faq` — Frequently asked questions
+- :doc:`/reference/contracts/index` — Data contracts and module boundaries

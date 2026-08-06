@@ -261,5 +261,5 @@ Further Reading
 
 - :doc:`ch12_fhops_integration` — Using fhops for harvest cost curves
 - :doc:`ch13_freshforge` — Automating workflows with FreshForge
-- :doc:`reference/contracts/index` — Data contracts and module boundaries
+- :doc:`/textbook/ch18_carbon_accounting` — Carbon accounting
 - FEMIC documentation: https://femic.readthedocs.io

@@ -434,7 +434,7 @@ Exercises
 Related Resources
 -----------------
 
-* :doc:`carbon-modelling` (how-to guide)
+* :doc:`/textbook/ch10_carbon_modelling` (how-to guide)
 * :doc:`../textbook/ch10_carbon_modelling` (introductory carbon)
 * :doc:`../textbook/ch11_femic_models` (FEMIC details)
 * IPCC Guidelines: https://www.ipcc.ch/report/2006-ipcc-national-greenhouse-gas-inventory/

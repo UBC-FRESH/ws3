@@ -317,4 +317,4 @@ Further Reading
 
 - :doc:`ch02_forest_inventory` — How to prepare forest inventory data for ws3
 - :doc:`ch03_growth_and_yield` — Growth curve fitting and interpolation
-- :doc:`getting_started/quickstart` — Hands-on quickstart tutorial
+- :doc:`/getting_started/quickstart` — Hands-on quickstart tutorial

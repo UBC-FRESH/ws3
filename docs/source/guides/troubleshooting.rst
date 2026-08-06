@@ -144,7 +144,7 @@ Simulation Errors
 
 *Solution*:
 Callbacks are registered via the ForestModel's callback system. Check the
-:doc:`textbook/ch10_carbon_modelling` chapter for integration details.
+:doc:`/textbook/ch10_carbon_modelling` chapter for integration details.
 
 **Issue: State inconsistency after simulation**
 
@@ -176,7 +176,7 @@ Callbacks are registered via the ForestModel's callback system. Check the
 *Solution*:
 - Validate input data before running simulation
 - Add assertions in custom callbacks
-- Check the :doc:`textbook/index` for modeling best practices
+- Check the :doc:`/textbook/index` for modeling best practices
 
 Performance Issues
 ------------------

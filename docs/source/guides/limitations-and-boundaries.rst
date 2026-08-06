@@ -106,7 +106,7 @@ ws3 requires:
 ws3 does not validate data quality beyond basic checks. Garbage in, garbage
 out applies.
 
-*Recommendation*: Use :doc:`../howto/model-validation` to check data before
+*Recommendation*: Use :doc:`../howto/loading-a-woodstock-model` to check data before
 running optimization.
 
 Performance Boundaries
@@ -210,5 +210,5 @@ Further Reading
 ---------------
 
 - :doc:`troubleshooting` — Common issues and solutions
-- :doc:`../howto/model-validation` — Validation procedures
-- :doc:`architecture_overview` — Understanding ws3 architecture
+- :doc:`../howto/loading-a-woodstock-model` — Validation procedures
+- :doc:`/getting_started/architecture_overview` — Understanding ws3 architecture

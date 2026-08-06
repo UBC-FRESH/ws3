@@ -160,4 +160,4 @@ Carbon pool information is available via
 Validation
 ----------
 
-Use :doc:`../howto/model-validation` to validate output against expectations.
+Use :doc:`/howto/running-optimization` to validate output against expectations.
