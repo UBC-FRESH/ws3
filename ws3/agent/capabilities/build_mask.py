@@ -67,7 +67,7 @@ class BuildMaskOutput(tuple[Any, ...]):
         mask: tuple[Any, ...],
         rtfm_footer: str = '',
         raw: str = '',
-    ) -> 'BuildMaskOutput':
+    ) -> BuildMaskOutput:
         value = super().__new__(cls, mask)
         value.rtfm_footer = rtfm_footer
         value.raw = raw
