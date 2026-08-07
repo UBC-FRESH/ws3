@@ -291,7 +291,7 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 
 - Parent issue: [#105](https://github.com/UBC-FRESH/ws3/issues/105)
 - Status: complete
-- Branch: `feature/ws3-phase8-embedded-agents`
+- Branch: `feature/ws3-phase8-agent-report-closeout`
 - Start date: 2026-07-29
 - Completion date: 2026-07-29
 - Merged: [PR #113](https://github.com/UBC-FRESH/ws3/pull/113)
@@ -329,7 +329,7 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 - GitHub issue: [#108](https://github.com/UBC-FRESH/ws3/issues/108)
 - Status: complete
 - Scope: `build_mask`, `explain_exception`, `diagnose_import`, each with a validator consulting real ws3 state. 50 initial offline agent tests, baseline covering these three capabilities.
-- Note: `ws3_hint`, `rtfm`, and `inspect_model` were subsequently added to the Phase 8 capability surface, bringing the total to six capabilities; full test coverage is now 330 tests (all offline) — see `planning/phase8_closeout.md` Verification.
+- Note: `ws3_hint`, `rtfm`, and `inspect_model` were subsequently added to the Phase 8 capability surface, bringing the historical 8.1-8.6 tranche to six capabilities; the current registry has seven after Task 8.7. Full test coverage is now 330 tests (all offline) — see `planning/phase8_closeout.md` Verification.
 
 ### Task 8.4 — ws3: MCP wiring
 - GitHub issue: [#109](https://github.com/UBC-FRESH/ws3/issues/109)
@@ -357,20 +357,27 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 | `rtfm` | capability name is real; cited doc URLs return HTTP 200 |
 | `ws3_hint` | every cited ws3 symbol exists; every cited doc URL returns HTTP 200 |
 | `inspect_model` | live `ForestModel` metadata snapshot — read-only, validated against the in-memory model |
+| `report_scenario_inventory_products` | deterministic inventory/products report from an explicit fresh model and sibling schedule |
 
-**Test coverage**: `tests/test_agent*.py` — 177 tests, all passing. Includes `test_agent_inspect_model.py` (read-only boundary, metadata fidelity) and `test_agent_ipython_magics.py` (magic registration, formatting, unsupported-field markers).
+**Current capability registry**: seven capabilities, all bounded and validated. The six-capability count above is historical to the 8.1-8.6 tranche. **Test coverage**: `tests/test_agent*.py` — 177 tests, all passing for the 8.1-8.6 surface. Includes `test_agent_inspect_model.py` (read-only boundary, metadata fidelity) and `test_agent_ipython_magics.py` (magic registration, formatting, unsupported-field markers).
 
 ### Phase 8 follow-on — AAM discovery and tools/skills boundary
 
 - Parent issue: [#105](https://github.com/UBC-FRESH/ws3/issues/105)
-- Status: active parent; Task 8.7 planned
-- Approval: Developer, 2026-08-06; approved for the bounded Task 8.7 discovery tranche only
+- Status: bounded implementation complete; parent remains open pending PR review and merge
+- Approval: Developer approval dated 2026-08-06 covers the bounded deterministic scenario-report implementation/field-test slice, including callable `ws3.agent.report_scenario_inventory_products` and existing registry/MCP descriptor exposure; expansion beyond this slice remains gated
 - Planning note: [planning/phase8_aam_tools_and_skills.md](planning/phase8_aam_tools_and_skills.md)
-- Child issue: to be created for Task 8.7
+- Discovery artifact: [planning/phase8_aam_task_8_7_discovery.md](planning/phase8_aam_task_8_7_discovery.md)
+- Child issue: [#149](https://github.com/UBC-FRESH/ws3/issues/149)
 
 #### Task 8.7 — AAM discovery and WS3 read-only vertical slice
 
-- Status: planned
+- Status: complete (approved bounded deterministic scenario-report slice)
+- Current discovery result: [planning/phase8_aam_task_8_7_discovery.md](planning/phase8_aam_task_8_7_discovery.md)
+- Current field-test entry point: [`ws3.agent.report_scenario_inventory_products`](ws3/agent/capabilities/scenario_report.py), with a runnable offline example at [examples/agent_scenario_report.py](examples/agent_scenario_report.py) and focused evidence at [tests/test_agent_scenario_report.py](tests/test_agent_scenario_report.py)
+- Current workflow contract: load the bundled model and sibling `.seq` schedule into a fresh in-memory `ForestModel`; report `inventory(0)`, per-period `compile_product` harvest area/volume, and `inventory(period, "totvol")`; preserve an explicit no-source-file-mutation statement
+- Current boundary: no selection masks or provider-generated actions; future MCP expansion, cross-package work, optimization, plotting, arbitrary actions, and destructive or expensive operations remain gated
+- Verification: scenario-report tests, focused agent/workflow/MCP tests, offline field test, and a disposable stdio JSON-RPC probe passed `initialize`, `notifications/initialized`, `tools/list` (7 tools), and `tools/call` for `report_scenario_inventory_products`; source-file integrity remained unchanged. This transport probe is disposable verification, not Copilot host attachment or deployment approval. Child issue [#149](https://github.com/UBC-FRESH/ws3/issues/149) is closed. Phase 8 implementation/task closeout is complete, but parent issue [#105](https://github.com/UBC-FRESH/ws3/issues/105) remains active/open pending a reviewable PR and merge; parent lifecycle closure is not claimed.
 - Goal: select one concrete WS3 user journey; inventory and verify the relevant WS3/package contracts; define the boundary between MCP tools and skills; specify a read-only, inspect/validate-oriented vertical slice with provenance, structured errors, reproducibility, and explicit safety limits; and evaluate it before any implementation expansion.
 - Candidate conceptual actions: inspect, validate, summarize, and generate an inspectable hint/snippet draft where supported. These are concepts for discovery, not API claims.
 - Acceptance evidence:
@@ -381,7 +388,7 @@ This roadmap tracks the current UBC-FRESH-style development workflow for ws3.
 	- an evaluation record reports successful and failed discovery attempts, setup burden, safety observations, and a continue/revise/stop recommendation.
 - Safety limits: read-only and inspect/validate-oriented; explicit artifact paths and parameters; no hidden mutation; no secret or credential handling; provenance and uncertainty remain visible; expensive or long-running work requires a later approval.
 - Explicit exclusions: deploying an MCP server; broad cross-package integrations; changing package APIs or model formats; mutating or destructive operations; expensive or long-running execution; credential or provider selection; publishing a skills library; and a universal ontology or schema.
-- Next approval gate: Developer approval is required before building or exposing the vertical slice beyond discovery, and separately before adding package integrations or enabling mutating or expensive operations.
+- Next approval gate: Any expansion beyond this bounded deterministic scenario-report implementation/field-test slice requires separate Developer approval; new MCP server/transport, broader client exposure, package integrations, provider-generated schedules/actions or arbitrary action inputs, age-based masking/stratification UX, plotting, optimization, mutation, or expensive/long-running operations remain separately gated.
 
 ## Backlog — not yet scheduled
 

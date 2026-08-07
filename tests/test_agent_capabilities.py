@@ -98,9 +98,9 @@ class TestAgentPackage:
     def test_available_never_raises(self):
         assert isinstance(ws3.agent.available(), bool)
 
-    def test_six_capabilities_are_registered(self):
-        """Phase 8 adds `inspect_model` to the registry."""
-        assert len(ws3.agent.list_capabilities()) == 6
+    def test_seven_capabilities_are_registered(self):
+        """Task 8.7 adds the deterministic scenario report to the registry."""
+        assert len(ws3.agent.list_capabilities()) == 7
 
     def test_descriptions_say_what_is_validated(self):
         """

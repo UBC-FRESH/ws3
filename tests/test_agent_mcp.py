@@ -52,9 +52,9 @@ def fm():
 
 
 class TestToolDescriptors:
-    def test_six_tools_are_advertised(self):
-        """Phase 8 adds `inspect_model` to the MCP tool list."""
-        assert len(describe_tools(build_registry())) == 6
+    def test_seven_tools_are_advertised(self):
+        """Task 8.7 adds the deterministic scenario report to the MCP tool list."""
+        assert len(describe_tools(build_registry())) == 7
 
     def test_tools_are_json_serialisable(self):
         json.dumps(describe_tools(build_registry()))
@@ -63,6 +63,7 @@ class TestToolDescriptors:
         ('build_mask', ['description']),
         ('explain_exception', ['exc_type', 'message']),
         ('diagnose_import', ['model_path', 'model_name', 'section', 'error']),
+        ('report_scenario_inventory_products', ['model_path', 'model_name']),
     ])
     def test_each_tool_declares_its_required_arguments(self, name, required):
         """
@@ -374,7 +375,7 @@ class TestConsoleEntryPoint:
         parsed = json.loads(capsys.readouterr().out)
         assert {t['name'] for t in parsed} == {
             'build_mask', 'explain_exception', 'diagnose_import',
-            'inspect_model', 'rtfm', 'ws3_hint',
+            'inspect_model', 'report_scenario_inventory_products', 'rtfm', 'ws3_hint',
         }
 
     def test_model_path_and_name_must_be_given_together(self):

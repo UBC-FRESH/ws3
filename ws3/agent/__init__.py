@@ -55,6 +55,7 @@ __all__ = [
     'get',
     'list_capabilities',
     'model_from_spec',
+    'report_scenario_inventory_products',
     'registry',
     'run',
 ]
@@ -273,3 +274,16 @@ def run(
         context=context,
         sink=sink,
     )
+
+
+def report_scenario_inventory_products(
+    model_path: Any,
+    model_name: str,
+    schedule_path: Any = None,
+) -> Any:
+    """Run the deterministic inventory/products report without a provider."""
+    from ws3.agent.capabilities.scenario_report import (
+        report_scenario_inventory_products as _report,
+    )
+
+    return _report(model_path, model_name, schedule_path)

@@ -21,6 +21,7 @@ from ws3.agent.capabilities.explain_exception import (
 )
 from ws3.agent.capabilities.inspect_model import InspectInputs, InspectModel, InspectResult
 from ws3.agent.capabilities.rtfm_capability import RTFMCapability, RTFMInputs, RTFMResult
+from ws3.agent.capabilities.scenario_report import ScenarioReport
 from ws3.agent.capabilities.ws3_hint import HintInputs, HintResult, Ws3Hint
 
 __all__ = [
@@ -42,6 +43,7 @@ __all__ = [
     'RTFMCapability',
     'RTFMInputs',
     'RTFMResult',
+    'ScenarioReport',
     'Ws3Hint',
 ]
 
@@ -62,5 +64,6 @@ def build_registry(fm: Any | None = None) -> Registry:
         DiagnoseImport(),
         InspectModel(),
         RTFMCapability(),
+        ScenarioReport(),
         Ws3Hint(),
     ])

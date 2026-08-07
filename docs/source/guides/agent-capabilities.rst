@@ -71,6 +71,10 @@ Available capabilities
      - Shows a read-only metadata snapshot of the live ForestModel
      - Every reported field is read directly from the live model; numeric
        values are computed by the deterministic executor, never by the provider
+   * - ``report_scenario_inventory_products``
+     - Replays a selected model schedule and reports inventory and products by period
+     - The model and sibling schedule paths are validated; values come directly
+       from live ``inventory`` and ``compile_product`` calls
 
 Each rejection is specific. ``build_mask`` names the theme codes that were not
 found; ``explain_exception`` names the symbols that do not exist;
@@ -228,6 +232,44 @@ The capability never fabricates numeric values and never invokes model-generated
 Python. It displays Markdown and returns ``None`` so Jupyter does not wrap the
 output in a quoted ``Out[...]`` string.
 
+Scenario inventory/products report
+----------------------------------
+
+``ws3.agent.report_scenario_inventory_products`` is a deterministic, offline
+field-test entry point for a bundled WS3 model and its sibling ``.seq`` schedule:
+
+.. code-block:: python
+
+   from pathlib import Path
+   import ws3.agent
+
+   result = ws3.agent.report_scenario_inventory_products(
+     Path('examples/data/woodstock_model_files_tsa24_clipped'),
+     'tsa24_clipped',
+   )
+   assert result.ok
+   print(result.initial_area)
+   for row in result.rows:
+     print(row.period, row.harvested_area, row.harvested_volume,
+       row.standing_volume)
+
+The workflow imports the model sections into a newly constructed in-memory
+``ForestModel``, reads the initial area with ``ForestModel.inventory(0)``,
+applies only the selected model's sibling schedule, and reports each period with
+the exact calls ``compile_product(period, '1.', acode='harvest')``,
+``compile_product(period, 'totvol', acode='harvest')``, and
+``inventory(period, 'totvol')``. It does not accept a mask or provider-generated
+actions. Schedule application can change the fresh in-memory model, but source
+model files are hashed before and after the run and the result states explicitly
+whether they remained unchanged.
+
+The direct Python entry point makes no provider call and needs no credentials.
+The same operation is advertised as the
+``report_scenario_inventory_products`` MCP tool. The current shared MCP server
+still has its existing provider configuration requirement at server startup, but
+this tool ignores the provider and performs all computation on the host. A small
+runnable example is available at ``examples/agent_scenario_report.py``.
+
 What the guarantee is, and what it is not
 =========================================
 
@@ -241,8 +283,10 @@ claim than being right, and a much larger one than being plausible.
 ``result.ok is False`` means every attempt was rejected. That is information, not
 an error to route around: ``result.errors`` says what the model kept getting wrong.
 
-Capabilities are **advisory**. They return proposals; applying them is your
-decision. Nothing mutates a model in place.
+Provider-backed capabilities are **advisory**. They return proposals; applying
+them is your decision. The deterministic scenario report is the bounded
+exception: it applies a source schedule only to a newly loaded in-memory model,
+never to a caller's model object or source model files.
 
 MCP server
 ==========
