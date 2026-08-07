@@ -83,6 +83,17 @@ def test_make_config_uses_standard_fresh_agent_core_resolver(monkeypatch):
     assert ipython_magics._make_config() is expected
 
 
+@pytest.fixture
+def inspect_magic_config(monkeypatch):
+    """Provide deterministic config for inspect magic success-path tests."""
+    config = SimpleNamespace(
+        endpoint='https://agent.example.test',
+        model='test-model',
+    )
+    monkeypatch.setattr(ipython_magics, '_make_config', lambda: config)
+    return config
+
+
 def test_diagnose_import_passes_failure_as_validator_context(monkeypatch):
     fm = _fake_fm('fm', model_name='example')
     calls = []
@@ -331,7 +342,9 @@ class TestInspectModelMagic:
             errors=[],
         )
 
-    def test_one_model_displays_markdown_and_returns_none(self, monkeypatch):
+    def test_one_model_displays_markdown_and_returns_none(
+        self, monkeypatch, inspect_magic_config
+    ):
         """With exactly one model, the magic displays Markdown and returns None."""
         from ws3.agent import ipython_magics as mod
 
@@ -377,7 +390,9 @@ class TestInspectModelMagic:
         assert 'fm_beta' in md_text
         assert 'Specify which model' in md_text
 
-    def test_single_model_match_by_variable_name(self, monkeypatch):
+    def test_single_model_match_by_variable_name(
+        self, monkeypatch, inspect_magic_config
+    ):
         """An explicit variable name resolves to exactly one candidate."""
         from ws3.agent import ipython_magics as mod
 
@@ -421,7 +436,9 @@ class TestInspectModelMagic:
         assert 'No ForestModel found' in md_text
         assert 'fm = ForestModel(...)' in md_text
 
-    def test_query_by_model_name_selects_exactly_one(self, monkeypatch):
+    def test_query_by_model_name_selects_exactly_one(
+        self, monkeypatch, inspect_magic_config
+    ):
         """When two candidates exist, a query mentioning one candidate's
         ``model_name`` (e.g. ``alpha``) resolves to exactly that candidate and
         renders the inspect result — no ambiguity list is shown."""
@@ -449,7 +466,9 @@ class TestInspectModelMagic:
         assert 'ambiguous query' not in md_text
         assert 'Specify which model' not in md_text
 
-    def test_query_by_public_name_selects_exactly_one(self, monkeypatch):
+    def test_query_by_public_name_selects_exactly_one(
+        self, monkeypatch, inspect_magic_config
+    ):
         """When two candidates exist, a query mentioning one candidate's
         public ``name`` (e.g. ``pine_model``) resolves to exactly that
         candidate and renders the inspect result — no ambiguity list is
