@@ -21,21 +21,19 @@ sys.path.append('../ws3/')
 import pytest
 
 from ws3.opt import (
-    Constraint,
-    Problem,
-    SENSE_MAXIMIZE,
-    SENSE_MINIMIZE,
     SENSE_EQ,
     SENSE_GEQ,
     SENSE_LEQ,
+    SENSE_MAXIMIZE,
+    SENSE_MINIMIZE,
+    SOLVER_GUROBI,
     SOLVER_HIGHS,
     SOLVER_PULP,
-    SOLVER_GUROBI,
     VTYPE_CONTINUOUS,
+    Constraint,
+    Problem,
     Variable,
-    VBNDS_INF,
 )
-
 
 # ---------------------------------------------------------------------------
 # Variable
@@ -244,8 +242,9 @@ class TestSolveHighs:
         p.add_constraint("ub", {"x": 1.0}, SENSE_LEQ, 5)
         p.add_constraint("lb", {"x": 1.0}, SENSE_GEQ, 10)
         p.solve()
-        # Solution should be None for infeasible
-        assert p._solution is None
+        assert p.status() == "infeasible"
+        assert not p.solved()
+        assert p.solution() is None
 
     def test_solve_highs_equality(self):
         """Equality constraint: x = 7."""
@@ -287,7 +286,7 @@ class TestSolveHighs:
         p.add_constraint("ub", {"x": 1.0}, SENSE_LEQ, 3.5)
         p.solve()
         assert p.solved()
-        assert p._solution["x"] == pytest.approx(3.0)
+        assert p.solution()["x"] == pytest.approx(3.0)
 
     def test_solve_highs_get_lhs_values(self):
         p = Problem("lhs", sense=SENSE_MAXIMIZE, solver=SOLVER_HIGHS)
@@ -296,4 +295,4 @@ class TestSolveHighs:
         p.add_constraint("c1", {"x": 1.0}, SENSE_LEQ, 10)
         p.solve()
         lhs = p.get_all_constraints_lhs_values()
-        assert "c1" in lhs
+        assert lhs == {"c1": pytest.approx(10.0)}

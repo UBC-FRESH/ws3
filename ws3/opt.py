@@ -356,11 +356,7 @@ class Problem:
         if not self.solved():
             raise ValueError("The problem has not been solved yet.")
         lhs_values = {}
-        if self._solver == SOLVER_PULP:
-            for constraint_name, constraint in self._constraints.items():
-                lhs_value = sum(constraint.coeffs[v] * (self._vars[v].val or 0.0) for v in constraint.coeffs)
-                lhs_values[constraint_name] = lhs_value
-        elif self._solver == SOLVER_GUROBI:
+        if self._solver in {SOLVER_PULP, SOLVER_GUROBI, SOLVER_HIGHS}:
             for constraint_name, constraint in self._constraints.items():
                 lhs_value = sum(constraint.coeffs[v] * (self._vars[v].val or 0.0) for v in constraint.coeffs)
                 lhs_values[constraint_name] = lhs_value
@@ -529,6 +525,8 @@ class Problem:
             obj_coef = obj_mult * self._z.get(vname, 0.0)
 
             highs.addCol(obj_coef, lb, ub, 0, [], [])
+            if var.vtype in {VTYPE_INTEGER, VTYPE_BINARY}:
+                highs.changeColIntegrality(i, highspy.HighsVarType.kInteger)
             var_index[vname] = i
             var.index = i
 
@@ -580,7 +578,7 @@ class Problem:
         # ----------------------------
         # Store solution
         # ----------------------------
-        if status == highspy.HighsStatus.kOk:  # type: ignore[no-untyped-call]
+        if highs.getModelStatus() == highspy.HighsModelStatus.kOptimal:
             sol = highs.getSolution()
             col_values = sol.col_value
             for i, var in enumerate(self._vars.values()):

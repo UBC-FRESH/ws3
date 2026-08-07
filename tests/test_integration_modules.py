@@ -128,20 +128,33 @@ class TestFEMICIntegrator:
 class TestFreshForgeIntegrator:
     """Tests for FreshForgeIntegrator class."""
 
-    def test_initialization(self):
-        """Test creating integrator."""
+    @pytest.mark.parametrize("available", [False, True])
+    @patch('ws3.integration.FreshForgeIntegrator._check_freshforge_available')
+    def test_initialization(self, mock_check, available):
+        """Test creating integrator with either dependency availability result."""
+        mock_check.return_value = available
         integrator = FreshForgeIntegrator()
-        assert integrator._freshforge_available is False
+        assert integrator._freshforge_available is available
 
-    def test_create_pipeline(self):
-        """Test creating a pipeline (mocked - freshforge not available raises)."""
+    @patch('ws3.integration.FreshForgeIntegrator._check_freshforge_available')
+    def test_create_pipeline(self, mock_check):
+        """Test pipeline behavior for both dependency availability outcomes."""
+        mock_check.return_value = False
         integrator = FreshForgeIntegrator()
-        # Since freshforge is not installed, this should raise ImportError
         with pytest.raises(ImportError):
             integrator.create_pipeline(
                 name="test_pipeline",
                 steps=[{"id": "step1", "type": "ws3.load"}]
             )
+
+        mock_check.return_value = True
+        integrator = FreshForgeIntegrator()
+        pipeline = integrator.create_pipeline(
+            name="test_pipeline",
+            steps=[{"id": "step1", "type": "ws3.load"}]
+        )
+        assert pipeline["name"] == "test_pipeline"
+        assert pipeline["steps"] == [{"id": "step1", "type": "ws3.load"}]
 
     def test_run_optimization_pipeline(self):
         """Test running an optimization pipeline (mocked)."""
