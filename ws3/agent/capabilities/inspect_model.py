@@ -553,8 +553,8 @@ class InspectModel(Capability[InspectResult]):
             operation=operation,
         )
 
-        # Apply model_name filter if requested
-        if inputs.model_name and new_value.model_name != inputs.model_name:
+        # Apply model_name filter to the complete live snapshot before projection.
+        if inputs.model_name and snapshot.get('model_name') != inputs.model_name:
             # Filter failed — return invalid result
             return CapabilityResult(
                 ok=False,
@@ -563,7 +563,7 @@ class InspectModel(Capability[InspectResult]):
                 provenance_ids=result.provenance_ids,
                 errors=(
                     f'model_name filter {inputs.model_name!r} does not '
-                    f'match live model {new_value.model_name!r}',
+                    f'match live model {snapshot.get("model_name")!r}',
                 ),
             )
 

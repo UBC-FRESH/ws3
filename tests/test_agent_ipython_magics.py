@@ -76,6 +76,39 @@ def test_display_verdict_uses_markdown_and_returns_none(monkeypatch):
     assert 'WS3 Hint rejected' in displayed[0].data
 
 
+def test_make_config_uses_standard_fresh_agent_core_resolver(monkeypatch):
+    expected = SimpleNamespace(endpoint='https://agent.example.test', model='standard-model')
+    monkeypatch.setattr(ipython_magics, 'resolve', lambda: expected)
+
+    assert ipython_magics._make_config() is expected
+
+
+def test_diagnose_import_passes_failure_as_validator_context(monkeypatch):
+    fm = _fake_fm('fm', model_name='example')
+    calls = []
+    monkeypatch.setattr(ipython_magics, '_find_fm', lambda shell: fm)
+    monkeypatch.setattr(ipython_magics, '_make_config', lambda: object())
+    monkeypatch.setattr(ipython_magics, '_make_provider', lambda config: object())
+    monkeypatch.setattr(ipython_magics, '_display_verdict', lambda name, result: None)
+
+    def run(self, inputs, *, provider, config, context):
+        calls.append((inputs, context))
+        return SimpleNamespace(ok=True, value=None, errors=[])
+
+    monkeypatch.setattr(ipython_magics.DiagnoseImport, 'run', run)
+    shell = InteractiveShell()
+    shell.register_magics(Ws3Magics)
+
+    shell.run_line_magic('diagnose_import', 'landscape /tmp/model')
+
+    assert len(calls) == 1
+    inputs, context = calls[0]
+    assert context is inputs
+    assert inputs.model_name == 'example'
+    assert inputs.section == 'landscape'
+    assert inputs.model_path == '/tmp/model'
+
+
 def test_ws3_capabilities_displays_markdown_and_returns_none(monkeypatch):
     """Regression: %ws3_capabilities must render structured Markdown and return None."""
     displayed = []

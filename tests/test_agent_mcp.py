@@ -343,7 +343,9 @@ class TestRoundTrip:
         """
         wildcard = ' '.join(['?'] * fm.nthemes())
         capability = BuildMask(fm)
-        provider = FakeProvider([json.dumps({'mask': wildcard, 'reasoning': 'all'})])
+        provider = FakeProvider([
+            json.dumps({'mask': wildcard, 'reasoning': 'all'}) + '\nRTFM links: none'
+        ])
 
         result = capability.run(
             capability.from_payload({'description': 'everything'}),

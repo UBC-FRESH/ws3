@@ -357,6 +357,18 @@ class TestInspectEndToEnd:
         # Should fail because the model_name doesn't match
         assert result.ok is False
 
+    def test_model_identity_filter_uses_live_snapshot_before_projection(self, fm):
+        cap = InspectModel()
+        result = cap.run(
+            InspectInputs(query='identify this model', model_name=MODEL_NAME),
+            provider=FakeProvider(['{"operation": "model_identity"}']),
+            config=CONFIG,
+            context=fm,
+        )
+
+        assert result.ok is True
+        assert result.value.model_name == MODEL_NAME
+
     def test_values_coming_from_executor_not_provider(self, fm):
         """
         Provider output must not supply trusted numeric facts.

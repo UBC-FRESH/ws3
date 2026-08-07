@@ -231,7 +231,12 @@ def validate_rtfm_footer(
 
     # --- include_rtfm=True: footer must be present with valid content ---
     if footer_text is not None:
-        # Pre-extracted footer (via parse()): we already know marker is present
+        if response_text and rtfm_marker not in response_text:
+            return Verdict.invalid(
+                'RTFM footer missing; every response must end with a "RTFM links:" '
+                'section citing every ws3 symbol and doc URL referenced'
+            )
+        # Pre-extracted footer (via parse()) follows a confirmed marker.
         footer = footer_text
     else:
         # Full-response path: find the footer marker at the end of the text

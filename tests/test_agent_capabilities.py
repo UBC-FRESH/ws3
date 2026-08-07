@@ -63,11 +63,11 @@ def fm():
 
 
 def _mask_response(mask: str) -> str:
-    return json.dumps({'mask': mask, 'reasoning': 'because'})
+    return json.dumps({'mask': mask, 'reasoning': 'because'}) + '\nRTFM links: none'
 
 
 def _explanation_response(cause: str, actions: list[str]) -> str:
-    return json.dumps({'cause': cause, 'next_actions': actions})
+    return json.dumps({'cause': cause, 'next_actions': actions}) + '\nRTFM links: none'
 
 
 class TestAgentPackage:
@@ -202,7 +202,10 @@ class TestBuildMaskArityIsStructural:
     """
 
     def _constraints(self, mapping):
-        return json.dumps({'constraints': mapping, 'reasoning': 'because'})
+        return (
+            json.dumps({'constraints': mapping, 'reasoning': 'because'})
+            + '\nRTFM links: none'
+        )
 
     def test_no_constraints_yields_all_wildcards(self, fm):
         mask = BuildMask(fm).parse(self._constraints({}))
@@ -330,7 +333,7 @@ class TestRunSuppliesModelAtConstruction:
     """
 
     def test_run_can_assemble_a_mask(self, fm):
-        raw = json.dumps({'constraints': {}, 'reasoning': 'everything'})
+        raw = json.dumps({'constraints': {}, 'reasoning': 'everything'}) + '\nRTFM links: none'
         result = ws3.agent.run(
             'build_mask', 'all stands',
             context=fm, provider=FakeProvider([raw], repeat_last=True),
@@ -363,7 +366,7 @@ class TestRunSuppliesModelAtConstruction:
         raw = json.dumps({
             'cause': 'something went wrong', 'next_actions': ['check the file'],
             'symbols_referenced': [],
-        })
+        }) + '\nRTFM links: none'
         result = ws3.agent.run(
             'explain_exception', ValueError('boom'),
             context=None, provider=FakeProvider([raw], repeat_last=True),
@@ -591,6 +594,18 @@ class TestRTFMFooter:
         assert verdict.ok is False
         assert any('missing' in e for e in verdict.errors)
 
+    def test_empty_parsed_footer_without_marker_is_invalid(self):
+        from ws3.agent.capabilities.rtfm import validate_rtfm_footer
+
+        verdict = validate_rtfm_footer(
+            '{"cause": "ok", "next_actions": []}',
+            footer_text='',
+            include_rtfm=True,
+        )
+
+        assert verdict.ok is False
+        assert any('missing' in error for error in verdict.errors)
+
     def test_footer_present_when_suppressed(self):
         from ws3.agent.capabilities.rtfm import validate_rtfm_footer
 
@@ -623,6 +638,25 @@ class TestRTFMFooter:
 
         assert 'RTFM links:' in RTFM_FOOTER_INSTRUCTION
         assert 'ubc-fresh.github.io/ws3' in RTFM_FOOTER_INSTRUCTION
+
+    def test_rtfm_routes_scenario_report_with_accepted_parameters(self):
+        from ws3.agent.capabilities.rtfm_capability import (
+            RTFMCapability,
+            RTFMResult,
+        )
+
+        candidate = RTFMResult(
+            capability='report_scenario_inventory_products',
+            parameters={'model_path': '/tmp/model', 'model_name': 'example'},
+            rationale='The request needs a deterministic scenario report.',
+            rtfm_footer='RTFM links: none',
+            raw=(
+                '{"capability": "report_scenario_inventory_products"}\n'
+                'RTFM links: none'
+            ),
+        )
+
+        assert RTFMCapability().validate(candidate, context=None).ok is True
 
 
 class TestDiagnoseImportValidator:

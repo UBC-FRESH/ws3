@@ -21,6 +21,7 @@ import re
 from textwrap import dedent
 
 from fresh_agent_core import AgentConfig
+from fresh_agent_core.config import resolve
 from fresh_agent_core.provider import OpenAIProvider
 from IPython.core.magic import Magics, line_magic, magics_class, no_var_expand
 from IPython.core.magic_arguments import argument, magic_arguments, parse_argstring
@@ -172,52 +173,15 @@ def _hint_context(fm):
     )
 
 
-def _find_model_config(model_id: str) -> dict | None:
-    """
-    Load the user's Custom Copilot model configuration from settings.json.
-
-    settings.json is stored at the VS Code settings path and contains per-model
-    headers (including Cloudflare Access credentials) that must not be hardcoded.
-    """
-    import json
-    import pathlib
-
-    # VS Code stores settings at ~/.config/Code/User/settings.json on Linux
-    # code-server uses ~/.local/share/code-server/User/settings.json
-    candidates = [
-        pathlib.Path.home() / '.local' / 'share' / 'code-server' / 'User' / 'settings.json',
-        pathlib.Path.home() / '.config' / 'Code' / 'User' / 'settings.json',
-    ]
-    for settings_path in candidates:
-        if settings_path.exists():
-            try:
-                with open(settings_path) as fh:
-                    settings = json.load(fh)
-                # Key is literally "customcopilot.models" (dot in key name)
-                for model in settings.get('customcopilot.models', []):
-                    if model.get('id') == model_id:
-                        return model
-            except Exception:
-                pass
-    return None
-
-
 def _make_config() -> AgentConfig:
-    """Build an AgentConfig from the user's settings.json for Ornith 1.0 35B FP8."""
-    model_config = _find_model_config('ornith-1.0-35b-fp8')
-    if model_config is None:
+    """Resolve the standard fresh-agent-core user configuration."""
+    config = resolve()
+    if config is None:
         raise RuntimeError(
-            "Could not find 'ornith-1.0-35b-fp8' in settings.json. "
-            "Add it to customcopilot.models in your VS Code settings."
+            'No fresh-agent-core configuration found. Set FRESH_AGENT_ENDPOINT '
+            'and FRESH_AGENT_MODEL or create ~/.config/fresh-agent/config.toml.'
         )
-    headers = model_config.get('headers', {})
-    return AgentConfig(
-        endpoint=model_config['baseUrl'],
-        model=model_config['id'],
-        headers=headers,
-        max_tokens=16384,
-        timeout=300.0,
-    )
+    return config
 
 
 def _make_provider(config: AgentConfig) -> OpenAIProvider:
@@ -423,17 +387,18 @@ class Ws3Magics(Magics):
         fm = _find_fm(self.shell)
         config = _make_config()
         cap = DiagnoseImport()
+        failure = ImportFailure(
+            model_path=args.model_path or '',
+            model_name=getattr(fm, 'model_name', ''),
+            section=args.section or '',
+            error='',
+            excerpt='',
+        )
         result = cap.run(
-            ImportFailure(
-                model_path=args.model_path or '',
-                model_name=getattr(fm, 'model_name', ''),
-                section=args.section or '',
-                error='',
-                excerpt='',
-            ),
+            failure,
             provider=_make_provider(config),
             config=config,
-            context=fm,
+            context=failure,
         )
         _display_verdict('diagnose_import', result)
 

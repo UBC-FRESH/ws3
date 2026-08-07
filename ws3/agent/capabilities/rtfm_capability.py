@@ -128,6 +128,23 @@ _CAPABILITY_INDEX = {
             'to select stands by type, species, age, or any combination.'
         ),
     },
+    'report_scenario_inventory_products': {
+        'keywords': [
+            'scenario report', 'inventory report', 'inventory products',
+            'harvested volume', 'standing volume', 'schedule report',
+        ],
+        'triggers': [
+            'report scenario inventory', 'report inventory products',
+            'show scenario products', 'scenario harvest report',
+        ],
+        'context_params': ['model_path', 'model_name', 'schedule_path'],
+        'description': (
+            'Produces a deterministic inventory and products report for a '
+            'Woodstock scenario and optional schedule. Use when the user wants '
+            'period-by-period harvested area, harvested volume, or standing '
+            'volume from a model scenario.'
+        ),
+    },
     'ws3_hint': {
         'keywords': [
             'how do i', 'how to', 'tutorial', 'explain how',
