@@ -90,8 +90,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   through to capability construction.
 ### Phase 8 closeout (2026-08-07)
 - Tasks 8.1-8.7 are complete within the approved scope: the historical 8.1-8.6 tranche delivered six validated agent capabilities, and the current registry has seven after the bounded read-only `report_scenario_inventory_products` scenario report was added.
-- Evidence includes focused agent/workflow/MCP tests, offline field testing, and a disposable stdio JSON-RPC probe that passed `initialize`, `notifications/initialized`, `tools/list` (7 tools), and `tools/call` for `report_scenario_inventory_products`, plus structured invalid-path failure and unchanged source-file hashes; parent issue #105 remains open pending a reviewable PR and merge.
-- Phase 8 implementation/task closeout is distinct from parent issue lifecycle closure: child issue #149 is closed, while parent issue #105 remains open pending reviewable PR and merge.
+- Evidence includes focused agent/workflow/MCP tests, offline field testing, and a disposable stdio JSON-RPC probe that passed `initialize`, `notifications/initialized`, `tools/list` (7 tools), and `tools/call` for `report_scenario_inventory_products`, plus structured invalid-path failure and unchanged source-file hashes; PR #150 merged on 2026-08-08.
+- Phase 8 implementation/task closeout is complete: child issue #149 and parent issue #105 are closed.
 - Broader AAM/MCP deployment, client exposure, cross-package work, arbitrary or provider-generated actions, age-based masking, plotting, optimization, mutation, and expensive or long-running operations remain gated by separate approval.
 
 ### Added

@@ -2,17 +2,16 @@
 
 **Date**: 2026-08-06
 **Branch**: `feature/ws3-phase8-agent-report-closeout`
-**Status**: implementation closeout (not GitHub parent issue closure)
+**Status**: complete; PR #150 merged and GitHub parent issue #105 closed on 2026-08-08
 
 ---
 
 ## This is an implementation closeout
 
 This document records that the Phase 8 **task surface** (Tasks 8.1–8.7) has been
-shipped and verified within the approved bounded scope. It is **not** a GitHub
-parent issue closure. The parent issue [#105](https://github.com/UBC-FRESH/ws3/issues/105)
-remains open in the ROADMAP pending a clean, reviewable PR and Developer approval
-for merge and parent closure.
+shipped and verified within the approved bounded scope. PR [#150](https://github.com/UBC-FRESH/ws3/pull/150)
+merged on 2026-08-08, and the GitHub parent issue [#105](https://github.com/UBC-FRESH/ws3/issues/105)
+was closed after the required checks passed.
 
 Phase 8 is a capability delivery phase, not a lifecycle milestone. Closing it
 does not change repository governance, branching policy, or release cadence.
@@ -178,11 +177,9 @@ includes the successful report, structured missing-path failure, focused tests,
 live disposable stdio MCP verification, and unchanged source-file hashes.
 
 Task 8.7 child issue [#149](https://github.com/UBC-FRESH/ws3/issues/149) is
-closed. Phase 8 implementation/task closeout is complete, but parent issue
-[#105](https://github.com/UBC-FRESH/ws3/issues/105) remains active/open pending a
-reviewable PR and merge. Existing PR [#113](https://github.com/UBC-FRESH/ws3/pull/113) is merged
-and covers the historical 8.1–8.6 tranche; no new PR was created for this dirty,
-unpushed working tree. The next governance step is a reviewable commit/push and
-PR for the approved closeout changes, followed by Developer approval before
-merge and parent issue closure. Expansion beyond the deterministic scenario
-report remains gated and is not claimed here.
+closed. PR [#150](https://github.com/UBC-FRESH/ws3/pull/150) merged on 2026-08-08,
+completing the Phase 8 implementation and task closeout; parent issue
+[#105](https://github.com/UBC-FRESH/ws3/issues/105) is also closed. Existing PR
+[#113](https://github.com/UBC-FRESH/ws3/pull/113) covers the historical 8.1–8.6
+tranche. Expansion beyond the deterministic scenario report remains gated and is
+not claimed here.
