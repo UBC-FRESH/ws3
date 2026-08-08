@@ -278,11 +278,11 @@ def _display_verdict(cap_name: str, result: Any) -> None:
 # Magics
 # ---------------------------------------------------------------------------
 
-@magics_class
+@magics_class  # type: ignore[misc]
 class Ws3Magics(Magics):
 
-    @line_magic
-    @no_var_expand
+    @line_magic  # type: ignore[untyped-decorator]
+    @no_var_expand  # type: ignore[untyped-decorator]
     @magic_arguments()  # type: ignore[no-untyped-call, untyped-decorator]
     @argument('goal', type=str, nargs='*', help='Goal or error description')  # type: ignore[no-untyped-call, untyped-decorator]
     def ws3_hint(self, line: str) -> str | None:
@@ -310,8 +310,8 @@ class Ws3Magics(Magics):
         _display_verdict('ws3_hint', result)
         return None
 
-    @line_magic
-    @no_var_expand
+    @line_magic  # type: ignore[untyped-decorator]
+    @no_var_expand  # type: ignore[untyped-decorator]
     @magic_arguments()  # type: ignore[no-untyped-call, untyped-decorator]
     @argument('description', type=str, nargs='+', help='Mask description')  # type: ignore[no-untyped-call, untyped-decorator]
     def build_mask(self, line: str) -> str | None:
@@ -341,8 +341,8 @@ class Ws3Magics(Magics):
         _display_verdict('build_mask', result)
         return None
 
-    @line_magic
-    @no_var_expand
+    @line_magic  # type: ignore[untyped-decorator]
+    @no_var_expand  # type: ignore[untyped-decorator]
     @magic_arguments()  # type: ignore[no-untyped-call, untyped-decorator]
     @argument('error_text', type=str, nargs='*', help='Error or traceback text')  # type: ignore[no-untyped-call, untyped-decorator]
     def explain_exception(self, line: str) -> str | None:
@@ -374,8 +374,8 @@ class Ws3Magics(Magics):
         _display_verdict('explain_exception', result)
         return None
 
-    @line_magic
-    @no_var_expand
+    @line_magic  # type: ignore[untyped-decorator]
+    @no_var_expand  # type: ignore[untyped-decorator]
     @magic_arguments()  # type: ignore[no-untyped-call, untyped-decorator]
     @argument('section', type=str, nargs='?', default='', help='Section name (optional)')  # type: ignore[no-untyped-call, untyped-decorator]
     @argument('model_path', type=str, nargs='?', default='', help='Path to model (optional)')  # type: ignore[no-untyped-call, untyped-decorator]
@@ -408,8 +408,8 @@ class Ws3Magics(Magics):
         _display_verdict('diagnose_import', result)
         return None
 
-    @line_magic
-    @no_var_expand
+    @line_magic  # type: ignore[untyped-decorator]
+    @no_var_expand  # type: ignore[untyped-decorator]
     @magic_arguments()  # type: ignore[no-untyped-call, untyped-decorator]
     @argument('query', type=str, nargs='*', help='Goal or error description')  # type: ignore[no-untyped-call, untyped-decorator]
     def rtfm(self, line: str) -> str | None:
@@ -437,8 +437,8 @@ class Ws3Magics(Magics):
         _display_verdict('rtfm', result)
         return None
 
-    @line_magic
-    @no_var_expand
+    @line_magic  # type: ignore[untyped-decorator]
+    @no_var_expand  # type: ignore[untyped-decorator]
     @magic_arguments()  # type: ignore[no-untyped-call, untyped-decorator]
     @argument('query', type=str, nargs='*', help='Query (optional)')  # type: ignore[no-untyped-call, untyped-decorator]
     def ws3_inspect_model(self, line: str) -> None:
@@ -531,7 +531,7 @@ class Ws3Magics(Magics):
                 '\n'.join(f'- {e}' for e in result.errors)
             ))
 
-    @line_magic
+    @line_magic  # type: ignore[untyped-decorator]
     def ws3_capabilities(self, line: str) -> None:
         """
         List all available ws3 agent capabilities.

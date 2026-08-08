@@ -387,14 +387,14 @@ class RESTAPIServer:
         )
 
         # Define request/response models
-        class OptimizationRequest(BaseModel):
+        class OptimizationRequest(BaseModel):  # type: ignore[misc]
             model_path: str
             scenario_name: str
             objective: str = "maximize_npv"
             solver: str = "gurobi"
             threads: int = 0
 
-        class OptimizationResponse(BaseModel):
+        class OptimizationResponse(BaseModel):  # type: ignore[misc]
             status: str
             solve_time: float
             objective_value: float

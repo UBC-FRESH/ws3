@@ -117,7 +117,7 @@ class SolverTuner:
 
             times.append(elapsed)
 
-        return np.mean(times)
+        return float(np.mean(times))
 
     def _apply_parameters(self, params: dict[str, Any]) -> None:
         """Apply parameters to the solver."""
