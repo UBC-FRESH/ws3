@@ -47,7 +47,7 @@ class RTFMResult:
     """
 
     capability: str
-    parameters: dict
+    parameters: dict[str, Any]
     rationale: str
     alternative: str = ''
     rtfm_footer: str = ''
@@ -177,7 +177,7 @@ _GENERAL_MODELLING_KEYWORDS = {
 }
 
 
-class RTFMCapability(Capability[RTFMResult]):
+class RTFMCapability(Capability[RTFMResult]):  # type: ignore[misc]
     """
     Route a user goal or error to the correct ws3 agent capability.
 
@@ -213,7 +213,7 @@ class RTFMCapability(Capability[RTFMResult]):
         'required': ['query'],
     }
 
-    def from_payload(self, payload: dict) -> RTFMInputs:
+    def from_payload(self, payload: dict[str, Any]) -> RTFMInputs:
         """Build an :py:class:`RTFMInputs` from MCP tool arguments."""
         return RTFMInputs(
             query=str(payload.get('query', '')),

@@ -197,7 +197,7 @@ def _snapshot(fm: Any) -> dict[str, Any]:
     return out
 
 
-class InspectModel(Capability[InspectResult]):
+class InspectModel(Capability[InspectResult]):  # type: ignore[misc]
     """
     Read-only metadata snapshot of a ws3 ForestModel.
 
@@ -256,7 +256,7 @@ class InspectModel(Capability[InspectResult]):
         'required': ['query'],
     }
 
-    def from_payload(self, payload: dict) -> InspectInputs:
+    def from_payload(self, payload: dict[str, Any]) -> InspectInputs:
         """Build :py:class:`InspectInputs` from an MCP tool-call payload."""
         return InspectInputs(
             query=str(payload.get('query', '')),

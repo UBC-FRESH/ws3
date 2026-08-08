@@ -19,10 +19,12 @@ from __future__ import annotations
 
 import re
 from textwrap import dedent
+from typing import Any
 
 from fresh_agent_core import AgentConfig
 from fresh_agent_core.config import resolve
 from fresh_agent_core.provider import OpenAIProvider
+from IPython import get_ipython  # type: ignore[attr-defined]
 from IPython.core.magic import Magics, line_magic, magics_class, no_var_expand
 from IPython.core.magic_arguments import argument, magic_arguments, parse_argstring
 from IPython.display import Markdown, display
@@ -65,7 +67,7 @@ def _preserve_magic_questions(lines: list[str]) -> list[str]:
         transformed.append(content + newline)
     return transformed
 
-def _find_fm(ipython) -> object:
+def _find_fm(ipython: Any) -> object:
     """
     Discover the first ForestModel in the IPython user namespace.
 
@@ -82,7 +84,7 @@ def _find_fm(ipython) -> object:
     )
 
 
-def _find_models(ipython) -> list[tuple[str, object]]:
+def _find_models(ipython: Any) -> list[tuple[str, object]]:
     """
     Enumerate every ForestModel in the IPython user namespace.
 
@@ -153,7 +155,7 @@ def _select_model(
     return matched[0][1], None
 
 
-def _hint_context(fm):
+def _hint_context(fm: Any) -> str:
     """Summarize live action definitions for grounded modelling hints."""
     actions = getattr(fm, 'actions', {})
     if not actions:
@@ -189,7 +191,7 @@ def _make_provider(config: AgentConfig) -> OpenAIProvider:
     return OpenAIProvider(config)
 
 
-def _fmt_verdict(cap_name: str, result) -> str:
+def _fmt_verdict(cap_name: str, result: Any) -> str:
     """Format a capability result as notebook-friendly Markdown."""
     heading = cap_name.replace('_', ' ').title().replace('Ws3', 'WS3')
 
@@ -267,9 +269,9 @@ def _fmt_verdict(cap_name: str, result) -> str:
     return '\n'.join(lines)
 
 
-def _display_verdict(cap_name: str, result) -> None:
+def _display_verdict(cap_name: str, result: Any) -> None:
     """Display a capability result without producing a quoted ``Out`` value."""
-    display(Markdown(_fmt_verdict(cap_name, result)))
+    display(Markdown(_fmt_verdict(cap_name, result)))  # type: ignore[no-untyped-call]
 
 
 # ---------------------------------------------------------------------------
@@ -281,9 +283,9 @@ class Ws3Magics(Magics):
 
     @line_magic
     @no_var_expand
-    @magic_arguments()
-    @argument('goal', type=str, nargs='*', help='Goal or error description')
-    def ws3_hint(self, line: str) -> str:
+    @magic_arguments()  # type: ignore[no-untyped-call, untyped-decorator]
+    @argument('goal', type=str, nargs='*', help='Goal or error description')  # type: ignore[no-untyped-call, untyped-decorator]
+    def ws3_hint(self, line: str) -> str | None:
         """
         General ws3 modelling guidance with verifiable symbol and URL references.
 
@@ -291,7 +293,7 @@ class Ws3Magics(Magics):
 
             %ws3_hint How do I add a fire disturbance to my model?
         """
-        args = parse_argstring(self.ws3_hint, line)
+        args = parse_argstring(self.ws3_hint, line)  # type: ignore[no-untyped-call]
         if not args.goal:
             return "Usage: %ws3_hint <your question>"
         goal = ' '.join(args.goal)
@@ -306,12 +308,13 @@ class Ws3Magics(Magics):
             context=fm,
         )
         _display_verdict('ws3_hint', result)
+        return None
 
     @line_magic
     @no_var_expand
-    @magic_arguments()
-    @argument('description', type=str, nargs='+', help='Mask description')
-    def build_mask(self, line: str) -> str:
+    @magic_arguments()  # type: ignore[no-untyped-call, untyped-decorator]
+    @argument('description', type=str, nargs='+', help='Mask description')  # type: ignore[no-untyped-call, untyped-decorator]
+    def build_mask(self, line: str) -> str | None:
         """
         Build a ws3 development-type mask from a natural-language description.
 
@@ -322,7 +325,7 @@ class Ws3Magics(Magics):
 
             %build_mask all mature spruce stands
         """
-        args = parse_argstring(self.build_mask, line)
+        args = parse_argstring(self.build_mask, line)  # type: ignore[no-untyped-call]
         if not args.description:
             return "Usage: %build_mask <mask description>"
 
@@ -336,12 +339,13 @@ class Ws3Magics(Magics):
             context=fm,
         )
         _display_verdict('build_mask', result)
+        return None
 
     @line_magic
     @no_var_expand
-    @magic_arguments()
-    @argument('error_text', type=str, nargs='*', help='Error or traceback text')
-    def explain_exception(self, line: str) -> str:
+    @magic_arguments()  # type: ignore[no-untyped-call, untyped-decorator]
+    @argument('error_text', type=str, nargs='*', help='Error or traceback text')  # type: ignore[no-untyped-call, untyped-decorator]
+    def explain_exception(self, line: str) -> str | None:
         """
         Explain a ws3 Python exception in plain language.
 
@@ -349,7 +353,7 @@ class Ws3Magics(Magics):
 
             %explain_exception KeyError: 'theme not found'
         """
-        args = parse_argstring(self.explain_exception, line)
+        args = parse_argstring(self.explain_exception, line)  # type: ignore[no-untyped-call]
         if not args.error_text:
             return "Usage: %explain_exception <error message or traceback>"
 
@@ -368,13 +372,14 @@ class Ws3Magics(Magics):
             context=fm,
         )
         _display_verdict('explain_exception', result)
+        return None
 
     @line_magic
     @no_var_expand
-    @magic_arguments()
-    @argument('section', type=str, nargs='?', default='', help='Section name (optional)')
-    @argument('model_path', type=str, nargs='?', default='', help='Path to model (optional)')
-    def diagnose_import(self, line: str) -> str:
+    @magic_arguments()  # type: ignore[no-untyped-call, untyped-decorator]
+    @argument('section', type=str, nargs='?', default='', help='Section name (optional)')  # type: ignore[no-untyped-call, untyped-decorator]
+    @argument('model_path', type=str, nargs='?', default='', help='Path to model (optional)')  # type: ignore[no-untyped-call, untyped-decorator]
+    def diagnose_import(self, line: str) -> str | None:
         """
         Diagnose a Woodstock section import failure and suggest a corrected line.
 
@@ -383,7 +388,7 @@ class Ws3Magics(Magics):
             %diagnose_import
             %diagnose_import landscape /path/to/model
         """
-        args = parse_argstring(self.diagnose_import, line)
+        args = parse_argstring(self.diagnose_import, line)  # type: ignore[no-untyped-call]
         fm = _find_fm(self.shell)
         config = _make_config()
         cap = DiagnoseImport()
@@ -401,12 +406,13 @@ class Ws3Magics(Magics):
             context=failure,
         )
         _display_verdict('diagnose_import', result)
+        return None
 
     @line_magic
     @no_var_expand
-    @magic_arguments()
-    @argument('query', type=str, nargs='*', help='Goal or error description')
-    def rtfm(self, line: str) -> str:
+    @magic_arguments()  # type: ignore[no-untyped-call, untyped-decorator]
+    @argument('query', type=str, nargs='*', help='Goal or error description')  # type: ignore[no-untyped-call, untyped-decorator]
+    def rtfm(self, line: str) -> str | None:
         """
         Route a goal or error to the correct ws3 capability.
 
@@ -415,7 +421,7 @@ class Ws3Magics(Magics):
             %rtfm How do I add a new species?
             %rtfm KeyError: 'theme not found'
         """
-        args = parse_argstring(self.rtfm, line)
+        args = parse_argstring(self.rtfm, line)  # type: ignore[no-untyped-call]
         if not args.query:
             return "Usage: %rtfm <your question or error>"
 
@@ -429,11 +435,12 @@ class Ws3Magics(Magics):
             context=fm,
         )
         _display_verdict('rtfm', result)
+        return None
 
     @line_magic
     @no_var_expand
-    @magic_arguments()
-    @argument('query', type=str, nargs='*', help='Query (optional)')
+    @magic_arguments()  # type: ignore[no-untyped-call, untyped-decorator]
+    @argument('query', type=str, nargs='*', help='Query (optional)')  # type: ignore[no-untyped-call, untyped-decorator]
     def ws3_inspect_model(self, line: str) -> None:
         """
         Show a read-only metadata snapshot of the live ForestModel.
@@ -446,14 +453,14 @@ class Ws3Magics(Magics):
             %ws3_inspect_model
             %ws3_inspect_model full snapshot
         """
-        args = parse_argstring(self.ws3_inspect_model, line)
+        args = parse_argstring(self.ws3_inspect_model, line)  # type: ignore[no-untyped-call]
         query = ' '.join(args.query) if args.query else 'full snapshot'
 
         # Enumerate all ForestModels
         models = _find_models(self.shell)
 
         if not models:
-            display(Markdown(
+            display(Markdown(  # type: ignore[no-untyped-call]
                 '### WS3 Inspect Model\n\n'
                 'No ForestModel found in the IPython namespace. '
                 "Create one first — e.g. ``fm = ForestModel(...)``."
@@ -485,7 +492,7 @@ class Ws3Magics(Magics):
                     '    %ws3_inspect_model fm',
                     '    %ws3_inspect_model my_model_name',
                 ])
-                display(Markdown('\n'.join(lines)))
+                display(Markdown('\n'.join(lines)))  # type: ignore[no-untyped-call]
                 return
             if reason == 'ambiguous':
                 lines = ['### WS3 Inspect Model — ambiguous query', '']
@@ -501,7 +508,7 @@ class Ws3Magics(Magics):
                     'Be more specific by including the full variable name, '
                     'model_name, or public name of the model you want to inspect.',
                 ])
-                display(Markdown('\n'.join(lines)))
+                display(Markdown('\n'.join(lines)))  # type: ignore[no-untyped-call]
                 return
             # reason is None -> exactly one match
             assert fm is not None
@@ -519,7 +526,7 @@ class Ws3Magics(Magics):
         if result.ok and result.value is not None:
             _display_verdict('inspect_model', result)
         else:
-            display(Markdown(
+            display(Markdown(  # type: ignore[no-untyped-call]
                 '### WS3 Inspect Model rejected\n' +
                 '\n'.join(f'- {e}' for e in result.errors)
             ))
@@ -544,18 +551,18 @@ class Ws3Magics(Magics):
             "`%build_mask`, `%explain_exception`, `%diagnose_import`, `%rtfm`, "
             "`%ws3_inspect_model` for specific tasks."
         )
-        display(Markdown('\n'.join(lines)))
+        display(Markdown('\n'.join(lines)))  # type: ignore[no-untyped-call]
 
 
-def load_ipython_extension(ipython=None) -> None:
+def load_ipython_extension(ipython: Any | None = None) -> None:
     """Register the ws3 magics with IPython."""
-    ipython = ipython or get_ipython()  # noqa: F821
+    ipython = ipython or get_ipython()  # type: ignore[no-untyped-call]
     if _preserve_magic_questions not in ipython.input_transformers_cleanup:
         ipython.input_transformers_cleanup.append(_preserve_magic_questions)
     ipython.register_magics(Ws3Magics)
 
 
-def unload_ipython_extension(ipython) -> None:
+def unload_ipython_extension(ipython: Any) -> None:
     """Remove the ws3 input transform when unloading the extension."""
     if _preserve_magic_questions in ipython.input_transformers_cleanup:
         ipython.input_transformers_cleanup.remove(_preserve_magic_questions)

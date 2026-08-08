@@ -62,6 +62,9 @@ class MaskRequest:
 class BuildMaskOutput(tuple[Any, ...]):
     """A tuple-compatible mask with optional RTFM metadata."""
 
+    rtfm_footer: str
+    raw: str
+
     def __new__(
         cls,
         mask: tuple[Any, ...],

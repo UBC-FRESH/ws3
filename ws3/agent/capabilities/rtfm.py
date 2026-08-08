@@ -194,7 +194,7 @@ def _doc_url_valid(url: str) -> bool:
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'ws3-agent/1.0'})
         with urllib.request.urlopen(req, timeout=5) as resp:
-            return resp.status == 200
+            return bool(resp.status == 200)
     except (urllib.error.URLError, TimeoutError, OSError):
         return False
 

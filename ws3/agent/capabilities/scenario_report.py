@@ -144,7 +144,7 @@ def _resolve_inputs(inputs: ScenarioReportInputs) -> tuple[Path, Path]:
 def _load_model(model_dir: Path, model_name: str) -> Any:
     from ws3.forest import ForestModel
 
-    model = ForestModel(
+    model = ForestModel(  # type: ignore[no-untyped-call]
         model_name=model_name,
         model_path=str(model_dir),
         base_year=2020,
@@ -152,11 +152,11 @@ def _load_model(model_dir: Path, model_name: str) -> Any:
         period_length=10,
         max_age=1000,
     )
-    model.import_landscape_section()
-    model.import_areas_section(convert_periods_to_years=10)
-    model.import_yields_section(convert_periods_to_years=10)
-    model.import_actions_section(convert_periods_to_years=10)
-    model.import_transitions_section(convert_periods_to_years=10)
+    model.import_landscape_section()  # type: ignore[no-untyped-call]
+    model.import_areas_section(convert_periods_to_years=10)  # type: ignore[no-untyped-call]
+    model.import_yields_section(convert_periods_to_years=10)  # type: ignore[no-untyped-call]
+    model.import_actions_section(convert_periods_to_years=10)  # type: ignore[no-untyped-call]
+    model.import_transitions_section(convert_periods_to_years=10)  # type: ignore[no-untyped-call]
     model.reset_actions()
     return model
 
@@ -261,7 +261,7 @@ def report_scenario_inventory_products(
             for period in model.periods
         )
         unchanged = _source_hashes(model_dir) == before
-        warnings = ()
+        warnings: tuple[str, ...] = ()
         if not schedule:
             warnings = (
                 'The selected schedule contained no entries; harvested products '
@@ -269,7 +269,7 @@ def report_scenario_inventory_products(
             )
         elif not any(row.harvested_area > 0 or row.harvested_volume > 0 for row in rows):
             warnings = ('The applied schedule produced no harvest products.',)
-        errors = () if unchanged else (
+        errors: tuple[str, ...] = () if unchanged else (
             'Source model file hashes changed during the report; result rejected.',
         )
         statement = (
@@ -305,7 +305,7 @@ def report_scenario_inventory_products(
         )
 
 
-class ScenarioReport(Capability[ScenarioReportResult]):
+class ScenarioReport(Capability[ScenarioReportResult]):  # type: ignore[misc]
     """MCP adapter for the deterministic scenario-report workflow.
 
     This adapter deliberately bypasses the provider retry loop. The host loads

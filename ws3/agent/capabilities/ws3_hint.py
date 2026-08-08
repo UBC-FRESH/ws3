@@ -70,7 +70,7 @@ class HintInputs:
     context: str = ''
 
 
-class Ws3Hint(Capability[HintResult]):
+class Ws3Hint(Capability[HintResult]):  # type: ignore[misc]
     """
     Give general modelling guidance for ws3, with verifiable symbol and URL references.
 
@@ -114,7 +114,7 @@ class Ws3Hint(Capability[HintResult]):
         'required': ['goal'],
     }
 
-    def from_payload(self, payload: dict) -> HintInputs:
+    def from_payload(self, payload: dict[str, Any]) -> HintInputs:
         """Build :py:class:`HintInputs` from MCP tool arguments."""
         return HintInputs(
             goal=str(payload.get('goal', '')),
