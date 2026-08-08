@@ -279,7 +279,7 @@ def _display_verdict(cap_name: str, result: Any) -> None:
 # ---------------------------------------------------------------------------
 
 @magics_class  # type: ignore[misc]
-class Ws3Magics(Magics):
+class Ws3Magics(Magics):  # type: ignore[misc]
 
     @line_magic  # type: ignore[untyped-decorator]
     @no_var_expand  # type: ignore[untyped-decorator]
