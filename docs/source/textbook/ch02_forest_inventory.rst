@@ -216,5 +216,5 @@ Further Reading
 
 - :doc:`ch01_forest_estate_models` — Forest estate model fundamentals
 - :doc:`ch03_growth_and_yield` — Growth curve fitting and interpolation
-- :doc:`/howto/data-preparation` — Detailed data preparation guide
-- :doc:`reference/contracts/index` — Data contracts and module boundaries
+- :doc:`/howto/loading-a-woodstock-model` — Detailed data preparation guide
+- :doc:`/reference/contracts/data_contracts` — Data contracts and module boundaries

@@ -21,7 +21,6 @@ import pytest
 
 from ws3.core import Curve, Interpolator, Node, Tree
 
-
 # ---------------------------------------------------------------------------
 # Interpolator
 # ---------------------------------------------------------------------------
@@ -343,9 +342,9 @@ class TestTree:
     def test_leaves(self):
         t = Tree()
         t.add_node({'a': 1})
-        c1 = t.grow({'b': 2})
-        c2 = t.grow({'c': 3})
-        # c1 and c2 are both leaves
+        t.grow({'b': 2})
+        t.grow({'c': 3})
+        # Both grown nodes are leaves.
         leaves = t.leaves()
         assert len(leaves) == 2
 
@@ -357,9 +356,9 @@ class TestTree:
     def test_children(self):
         t = Tree()
         t.add_node({'a': 1})
-        c1 = t.grow({'b': 2})
+        t.grow({'b': 2})
         t.ungrow()  # go back to root
-        c2 = t.grow({'c': 3})
+        t.grow({'c': 3})
         children = t.children(t.node(0).nid)
         assert len(children) == 2
 
@@ -374,7 +373,7 @@ class TestTree:
     def test_path_to_leaf(self):
         t = Tree()
         t.add_node({'a': 1})
-        c1 = t.grow({'b': 2})
+        t.grow({'b': 2})
         c1g = t.grow({'c': 3})
         path = t.path(c1g)
         assert len(path) == 2

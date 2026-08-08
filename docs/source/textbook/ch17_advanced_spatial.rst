@@ -371,7 +371,7 @@ Exercises
 Related Resources
 -----------------
 
-* :doc:`spatial-schedule-allocation` (how-to guide)
+* :doc:`/howto/spatial-allocation` (how-to guide)
 * :doc:`../textbook/ch06_spatial_allocation` (basic spatial modeling)
 * GeoPandas documentation: https://geopandas.org/
 * Rasterio documentation: https://rasterio.readthedocs.io/

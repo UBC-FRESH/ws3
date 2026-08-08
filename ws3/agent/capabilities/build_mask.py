@@ -39,6 +39,11 @@ from typing import Any
 
 from fresh_agent_core.capability import Capability, ParseError, Verdict
 
+from ws3.agent.capabilities.rtfm import (
+    RTFM_FOOTER_INSTRUCTION,
+    extract_json,
+    validate_rtfm_footer,
+)
 from ws3.agent.themes import ThemeError, ThemeSchema, schema_for
 
 
@@ -52,6 +57,28 @@ class MaskRequest:
     """
 
     description: str
+
+
+class BuildMaskOutput(tuple[Any, ...]):
+    """A tuple-compatible mask with optional RTFM metadata."""
+
+    rtfm_footer: str
+    raw: str
+
+    def __new__(
+        cls,
+        mask: tuple[Any, ...],
+        rtfm_footer: str = '',
+        raw: str = '',
+    ) -> BuildMaskOutput:
+        value = super().__new__(cls, mask)
+        value.rtfm_footer = rtfm_footer
+        value.raw = raw
+        return value
+
+    @property
+    def mask(self) -> tuple[Any, ...]:
+        return tuple(self)
 
 
 class BuildMask(Capability[Any]):  # type: ignore[misc]
@@ -101,9 +128,10 @@ class BuildMask(Capability[Any]):  # type: ignore[misc]
             f'got {type(inputs).__name__}'
         )
 
-    def render(self, value: tuple[Any, ...]) -> str:
+    def render(self, value: BuildMaskOutput | tuple[Any, ...]) -> str:
         """Render as a Woodstock-style space-separated mask, ready to paste."""
-        return ' '.join(value)
+        mask = value.mask if isinstance(value, BuildMaskOutput) else value
+        return ' '.join(mask)
 
     def build_messages(self, inputs: MaskRequest, failures: tuple[str, ...]) -> list[dict[str, str]]:
         """
@@ -156,9 +184,10 @@ class BuildMask(Capability[Any]):  # type: ignore[misc]
                 + '\n'.join(f'  - {f}' for f in failures)
                 + '\nPropose different constraints that avoid these problems.\n'
             )
+        content += RTFM_FOOTER_INSTRUCTION
         return [{'role': 'user', 'content': content}]
 
-    def parse(self, raw: str) -> tuple[Any, ...]:
+    def parse(self, raw: str) -> BuildMaskOutput:
         """
         Build the mask from the model's theme constraints.
 
@@ -167,13 +196,9 @@ class BuildMask(Capability[Any]):  # type: ignore[misc]
         :py:meth:`validate`, whereas the ``constraints`` path cannot get arity
         wrong by construction.
         """
-        text = raw.strip()
+        text, footer = extract_json(raw)
         # Models frequently wrap JSON in a fenced code block despite instructions.
         # Tolerating that is cheaper than burning a retry on formatting.
-        if text.startswith('```'):
-            text = text.strip('`')
-            if text.lstrip().lower().startswith('json'):
-                text = text.lstrip()[4:]
         try:
             payload = json.loads(text)
         except json.JSONDecodeError as exc:
@@ -201,29 +226,50 @@ class BuildMask(Capability[Any]):  # type: ignore[misc]
                     'unknown and the mask cannot be assembled'
                 )
             try:
-                return self._schema.assemble(payload['constraints'])
+                return BuildMaskOutput(
+                    mask=self._schema.assemble(payload['constraints']),
+                    rtfm_footer=footer,
+                    raw=raw,
+                )
             except ThemeError as exc:
                 raise ParseError(str(exc)) from None
 
         if 'mask' in payload:
             mask = payload['mask']
             if isinstance(mask, str):
-                return tuple(mask.lower().split())
+                return BuildMaskOutput(
+                    mask=tuple(mask.lower().split()),
+                    rtfm_footer=footer,
+                    raw=raw,
+                )
             if isinstance(mask, list):
-                return tuple(str(m).lower() for m in mask)
+                return BuildMaskOutput(
+                    mask=tuple(str(m).lower() for m in mask),
+                    rtfm_footer=footer,
+                    raw=raw,
+                )
             raise ParseError(
                 f'"mask" must be a string or list, got {type(mask).__name__}'
             )
 
         raise ParseError('expected a JSON object containing a "constraints" key')
 
-    def validate(self, candidate: tuple[Any, ...], context: Any) -> Verdict:
+    def validate(self, candidate: BuildMaskOutput | tuple[Any, ...], context: Any) -> Verdict:
         """
         Resolve the mask against the real model.
 
         :param candidate: Proposed mask.
         :param context: The :py:class:`~ws3.forest.ForestModel` to resolve against.
         """
+        if isinstance(candidate, BuildMaskOutput):
+            mask = candidate.mask
+            raw = candidate.raw
+            rtfm_footer = candidate.rtfm_footer
+        else:
+            mask = candidate
+            raw = ''
+            rtfm_footer = ''
+
         if context is None:
             return Verdict.invalid(
                 'No ForestModel was supplied as context, so the mask cannot be '
@@ -231,14 +277,14 @@ class BuildMask(Capability[Any]):  # type: ignore[misc]
             )
 
         expected = context.nthemes()
-        if len(candidate) != expected:
+        if len(mask) != expected:
             return Verdict.invalid(
-                f'mask has {len(candidate)} entries but the model has {expected} '
+                f'mask has {len(mask)} entries but the model has {expected} '
                 f'themes; supply exactly one code or ? per theme'
             )
 
         try:
-            matches = context.unmask(candidate)
+            matches = context.unmask(mask)
         except Exception as exc:
             # unmask asserts on malformed input rather than raising something
             # specific, so anything escaping it is reported as a rejection with the
@@ -246,11 +292,21 @@ class BuildMask(Capability[Any]):  # type: ignore[misc]
             return Verdict.invalid(f'mask could not be resolved: {type(exc).__name__}: {exc}')
 
         if not matches:
-            unknown = ThemeSchema.from_model(context).unknown_codes(candidate)
+            unknown = ThemeSchema.from_model(context).unknown_codes(mask)
             detail = ('; ' + '; '.join(unknown)) if unknown else ''
             return Verdict.invalid(
                 f'mask matches zero development types{detail}'
             )
+
+        if raw:
+            rtfm_verdict = validate_rtfm_footer(
+                raw,
+                footer_text=rtfm_footer,
+                include_rtfm=context.get('include_rtfm', True)
+                if isinstance(context, dict) else True,
+            )
+            if not rtfm_verdict.ok:
+                return rtfm_verdict
 
         return Verdict.valid()
 

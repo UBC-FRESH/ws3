@@ -148,5 +148,5 @@ Further Reading
 ---------------
 
 - :doc:`ch05_optimization` — Optimization fundamentals
-- :doc:`/howto/spatial-schedule-allocation` — Detailed spatial allocation guide
-- :doc:`reference/contracts/index` — Data contracts and module boundaries
+- :doc:`/howto/spatial-allocation` — Spatial schedule allocation guide
+- :doc:`/reference/contracts/index` — Data contracts and module boundaries

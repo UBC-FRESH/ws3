@@ -215,5 +215,5 @@ Further Reading
 ---------------
 
 - :doc:`ch05_optimization` — Optimization fundamentals
-- :doc:`/howto/model-validation` — Model validation techniques
+- :doc:`../howto/faq` — Frequently asked questions
 - :doc:`/guides/troubleshooting` — Common issues and solutions

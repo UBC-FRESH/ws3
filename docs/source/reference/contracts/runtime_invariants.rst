@@ -138,5 +138,5 @@ The following conditions indicate bugs or misconfiguration:
 Validation
 ----------
 
-Use :doc:`../howto/model-validation` to check these invariants after running
+Use :doc:`/howto/running-optimization` to check these invariants after running
 your model.

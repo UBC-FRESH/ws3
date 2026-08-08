@@ -238,4 +238,4 @@ Further Reading
 
 - :doc:`ch01_forest_estate_models` — Forest estate model fundamentals
 - :doc:`ch05_optimization` — Using actions in optimization problems
-- :doc:`/howto/action-definition` — Detailed action definition guide
+- :doc:`ch04_actions_and_transitions` — Detailed action definition guide

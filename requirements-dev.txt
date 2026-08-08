@@ -21,6 +21,7 @@ coverage
 sphinx
 sphinx_rtd_theme
 nbsphinx
+sphinxcontrib-mermaid>=0.9
 # furo
 
 # libcbm (to run some of the example notebooks)

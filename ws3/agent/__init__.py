@@ -19,6 +19,12 @@ Nothing here is imported by ``import ws3``. This module is optional, and importi
 it without ``fresh-agent-core`` installed raises a clear error rather than an
 opaque ``ModuleNotFoundError`` from three frames down.
 
+IPython / Jupyter integration::
+
+    In [1]: %load_ext ws3.agent.ipython_magics
+    In [2]: %ws3_hint How do I add a fire disturbance?
+
+
 Usage::
 
     import ws3.agent
@@ -49,6 +55,7 @@ __all__ = [
     'get',
     'list_capabilities',
     'model_from_spec',
+    'report_scenario_inventory_products',
     'registry',
     'run',
 ]
@@ -267,3 +274,16 @@ def run(
         context=context,
         sink=sink,
     )
+
+
+def report_scenario_inventory_products(
+    model_path: Any,
+    model_name: str,
+    schedule_path: Any = None,
+) -> Any:
+    """Run the deterministic inventory/products report without a provider."""
+    from ws3.agent.capabilities.scenario_report import (
+        report_scenario_inventory_products as _report,
+    )
+
+    return _report(model_path, model_name, schedule_path)

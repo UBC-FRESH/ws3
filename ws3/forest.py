@@ -2855,14 +2855,14 @@ class ForestModel:
                     continue # skip comments and blank lines
                 line_ = line_.lower().strip().partition(';')[0].strip() # strip leading whitespace and trailing comments
                 t = re.split(r'\s+', line_)
-                if len(t) != n + 5:
+                if len(t) not in (n + 4, n + 5):
                     break
                 dtype_key = tuple(t[:n])
                 age = int(t[n]) * age_multiplier
                 area = float(t[n+1].replace(',', '')) if replace_commas else float(t[n+1])
                 acode = t[n+2]
                 period = int(t[n+3])
-                etype = t[n+4] if len(t) >= n+4 else ''
+                etype = t[n+4] if len(t) == n + 5 else ''
                 schedule.append((dtype_key, age, area, acode, period, etype))
                 if area <= 0:
                     print('area <= 0', line_)
@@ -3298,7 +3298,7 @@ class ForestModel:
                 dtk[tappend[0]] = self.resolve_append(dtk, tappend[1])  # type: ignore[arg-type, assignment]  # type: ignore[assignment]
                 dtk[tappend[0]] = self.resolve_append(dtk, tappend[1])  # type: ignore[arg-type, assignment]  # type: ignore[assignment]
             dtk = tuple(dtk)  # type: ignore[assignment]
-            targetage = self.resolve_targetage(dtk, tyield, sage, tage, acode)  # type: ignore[arg-type]
+            self.resolve_targetage(dtk, tyield, sage, tage, acode)  # type: ignore[arg-type]
 
         theme_cols = [theme['__name__'] for theme in self._themes]
         columns = theme_cols.copy()

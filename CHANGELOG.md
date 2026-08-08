@@ -88,6 +88,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ws3.agent` capabilities now assemble development-type masks at the model's real theme count
   rather than asking a language model to reproduce it, and `ws3.agent.run` passes the model
   through to capability construction.
+### Phase 8 closeout (2026-08-07)
+- Tasks 8.1-8.7 are complete within the approved scope: the historical 8.1-8.6 tranche delivered six validated agent capabilities, and the current registry has seven after the bounded read-only `report_scenario_inventory_products` scenario report was added.
+- Evidence includes focused agent/workflow/MCP tests, offline field testing, and a disposable stdio JSON-RPC probe that passed `initialize`, `notifications/initialized`, `tools/list` (7 tools), and `tools/call` for `report_scenario_inventory_products`, plus structured invalid-path failure and unchanged source-file hashes; parent issue #105 remains open pending a reviewable PR and merge.
+- Phase 8 implementation/task closeout is distinct from parent issue lifecycle closure: child issue #149 is closed, while parent issue #105 remains open pending reviewable PR and merge.
+- Broader AAM/MCP deployment, client exposure, cross-package work, arbitrary or provider-generated actions, age-based masking, plotting, optimization, mutation, and expensive or long-running operations remain gated by separate approval.
 
 ### Added
 - **Agent capabilities** (`ws3.agent`, optional). A small set of operations designed to be driven by an AI coding agent, where the output is validated against real model state before it is returned.
@@ -97,6 +102,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   | `build_mask` | the mask resolves against the `ForestModel` to at least one development type |
   | `explain_exception` | every ws3 symbol the explanation cites actually exists |
   | `diagnose_import` | the suggested fix is applied to a scratch copy and the section genuinely re-imports |
+  | `rtfm` | the capability name returned is real; cited doc URLs return HTTP 200 |
+  | `ws3_hint` | every cited ws3 symbol exists in the package; every cited doc URL returns HTTP 200 |
+  | `inspect_model` | live ``ForestModel`` metadata (base year, horizon/periods, period length, theme/action/dtype counts, total area at period 1) — read-only, validated against the actual in-memory model object |
+
+### IPython / Jupyter extension
+- ``ws3/agent/ipython_magics.py`` — line magics (``%ws3_capabilities``, ``%ws3_inspect_model``, ``%ws3_hint``, ``%build_mask``,
+  ``%explain_exception``, ``%diagnose_import``, ``%rtfm``) for use in any IPython
+  kernel or Jupyter notebook where a ``ForestModel`` named ``fm`` is in scope
 
   A capability returns validated output or nothing at all — never a plausible guess. On exhaustion it returns `ok=False` with the reasons every attempt was rejected. Capabilities are advisory: they return proposals and never mutate a model in place.
 
@@ -109,6 +122,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Eight RST errors in `docs/source/guides/troubleshooting.rst`: directives and nested lists lacking a required preceding blank line. The docs now build with zero errors.
+- **Capability ``parse()`` methods rejected valid JSON with trailing text.** All four ``parse()`` methods (``build_mask``, ``explain_exception``, ``diagnose_import``, ``rtfm``) required ``json.loads()`` to consume the entire response string. When the model appended an ``RTFM links: ...`` footer after the JSON object, ``json.loads()`` raised ``JSONDecodeError: Extra data``. The methods now truncate the response at the last top-level closing brace before parsing, and correctly extract the footer from the remainder.
 
 ### Notes
 `import ws3` never loads the agent package, and `pip install ws3` needs none of it. The MCP dependency is pinned `<2`; the 2.x SDK removed the low-level `Server` decorator API this host is written against, and migration is tracked in [fresh-agent-core#1](https://github.com/UBC-FRESH/fresh-agent-core/issues/1).

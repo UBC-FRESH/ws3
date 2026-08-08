@@ -218,10 +218,17 @@ Selected on one criterion: **is there a cheap, real oracle?**
 | `build_mask` | NL description + `ForestModel` | mask expression | mask resolves against `fm` to ≥1 development type |
 | `explain_exception` | exception + traceback + ws3 context | plain-language cause + next actions | every ws3 symbol, attribute, and path referenced in the output actually exists |
 | `diagnose_import` | Woodstock model path + failing section | structured diagnosis + suggested fix | re-parsing the named section with the suggestion applied to a scratch copy succeeds |
+| `ws3_hint` | NL modelling goal + optional context | suggested steps + cited symbols + cited URLs | every cited ws3 symbol exists in the package; every cited doc URL returns HTTP 200 |
+| `rtfm` | NL goal or error message | capability name + parameters | capability name is real; RTFM footer citations are valid |
+| `inspect_model` | `ForestModel` | read-only metadata summary (base year, horizon/periods, period length, theme/action/dtype counts, total area at period 1) | deterministic — validates every field against the actual in-memory ``ForestModel`` object, no model endpoint needed |
 
 `explain_exception` is deliberately included: its validator is a symbol-existence check,
 which is exactly the defect class Phase 6 spent its entire scope removing from the
 documentation. The same check now runs at runtime, automatically.
+
+`ws3_hint` has a partial oracle only — the modelling advice cannot be verified, but
+the cited symbols and URLs can be, which catches hallucinated APIs (the primary
+failure mode for coding agents working with unfamiliar packages).
 
 Deferred to a later phase: constraint drafting for `opt.Problem`, yield-curve plausibility
 QA, scenario synthesis.
@@ -255,31 +262,65 @@ Tasks 8.1 and 8.2 land in the `fresh-agent-core` repository; 8.3 onward land in 
 
 ### Task 8.3 — ws3: implement three capabilities
 
-- [ ] `build_mask` + validator + tests
-- [ ] `explain_exception` + symbol-existence validator + tests
-- [ ] `diagnose_import` + re-parse validator + tests
-- [ ] Capability registry and `ws3.agent.list_capabilities()`
+- [x] `build_mask` + validator + tests
+- [x] `explain_exception` + symbol-existence validator + tests
+- [x] `diagnose_import` + re-parse validator + tests
+- [x] Capability registry and `ws3.agent.list_capabilities()`
+- [x] `ws3_hint` + partial oracle validator + tests (symbol/URL existence check)
+- [x] `inspect_model` + deterministic live-state validator + tests (read-only, no model endpoint)
 
 ### Task 8.4 — ws3: MCP wiring
 
-- [ ] Register the ws3 capability registry with the `fresh-agent-core` MCP host
-- [ ] Console entry point (e.g. `ws3-agent-mcp`)
-- [ ] Smoke test: server starts, lists ≥3 tools, round-trips one call against `FakeProvider`
+- [x] Register the ws3 capability registry with the `fresh-agent-core` MCP host
+- [x] Console entry point (e.g. `ws3-agent-mcp`)
+- [x] Smoke test: server starts, lists ≥3 tools, round-trips one call against `FakeProvider`
 
 ### Task 8.5 — Discoverability contract
 
-- [ ] `AGENTS.md` section: the supported agent interface is the capability surface, not
+- [x] `AGENTS.md` section: the supported agent interface is the capability surface, not
       hand-written API calls
-- [ ] Documented MCP registration snippet for `agent-workbench`
-- [ ] `README.md` pointer
+- [x] Documented MCP registration snippet for `agent-workbench`
+- [x] `README.md` pointer
 
 ### Task 8.6 — Packaging and documentation
 
-- [ ] `ws3[agent]` extra depending on `fresh-agent-core`
-- [ ] Sphinx page under `docs/source/guides/` — configuration, capabilities, provenance,
+- [x] `ws3[agent]` extra depending on `fresh-agent-core`
+- [x] Sphinx page under `docs/source/guides/` — configuration, capabilities, provenance,
       and how to add a capability (validator-first)
-- [ ] Worked example
-- [ ] `CHANGELOG.md` entry
+- [x] Worked example
+- [x] `CHANGELOG.md` entry
+- [x] IPython/Jupyter line magics (``%ws3_capabilities``, ``%ws3_inspect_model``, ``%ws3_hint``, ``%build_mask``,
+      ``%explain_exception``, ``%diagnose_import``, ``%rtfm``) via
+      ``ws3/agent/ipython_magics.py`` — ``fm`` auto-discovered from user namespace
+
+#### IPython input-transform incident and regression boundary
+
+On 2026-08-05, the literal notebook cell
+`%ws3_hint How do I add a fire disturbance?` returned
+the following message before `ws3_hint` executed:
+
+```text
+Object `disturbance` not found.
+```
+
+IPython's
+`HelpEnd` transformer interpreted the terminal question mark as `object?` help
+syntax and rewrote the entire cell to `get_ipython().run_line_magic('pinfo',
+'disturbance')`.
+
+The fix is a narrowly scoped cleanup input transformer registered by
+`load_ipython_extension()`. It removes a terminal question mark from ws3's
+natural-language line magics before IPython applies `HelpEnd`; no quoting is
+required. `unload_ipython_extension()` removes the transform. Separately,
+`@no_var_expand` must decorate the final registered magic wrapper, outside
+`@magic_arguments`, so literal braces and dollar-prefixed text are preserved.
+
+The regression test must exercise the notebook input path with both
+`InteractiveShell.transform_cell()` and `InteractiveShell.run_cell()`. Testing
+only `run_line_magic()` is insufficient because it bypasses the input
+transformers and produced a false-positive fix during this incident. The test
+uses the exact reported command and asserts that it dispatches to `ws3_hint`,
+not `pinfo`.
 
 ---
 

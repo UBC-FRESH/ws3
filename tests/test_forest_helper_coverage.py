@@ -6,6 +6,7 @@ and function sanitization utilities.
 import functools
 
 import pytest
+
 from ws3.forest_helper import (
     auto_batch,
     choose_max_batch_factor,

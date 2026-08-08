@@ -295,5 +295,5 @@ Further Reading
 
 - :doc:`ch07_financial_analysis` — Financial analysis
 - :doc:`ch05_optimization` — Optimization fundamentals
-- :doc:`/howto/financial-scenarios` — Financial scenario analysis
+- :doc:`ch07_financial_analysis` — Financial scenario analysis
 - IPCC Good Practice Guidance for Land Use, Land-Use Change and Forestry

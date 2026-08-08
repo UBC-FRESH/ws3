@@ -59,6 +59,8 @@ dev = [
     "pytest-cov",
     "coverage",
     "flake8",
+    "IPython",
+    "fresh-agent-core>=0.1.0a1",
     "mypy",
     "ruff",
 ]

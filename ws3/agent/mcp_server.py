@@ -91,9 +91,10 @@ def build_ws3_server(
         """
         Supply each capability's validator context.
 
-        build_mask needs the loaded model. diagnose_import needs the failure being
-        diagnosed, which the caller does send, so it is reconstructed here rather
-        than held on the server.
+        build_mask needs the loaded model. diagnose_import needs the failure
+        being diagnosed, which the caller does send, so it is reconstructed here
+        rather than held on the server. inspect_model also needs the loaded
+        model so the deterministic executor can read live metadata fields.
         """
         if name == 'build_mask':
             return fm
@@ -105,6 +106,8 @@ def build_ws3_server(
                 error=arguments.get('error', ''),
                 excerpt=arguments.get('excerpt', ''),
             )
+        if name == 'inspect_model':
+            return fm
         return None
 
     return build_server(

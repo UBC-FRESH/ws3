@@ -7,9 +7,9 @@ import numpy as np
 import pytest
 
 from ws3.common import (
+    harv_cost,
     hash_dt,
     hex_id,
-    harv_cost,
     is_num,
     piece_size_ratio,
     reproject,

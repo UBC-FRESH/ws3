@@ -12,24 +12,39 @@ from typing import Any
 
 from fresh_agent_core.registry import Registry
 
-from ws3.agent.capabilities.build_mask import BuildMask, MaskRequest
+from ws3.agent.capabilities.build_mask import BuildMask, BuildMaskOutput, MaskRequest
 from ws3.agent.capabilities.diagnose_import import DiagnoseImport, Diagnosis, ImportFailure
 from ws3.agent.capabilities.explain_exception import (
     ExceptionReport,
     ExplainException,
     Explanation,
 )
+from ws3.agent.capabilities.inspect_model import InspectInputs, InspectModel, InspectResult
+from ws3.agent.capabilities.rtfm_capability import RTFMCapability, RTFMInputs, RTFMResult
+from ws3.agent.capabilities.scenario_report import ScenarioReport
+from ws3.agent.capabilities.ws3_hint import HintInputs, HintResult, Ws3Hint
 
 __all__ = [
     'build_registry',
     'BuildMask',
+    'BuildMaskOutput',
     'DiagnoseImport',
     'ExplainException',
+    'HintInputs',
+    'HintResult',
+    'InspectInputs',
+    'InspectModel',
+    'InspectResult',
     'MaskRequest',
     'ExceptionReport',
     'ImportFailure',
     'Explanation',
     'Diagnosis',
+    'RTFMCapability',
+    'RTFMInputs',
+    'RTFMResult',
+    'ScenarioReport',
+    'Ws3Hint',
 ]
 
 
@@ -47,4 +62,8 @@ def build_registry(fm: Any | None = None) -> Registry:
         BuildMask(fm),
         ExplainException(),
         DiagnoseImport(),
+        InspectModel(),
+        RTFMCapability(),
+        ScenarioReport(),
+        Ws3Hint(),
     ])

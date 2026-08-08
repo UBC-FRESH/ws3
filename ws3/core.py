@@ -7,8 +7,8 @@ state trees.
 from __future__ import annotations
 
 import copy
-from typing import Any
 from bisect import bisect_left
+from typing import Any
 
 from ws3 import common
 

@@ -10,7 +10,7 @@ Prerequisites
 
 - ws3 installed (see :doc:`installation`)
 - Python 3.10+ available in your terminal
-- A Woodstock model directory (see :doc:`loading-a-woodstock-model` in the
+- A Woodstock model directory (see :doc:`/howto/loading-a-woodstock-model` in the
   How-To guides for details on the expected file layout)
 
 Step 1: Import ws3
@@ -106,4 +106,4 @@ What's Next?
 - :doc:`first_model` — Build a more complete model with optimization
 - :doc:`architecture_overview` — Understand how ws3 components fit together
 - :doc:`/textbook/ch01_forest_estate_models` — Learn the theory behind wood supply models
-- :doc:`/howto/data-preparation` — Prepare real forest inventory data for ws3
+- :doc:`/howto/loading-a-woodstock-model` — Prepare real forest inventory data for ws3
