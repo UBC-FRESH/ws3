@@ -16,29 +16,27 @@ Covers uncovered branches:
 - RESTAPIServer.run_server without uvicorn
 """
 
-import sys
 import json
+import sys
 
 sys.path.append('../ws3/')
 
-import pytest
-import numpy as np
 import pandas as pd
+import pytest
 
 from ws3.integration import (
+    FEMICIntegrator,
     FHOPSIntegrationConfig,
     FHOPSIntegrator,
-    FEMICIntegrator,
     FreshForgeIntegrator,
-    SpaDESIntegrator,
     RESTAPIServer,
-    create_fhops_integrator,
+    SpaDESIntegrator,
     create_femic_integrator,
+    create_fhops_integrator,
     create_freshforge_integrator,
-    create_spades_integrator,
     create_rest_api,
+    create_spades_integrator,
 )
-
 
 # ---------------------------------------------------------------------------
 # FHOPSIntegrator
