@@ -860,6 +860,50 @@ class Output:
         else:
             return self() - other()  # type: ignore[call-arg]
 
+def _normalize_cflw_e(e: Any, periods: list[int]) -> dict[int, tuple[float | None, float | None, int | None]]:
+    """Normalize a ``cflw_e`` value into ``{period: (alpha, beta, ref_period)}``.
+
+    Two forms are supported for each even-flow output value ``e``:
+
+    - Legacy tuple ``(eps_dict, ref_period)``: a symmetric +/-``eps`` band tying
+      each period's output to the single anchor period ``ref_period`` (int).
+      ``eps_dict`` maps period -> epsilon. This is the historical behaviour and
+      is unchanged.
+    - Extended dict ``{"decrease": d, "increase": i, "ref": r}``: separate
+      period-keyed tolerances. ``decrease`` (``alpha``) is the maximum allowed
+      fractional period-over-period *decrease* (``H_t - (1-alpha) H_ref >= 0``);
+      ``increase`` (``beta``) is the maximum allowed fractional *increase*
+      (``H_t - (1+beta) H_ref <= 0``). Either may be ``None`` (constraint not
+      added). ``ref`` is an int anchor period or ``"consecutive"`` (each period
+      anchored to the previous period), enabling the classic FORPLAN
+      sequential-flow forms (non-declining yield, bounded decline,
+      bounded deviation) used e.g. in Daugherty (1991, eq. 3-4/3-5, Table 5.6).
+
+    Returns a dict keyed on period of ``(alpha, beta, ref_period)`` tuples;
+    periods with no constraint (both tolerances ``None``) are omitted.
+    """
+    if isinstance(e, dict):
+        dec = e.get("decrease")
+        inc = e.get("increase")
+        ref = e.get("ref", "consecutive")
+    else:  # legacy tuple (eps_dict, ref_period)
+        eps_dict, ref = e
+        dec = eps_dict
+        inc = eps_dict
+    spec: dict[int, tuple[float | None, float | None, int | None]] = {}
+    for k, t in enumerate(periods):
+        if ref == "consecutive":
+            ref_t: int | None = periods[k - 1] if k > 0 else None
+        else:
+            ref_t = ref
+        alpha = None if dec is None else dec.get(t)
+        beta = None if inc is None else inc.get(t)
+        if alpha is None and beta is None:
+            continue
+        spec[t] = (alpha, beta, ref_t)
+    return spec
+
+
 class ForestModel:
     """
     This is the core class of the ws3 package.
@@ -1033,12 +1077,20 @@ class ForestModel:
             more args, that get "locked down" and hidden by ``partial``) as we have done in the example in this notebook.
 
 
-        :param dict cflw_e: Dict of (dict, int) tuples, keyed on row name strings (must match row name key values used to
-            define coefficient functions for flow constraints in coeff_func dict), where the int:float dict embedded in the
-            tuple defines epsilon values keyed on periods (must include all periods, even if epsilon value is always the same).
-            See example below.
+        :param dict cflw_e: Even-flow (flow-constraint) specification, keyed on row name strings (must match row name key
+            values used to define coefficient functions for flow constraints in coeff_func dict). Two value forms are
+            supported:
 
-            ``{'foo':({1:0.01, ..., 10:0.01}, 1), 'bar':({1:0.05, ..., 10:0.05}, 1)}``
+            - Legacy ``(eps_dict, ref_period)`` tuple: a symmetric +/-``eps`` band tying each period's output to the
+              single anchor period ``ref_period`` (int). ``eps_dict`` maps period -> epsilon (must include all periods).
+              ``{'foo':({1:0.01, ..., 10:0.01}, 1), 'bar':({1:0.05, ..., 10:0.05}, 1)}``
+            - Extended ``{"decrease": d, "increase": i, "ref": r}`` dict: separate period-keyed tolerances.
+              ``decrease`` (alpha) bounds the fractional period-over-period *decrease* (``H_t - (1-alpha) H_ref >= 0``);
+              ``increase`` (beta) bounds the fractional *increase* (``H_t - (1+beta) H_ref <= 0``); either may be
+              ``None`` to omit that bound. ``ref`` is an int anchor period or ``"consecutive"`` (each period anchored
+              to the previous period). This enables the classic FORPLAN sequential-flow policies — e.g. non-declining
+              yield ``{"decrease": {t: 0.0}, "increase": None, "ref": "consecutive"}`` and bounded deviation
+              ``{"decrease": {t: eps}, "increase": {t: eps}, "ref": "consecutive"}`` (cf. Daugherty 1991, Table 5.6).
 
 
         :param dict cgen_data: Dict of dict of dicts. The outer-level dict is keyed on row name strings (must match row names used
@@ -1388,15 +1440,17 @@ class ForestModel:
 
         # Build Phase 3 tasks
         tasks = []
-        for t in periods:
-            for o, e in cflw_e.items():
-                eps_dict, ref_period = e
-                if t not in eps_dict:
+        for o, e in cflw_e.items():
+            spec = _normalize_cflw_e(e, periods)  # {t: (alpha, beta, ref_t)}
+            for t in periods:
+                if t not in spec:
+                    continue
+                alpha, beta, ref_t = spec[t]
+                if ref_t is None or ref_t not in mu:
                     continue
                 mu_t_o = mu[t][o]
-                mu_ref_o = mu[ref_period][o]
-                eps = eps_dict[t]
-                tasks.append((t, o, mu_t_o, mu_ref_o, eps, xnames))  # type: ignore[arg-type]
+                mu_ref_o = mu[ref_t][o]
+                tasks.append((t, o, mu_t_o, mu_ref_o, alpha, beta, xnames))  # type: ignore[arg-type]
 
         results = []
 

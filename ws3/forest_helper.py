@@ -220,35 +220,40 @@ def worker_cmp_cflw_batch(args: list[Any]) -> list[tuple[int, str, tuple[Any, ..
                     results.append((t, o, i, j, _mu.get(t, 0.0)))
     return results
 
-def worker_cmp_cflw_phase3(args: tuple[int, str, dict[Any, float], dict[Any, float], float, list[str]]) -> list[tuple[str, dict[str, float], str, float]]:
+def worker_cmp_cflw_phase3(args: tuple[int, str, dict[Any, float], dict[Any, float], Any, Any, list[str]]) -> list[tuple[str, dict[str, float], str, float]]:
     """ Worker function to compute (name, coeffs, sense, rhs) tuples for Phase 3 of `_cmp_cflw_m1`.
 
-    :param args: (t, o, mu_t_o, mu_ref_o, eps, xnames)
-    :type args: tuple(int, str, float, float, float, list[str])
+    :param args: (t, o, mu_t_o, mu_ref_o, alpha, beta, xnames), where ``alpha`` is
+        the maximum fractional period-over-period decrease (lower-bound row;
+        ``None`` omits it) and ``beta`` is the maximum fractional increase
+        (upper-bound row; ``None`` omits it).
+    :type args: tuple(int, str, dict, dict, float|None, float|None, list[str])
     :return: list of (constraint_name, mu_lb, sense, 0.) tuples
     :rtype: list[(str, float, str, float)]
     """
-    t, o, mu_t_o, mu_ref_o, eps, xnames = args
+    t, o, mu_t_o, mu_ref_o, alpha, beta, xnames = args
     results: list[tuple[str, dict[str, float], str, float]] = []
 
     keys = list(mu_t_o.keys())
     x_keys = [xnames[k] for k in keys]
     mu_vals = [mu_t_o[k] for k in keys]
-    mu_ref = [mu_ref_o[k] for k in keys]
+    mu_ref = [mu_ref_o.get(k, 0.0) for k in keys]
 
-    # Lower bound row
-    mu_lb_vals = [v - (1 - eps) * r for v, r in zip(mu_vals, mu_ref, strict=False)]
-    mu_lb = dict(zip(x_keys, mu_lb_vals, strict=False))
-    results.append((f'flw-lb_{t:03d}_{o}', mu_lb, opt.SENSE_GEQ, 0.0))
+    # Lower bound row (maximum decrease): H_t - (1 - alpha) * H_ref >= 0
+    if alpha is not None:
+        mu_lb_vals = [v - (1 - alpha) * r for v, r in zip(mu_vals, mu_ref, strict=False)]
+        mu_lb = dict(zip(x_keys, mu_lb_vals, strict=False))
+        results.append((f'flw-lb_{t:03d}_{o}', mu_lb, opt.SENSE_GEQ, 0.0))
 
-    # Upper bound row
-    mu_ub_vals = [v - (1 + eps) * r for v, r in zip(mu_vals, mu_ref, strict=False)]
-    mu_ub = dict(zip(x_keys, mu_ub_vals, strict=False))
-    results.append((f'flw-ub_{t:03d}_{o}', mu_ub, opt.SENSE_LEQ, 0.0))
+    # Upper bound row (maximum increase): H_t - (1 + beta) * H_ref <= 0
+    if beta is not None:
+        mu_ub_vals = [v - (1 + beta) * r for v, r in zip(mu_vals, mu_ref, strict=False)]
+        mu_ub = dict(zip(x_keys, mu_ub_vals, strict=False))
+        results.append((f'flw-ub_{t:03d}_{o}', mu_ub, opt.SENSE_LEQ, 0.0))
 
     return results
 
-def worker_cmp_cflw_phase3_batch(batch: list[tuple[int, str, float, float, float, list[str]]]) -> list[tuple[str, dict[str, float], str, float]]:
+def worker_cmp_cflw_phase3_batch(batch: list[tuple[int, str, dict[Any, float], dict[Any, float], Any, Any, list[str]]]) -> list[tuple[str, dict[str, float], str, float]]:
     """Worker function to process batches of phase 3 tasks for `_cmp_cflw_m1`
 
     :param batch: list of tasks (tuples)

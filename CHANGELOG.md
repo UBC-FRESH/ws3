@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- Even-flow (`cflw_e`) constraints: support for consecutive-period "sequential flow"
+  with separate decrease/increase tolerances (ws3 issue #152). In addition to the legacy
+  symmetric reference-period band `{"row": (eps_dict, ref_period)}` (unchanged), a value
+  may now be a dict `{"decrease": {t: alpha}, "increase": {t: beta}, "ref": r}` where
+  `decrease`/`increase` are optional (omit either bound) and `ref` is an int anchor period
+  or `"consecutive"` (each period anchored to the previous). This enables the classic
+  FORPLAN harvest-flow policies — non-declining yield, bounded decline, bounded deviation
+  (cf. Daugherty 1991, eq. 3-4/3-5, Table 5.6). Added `_normalize_cflw_e` and updated
+  `_cmp_cflw_m1` / `worker_cmp_cflw_phase3`; new `tests/test_cflw_sequential.py`.
+
 ### Changed
 
 - Phase 11d (mypy Stage 5–6) complete: `ws3/` mypy errors reduced from 323 to 0 across 22 source files.
