@@ -3349,10 +3349,10 @@ class ForestModel:
             if treplace:
                 dtk[treplace[0]] = self.resolve_replace(dtk, treplace[1])  # type: ignore[arg-type]
             if tappend:
-                dtk[tappend[0]] = self.resolve_append(dtk, tappend[1])  # type: ignore[arg-type, assignment]  # type: ignore[assignment]
-                dtk[tappend[0]] = self.resolve_append(dtk, tappend[1])  # type: ignore[arg-type, assignment]  # type: ignore[assignment]
+                dtk[tappend[0]] = self.resolve_append(dtk, tappend[1])  # type: ignore[arg-type, assignment]
             dtk = tuple(dtk)  # type: ignore[assignment]
-            self.resolve_targetage(dtk, tyield, sage, tage, acode)  # type: ignore[arg-type]
+            targetage = self.resolve_targetage(dtk, tyield, sage, tage, acode)  # type: ignore[arg-type]
+            return dtk, targetage
 
         theme_cols = [theme['__name__'] for theme in self._themes]
         columns = theme_cols.copy()
