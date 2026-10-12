@@ -73,6 +73,13 @@ A capability returns validated output or nothing at all — never a plausible gu
 The design rule is *no oracle, no capability*: if a proposal cannot be checked
 against real state, it does not become a capability.
 
+> **Lab members (UBC-FRESH):** the FRESH lab KB has a verified recipe for
+> pointing these capabilities at a live endpoint — [Running ws3 Embedded Agent
+> Capabilities on the OpenCode Backend](https://github.com/UBC-FRESH/lab-knowledge/wiki/ws3-Embedded-Agent-Capabilities-on-the-OpenCode-Backend)
+> (OpenCode Go / DeepSeek V4.1 Flash), including the gateway's session-header
+> requirement and reasoning-model gotchas. The KB needs FRESH lab org access;
+> any OpenAI-compatible endpoint works the same way.
+
 ```bash
 pip install ws3[agent]
 ws3-agent-mcp --model-path path/to/model --model-name my_model

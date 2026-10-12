@@ -115,6 +115,14 @@ if ws3.agent.available():
 Requires `pip install ws3[agent]`. Optional: core ws3 modelling never needs it,
 and `import ws3` never loads it.
 
+> **Endpoint configuration (lab members):** the FRESH lab KB documents a verified
+> recipe for running these capabilities against a live endpoint — [Running ws3
+> Embedded Agent Capabilities on the OpenCode Backend](https://github.com/UBC-FRESH/lab-knowledge/wiki/ws3-Embedded-Agent-Capabilities-on-the-OpenCode-Backend)
+> (OpenCode Go gateway, `deepseek-v4.1-flash`), including the required
+> `x-opencode-session` header and reasoning-model gotchas. KB access is limited
+> to the FRESH lab org; any OpenAI-compatible endpoint works the same way.
+
+
 ### What the guarantee is, and what it is not
 
 A capability returns validated output or it returns nothing. It never returns a
